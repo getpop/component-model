@@ -1,0 +1,39 @@
+parameters:
+    version: '0.1.0'
+
+services:
+    _defaults:
+        bind:
+            PoP\Translation\Contracts\TranslationAPIInterface: '@translation_api'
+            PoP\Hooks\Contracts\HooksAPIInterface: '@hooks_api'
+            PoP\ComponentModel\ModelInstance\ModelInstanceInterface: '@model_instance'
+            PoP\ComponentModel\Info\ApplicationInfoInterface: '@application_info'
+            PoP\ComponentModel\Managers\ModulePathManagerInterface: '@module_path_manager'
+
+    model_instance:
+        class: \PoP\ComponentModel\ModelInstance\ModelInstance
+        public: true
+
+    application_info:
+        class: \PoP\ComponentModel\Info\ApplicationInfo
+        public: true
+        arguments:
+            $version: '%version%'
+
+    module_filter_manager:
+        class: '\PoP\ComponentModel\Managers\ModuleFilterManager'
+        public: true
+        arguments:
+            $modulePathHelpers: '@module_path_helpers'
+
+    module_path_manager:
+        class: \PoP\ComponentModel\Managers\ModulePathManager
+        public: true
+
+    module_path_helpers:
+        class: \PoP\ComponentModel\Managers\ModulePathHelpers
+        public: true
+
+    instance_manager:
+        class: \PoP\ComponentModel\Managers\InstanceManager
+        public: true
