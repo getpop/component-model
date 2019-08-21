@@ -7,6 +7,7 @@ services:
             PoP\Translation\Contracts\TranslationAPIInterface: '@translation_api'
             PoP\Hooks\Contracts\HooksAPIInterface: '@hooks_api'
             PoP\ComponentModel\Info\ApplicationInfoInterface: '@application_info'
+            PoP\ComponentModel\Managers\ModulePathManagerInterface: '@module_path_manager'
 
     model_instance:
         class: \PoP\ComponentModel\ModelInstance\ModelInstance
