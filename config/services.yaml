@@ -10,15 +10,15 @@ services:
             PoP\ComponentModel\Managers\ModulePathManagerInterface: '@module_path_manager'
             PoP\ComponentModel\ModelInstance\ModelInstanceInterface: '@model_instance'
 
-    request_cache_item_pool:
+    memory_cache_item_pool:
         class: \Symfony\Component\Cache\Adapter\ArrayAdapter
         public: true
 
-    request_cache:
+    memory_cache:
         class: \PoP\ComponentModel\Cache\Cache
         public: true
         arguments:
-            $cacheItemPool: '@request_cache_item_pool'
+            $cacheItemPool: '@memory_cache_item_pool'
 
     model_instance:
         class: \PoP\ComponentModel\ModelInstance\ModelInstance
