@@ -8,7 +8,8 @@ services:
             PoP\Hooks\Contracts\HooksAPIInterface: '@hooks_api'
             PoP\ComponentModel\Info\ApplicationInfoInterface: '@application_info'
             PoP\ComponentModel\Managers\ModulePathManagerInterface: '@module_path_manager'
-    
+            PoP\ComponentModel\ModelInstance\ModelInstanceInterface: '@model_instance'
+
     request_cache_item_pool:
         class: \Symfony\Component\Cache\Adapter\ArrayAdapter
         public: true
