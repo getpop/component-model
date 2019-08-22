@@ -6,8 +6,12 @@ use PoP\Root\Container\ContainerBuilderFactory;
 
 class PersistentCacheFacade
 {
-    public static function getInstance(): CacheInterface
+    public static function getInstance(): ?CacheInterface
     {
-        return ContainerBuilderFactory::getInstance()->get('persistent_cache');
+        $containerBuilderFactory = ContainerBuilderFactory::getInstance();
+        if ($containerBuilderFactory->has('persistent_cache')) {
+            return $containerBuilderFactory->get('persistent_cache');
+        }
+        return null;
     }
 }

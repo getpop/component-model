@@ -6,8 +6,12 @@ use PoP\Root\Container\ContainerBuilderFactory;
 
 class PersistentCacheItemPoolFacade
 {
-    public static function getInstance(): CacheItemPoolInterface
+    public static function getInstance(): ?CacheItemPoolInterface
     {
-        return ContainerBuilderFactory::getInstance()->get('persistent_cache_item_pool');
+        $containerBuilderFactory = ContainerBuilderFactory::getInstance();
+        if ($containerBuilderFactory->has('persistent_cache_item_pool')) {
+            return $containerBuilderFactory->get('persistent_cache_item_pool');
+        }
+        return null;
     }
 }
