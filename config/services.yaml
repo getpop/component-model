@@ -14,6 +14,10 @@ services:
         class: \Symfony\Component\Cache\Adapter\ArrayAdapter
         public: true
 
+    persistent_cache_item_pool:
+        class: \Symfony\Component\Cache\Adapter\FilesystemAdapter
+        public: true
+
     memory_cache:
         class: \PoP\ComponentModel\Cache\Cache
         public: true
