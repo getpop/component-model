@@ -270,7 +270,7 @@ WHERE
 
 ### Configuration values included, overridable through props
 
-> Note: the configuration layer must be added through [another package](https://github.com/getpop/configurationengine)
+> Note: the configuration layer must be added through [another package](https://github.com/getpop/component-model-configuration)
 
 Instead of hardcoding classnames or other properties such as a title's HTML tag or an avatar max width inside of JavaScript files for rendering in the client, we can pass configuration values already through the API, so that then these can be directly updated on the server and without the need to redeploy JavaScript files:
 
