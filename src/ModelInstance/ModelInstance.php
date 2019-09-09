@@ -34,10 +34,6 @@ class ModelInstance implements ModelInstanceInterface
     {
         $components = array();
 
-        // Add the version, because otherwise there may be PHP errors
-        // happening from stale configuration that is not deleted, and still served, after a new version is deployed
-        $components[] = $this->translationAPI->__('version:', 'engine').$this->applicationInfo->getVersion();
-
         // Mix the information specific to the module, with that present in $vars
         return $this->hooksAPI->applyFilters(
             self::HOOK_COMPONENTS_RESULT,
@@ -59,6 +55,9 @@ class ModelInstance implements ModelInstanceInterface
         $route = $vars['route'];
         $components[] = $this->translationAPI->__('nature:', 'engine').$nature;
         $components[] = $this->translationAPI->__('route:', 'engine').$route;
+
+        // Add the version, because otherwise there may be PHP errors happening from stale configuration that is not deleted, and still served, after a new version is deployed
+        $components[] = $this->translationAPI->__('version:', 'engine').$vars['version'];
 
         // Other properties
         if ($format = $vars['format']) {
