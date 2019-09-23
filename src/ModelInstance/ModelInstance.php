@@ -67,7 +67,7 @@ class ModelInstance implements ModelInstanceInterface
             $components[] = $this->translationAPI->__('target:', 'engine').$target;
         }
         if ($actions = $vars['actions']) {
-            $components[] = $this->translationAPI->__('actions:', 'engine').implode(', ', $actions);
+            $components[] = $this->translationAPI->__('actions:', 'engine').implode(';', $actions);
         }
         if ($config = $vars['config']) {
             $components[] = $this->translationAPI->__('config:', 'engine').$config;
