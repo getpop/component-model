@@ -1,5 +1,5 @@
 <?php
-namespace PoP\ComponentModel\Facades;
+namespace PoP\ComponentModel\Facades\ModelInstance;
 
 use PoP\ComponentModel\ModelInstance\ModelInstanceInterface;
 use PoP\Root\Container\ContainerBuilderFactory;

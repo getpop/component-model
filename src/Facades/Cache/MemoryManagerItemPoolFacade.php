@@ -1,5 +1,5 @@
 <?php
-namespace PoP\ComponentModel\Facades;
+namespace PoP\ComponentModel\Facades\Cache;
 
 use Psr\Cache\CacheItemPoolInterface;
 use PoP\Root\Container\ContainerBuilderFactory;
