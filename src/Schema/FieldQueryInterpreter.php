@@ -6,7 +6,6 @@ use PoP\ComponentModel\GeneralUtils;
 class FieldQueryInterpreter implements FieldQueryInterpreterInterface
 {
     protected $fieldNames = [];
-    protected $variablesFromRequest;
     protected $fieldArgs = [];
     protected $extractedFieldArguments = [];
     protected $fieldArgumentNameTypes = [];
@@ -16,6 +15,8 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
     protected $extractedFieldDirectives = [];
     protected $fieldOutputKeys = [];
     protected $expandedRelationalProperties = [];
+
+    protected $variablesFromRequest;
     protected $fragmentsFromRequest;
 
     private $translationAPI;
