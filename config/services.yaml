@@ -51,3 +51,15 @@ services:
     instance_manager:
         class: \PoP\ComponentModel\Managers\InstanceManager
         public: true
+
+    error_message_store:
+        class: \PoP\ComponentModel\Schema\ErrorMessageStore
+        public: true
+
+    field_query_interpreter:
+        class: \PoP\ComponentModel\Schema\FieldQueryInterpreter
+        public: true
+
+    type_casting_executer:
+        class: \PoP\ComponentModel\Schema\TypeCastingExecuter
+        public: true
