@@ -2,10 +2,18 @@
 namespace PoP\ComponentModel\Schema;
 
 use PoP\ComponentModel\Error;
-use PoP\Translation\Facades\TranslationAPIFacade;
+use PoP\Translation\Contracts\TranslationAPIInterface;
 
 class TypeCastingExecuter implements TypeCastingExecuterInterface
 {
+    private $translationAPI;
+
+    public function __construct(
+        TranslationAPIInterface $translationAPI
+    ) {
+        $this->translationAPI = $translationAPI;
+    }
+
     /**
      * Cast the value to the indicated type, or return null or Error (with a message) if it fails
      *
@@ -15,7 +23,6 @@ class TypeCastingExecuter implements TypeCastingExecuterInterface
      */
     public function cast(string $type, string $value)
     {
-        $translationAPI = TranslationAPIFacade::getInstance();
         switch ($type) {
             // case SchemaDefinition::TYPE_MIXED:
             // case SchemaDefinition::TYPE_ID:
@@ -33,7 +40,7 @@ class TypeCastingExecuter implements TypeCastingExecuterInterface
                 $dt = \DateTime::createFromFormat("Y-m-d", $value);
                 if ($dt === false || array_sum($dt::getLastErrors())) {
                     return new Error('date-cast', sprintf(
-                        $translationAPI->__('Date format must be \'%s\''),
+                        $this->translationAPI->__('Date format must be \'%s\''),
                         'Y-m-d'
                     ));
                 }
