@@ -22,5 +22,4 @@ interface FieldQueryInterpreterInterface
     public function getFieldOutputKey(string $field): string;
     public function getField(string $fieldName, array $fieldArgs = [], string $fieldAlias = null, array $fieldDirectives = []): string;
     public function getFieldDirectiveAsString(array $fieldDirectives): string;
-    public function convertAPIQueryFromStringToArray(string $dotNotation, ?array $fragments = null): array;
 }
