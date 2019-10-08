@@ -47,7 +47,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         list($pos) = QueryHelpers::listFieldArgsSymbolPositions($field);
         // Everything before "@" (for the alias)
         if ($pos === false) {
-            $pos  = QueryHelpers::findFieldAliasSymbolPosition($field);
+            $pos = QueryHelpers::findFieldAliasSymbolPosition($field);
         }
         // Everything before "<" (for the field directive)
         if ($pos === false) {
@@ -100,7 +100,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         list(
             $fieldArgsOpeningSymbolPos,
             $fieldArgsClosingSymbolPos
-        )  = QueryHelpers::listFieldArgsSymbolPositions($field);
+        ) = QueryHelpers::listFieldArgsSymbolPositions($field);
 
         // If there are no "(" and ")" then there are no field args
         if ($fieldArgsClosingSymbolPos === false && $fieldArgsOpeningSymbolPos === false) {
@@ -448,7 +448,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
             list(
                 $fieldArgsOpeningSymbolPos,
                 $fieldArgsClosingSymbolPos
-            )  = QueryHelpers::listFieldArgsSymbolPositions((string)$fieldArgValue);
+            ) = QueryHelpers::listFieldArgsSymbolPositions((string)$fieldArgValue);
 
             // If there are no "(" and ")" then it's simply a string
             if ($fieldArgsClosingSymbolPos === false && $fieldArgsOpeningSymbolPos === false) {
