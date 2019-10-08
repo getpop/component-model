@@ -181,7 +181,7 @@ class FieldQueryInterpreter
             foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
                 // Maybe cast the value to the appropriate type. Eg: from string to boolean
                 if ($fieldArgType = $fieldArgNameTypes[$fieldArgName]) {
-                    $fieldArgValue = TypeUtils::cast($fieldArgType, $fieldArgValue);
+                    $fieldArgValue = TypeCastingExecuter::cast($fieldArgType, $fieldArgValue);
                     // If the response is an error, extract the error message and set value to null
                     if (GeneralUtils::isError($fieldArgValue)) {
                         $error = $fieldArgValue;

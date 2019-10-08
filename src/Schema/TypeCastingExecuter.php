@@ -3,7 +3,7 @@ namespace PoP\ComponentModel\Schema;
 
 use PoP\Translation\Facades\TranslationAPIFacade;
 
-class TypeUtils
+class TypeCastingExecuter
 {
     /**
      * Cast the value to the indicated type, or return null or Error (with a message) if it fails
