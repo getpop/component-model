@@ -9,24 +9,24 @@ class ErrorMessageStore implements ErrorMessageStoreInterface
     public function maybeAddSchemaError(string $dbKey, string $field, string $error)
     {
         // Avoid adding several times the same error (which happens when calling `getDefaultDataloaderNameFromSubcomponentDataField` from different functions)
-        if (!in_array($error, self::$schemaErrors[$dbKey][$field] ?? [])) {
-            self::$schemaErrors[$dbKey][$field][] = $error;
+        if (!in_array($error, $this->schemaErrors[$dbKey][$field] ?? [])) {
+            $this->schemaErrors[$dbKey][$field][] = $error;
         }
     }
     public function getSchemaErrors(): array
     {
-        return self::$schemaErrors;
+        return $this->schemaErrors;
     }
     public function getSchemaErrorsForField(string $dbKey, string $field): ?array
     {
-        return self::$schemaErrors[$dbKey][$field];
+        return $this->schemaErrors[$dbKey][$field];
     }
     public function addQueryError(string $error)
     {
-        self::$queryErrors[] = $error;
+        $this->queryErrors[] = $error;
     }
     public function getQueryErrors(): array
     {
-        return array_unique(self::$queryErrors);
+        return array_unique($this->queryErrors);
     }
 }
