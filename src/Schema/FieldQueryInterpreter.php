@@ -1,35 +1,46 @@
 <?php
 namespace PoP\ComponentModel\Schema;
-use PoP\Translation\Facades\TranslationAPIFacade;
+use PoP\Translation\Contracts\TranslationAPIInterface;
 use PoP\ComponentModel\GeneralUtils;
-use PoP\ComponentModel\Facades\Schema\TypeCastingExecuterFacade;
 
-class FieldQueryInterpreter
+class FieldQueryInterpreter implements FieldQueryInterpreterInterface
 {
-    protected static $fieldNames = [];
-    protected static $variablesFromRequest;
-    protected static $fieldArgs = [];
-    protected static $extractedFieldArguments = [];
-    protected static $fieldArgumentNameTypes = [];
-    protected static $fieldAliases = [];
-    protected static $fieldDirectives = [];
-    protected static $directives = [];
-    protected static $extractedFieldDirectives = [];
-    protected static $fieldOutputKeys = [];
-    protected static $expandedRelationalProperties = [];
-    protected static $fragmentsFromRequest;
+    protected $fieldNames = [];
+    protected $variablesFromRequest;
+    protected $fieldArgs = [];
+    protected $extractedFieldArguments = [];
+    protected $fieldArgumentNameTypes = [];
+    protected $fieldAliases = [];
+    protected $fieldDirectives = [];
+    protected $directives = [];
+    protected $extractedFieldDirectives = [];
+    protected $fieldOutputKeys = [];
+    protected $expandedRelationalProperties = [];
+    protected $fragmentsFromRequest;
 
-    protected static $errorMessageStore;
+    private $translationAPI;
+    private $errorMessageStore;
+    private $typeCastingExecuter;
 
-    public static function getFieldName(string $field): string
-    {
-        if (!isset(self::$fieldNames[$field])) {
-            self::$fieldNames[$field] = self::doGetFieldName($field);
-        }
-        return self::$fieldNames[$field];
+    public function __construct(
+        TranslationAPIInterface $translationAPI,
+        ErrorMessageStoreInterface $errorMessageStore,
+        TypeCastingExecuterInterface $typeCastingExecuter
+    ) {
+        $this->translationAPI = $translationAPI;
+        $this->errorMessageStore = $errorMessageStore;
+        $this->typeCastingExecuter = $typeCastingExecuter;
     }
 
-    protected static function doGetFieldName(string $field): string
+    public function getFieldName(string $field): string
+    {
+        if (!isset($this->fieldNames[$field])) {
+            $this->fieldNames[$field] = $this->doGetFieldName($field);
+        }
+        return $this->fieldNames[$field];
+    }
+
+    protected function doGetFieldName(string $field): string
     {
         // Successively search for the position of some edge symbol
         // Everything before "(" (for the fieldArgs)
@@ -44,9 +55,8 @@ class FieldQueryInterpreter
         }
         // If the field name is missing, show an error
         if ($pos === 0) {
-            $translationAPI = TranslationAPIFacade::getInstance();
-            ErrorMessageStoreFacade::getInstance()->addQueryError(sprintf(
-                $translationAPI->__('Name in \'%s\' is missing', 'pop-component-model'),
+            $this->errorMessageStore->addQueryError(sprintf(
+                $this->translationAPI->__('Name in \'%s\' is missing', 'pop-component-model'),
                 $field
             ));
             return '';
@@ -59,15 +69,15 @@ class FieldQueryInterpreter
         return strtolower($field);
     }
 
-    protected static function getVariablesFromRequest(): array
+    protected function getVariablesFromRequest(): array
     {
-        if (is_null(self::$variablesFromRequest)) {
-            self::$variablesFromRequest = self::doGetVariablesFromRequest();
+        if (is_null($this->variablesFromRequest)) {
+            $this->variablesFromRequest = $this->doGetVariablesFromRequest();
         }
-        return self::$variablesFromRequest;
+        return $this->variablesFromRequest;
     }
 
-    protected static function doGetVariablesFromRequest(): array
+    protected function doGetVariablesFromRequest(): array
     {
         return array_merge(
             $_REQUEST,
@@ -75,17 +85,16 @@ class FieldQueryInterpreter
         );
     }
 
-    public static function getFieldArgs(string $field): ?string
+    public function getFieldArgs(string $field): ?string
     {
-        if (!isset(self::$fieldArgs[$field])) {
-            self::$fieldArgs[$field] = self::doGetFieldArgs($field);
+        if (!isset($this->fieldArgs[$field])) {
+            $this->fieldArgs[$field] = $this->doGetFieldArgs($field);
         }
-        return self::$fieldArgs[$field];
+        return $this->fieldArgs[$field];
     }
 
-    protected static function doGetFieldArgs(string $field): ?string
+    protected function doGetFieldArgs(string $field): ?string
     {
-        $translationAPI = TranslationAPIFacade::getInstance();
         // We check that the format is "$fieldName($prop1;$prop2;...;$propN)"
         // or also with [] at the end: "$fieldName($prop1;$prop2;...;$propN)[somename]"
         list(
@@ -100,7 +109,7 @@ class FieldQueryInterpreter
         // If there is only one of them, it's a query error, so discard the query bit
         if (($fieldArgsClosingSymbolPos === false && $fieldArgsOpeningSymbolPos !== false) || ($fieldArgsClosingSymbolPos !== false && $fieldArgsOpeningSymbolPos === false)) {
             ErrorMessageStoreFacade::getInstance()->addQueryError(sprintf(
-                $translationAPI->__('Arguments \'%s\' must start with symbol \'%s\' and end with symbol \'%s\'', 'pop-component-model'),
+                $this->translationAPI->__('Arguments \'%s\' must start with symbol \'%s\' and end with symbol \'%s\'', 'pop-component-model'),
                 $field,
                 QuerySyntax::SYMBOL_FIELDARGS_OPENING,
                 QuerySyntax::SYMBOL_FIELDARGS_CLOSING
@@ -112,19 +121,19 @@ class FieldQueryInterpreter
         return substr($field, $fieldArgsOpeningSymbolPos, $fieldArgsClosingSymbolPos+strlen(QuerySyntax::SYMBOL_FIELDARGS_CLOSING)-$fieldArgsOpeningSymbolPos);
     }
 
-    protected static function extractFieldArguments(string $field): array
+    protected function extractFieldArguments(string $field): array
     {
-        if (!isset(self::$extractedFieldArguments[$field])) {
-            self::$extractedFieldArguments[$field] = self::doExtractFieldArguments($field);
+        if (!isset($this->extractedFieldArguments[$field])) {
+            $this->extractedFieldArguments[$field] = $this->doExtractFieldArguments($field);
         }
-        return self::$extractedFieldArguments[$field];
+        return $this->extractedFieldArguments[$field];
     }
 
-    protected static function doExtractFieldArguments(string $field): array
+    protected function doExtractFieldArguments(string $field): array
     {
         $fieldArgs = [];
         // Extract the args from the string into an array
-        $fieldArgsStr = self::getFieldArgs($field);
+        $fieldArgsStr = $this->getFieldArgs($field);
         // Remove the opening and closing brackets
         $fieldArgsStr = substr($fieldArgsStr, strlen(QuerySyntax::SYMBOL_FIELDARGS_OPENING), strlen($fieldArgsStr)-strlen(QuerySyntax::SYMBOL_FIELDARGS_OPENING)-strlen(QuerySyntax::SYMBOL_FIELDARGS_CLOSING));
         // Remove the white spaces before and after
@@ -141,7 +150,7 @@ class FieldQueryInterpreter
         return $fieldArgs;
     }
 
-    protected static function filterFieldArgs($fieldArgs): array
+    protected function filterFieldArgs($fieldArgs): array
     {
         // If there was an error, the value will be NULL. In this case, remove it
         return array_filter($fieldArgs, function($elem) {
@@ -150,14 +159,14 @@ class FieldQueryInterpreter
         });
     }
 
-    public static function extractFieldArgumentsForResultItem($fieldResolver, $resultItem, string $field, ?array $variables = null): array
+    public function extractFieldArgumentsForResultItem($fieldResolver, $resultItem, string $field, ?array $variables = null): array
     {
         $dbErrors = [];
-        $fieldArgs = self::extractFieldArguments($field);
-        $fieldOutputKey = self::getFieldOutputKey($field);
+        $fieldArgs = $this->extractFieldArguments($field);
+        $fieldOutputKey = $this->getFieldOutputKey($field);
         $id = $fieldResolver->getId($resultItem);
         foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
-            $fieldArgValue = self::maybeResolveFieldArgumentValueForResultItem($fieldResolver, $resultItem, $fieldArgValue, $variables);
+            $fieldArgValue = $this->maybeResolveFieldArgumentValueForResultItem($fieldResolver, $resultItem, $fieldArgValue, $variables);
             // Validate it
             if (\PoP\ComponentModel\GeneralUtils::isError($fieldArgValue)) {
                 $error = $fieldArgValue;
@@ -167,25 +176,25 @@ class FieldQueryInterpreter
                 $fieldArgs[$fieldArgName] = $fieldArgValue;
             }
         }
-        $fieldArgs = self::filterFieldArgs($fieldArgs);
+        $fieldArgs = $this->filterFieldArgs($fieldArgs);
         // Cast the values to their appropriate type. No need to do anything about the errors
         $failedCastingFieldArgErrorMessages = [];
-        $fieldArgs = self::castFieldArguments($fieldResolver, $field, $fieldArgs, $failedCastingFieldArgErrorMessages);
+        $fieldArgs = $this->castFieldArguments($fieldResolver, $field, $fieldArgs, $failedCastingFieldArgErrorMessages);
         return [
             $fieldArgs,
             $dbErrors
         ];
     }
 
-    protected static function castFieldArguments($fieldResolver, string $field, array $fieldArgs, array &$failedCastingFieldArgErrorMessages): array
+    protected function castFieldArguments($fieldResolver, string $field, array $fieldArgs, array &$failedCastingFieldArgErrorMessages): array
     {
         // Get the field argument types, to know to what type it will cast the value
-        if ($fieldArgNameTypes = self::getFieldArgumentNameTypes($fieldResolver, $field)) {
+        if ($fieldArgNameTypes = $this->getFieldArgumentNameTypes($fieldResolver, $field)) {
             // Cast all argument values
             foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
                 // Maybe cast the value to the appropriate type. Eg: from string to boolean
                 if ($fieldArgType = $fieldArgNameTypes[$fieldArgName]) {
-                    $fieldArgValue = TypeCastingExecuterFacade::getInstance()->cast($fieldArgType, $fieldArgValue);
+                    $fieldArgValue = $this->typeCastingExecuter->cast($fieldArgType, $fieldArgValue);
                     // If the response is an error, extract the error message and set value to null
                     if (GeneralUtils::isError($fieldArgValue)) {
                         $error = $fieldArgValue;
@@ -200,20 +209,20 @@ class FieldQueryInterpreter
         return $fieldArgs;
     }
 
-    protected static function getFieldArgumentNameTypes($fieldResolver, string $field): array
+    protected function getFieldArgumentNameTypes($fieldResolver, string $field): array
     {
-        if (!isset(self::$fieldArgumentNameTypes[get_class($fieldResolver)][$field])) {
-            self::$fieldArgumentNameTypes[get_class($fieldResolver)][$field] = self::doGetFieldArgumentNameTypes($fieldResolver, $field);
+        if (!isset($this->fieldArgumentNameTypes[get_class($fieldResolver)][$field])) {
+            $this->fieldArgumentNameTypes[get_class($fieldResolver)][$field] = $this->doGetFieldArgumentNameTypes($fieldResolver, $field);
         }
-        return self::$fieldArgumentNameTypes[get_class($fieldResolver)][$field];
+        return $this->fieldArgumentNameTypes[get_class($fieldResolver)][$field];
     }
 
-    protected static function doGetFieldArgumentNameTypes($fieldResolver, string $field): array
+    protected function doGetFieldArgumentNameTypes($fieldResolver, string $field): array
     {
         // Get the field argument types, to know to what type it will cast the value
         $fieldArgNameTypes = [];
         // Important: we must query by $fieldName and not $field or it enters an infinite loop
-        $fieldName = self::getFieldName($field);
+        $fieldName = $this->getFieldName($field);
         if ($fieldDocumentationArgs = $fieldResolver->getFieldDocumentationArgs($fieldName)) {
             foreach ($fieldDocumentationArgs as $fieldDocumentationArg) {
                 $fieldArgNameTypes[$fieldDocumentationArg['name']] = $fieldDocumentationArg['type'];
@@ -222,21 +231,20 @@ class FieldQueryInterpreter
         return $fieldArgNameTypes;
     }
 
-    protected static function castAndValidateFieldArguments($fieldResolver, string $field, array $fieldArgs, array &$schemaWarnings): array
+    protected function castAndValidateFieldArguments($fieldResolver, string $field, array $fieldArgs, array &$schemaWarnings): array
     {
         $failedCastingFieldArgErrorMessages = [];
-        $castedFieldArgs = self::castFieldArguments($fieldResolver, $field, $fieldArgs, $failedCastingFieldArgErrorMessages);
+        $castedFieldArgs = $this->castFieldArguments($fieldResolver, $field, $fieldArgs, $failedCastingFieldArgErrorMessages);
         // If any casting can't be done, show an error
         if ($failedCastingFieldArgs = array_filter($castedFieldArgs, function($fieldArgValue) {
             return is_null($fieldArgValue);
         })) {
-            $translationAPI = TranslationAPIFacade::getInstance();
-            $fieldArgNameTypes = self::getFieldArgumentNameTypes($fieldResolver, $field);
+            $fieldArgNameTypes = $this->getFieldArgumentNameTypes($fieldResolver, $field);
             foreach ($failedCastingFieldArgs as $fieldArgName => $fieldArgValue) {
                 // If it is Error, also show the error message
                 if ($fieldArgErrorMessage = $failedCastingFieldArgErrorMessages[$fieldArgName]) {
                     $errorMessage = sprintf(
-                        $translationAPI->__('Casting value \'%s\' for argument \'%s\' to type \'%s\' failed: %s. It has been ignored', 'pop-component-model'),
+                        $this->translationAPI->__('Casting value \'%s\' for argument \'%s\' to type \'%s\' failed: %s. It has been ignored', 'pop-component-model'),
                         $fieldArgs[$fieldArgName],
                         $fieldArgName,
                         $fieldArgNameTypes[$fieldArgName],
@@ -244,7 +252,7 @@ class FieldQueryInterpreter
                     );
                 } else {
                     $errorMessage = sprintf(
-                        $translationAPI->__('Casting value \'%s\' for argument \'%s\' to type \'%s\' failed, so it has been ignored', 'pop-component-model'),
+                        $this->translationAPI->__('Casting value \'%s\' for argument \'%s\' to type \'%s\' failed, so it has been ignored', 'pop-component-model'),
                         $fieldArgs[$fieldArgName],
                         $fieldArgName,
                         $fieldArgNameTypes[$fieldArgName]
@@ -252,21 +260,21 @@ class FieldQueryInterpreter
                 }
                 $schemaWarnings[] = $errorMessage;
             }
-            return self::filterFieldArgs($castedFieldArgs);
+            return $this->filterFieldArgs($castedFieldArgs);
         }
         return $castedFieldArgs;
     }
 
-    public static function extractFieldArgumentsForSchema($fieldResolver, string $field, ?array $variables = null): array
+    public function extractFieldArgumentsForSchema($fieldResolver, string $field, ?array $variables = null): array
     {
         $schemaErrors = [];
         $schemaWarnings = [];
         $schemaDeprecations = [];
-        if ($fieldArgs = self::extractFieldArguments($field)) {
+        if ($fieldArgs = $this->extractFieldArguments($field)) {
             foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
-                $fieldArgValue = self::maybeConvertFieldArgumentValue($fieldArgValue, $variables);
+                $fieldArgValue = $this->maybeConvertFieldArgumentValue($fieldArgValue, $variables);
                 // Validate it
-                if ($maybeErrors = self::resolveFieldArgumentValueErrorDescriptionsForSchema($fieldResolver, $fieldArgValue)) {
+                if ($maybeErrors = $this->resolveFieldArgumentValueErrorDescriptionsForSchema($fieldResolver, $fieldArgValue)) {
                     $schemaErrors = array_merge(
                         $schemaErrors,
                         $maybeErrors
@@ -275,13 +283,13 @@ class FieldQueryInterpreter
                     continue;
                 }
                 // Find warnings and deprecations
-                if ($maybeWarnings = self::resolveFieldArgumentValueWarningsForSchema($fieldResolver, $fieldArgValue)) {
+                if ($maybeWarnings = $this->resolveFieldArgumentValueWarningsForSchema($fieldResolver, $fieldArgValue)) {
                     $schemaWarnings = array_merge(
                         $schemaWarnings,
                         $maybeWarnings
                     );
                 }
-                if ($maybeDeprecations = self::resolveFieldArgumentValueDeprecationsForSchema($fieldResolver, $fieldArgValue)) {
+                if ($maybeDeprecations = $this->resolveFieldArgumentValueDeprecationsForSchema($fieldResolver, $fieldArgValue)) {
                     $schemaDeprecations = array_merge(
                         $schemaDeprecations,
                         $maybeDeprecations
@@ -289,9 +297,9 @@ class FieldQueryInterpreter
                 }
                 $fieldArgs[$fieldArgName] = $fieldArgValue;
             }
-            $fieldArgs = self::filterFieldArgs($fieldArgs);
+            $fieldArgs = $this->filterFieldArgs($fieldArgs);
             // Cast the values to their appropriate type. If casting fails, the value returns as null
-            $fieldArgs = self::castAndValidateFieldArguments($fieldResolver, $field, $fieldArgs, $schemaWarnings);
+            $fieldArgs = $this->castAndValidateFieldArguments($fieldResolver, $field, $fieldArgs, $schemaWarnings);
         }
         return [
             $fieldArgs,
@@ -312,7 +320,7 @@ class FieldQueryInterpreter
      * @param [type] $variables
      * @return mixed
      */
-    protected static function maybeConvertFieldArgumentValue($fieldArgValue, array $variables = null)
+    protected function maybeConvertFieldArgumentValue($fieldArgValue, array $variables = null)
     {
         // Remove the white spaces before and after
         if ($fieldArgValue = trim($fieldArgValue)) {
@@ -326,31 +334,30 @@ class FieldQueryInterpreter
 
             // Chain functions. At any moment, if any of them throws an error, the result will be null so don't process anymore
             // First replace all variables
-            if ($fieldArgValue = self::maybeConvertFieldArgumentVariableValue($fieldArgValue, $variables)) {
+            if ($fieldArgValue = $this->maybeConvertFieldArgumentVariableValue($fieldArgValue, $variables)) {
                 // Then convert to arrays
-                return self::maybeConvertFieldArgumentArrayValue($fieldArgValue, $variables);
+                return $this->maybeConvertFieldArgumentArrayValue($fieldArgValue, $variables);
             }
         }
 
         return $fieldArgValue;
     }
 
-    protected static function maybeConvertFieldArgumentVariableValue($fieldArgValue, array $variables = null)
+    protected function maybeConvertFieldArgumentVariableValue($fieldArgValue, array $variables = null)
     {
         // If it starts with "$", it is a variable. Then, retrieve the actual value from the request
         if (substr($fieldArgValue, 0, strlen(QuerySyntax::SYMBOL_VARIABLE_PREFIX)) == QuerySyntax::SYMBOL_VARIABLE_PREFIX) {
             // Variables: allow to pass a field argument "key:$input", and then resolve it as ?variable[input]=value
             // Expected input is similar to GraphQL: https://graphql.org/learn/queries/#variables
             // If not passed the variables parameter, use $_REQUEST["variables"] by default
-            $variables = $variables ?? self::getVariablesFromRequest();
+            $variables = $variables ?? $this->getVariablesFromRequest();
             $variableName = substr($fieldArgValue, strlen(QuerySyntax::SYMBOL_VARIABLE_PREFIX));
             if (isset($variables[$variableName])) {
                 return $variables[$variableName];
             }
             // If the variable is not set, then show the error under entry "variableErrors"
-            $translationAPI = TranslationAPIFacade::getInstance();
             ErrorMessageStoreFacade::getInstance()->addQueryError(sprintf(
-                $translationAPI->__('Variable \'%s\' is undefined', 'pop-component-model'),
+                $this->translationAPI->__('Variable \'%s\' is undefined', 'pop-component-model'),
                 $variableName
             ));
             return null;
@@ -359,7 +366,7 @@ class FieldQueryInterpreter
         return $fieldArgValue;
     }
 
-    protected static function maybeConvertFieldArgumentArrayValue($fieldArgValue, array $variables = null)
+    protected function maybeConvertFieldArgumentArrayValue($fieldArgValue, array $variables = null)
     {
         // If surrounded by [...], it is an array
         if (substr($fieldArgValue, 0, strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING)) == QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING && substr($fieldArgValue, -1*strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING)) == QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING) {
@@ -367,8 +374,8 @@ class FieldQueryInterpreter
             // Elements are split by ";"
             $arrayValueElems = GeneralUtils::splitElements($arrayValue, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_SEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING]);
             // Resolve each element the same way
-            return self::filterFieldArgs(array_map(function($arrayValueElem) use($variables) {
-                return self::maybeConvertFieldArgumentValue($arrayValueElem, $variables);
+            return $this->filterFieldArgs(array_map(function($arrayValueElem) use($variables) {
+                return $this->maybeConvertFieldArgumentValue($arrayValueElem, $variables);
             }, $arrayValueElems));
         }
 
@@ -388,15 +395,15 @@ class FieldQueryInterpreter
      * @param [type] $variables
      * @return mixed
      */
-    protected static function maybeResolveFieldArgumentValueForResultItem($fieldResolver, $resultItem, $fieldArgValue, array $variables = null)
+    protected function maybeResolveFieldArgumentValueForResultItem($fieldResolver, $resultItem, $fieldArgValue, array $variables = null)
     {
-        // Do a static conversion first.
-        $convertedValue = self::maybeConvertFieldArgumentValue($fieldArgValue, $variables);
+        // Do a conversion first.
+        $convertedValue = $this->maybeConvertFieldArgumentValue($fieldArgValue, $variables);
 
         // If it is an array, apply this function on all elements
         if (is_array($convertedValue)) {
             return array_map(function($convertedValueElem) use($fieldResolver, $resultItem, $variables) {
-                return self::maybeResolveFieldArgumentValueForResultItem($fieldResolver, $resultItem, $convertedValueElem, $variables);
+                return $this->maybeResolveFieldArgumentValueForResultItem($fieldResolver, $resultItem, $convertedValueElem, $variables);
             }, $convertedValue);
         }
 
@@ -424,14 +431,12 @@ class FieldQueryInterpreter
         return $convertedValue;
     }
 
-    protected static function resolveFieldArgumentValueErrorDescriptionsForSchema($fieldResolver, $fieldArgValue, array $variables = null): ?array
+    protected function resolveFieldArgumentValueErrorDescriptionsForSchema($fieldResolver, $fieldArgValue, array $variables = null): ?array
     {
-        $translationAPI = TranslationAPIFacade::getInstance();
-
         // If it is an array, apply this function on all elements
         if (is_array($fieldArgValue)) {
             return GeneralUtils::arrayFlatten(array_filter(array_map(function($fieldArgValueElem) use($fieldResolver, $variables) {
-                return self::resolveFieldArgumentValueErrorDescriptionsForSchema($fieldResolver, $fieldArgValueElem, $variables);
+                return $this->resolveFieldArgumentValueErrorDescriptionsForSchema($fieldResolver, $fieldArgValueElem, $variables);
             }, $fieldArgValue)));
         }
 
@@ -454,7 +459,7 @@ class FieldQueryInterpreter
             if (($fieldArgsClosingSymbolPos === false && $fieldArgsOpeningSymbolPos !== false) || ($fieldArgsClosingSymbolPos !== false && $fieldArgsOpeningSymbolPos === false)) {
                 return [
                     sprintf(
-                        $translationAPI->__('Arguments in field \'%s\' must start with symbol \'%s\' and end with symbol \'%s\', so they have been ignored', 'pop-component-model'),
+                        $this->translationAPI->__('Arguments in field \'%s\' must start with symbol \'%s\' and end with symbol \'%s\', so they have been ignored', 'pop-component-model'),
                         $fieldArgValue,
                         QuerySyntax::SYMBOL_FIELDARGS_OPENING,
                         QuerySyntax::SYMBOL_FIELDARGS_CLOSING
@@ -466,7 +471,7 @@ class FieldQueryInterpreter
             if ($fieldArgsOpeningSymbolPos === 0) {
                 return [
                     sprintf(
-                        $translationAPI->__('Field name is missing in \'%s\', so it has been ignored', 'pop-component-model'),
+                        $this->translationAPI->__('Field name is missing in \'%s\', so it has been ignored', 'pop-component-model'),
                         $fieldArgValue
                     ),
                 ];
@@ -474,7 +479,7 @@ class FieldQueryInterpreter
             if ($fieldArgsClosingSymbolPos !== strlen($fieldArgValue)-1) {
                 return [
                     sprintf(
-                        $translationAPI->__('Field \'%s\' must end with argument symbol \'%s\', so it has been ignored', 'pop-component-model'),
+                        $this->translationAPI->__('Field \'%s\' must end with argument symbol \'%s\', so it has been ignored', 'pop-component-model'),
                         $fieldArgValue,
                         QuerySyntax::SYMBOL_FIELDARGS_CLOSING
                     ),
@@ -488,41 +493,41 @@ class FieldQueryInterpreter
         return null;
     }
 
-    protected static function resolveFieldArgumentValueWarningsForSchema($fieldResolver, $fieldArgValue, array $variables = null): ?array
+    protected function resolveFieldArgumentValueWarningsForSchema($fieldResolver, $fieldArgValue, array $variables = null): ?array
     {
         // If it is an array, apply this function on all elements
         if (is_array($fieldArgValue)) {
             return GeneralUtils::arrayFlatten(array_filter(array_map(function($fieldArgValueElem) use($fieldResolver, $variables) {
-                return self::resolveFieldArgumentValueWarningsForSchema($fieldResolver, $fieldArgValueElem, $variables);
+                return $this->resolveFieldArgumentValueWarningsForSchema($fieldResolver, $fieldArgValueElem, $variables);
             }, $fieldArgValue)));
         }
 
         // If the result fieldArgValue is a field, then validate it and resolve it
-        if (self::isFieldArgumentValueAField($fieldResolver, $fieldArgValue)) {
+        if ($this->isFieldArgumentValueAField($fieldResolver, $fieldArgValue)) {
             return $fieldResolver->getFieldDocumentationWarningDescriptions($fieldArgValue);
         }
 
         return null;
     }
 
-    protected static function resolveFieldArgumentValueDeprecationsForSchema($fieldResolver, $fieldArgValue, array $variables = null): ?array
+    protected function resolveFieldArgumentValueDeprecationsForSchema($fieldResolver, $fieldArgValue, array $variables = null): ?array
     {
         // If it is an array, apply this function on all elements
         if (is_array($fieldArgValue)) {
             return GeneralUtils::arrayFlatten(array_filter(array_map(function($fieldArgValueElem) use($fieldResolver, $variables) {
-                return self::resolveFieldArgumentValueDeprecationsForSchema($fieldResolver, $fieldArgValueElem, $variables);
+                return $this->resolveFieldArgumentValueDeprecationsForSchema($fieldResolver, $fieldArgValueElem, $variables);
             }, $fieldArgValue)));
         }
 
         // If the result fieldArgValue is a field, then validate it and resolve it
-        if (self::isFieldArgumentValueAField($fieldResolver, $fieldArgValue)) {
+        if ($this->isFieldArgumentValueAField($fieldResolver, $fieldArgValue)) {
             return $fieldResolver->getFieldDocumentationDeprecationDescriptions($fieldArgValue);
         }
 
         return null;
     }
 
-    protected static function isFieldArgumentValueAField($fieldResolver, $fieldArgValue): bool
+    protected function isFieldArgumentValueAField($fieldResolver, $fieldArgValue): bool
     {
         // If the result fieldArgValue is a string (i.e. not numeric), and it has brackets (...),
         // then it is a field
@@ -535,30 +540,29 @@ class FieldQueryInterpreter
             strpos($fieldArgValue, QuerySyntax::SYMBOL_FIELDARGS_OPENING);
     }
 
-    public static function getFieldAlias(string $field): ?string
+    public function getFieldAlias(string $field): ?string
     {
-        if (!isset(self::$fieldAliases[$field])) {
-            self::$fieldAliases[$field] = self::doGetFieldAlias($field);
+        if (!isset($this->fieldAliases[$field])) {
+            $this->fieldAliases[$field] = $this->doGetFieldAlias($field);
         }
-        return self::$fieldAliases[$field];
+        return $this->fieldAliases[$field];
     }
 
-    protected static function doGetFieldAlias(string $field): ?string
+    protected function doGetFieldAlias(string $field): ?string
     {
         $aliasPrefixSymbolPos = QueryHelpers::findFieldAliasSymbolPosition($field);
         if ($aliasPrefixSymbolPos !== false) {
-            $translationAPI = TranslationAPIFacade::getInstance();
             if ($aliasPrefixSymbolPos === 0) {
                 // Only there is the alias, nothing to alias to
                 ErrorMessageStoreFacade::getInstance()->addQueryError(sprintf(
-                    $translationAPI->__('The field to be aliased in \'%s\' is missing', 'pop-component-model'),
+                    $this->translationAPI->__('The field to be aliased in \'%s\' is missing', 'pop-component-model'),
                     $field
                 ));
                 return null;
             } elseif ($aliasPrefixSymbolPos === strlen($field)-1) {
                 // Only the "@" was added, but the alias is missing
                 ErrorMessageStoreFacade::getInstance()->addQueryError(sprintf(
-                    $translationAPI->__('Alias in \'%s\' is missing', 'pop-component-model'),
+                    $this->translationAPI->__('Alias in \'%s\' is missing', 'pop-component-model'),
                     $field
                 ));
                 return null;
@@ -579,18 +583,16 @@ class FieldQueryInterpreter
         return null;
     }
 
-    public static function getFieldDirectives(string $field): ?string
+    public function getFieldDirectives(string $field): ?string
     {
-        if (!isset(self::$fieldDirectives[$field])) {
-            self::$fieldDirectives[$field] = self::doGetFieldDirectives($field);
+        if (!isset($this->fieldDirectives[$field])) {
+            $this->fieldDirectives[$field] = $this->doGetFieldDirectives($field);
         }
-        return self::$fieldDirectives[$field];
+        return $this->fieldDirectives[$field];
     }
 
-    protected static function doGetFieldDirectives(string $field): ?string
+    protected function doGetFieldDirectives(string $field): ?string
     {
-        $translationAPI = TranslationAPIFacade::getInstance();
-
         list(
             $fieldDirectivesOpeningSymbolPos,
             $fieldDirectivesClosingSymbolPos
@@ -603,7 +605,7 @@ class FieldQueryInterpreter
         // If there is only one of them, it's a query error, so discard the query bit
         if (($fieldDirectivesClosingSymbolPos === false && $fieldDirectivesOpeningSymbolPos !== false) || ($fieldDirectivesClosingSymbolPos !== false && $fieldDirectivesOpeningSymbolPos === false)) {
             ErrorMessageStoreFacade::getInstance()->addQueryError(sprintf(
-                $translationAPI->__('Directive \'%s\' must start with symbol \'%s\' and end with symbol \'%s\'', 'pop-component-model'),
+                $this->translationAPI->__('Directive \'%s\' must start with symbol \'%s\' and end with symbol \'%s\'', 'pop-component-model'),
                 $field,
                 QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING,
                 QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING
@@ -617,99 +619,99 @@ class FieldQueryInterpreter
         return substr($field, $fieldDirectiveOpeningSymbolStrPos, $fieldDirectiveClosingStrPos);
     }
 
-    public static function getDirectives(string $field): array
+    public function getDirectives(string $field): array
     {
-        if (!isset(self::$directives[$field])) {
-            self::$directives[$field] = self::doGetDirectives($field);
+        if (!isset($this->directives[$field])) {
+            $this->directives[$field] = $this->doGetDirectives($field);
         }
-        return self::$directives[$field];
+        return $this->directives[$field];
     }
 
-    protected static function doGetDirectives(string $field): array
+    protected function doGetDirectives(string $field): array
     {
-        $fieldDirectives = self::getFieldDirectives($field);
+        $fieldDirectives = $this->getFieldDirectives($field);
         if (is_null($fieldDirectives)) {
             return [];
         }
-        return self::extractFieldDirectives($fieldDirectives);
+        return $this->extractFieldDirectives($fieldDirectives);
     }
 
-    public static function extractFieldDirectives(string $fieldDirectives): array
+    public function extractFieldDirectives(string $fieldDirectives): array
     {
-        if (!isset(self::$extractedFieldDirectives[$fieldDirectives])) {
-            self::$extractedFieldDirectives[$fieldDirectives] = self::doExtractFieldDirectives($fieldDirectives);
+        if (!isset($this->extractedFieldDirectives[$fieldDirectives])) {
+            $this->extractedFieldDirectives[$fieldDirectives] = $this->doExtractFieldDirectives($fieldDirectives);
         }
-        return self::$extractedFieldDirectives[$fieldDirectives];
+        return $this->extractedFieldDirectives[$fieldDirectives];
     }
 
-    protected static function doExtractFieldDirectives(string $fieldDirectives): array
+    protected function doExtractFieldDirectives(string $fieldDirectives): array
     {
         if (!$fieldDirectives) {
             return [];
         }
         return array_map(
-            [self::class, 'listFieldDirective'],
+            [$this->class, 'listFieldDirective'],
             GeneralUtils::splitElements($fieldDirectives, QuerySyntax::SYMBOL_QUERYFIELDS_SEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING])
         );
     }
 
-    public static function composeFieldDirectives(array $fieldDirectives): string
+    public function composeFieldDirectives(array $fieldDirectives): string
     {
         return implode(QuerySyntax::SYMBOL_QUERYFIELDS_SEPARATOR, $fieldDirectives);
     }
 
-    public static function convertDirectiveToFieldDirective(array $fieldDirective): string
+    public function convertDirectiveToFieldDirective(array $fieldDirective): string
     {
-        $directiveArgs = self::getDirectiveArgs($fieldDirective) ?? '';
-        return self::getDirectiveName($fieldDirective).$directiveArgs;
+        $directiveArgs = $this->getDirectiveArgs($fieldDirective) ?? '';
+        return $this->getDirectiveName($fieldDirective).$directiveArgs;
     }
 
-    public static function listFieldDirective(string $fieldDirective): array
+    public function listFieldDirective(string $fieldDirective): array
     {
         // Each item is an array of 2 elements: 0 => name, 1 => args
         return [
-            self::getFieldName($fieldDirective),
-            self::getFieldArgs($fieldDirective),
+            $this->getFieldName($fieldDirective),
+            $this->getFieldArgs($fieldDirective),
         ];
     }
 
-    public static function getFieldDirectiveName(string $fieldDirective): string
+    public function getFieldDirectiveName(string $fieldDirective): string
     {
-        return self::getFieldName($fieldDirective);
+        return $this->getFieldName($fieldDirective);
     }
 
-    public static function getFieldDirectiveArgs(string $fieldDirective): ?string
+    public function getFieldDirectiveArgs(string $fieldDirective): ?string
     {
-        return self::getFieldArgs($fieldDirective);
+        return $this->getFieldArgs($fieldDirective);
     }
 
-    public static function getFieldDirective(string $directiveName, array $directiveArgs = []): string
+    public function getFieldDirective(string $directiveName, array $directiveArgs = []): string
     {
-        return self::getField($directiveName, $directiveArgs);
+        return $this->getField($directiveName, $directiveArgs);
     }
 
-    public static function getDirectiveName(array $directive): string
+    public function getDirectiveName(array $directive): string
     {
         return $directive[0];
     }
 
-    public static function getDirectiveArgs(array $directive): ?string
+    public function getDirectiveArgs(array $directive): ?string
     {
         return $directive[1];
     }
 
-    public static function getFieldOutputKey(string $field): string
+    public function getFieldOutputKey(string $field): string
     {
-        if (!isset(self::$fieldOutputKeys[$field])) {
-            self::$fieldOutputKeys[$field] = self::doGetFieldOutputKey($field);
+        if (!isset($this->fieldOutputKeys[$field])) {
+            $this->fieldOutputKeys[$field] = $this->doGetFieldOutputKey($field);
         }
-        return self::$fieldOutputKeys[$field];
+        return $this->fieldOutputKeys[$field];
     }
 
-    protected static function doGetFieldOutputKey(string $field): string
+    protected function doGetFieldOutputKey(string $field): string
     {
         // If there is an alias, use this to represent the field
-        if ($fieldAlias = self::getFieldAlias($field)) {
+        if ($fieldAlias = $this->getFieldAlias($field)) {
             return $fieldAlias;
         }
         // Otherwise, use fieldName+fieldArgs (hence, $field minus the directive)
@@ -717,7 +719,7 @@ class FieldQueryInterpreter
         return $fieldDirectiveOpeningSymbolElems[0];
     }
 
-    public static function getField(string $fieldName, array $fieldArgs = [], string $fieldAlias = null, array $fieldDirectives = []): string
+    public function getField(string $fieldName, array $fieldArgs = [], string $fieldAlias = null, array $fieldDirectives = []): string
     {
         $elems = [];
         foreach ($fieldArgs as $key => $value) {
@@ -728,29 +730,29 @@ class FieldQueryInterpreter
             ($fieldAlias ? QuerySyntax::SYMBOL_FIELDALIAS_PREFIX.$fieldAlias : '').
             ($fieldDirectives ? array_map(
                 function($fieldDirective) {
-                    return self::getFieldDirectiveAsString($fieldDirective);
+                    return $this->getFieldDirectiveAsString($fieldDirective);
                 },
                 $fieldDirectives
             ) : '');
     }
 
-    public static function getFieldDirectiveAsString(array $fieldDirectives): string
+    public function getFieldDirectiveAsString(array $fieldDirectives): string
     {
         // The directive has the same structure as the field, so reuse the function
         return QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING.implode(QuerySyntax::SYMBOL_QUERYFIELDS_SEPARATOR, array_map(function($fieldDirective) {
-            return self::getField($fieldDirective[0], $fieldDirective[1]);
+            return $this->getField($fieldDirective[0], $fieldDirective[1]);
         }, $fieldDirectives)).QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING;
     }
 
-    protected static function expandRelationalProperties(string $dotNotation): string
+    protected function expandRelationalProperties(string $dotNotation): string
     {
-        if (!isset(self::$expandedRelationalProperties[$dotNotation])) {
-            self::$expandedRelationalProperties[$dotNotation] = self::doExpandRelationalProperties($dotNotation);
+        if (!isset($this->expandedRelationalProperties[$dotNotation])) {
+            $this->expandedRelationalProperties[$dotNotation] = $this->doExpandRelationalProperties($dotNotation);
         }
-        return self::$expandedRelationalProperties[$dotNotation];
+        return $this->expandedRelationalProperties[$dotNotation];
     }
 
-    protected static function doExpandRelationalProperties(string $dotNotation): string
+    protected function doExpandRelationalProperties(string $dotNotation): string
     {
         // Support a query combining relational and properties:
         // ?field=posts.id|title|author.id|name|posts.id|title|author.name
@@ -835,19 +837,17 @@ class FieldQueryInterpreter
         return implode(QuerySyntax::SYMBOL_QUERYFIELDS_SEPARATOR, $expandedDotNotations);
     }
 
-    protected static function getFragment($fragmentName, array $fragments): ?string
+    protected function getFragment($fragmentName, array $fragments): ?string
     {
         // A fragment can itself contain fragments!
         if ($fragment = $fragments[$fragmentName]) {
-            return self::replaceFragments($fragment, $fragments);
+            return $this->replaceFragments($fragment, $fragments);
         }
         return null;
     }
 
-    protected static function replaceFragments(string $commafields, array $fragments): ?string
+    protected function replaceFragments(string $commafields, array $fragments): ?string
     {
-        $translationAPI = TranslationAPIFacade::getInstance();
-
         // The fields are split by "."
         // Watch out: we need to ignore all instances of "(" and ")" which may happen inside the fieldArg values!
         // Eg: /api/?fields=posts(searchfor:this => ( and this => ) are part of the search too).id|title
@@ -867,11 +867,11 @@ class FieldQueryInterpreter
             if (substr($pipefields[$propertyNumber], 0, strlen(QuerySyntax::SYMBOL_FRAGMENT_PREFIX)) == QuerySyntax::SYMBOL_FRAGMENT_PREFIX) {
                 // Replace with the actual fragment
                 $fragmentName = substr($pipefields[$propertyNumber], strlen(QuerySyntax::SYMBOL_FRAGMENT_PREFIX));
-                if ($fragment = self::getFragment($fragmentName, $fragments)) {
+                if ($fragment = $this->getFragment($fragmentName, $fragments)) {
                     $lastLevelProperties[] = $fragment;
                 } else {
                     ErrorMessageStoreFacade::getInstance()->addQueryError(sprintf(
-                        $translationAPI->__('Fragment \'%s\' is undefined, so it has been ignored', 'pop-component-model'),
+                        $this->translationAPI->__('Fragment \'%s\' is undefined, so it has been ignored', 'pop-component-model'),
                         $fragmentName
                     ));
                 }
@@ -888,12 +888,12 @@ class FieldQueryInterpreter
             if (substr($dotfields[$pathLevel], 0, strlen(QuerySyntax::SYMBOL_FRAGMENT_PREFIX)) == QuerySyntax::SYMBOL_FRAGMENT_PREFIX) {
                 // Replace with the actual fragment
                 $fragmentName = substr($dotfields[$pathLevel], strlen(QuerySyntax::SYMBOL_FRAGMENT_PREFIX));
-                if ($fragment = self::getFragment($fragmentName, $fragments)) {
+                if ($fragment = $this->getFragment($fragmentName, $fragments)) {
                     $fragmentDotfields = GeneralUtils::splitElements($fragment, QuerySyntax::SYMBOL_RELATIONALFIELDS_NEXTLEVEL, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING], true);
                     array_splice($dotfields, $pathLevel, 1, $fragmentDotfields);
                 } else {
                     ErrorMessageStoreFacade::getInstance()->addQueryError(sprintf(
-                        $translationAPI->__('Fragment \'%s\' is undefined, so query section \'%s\' has been ignored', 'pop-component-model'),
+                        $this->translationAPI->__('Fragment \'%s\' is undefined, so query section \'%s\' has been ignored', 'pop-component-model'),
                         $fragmentName,
                         $commafields
                     ));
@@ -907,16 +907,14 @@ class FieldQueryInterpreter
         return implode(QuerySyntax::SYMBOL_RELATIONALFIELDS_NEXTLEVEL, $dotfields);
     }
 
-    protected static function validateProperty($property, $querySection = null)
+    protected function validateProperty($property, $querySection = null)
     {
-        $translationAPI = TranslationAPIFacade::getInstance();
-
         $errorMessageEnd = $querySection ?
             sprintf(
-                $translationAPI->__('Query section \'%s\' has been ignored', 'pop-component-model'),
+                $this->translationAPI->__('Query section \'%s\' has been ignored', 'pop-component-model'),
                 $querySection
             ) :
-            $translationAPI->__('The property has been ignored', 'pop-component-model');
+            $this->translationAPI->__('The property has been ignored', 'pop-component-model');
 
         // --------------------------------------------------------
         // Validate correctness of query constituents: fieldArgs, bookmark, directive
@@ -930,7 +928,7 @@ class FieldQueryInterpreter
         // If it has "(" from the very beginning, then there's no fieldName, it's an error
         if ($fieldArgsOpeningSymbolPos === 0) {
             return sprintf(
-                $translationAPI->__('Property \'%s\' is missing the field name. %s', 'pop-component-model'),
+                $this->translationAPI->__('Property \'%s\' is missing the field name. %s', 'pop-component-model'),
                 $property,
                 $errorMessageEnd
             );
@@ -939,7 +937,7 @@ class FieldQueryInterpreter
         // If it has only "(" or ")" but not the other one, it's an error
         if (($fieldArgsClosingSymbolPos === false && $fieldArgsOpeningSymbolPos !== false) || ($fieldArgsClosingSymbolPos !== false && $fieldArgsOpeningSymbolPos === false)) {
             return sprintf(
-                $translationAPI->__('Arguments \'%s\' must start with symbol \'%s\' and end with symbol \'%s\'. %s', 'pop-component-model'),
+                $this->translationAPI->__('Arguments \'%s\' must start with symbol \'%s\' and end with symbol \'%s\'. %s', 'pop-component-model'),
                 $property,
                 QuerySyntax::SYMBOL_FIELDARGS_OPENING,
                 QuerySyntax::SYMBOL_FIELDARGS_CLOSING,
@@ -956,7 +954,7 @@ class FieldQueryInterpreter
         // If it has "[" from the very beginning, then there's no fieldName, it's an error
         if ($bookmarkOpeningSymbolPos === 0) {
             return sprintf(
-                $translationAPI->__('Property \'%s\' is missing the field name. %s', 'pop-component-model'),
+                $this->translationAPI->__('Property \'%s\' is missing the field name. %s', 'pop-component-model'),
                 $property,
                 $errorMessageEnd
             );
@@ -965,7 +963,7 @@ class FieldQueryInterpreter
         // If it has only "[" or "]" but not the other one, it's an error
         if (($bookmarkClosingSymbolPos === false && $bookmarkOpeningSymbolPos !== false) || ($bookmarkClosingSymbolPos !== false && $bookmarkOpeningSymbolPos === false)) {
             return sprintf(
-                $translationAPI->__('Bookmark \'%s\' must start with symbol \'%s\' and end with symbol \'%s\'. %s', 'pop-component-model'),
+                $this->translationAPI->__('Bookmark \'%s\' must start with symbol \'%s\' and end with symbol \'%s\'. %s', 'pop-component-model'),
                 $property,
                 QuerySyntax::SYMBOL_BOOKMARK_OPENING,
                 QuerySyntax::SYMBOL_BOOKMARK_CLOSING,
@@ -982,7 +980,7 @@ class FieldQueryInterpreter
         // If it has "<" from the very beginning, then there's no fieldName, it's an error
         if ($fieldDirectivesOpeningSymbolPos === 0) {
             return sprintf(
-                $translationAPI->__('Property \'%s\' is missing the field name. %s', 'pop-component-model'),
+                $this->translationAPI->__('Property \'%s\' is missing the field name. %s', 'pop-component-model'),
                 $property,
                 $errorMessageEnd
             );
@@ -991,7 +989,7 @@ class FieldQueryInterpreter
         // If it has only "[" or "]" but not the other one, it's an error
         if (($fieldDirectivesClosingSymbolPos === false && $fieldDirectivesOpeningSymbolPos !== false) || ($fieldDirectivesClosingSymbolPos !== false && $fieldDirectivesOpeningSymbolPos === false)) {
             return sprintf(
-                $translationAPI->__('Directive \'%s\' must start with symbol \'%s\' and end with symbol \'%s\'. %s', 'pop-component-model'),
+                $this->translationAPI->__('Directive \'%s\' must start with symbol \'%s\' and end with symbol \'%s\'. %s', 'pop-component-model'),
                 $property,
                 QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING,
                 QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING,
@@ -1007,7 +1005,7 @@ class FieldQueryInterpreter
         if ($fieldArgsOpeningSymbolPos !== false) {
             if ($fieldArgsOpeningSymbolPos == 0) {
                 return sprintf(
-                    $translationAPI->__('Name is missing in property \'%s\'. %s', 'pop-component-model'),
+                    $this->translationAPI->__('Name is missing in property \'%s\'. %s', 'pop-component-model'),
                     $property,
                     $errorMessageEnd
                 );
@@ -1029,7 +1027,7 @@ class FieldQueryInterpreter
                 ($fieldDirectivesOpeningSymbolPos !== false && $fieldDirectivesOpeningSymbolPos == $nextCharPos)
             )) {
                 return sprintf(
-                    $translationAPI->__('After \'%s\', property \'%s\' must either end or be followed by \'%s\', \'%s\' or \'%s\'. %s', 'pop-component-model'),
+                    $this->translationAPI->__('After \'%s\', property \'%s\' must either end or be followed by \'%s\', \'%s\' or \'%s\'. %s', 'pop-component-model'),
                     QuerySyntax::SYMBOL_FIELDARGS_CLOSING,
                     $property,
                     QuerySyntax::SYMBOL_BOOKMARK_OPENING,
@@ -1049,7 +1047,7 @@ class FieldQueryInterpreter
                 ($fieldDirectivesOpeningSymbolPos !== false && $fieldDirectivesOpeningSymbolPos == $bookmarkClosingSymbolPos+strlen(QuerySyntax::SYMBOL_FIELDARGS_CLOSING))
             )) {
                 return sprintf(
-                    $translationAPI->__('After \'%s\', property \'%s\' must either end or be followed by \'%s\'. %s', 'pop-component-model'),
+                    $this->translationAPI->__('After \'%s\', property \'%s\' must either end or be followed by \'%s\'. %s', 'pop-component-model'),
                     QuerySyntax::SYMBOL_BOOKMARK_CLOSING,
                     $property,
                     QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING,
@@ -1065,7 +1063,7 @@ class FieldQueryInterpreter
                 ($fieldDirectivesClosingSymbolPos == strlen($property)-strlen(QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING))
             )) {
                 return sprintf(
-                    $translationAPI->__('After \'%s\', property \'%s\' must end (there cannot be any extra character). %s', 'pop-component-model'),
+                    $this->translationAPI->__('After \'%s\', property \'%s\' must end (there cannot be any extra character). %s', 'pop-component-model'),
                     QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING,
                     $property,
                     $errorMessageEnd
@@ -1083,10 +1081,9 @@ class FieldQueryInterpreter
         ];
     }
 
-    public static function convertAPIQueryFromStringToArray(string $dotNotation, ?array $fragments = null): array
+    public function convertAPIQueryFromStringToArray(string $dotNotation, ?array $fragments = null): array
     {
-        $translationAPI = TranslationAPIFacade::getInstance();
-        $fragments = $fragments ?? self::getFragmentsFromRequest();
+        $fragments = $fragments ?? $this->getFragmentsFromRequest();
 
         // If it is a string, split the ElemCount with ',', the inner ElemCount with '.', and the inner fields with '|'
         $fields = [];
@@ -1095,12 +1092,12 @@ class FieldQueryInterpreter
         // ?field=posts.id|title|author.id|name|posts.id|title|author.name
         // Transform it into:
         // ?field=posts.id|title,posts.author.id|name,posts.author.posts.id|title,posts.author.posts.author.name
-        $dotNotation = self::expandRelationalProperties($dotNotation);
+        $dotNotation = $this->expandRelationalProperties($dotNotation);
 
         // Replace all fragment placeholders with the actual fragments
         $replacedDotNotation = [];
         foreach (GeneralUtils::splitElements($dotNotation, QuerySyntax::SYMBOL_QUERYFIELDS_SEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING]) as $commafields) {
-            if ($replacedCommaFields = self::replaceFragments($commafields, $fragments)) {
+            if ($replacedCommaFields = $this->replaceFragments($commafields, $fragments)) {
                 $replacedDotNotation[] = $replacedCommaFields;
             }
         }
@@ -1108,7 +1105,7 @@ class FieldQueryInterpreter
 
             // After replacing the fragments, expand relational properties once again, since any such string could have been provided through a fragment
             // Eg: a fragment can contain strings such as "id|author.id"
-            $dotNotation = self::expandRelationalProperties($dotNotation);
+            $dotNotation = $this->expandRelationalProperties($dotNotation);
 
             // Initialize the pointer
             $pointer = &$fields;
@@ -1142,7 +1139,7 @@ class FieldQueryInterpreter
                         if (!isset($bookmarkPaths[$bookmark])) {
                             // Show an error and discard this element
                             $errorMessage = sprintf(
-                                $translationAPI->__('Query path alias \'%s\' is undefined. Query section \'%s\' has been ignored', 'pop-component-model'),
+                                $this->translationAPI->__('Query path alias \'%s\' is undefined. Query section \'%s\' has been ignored', 'pop-component-model'),
                                 $bookmark,
                                 $commafields
                             );
@@ -1161,7 +1158,7 @@ class FieldQueryInterpreter
                     // At every subpath, it can define a bookmark to that fragment by adding "[bookmarkName]" at its end
                     for ($pathLevel=0; $pathLevel<count($dotfields)-1; $pathLevel++) {
 
-                        $errorMessageOrSymbolPositions = self::validateProperty(
+                        $errorMessageOrSymbolPositions = $this->validateProperty(
                             $dotfields[$pathLevel],
                             $commafields
                         );
@@ -1239,7 +1236,7 @@ class FieldQueryInterpreter
                 $pipefields = $dotfields[count($dotfields)-1];
                 // Use `splitElements` instead of `explode` so that the "|" can also be inside the fieldArgs (eg: order:title|asc)
                 foreach (GeneralUtils::splitElements($pipefields, QuerySyntax::SYMBOL_FIELDPROPERTIES_SEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING]) as $pipefield) {
-                    $errorMessageOrSymbolPositions = self::validateProperty(
+                    $errorMessageOrSymbolPositions = $this->validateProperty(
                         $pipefield
                     );
                     // If the validation is a string, then it's an error
@@ -1258,15 +1255,15 @@ class FieldQueryInterpreter
         return $fields;
     }
 
-    protected static function getFragmentsFromRequest(): array
+    protected function getFragmentsFromRequest(): array
     {
-        if (is_null(self::$fragmentsFromRequest)) {
-            self::$fragmentsFromRequest = self::doGetFragmentsFromRequest();
+        if (is_null($this->fragmentsFromRequest)) {
+            $this->fragmentsFromRequest = $this->doGetFragmentsFromRequest();
         }
-        return self::$fragmentsFromRequest;
+        return $this->fragmentsFromRequest;
     }
 
-    protected static function doGetFragmentsFromRequest(): array
+    protected function doGetFragmentsFromRequest(): array
     {
         // Each fragment is provided through $_REQUEST[fragments][fragmentName] or directly $_REQUEST[fragmentName]
         return array_merge(

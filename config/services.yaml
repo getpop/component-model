@@ -9,6 +9,8 @@ services:
             PoP\ComponentModel\Info\ApplicationInfoInterface: '@application_info'
             PoP\ComponentModel\Managers\ModulePathManagerInterface: '@module_path_manager'
             PoP\ComponentModel\ModelInstance\ModelInstanceInterface: '@model_instance'
+            PoP\ComponentModel\Schema\ErrorMessageStoreInterface: '@error_message_store'
+            PoP\ComponentModel\Schema\TypeCastingExecuterInterface: '@type_casting_executer'
 
     memory_cache_item_pool:
         class: \Symfony\Component\Cache\Adapter\ArrayAdapter
