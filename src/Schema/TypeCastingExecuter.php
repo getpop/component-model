@@ -4,7 +4,7 @@ namespace PoP\ComponentModel\Schema;
 use PoP\ComponentModel\Error;
 use PoP\Translation\Facades\TranslationAPIFacade;
 
-class TypeCastingExecuter
+class TypeCastingExecuter implements TypeCastingExecuterInterface
 {
     /**
      * Cast the value to the indicated type, or return null or Error (with a message) if it fails
@@ -13,7 +13,7 @@ class TypeCastingExecuter
      * @param string $value
      * @return void
      */
-    public static function cast(string $type, string $value)
+    public function cast(string $type, string $value)
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         switch ($type) {

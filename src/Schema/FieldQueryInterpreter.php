@@ -2,6 +2,7 @@
 namespace PoP\ComponentModel\Schema;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\GeneralUtils;
+use PoP\ComponentModel\Facades\Schema\TypeCastingExecuterFacade;
 
 class FieldQueryInterpreter
 {
@@ -184,7 +185,7 @@ class FieldQueryInterpreter
             foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
                 // Maybe cast the value to the appropriate type. Eg: from string to boolean
                 if ($fieldArgType = $fieldArgNameTypes[$fieldArgName]) {
-                    $fieldArgValue = TypeCastingExecuter::cast($fieldArgType, $fieldArgValue);
+                    $fieldArgValue = TypeCastingExecuterFacade::getInstance()->cast($fieldArgType, $fieldArgValue);
                     // If the response is an error, extract the error message and set value to null
                     if (GeneralUtils::isError($fieldArgValue)) {
                         $error = $fieldArgValue;
