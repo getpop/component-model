@@ -1,5 +1,6 @@
 <?php
 namespace PoP\ComponentModel\Schema;
+use PoP\ComponentModel\GeneralUtils;
 
 class QueryUtils
 {
