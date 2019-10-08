@@ -5,20 +5,23 @@ use PoP\ComponentModel\GeneralUtils;
 
 class FieldQueryInterpreter implements FieldQueryInterpreterInterface
 {
-    protected $fieldNames = [];
-    protected $fieldArgs = [];
-    protected $extractedFieldArguments = [];
-    protected $fieldArgumentNameTypes = [];
-    protected $fieldAliases = [];
-    protected $fieldDirectives = [];
-    protected $directives = [];
-    protected $extractedFieldDirectives = [];
-    protected $fieldOutputKeys = [];
-    protected $expandedRelationalProperties = [];
+    // Cache the output from functions
+    private $fieldNamesCache = [];
+    private $fieldArgsCache = [];
+    private $extractedFieldArgumentsCache = [];
+    private $fieldArgumentNameTypesCache = [];
+    private $fieldAliasesCache = [];
+    private $fieldDirectivesCache = [];
+    private $directivesCache = [];
+    private $extractedFieldDirectivesCache = [];
+    private $fieldOutputKeysCache = [];
+    private $expandedRelationalPropertiesCache = [];
 
-    protected $variablesFromRequest;
-    protected $fragmentsFromRequest;
+    // Cache vars to take from the request
+    private $variablesFromRequestCache;
+    private $fragmentsFromRequestCache;
 
+    // Services
     private $translationAPI;
     private $errorMessageStore;
     private $typeCastingExecuter;
@@ -35,10 +38,10 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
 
     public function getFieldName(string $field): string
     {
-        if (!isset($this->fieldNames[$field])) {
-            $this->fieldNames[$field] = $this->doGetFieldName($field);
+        if (!isset($this->fieldNamesCache[$field])) {
+            $this->fieldNamesCache[$field] = $this->doGetFieldName($field);
         }
-        return $this->fieldNames[$field];
+        return $this->fieldNamesCache[$field];
     }
 
     protected function doGetFieldName(string $field): string
@@ -72,10 +75,10 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
 
     protected function getVariablesFromRequest(): array
     {
-        if (is_null($this->variablesFromRequest)) {
-            $this->variablesFromRequest = $this->doGetVariablesFromRequest();
+        if (is_null($this->variablesFromRequestCache)) {
+            $this->variablesFromRequestCache = $this->doGetVariablesFromRequest();
         }
-        return $this->variablesFromRequest;
+        return $this->variablesFromRequestCache;
     }
 
     protected function doGetVariablesFromRequest(): array
@@ -88,10 +91,10 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
 
     public function getFieldArgs(string $field): ?string
     {
-        if (!isset($this->fieldArgs[$field])) {
-            $this->fieldArgs[$field] = $this->doGetFieldArgs($field);
+        if (!isset($this->fieldArgsCache[$field])) {
+            $this->fieldArgsCache[$field] = $this->doGetFieldArgs($field);
         }
-        return $this->fieldArgs[$field];
+        return $this->fieldArgsCache[$field];
     }
 
     protected function doGetFieldArgs(string $field): ?string
@@ -124,10 +127,10 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
 
     protected function extractFieldArguments(string $field): array
     {
-        if (!isset($this->extractedFieldArguments[$field])) {
-            $this->extractedFieldArguments[$field] = $this->doExtractFieldArguments($field);
+        if (!isset($this->extractedFieldArgumentsCache[$field])) {
+            $this->extractedFieldArgumentsCache[$field] = $this->doExtractFieldArguments($field);
         }
-        return $this->extractedFieldArguments[$field];
+        return $this->extractedFieldArgumentsCache[$field];
     }
 
     protected function doExtractFieldArguments(string $field): array
@@ -212,10 +215,10 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
 
     protected function getFieldArgumentNameTypes($fieldResolver, string $field): array
     {
-        if (!isset($this->fieldArgumentNameTypes[get_class($fieldResolver)][$field])) {
-            $this->fieldArgumentNameTypes[get_class($fieldResolver)][$field] = $this->doGetFieldArgumentNameTypes($fieldResolver, $field);
+        if (!isset($this->fieldArgumentNameTypesCache[get_class($fieldResolver)][$field])) {
+            $this->fieldArgumentNameTypesCache[get_class($fieldResolver)][$field] = $this->doGetFieldArgumentNameTypes($fieldResolver, $field);
         }
-        return $this->fieldArgumentNameTypes[get_class($fieldResolver)][$field];
+        return $this->fieldArgumentNameTypesCache[get_class($fieldResolver)][$field];
     }
 
     protected function doGetFieldArgumentNameTypes($fieldResolver, string $field): array
@@ -543,10 +546,10 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
 
     public function getFieldAlias(string $field): ?string
     {
-        if (!isset($this->fieldAliases[$field])) {
-            $this->fieldAliases[$field] = $this->doGetFieldAlias($field);
+        if (!isset($this->fieldAliasesCache[$field])) {
+            $this->fieldAliasesCache[$field] = $this->doGetFieldAlias($field);
         }
-        return $this->fieldAliases[$field];
+        return $this->fieldAliasesCache[$field];
     }
 
     protected function doGetFieldAlias(string $field): ?string
@@ -586,10 +589,10 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
 
     public function getFieldDirectives(string $field): ?string
     {
-        if (!isset($this->fieldDirectives[$field])) {
-            $this->fieldDirectives[$field] = $this->doGetFieldDirectives($field);
+        if (!isset($this->fieldDirectivesCache[$field])) {
+            $this->fieldDirectivesCache[$field] = $this->doGetFieldDirectives($field);
         }
-        return $this->fieldDirectives[$field];
+        return $this->fieldDirectivesCache[$field];
     }
 
     protected function doGetFieldDirectives(string $field): ?string
@@ -622,10 +625,10 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
 
     public function getDirectives(string $field): array
     {
-        if (!isset($this->directives[$field])) {
-            $this->directives[$field] = $this->doGetDirectives($field);
+        if (!isset($this->directivesCache[$field])) {
+            $this->directivesCache[$field] = $this->doGetDirectives($field);
         }
-        return $this->directives[$field];
+        return $this->directivesCache[$field];
     }
 
     protected function doGetDirectives(string $field): array
@@ -639,10 +642,10 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
 
     public function extractFieldDirectives(string $fieldDirectives): array
     {
-        if (!isset($this->extractedFieldDirectives[$fieldDirectives])) {
-            $this->extractedFieldDirectives[$fieldDirectives] = $this->doExtractFieldDirectives($fieldDirectives);
+        if (!isset($this->extractedFieldDirectivesCache[$fieldDirectives])) {
+            $this->extractedFieldDirectivesCache[$fieldDirectives] = $this->doExtractFieldDirectives($fieldDirectives);
         }
-        return $this->extractedFieldDirectives[$fieldDirectives];
+        return $this->extractedFieldDirectivesCache[$fieldDirectives];
     }
 
     protected function doExtractFieldDirectives(string $fieldDirectives): array
@@ -703,10 +706,10 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
 
     public function getFieldOutputKey(string $field): string
     {
-        if (!isset($this->fieldOutputKeys[$field])) {
-            $this->fieldOutputKeys[$field] = $this->doGetFieldOutputKey($field);
+        if (!isset($this->fieldOutputKeysCache[$field])) {
+            $this->fieldOutputKeysCache[$field] = $this->doGetFieldOutputKey($field);
         }
-        return $this->fieldOutputKeys[$field];
+        return $this->fieldOutputKeysCache[$field];
     }
 
     protected function doGetFieldOutputKey(string $field): string
@@ -747,10 +750,10 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
 
     protected function expandRelationalProperties(string $dotNotation): string
     {
-        if (!isset($this->expandedRelationalProperties[$dotNotation])) {
-            $this->expandedRelationalProperties[$dotNotation] = $this->doExpandRelationalProperties($dotNotation);
+        if (!isset($this->expandedRelationalPropertiesCache[$dotNotation])) {
+            $this->expandedRelationalPropertiesCache[$dotNotation] = $this->doExpandRelationalProperties($dotNotation);
         }
-        return $this->expandedRelationalProperties[$dotNotation];
+        return $this->expandedRelationalPropertiesCache[$dotNotation];
     }
 
     protected function doExpandRelationalProperties(string $dotNotation): string
@@ -1258,10 +1261,10 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
 
     protected function getFragmentsFromRequest(): array
     {
-        if (is_null($this->fragmentsFromRequest)) {
-            $this->fragmentsFromRequest = $this->doGetFragmentsFromRequest();
+        if (is_null($this->fragmentsFromRequestCache)) {
+            $this->fragmentsFromRequestCache = $this->doGetFragmentsFromRequest();
         }
-        return $this->fragmentsFromRequest;
+        return $this->fragmentsFromRequestCache;
     }
 
     protected function doGetFragmentsFromRequest(): array
