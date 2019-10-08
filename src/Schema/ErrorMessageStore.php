@@ -3,8 +3,8 @@ namespace PoP\ComponentModel\Schema;
 
 class ErrorMessageStore implements ErrorMessageStoreInterface
 {
-    protected $schemaErrors = array();
-    protected $queryErrors = array();
+    protected $schemaErrors = [];
+    protected $queryErrors = [];
 
     public function maybeAddSchemaError(string $dbKey, string $field, string $error)
     {
