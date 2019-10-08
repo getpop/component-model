@@ -652,7 +652,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
             return [];
         }
         return array_map(
-            [$this->class, 'listFieldDirective'],
+            [$this, 'listFieldDirective'],
             GeneralUtils::splitElements($fieldDirectives, QuerySyntax::SYMBOL_QUERYFIELDS_SEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING])
         );
     }
