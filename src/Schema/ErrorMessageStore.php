@@ -1,7 +1,7 @@
 <?php
 namespace PoP\ComponentModel\Schema;
 
-class ErrorMessageUtils
+class ErrorMessageStore
 {
     protected static $schemaErrors = array();
     protected static $queryErrors = array();

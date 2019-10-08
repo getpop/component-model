@@ -41,7 +41,7 @@ class FieldQueryInterpreter
         // If the field name is missing, show an error
         if ($pos === 0) {
             $translationAPI = TranslationAPIFacade::getInstance();
-            ErrorMessageUtils::addQueryError(sprintf(
+            ErrorMessageStore::addQueryError(sprintf(
                 $translationAPI->__('Name in \'%s\' is missing', 'pop-component-model'),
                 $field
             ));
@@ -95,7 +95,7 @@ class FieldQueryInterpreter
         }
         // If there is only one of them, it's a query error, so discard the query bit
         if (($fieldArgsClosingSymbolPos === false && $fieldArgsOpeningSymbolPos !== false) || ($fieldArgsClosingSymbolPos !== false && $fieldArgsOpeningSymbolPos === false)) {
-            ErrorMessageUtils::addQueryError(sprintf(
+            ErrorMessageStore::addQueryError(sprintf(
                 $translationAPI->__('Arguments \'%s\' must start with symbol \'%s\' and end with symbol \'%s\'', 'pop-component-model'),
                 $field,
                 QuerySyntax::SYMBOL_FIELDARGS_OPENING,
@@ -345,7 +345,7 @@ class FieldQueryInterpreter
             }
             // If the variable is not set, then show the error under entry "variableErrors"
             $translationAPI = TranslationAPIFacade::getInstance();
-            ErrorMessageUtils::addQueryError(sprintf(
+            ErrorMessageStore::addQueryError(sprintf(
                 $translationAPI->__('Variable \'%s\' is undefined', 'pop-component-model'),
                 $variableName
             ));
@@ -546,14 +546,14 @@ class FieldQueryInterpreter
             $translationAPI = TranslationAPIFacade::getInstance();
             if ($aliasPrefixSymbolPos === 0) {
                 // Only there is the alias, nothing to alias to
-                ErrorMessageUtils::addQueryError(sprintf(
+                ErrorMessageStore::addQueryError(sprintf(
                     $translationAPI->__('The field to be aliased in \'%s\' is missing', 'pop-component-model'),
                     $field
                 ));
                 return null;
             } elseif ($aliasPrefixSymbolPos === strlen($field)-1) {
                 // Only the "@" was added, but the alias is missing
-                ErrorMessageUtils::addQueryError(sprintf(
+                ErrorMessageStore::addQueryError(sprintf(
                     $translationAPI->__('Alias in \'%s\' is missing', 'pop-component-model'),
                     $field
                 ));
@@ -598,7 +598,7 @@ class FieldQueryInterpreter
         }
         // If there is only one of them, it's a query error, so discard the query bit
         if (($fieldDirectivesClosingSymbolPos === false && $fieldDirectivesOpeningSymbolPos !== false) || ($fieldDirectivesClosingSymbolPos !== false && $fieldDirectivesOpeningSymbolPos === false)) {
-            ErrorMessageUtils::addQueryError(sprintf(
+            ErrorMessageStore::addQueryError(sprintf(
                 $translationAPI->__('Directive \'%s\' must start with symbol \'%s\' and end with symbol \'%s\'', 'pop-component-model'),
                 $field,
                 QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING,
@@ -866,7 +866,7 @@ class FieldQueryInterpreter
                 if ($fragment = self::getFragment($fragmentName, $fragments)) {
                     $lastLevelProperties[] = $fragment;
                 } else {
-                    ErrorMessageUtils::addQueryError(sprintf(
+                    ErrorMessageStore::addQueryError(sprintf(
                         $translationAPI->__('Fragment \'%s\' is undefined, so it has been ignored', 'pop-component-model'),
                         $fragmentName
                     ));
@@ -888,7 +888,7 @@ class FieldQueryInterpreter
                     $fragmentDotfields = GeneralUtils::splitElements($fragment, QuerySyntax::SYMBOL_RELATIONALFIELDS_NEXTLEVEL, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING], true);
                     array_splice($dotfields, $pathLevel, 1, $fragmentDotfields);
                 } else {
-                    ErrorMessageUtils::addQueryError(sprintf(
+                    ErrorMessageStore::addQueryError(sprintf(
                         $translationAPI->__('Fragment \'%s\' is undefined, so query section \'%s\' has been ignored', 'pop-component-model'),
                         $fragmentName,
                         $commafields
@@ -1142,7 +1142,7 @@ class FieldQueryInterpreter
                                 $bookmark,
                                 $commafields
                             );
-                            ErrorMessageUtils::addQueryError($errorMessage);
+                            ErrorMessageStore::addQueryError($errorMessage);
                             unset($bookmarkPaths[QuerySyntax::TOKEN_BOOKMARK_PREV]);
                             continue;
                         }
@@ -1164,7 +1164,7 @@ class FieldQueryInterpreter
                         // If the validation is a string, then it's an error
                         if (is_string($errorMessageOrSymbolPositions)) {
                             $error = (string)$errorMessageOrSymbolPositions;
-                            ErrorMessageUtils::addQueryError($error);
+                            ErrorMessageStore::addQueryError($error);
                             unset($bookmarkPaths[QuerySyntax::TOKEN_BOOKMARK_PREV]);
                             // Exit 2 levels, so it doesn't process the whole query section, not just the property
                             continue 2;
@@ -1241,7 +1241,7 @@ class FieldQueryInterpreter
                     // If the validation is a string, then it's an error
                     if (is_string($errorMessageOrSymbolPositions)) {
                         $error = (string)$errorMessageOrSymbolPositions;
-                        ErrorMessageUtils::addQueryError($error);
+                        ErrorMessageStore::addQueryError($error);
                         // Exit 1 levels, so it ignores only this property but keeps processing the others
                         continue;
                     }
