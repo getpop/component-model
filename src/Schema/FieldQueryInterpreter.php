@@ -2,7 +2,7 @@
 namespace PoP\ComponentModel\Schema;
 use PoP\Translation\Facades\TranslationAPIFacade;
 
-class FieldUtils
+class FieldQueryInterpreter
 {
     protected static $fieldNames = [];
     protected static $variablesFromRequest;
