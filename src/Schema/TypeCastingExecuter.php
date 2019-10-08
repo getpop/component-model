@@ -1,6 +1,7 @@
 <?php
 namespace PoP\ComponentModel\Schema;
 
+use PoP\ComponentModel\Error;
 use PoP\Translation\Facades\TranslationAPIFacade;
 
 class TypeCastingExecuter
