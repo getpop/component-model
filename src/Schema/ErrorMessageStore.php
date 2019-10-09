@@ -11,7 +11,7 @@ class ErrorMessageStore implements ErrorMessageStoreInterface
     {
         foreach ($dbWarnings as $dbObjectID => $dbObjectWarnings) {
             $this->$dbWarnings[$dbObjectID] = array_merge(
-                $dbWarnings[$dbObjectID] ?? [],
+                $this->$dbWarnings[$dbObjectID] ?? [],
                 $dbObjectWarnings
             );
         }
