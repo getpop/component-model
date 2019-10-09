@@ -124,7 +124,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         return substr($field, $fieldArgsOpeningSymbolPos, $fieldArgsClosingSymbolPos+strlen(QuerySyntax::SYMBOL_FIELDARGS_CLOSING)-$fieldArgsOpeningSymbolPos);
     }
 
-    protected function extractFieldArguments($fieldResolver, string $field, ?array &$schemaWarnings = null): array
+    public function extractFieldArguments($fieldResolver, string $field, ?array &$schemaWarnings = null): array
     {
         if (!isset($this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field])) {
             $fieldSchemaWarnings = [];
@@ -296,7 +296,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
                     // 2. $forSchema = false: Should be cast only fields, however by now we can't tell which are fields and which are not, since fields have already been resolved to their value. Hence, cast everything (fieldArgValues that failed at the schema level will not be provided in the input array, so won't be validated twice)
                     // Otherwise, simply add the fieldArgValue directly, it will be eventually casted by the other function
                     if (
-                        ($forSchema && !$this->isFieldArgumentValueAField($fieldResolver, $fieldArgValue)) ||
+                        ($forSchema && !$this->isFieldArgumentValueAField($fieldArgValue)) ||
                         !$forSchema
                     ) {
                         $fieldArgValue = $this->typeCastingExecuter->cast($fieldArgType, $fieldArgValue);
@@ -590,7 +590,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         }
 
         // If the result fieldArgValue is a field, then validate it and resolve it
-        if ($this->isFieldArgumentValueAField($fieldResolver, $fieldArgValue)) {
+        if ($this->isFieldArgumentValueAField($fieldArgValue)) {
             return $fieldResolver->getFieldDocumentationWarningDescriptions($fieldArgValue);
         }
 
@@ -607,14 +607,14 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         }
 
         // If the result fieldArgValue is a field, then validate it and resolve it
-        if ($this->isFieldArgumentValueAField($fieldResolver, $fieldArgValue)) {
+        if ($this->isFieldArgumentValueAField($fieldArgValue)) {
             return $fieldResolver->getFieldDocumentationDeprecationDescriptions($fieldArgValue);
         }
 
         return null;
     }
 
-    protected function isFieldArgumentValueAField($fieldResolver, $fieldArgValue): bool
+    public function isFieldArgumentValueAField($fieldArgValue): bool
     {
         // If the result fieldArgValue is a string (i.e. not numeric), and it has brackets (...),
         // then it is a field

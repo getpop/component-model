@@ -5,8 +5,6 @@ interface FieldQueryInterpreterInterface
 {
     public function getFieldName(string $field): string;
     public function getFieldArgs(string $field): ?string;
-    public function extractFieldArgumentsForResultItem($fieldResolver, $resultItem, string $field, ?array $variables = null): array;
-    public function extractFieldArgumentsForSchema($fieldResolver, string $field, ?array $variables = null): array;
     public function getFieldAlias(string $field): ?string;
     public function getFieldDirectives(string $field): ?string;
     public function getDirectives(string $field): array;
@@ -22,4 +20,9 @@ interface FieldQueryInterpreterInterface
     public function getFieldOutputKey(string $field): string;
     public function getField(string $fieldName, array $fieldArgs = [], string $fieldAlias = null, array $fieldDirectives = []): string;
     public function getFieldDirectiveAsString(array $fieldDirectives): string;
+    public function isFieldArgumentValueAField($fieldArgValue): bool;
+    public function extractFieldArguments($fieldResolver, string $field, ?array &$schemaWarnings = null): array;
+    public function extractFieldArgumentsForResultItem($fieldResolver, $resultItem, string $field, ?array $variables = null): array;
+    public function extractFieldArgumentsForSchema($fieldResolver, string $field, ?array $variables = null): array;
+
 }
