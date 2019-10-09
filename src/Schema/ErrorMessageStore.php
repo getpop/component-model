@@ -5,6 +5,27 @@ class ErrorMessageStore implements ErrorMessageStoreInterface
 {
     protected $schemaErrors = [];
     protected $queryErrors = [];
+    protected $dbWarnings = [];
+
+    public function addDBWarnings(array $dbWarnings)
+    {
+        foreach ($dbWarnings as $dbObjectID => $dbObjectWarnings) {
+            $this->$dbWarnings[$dbObjectID] = array_merge(
+                $dbWarnings[$dbObjectID] ?? [],
+                $dbObjectWarnings
+            );
+        }
+    }
+    // public function clearDBWarnings()
+    // {
+    //     $this->dbWarnings = [];
+    // }
+    public function retrieveAndClearResultItemDBWarnings($resultItemID): array
+    {
+        $resultItemDBWarnings = $this->dbWarnings[$resultItemID];
+        unset($this->dbWarnings[$resultItemID]);
+        return $resultItemDBWarnings;
+    }
 
     public function maybeAddSchemaError(string $dbKey, string $field, string $error)
     {
