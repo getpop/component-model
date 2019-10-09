@@ -208,6 +208,50 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         });
     }
 
+    public function extractFieldArgumentsForSchema($fieldResolver, string $field, ?array $variables = null): array
+    {
+        $schemaErrors = [];
+        $schemaWarnings = [];
+        $schemaDeprecations = [];
+        if ($fieldArgs = $this->extractFieldArguments($fieldResolver, $field, $schemaWarnings)) {
+            foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
+                $fieldArgValue = $this->maybeConvertFieldArgumentValue($fieldArgValue, $variables);
+                // Validate it
+                if ($maybeErrors = $this->resolveFieldArgumentValueErrorDescriptionsForSchema($fieldResolver, $fieldArgValue)) {
+                    $schemaErrors = array_merge(
+                        $schemaErrors,
+                        $maybeErrors
+                    );
+                    $fieldArgs[$fieldArgName] = null;
+                    continue;
+                }
+                // Find warnings and deprecations
+                if ($maybeWarnings = $this->resolveFieldArgumentValueWarningsForSchema($fieldResolver, $fieldArgValue)) {
+                    $schemaWarnings = array_merge(
+                        $schemaWarnings,
+                        $maybeWarnings
+                    );
+                }
+                if ($maybeDeprecations = $this->resolveFieldArgumentValueDeprecationsForSchema($fieldResolver, $fieldArgValue)) {
+                    $schemaDeprecations = array_merge(
+                        $schemaDeprecations,
+                        $maybeDeprecations
+                    );
+                }
+                $fieldArgs[$fieldArgName] = $fieldArgValue;
+            }
+            $fieldArgs = $this->filterFieldArgs($fieldArgs);
+            // Cast the values to their appropriate type. If casting fails, the value returns as null
+            $fieldArgs = $this->castAndValidateFieldArgumentsForSchema($fieldResolver, $field, $fieldArgs, $schemaWarnings);
+        }
+        return [
+            $fieldArgs,
+            $schemaErrors,
+            $schemaWarnings,
+            $schemaDeprecations,
+        ];
+    }
+
     public function extractFieldArgumentsForResultItem($fieldResolver, $resultItem, string $field, ?array $variables = null): array
     {
         $dbErrors = $dbWarnings = [];
@@ -347,50 +391,6 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
             return $this->filterFieldArgs($castedFieldArgs);
         }
         return $castedFieldArgs;
-    }
-
-    public function extractFieldArgumentsForSchema($fieldResolver, string $field, ?array $variables = null): array
-    {
-        $schemaErrors = [];
-        $schemaWarnings = [];
-        $schemaDeprecations = [];
-        if ($fieldArgs = $this->extractFieldArguments($fieldResolver, $field, $schemaWarnings)) {
-            foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
-                $fieldArgValue = $this->maybeConvertFieldArgumentValue($fieldArgValue, $variables);
-                // Validate it
-                if ($maybeErrors = $this->resolveFieldArgumentValueErrorDescriptionsForSchema($fieldResolver, $fieldArgValue)) {
-                    $schemaErrors = array_merge(
-                        $schemaErrors,
-                        $maybeErrors
-                    );
-                    $fieldArgs[$fieldArgName] = null;
-                    continue;
-                }
-                // Find warnings and deprecations
-                if ($maybeWarnings = $this->resolveFieldArgumentValueWarningsForSchema($fieldResolver, $fieldArgValue)) {
-                    $schemaWarnings = array_merge(
-                        $schemaWarnings,
-                        $maybeWarnings
-                    );
-                }
-                if ($maybeDeprecations = $this->resolveFieldArgumentValueDeprecationsForSchema($fieldResolver, $fieldArgValue)) {
-                    $schemaDeprecations = array_merge(
-                        $schemaDeprecations,
-                        $maybeDeprecations
-                    );
-                }
-                $fieldArgs[$fieldArgName] = $fieldArgValue;
-            }
-            $fieldArgs = $this->filterFieldArgs($fieldArgs);
-            // Cast the values to their appropriate type. If casting fails, the value returns as null
-            $fieldArgs = $this->castAndValidateFieldArgumentsForSchema($fieldResolver, $field, $fieldArgs, $schemaWarnings);
-        }
-        return [
-            $fieldArgs,
-            $schemaErrors,
-            $schemaWarnings,
-            $schemaDeprecations,
-        ];
     }
 
     /**
