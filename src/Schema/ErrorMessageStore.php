@@ -20,7 +20,7 @@ class ErrorMessageStore implements ErrorMessageStoreInterface
     // {
     //     $this->dbWarnings = [];
     // }
-    public function retrieveAndClearResultItemDBWarnings($resultItemID): array
+    public function retrieveAndClearResultItemDBWarnings($resultItemID): ?array
     {
         $resultItemDBWarnings = $this->dbWarnings[$resultItemID];
         unset($this->dbWarnings[$resultItemID]);
