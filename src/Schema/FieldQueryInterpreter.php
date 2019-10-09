@@ -9,6 +9,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
     private $fieldNamesCache = [];
     private $fieldArgsCache = [];
     private $extractedFieldArgumentsCache = [];
+    private $extractedFieldArgumentWarningsCache = [];
     private $fieldArgumentNameTypesCache = [];
     private $fieldAliasesCache = [];
     private $fieldDirectivesCache = [];
@@ -126,7 +127,19 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
     protected function extractFieldArguments($fieldResolver, string $field, ?array &$schemaWarnings = null): array
     {
         if (!isset($this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field])) {
-            $this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field] = $this->doExtractFieldArguments($fieldResolver, $field, $schemaWarnings);
+            $fieldSchemaWarnings = [];
+            $this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field] = $this->doExtractFieldArguments($fieldResolver, $field, $fieldSchemaWarnings);
+            // Also cache the schemaWarnings
+            if (!is_null($schemaWarnings)) {
+                $this->extractedFieldArgumentWarningsCache[get_class($fieldResolver)][$field] = $fieldSchemaWarnings;
+            }
+        }
+        // Integrate the schemaWarnings too
+        if (!is_null($schemaWarnings)) {
+            $schemaWarnings = array_merge(
+                $schemaWarnings,
+                $this->extractedFieldArgumentWarningsCache[get_class($fieldResolver)][$field]
+            );
         }
         return $this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field];
     }
@@ -155,7 +168,8 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
                             // Throw an error, is $schemaWarnings is provided (no need when extracting args for the resultItem, only for the schema)
                             if (!is_null($schemaWarnings)) {
                                 $schemaWarnings[] = sprintf(
-                                    $this->translationAPI->__('The argument name to which assign value \'%s\' is missing, and this information can\'t be retrieved from the schema definition. Please define the query using the \'key%svalue\' format. This argument has been ignored', 'pop-component-model'),
+                                    $this->translationAPI->__('The argument on position \'%s\' (with value \'%s\') has its name missing, and this information can\'t be retrieved from the schema definition. Please define the query using the \'key%svalue\' format. This argument has been ignored', 'pop-component-model'),
+                                    $i+1,
                                     $fieldArgValue,
                                     QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR
                                 );
