@@ -155,7 +155,10 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         if ($fieldArgsStr = trim($fieldArgsStr)) {
             // Iterate all the elements, and extract them into the array
             if ($fieldArgElems = GeneralUtils::splitElements($fieldArgsStr, QuerySyntax::SYMBOL_FIELDARGS_ARGSEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING])) {
-                $orderedFieldArgNames = array_keys($this->getFieldArgumentNameTypes($fieldResolver, $field));
+                $orderedFieldArgNamesEnabled = true;
+                if ($orderedFieldArgNamesEnabled) {
+                    $orderedFieldArgNames = array_keys($this->getFieldArgumentNameTypes($fieldResolver, $field));
+                }
                 for ($i=0; $i<count($fieldArgElems); $i++) {
                     $fieldArg = $fieldArgElems[$i];
                     // Either one of 2 formats are accepted:
@@ -165,12 +168,16 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
                     if ($separatorPos === false) {
                         $fieldArgValue = $fieldArg;
                         if (!isset($orderedFieldArgNames[$i])) {
-                            // Throw an error, is $schemaWarnings is provided (no need when extracting args for the resultItem, only for the schema)
+                            // Throw an error, if $schemaWarnings is provided (no need when extracting args for the resultItem, only for the schema)
                             if (!is_null($schemaWarnings)) {
+                                $errorMessage = $orderedFieldArgNamesEnabled ?
+                                    $this->translationAPI->__('documentation for this argument in the schema definition has not been defined, hence it can\'t be deduced from there', 'pop-component-model') :
+                                    $this->translationAPI->__('retrieving this information from the schema definition is disabled for this FieldResolver', 'pop-component-model');
                                 $schemaWarnings[] = sprintf(
-                                    $this->translationAPI->__('The argument on position number %s (with value \'%s\') has its name missing, and this information can\'t be retrieved from the schema definition. Please define the query using the \'key%svalue\' format. This argument has been ignored', 'pop-component-model'),
+                                    $this->translationAPI->__('The argument on position number %s (with value \'%s\') has its name missing, and %s. Please define the query using the \'key%svalue\' format. This argument has been ignored', 'pop-component-model'),
                                     $i+1,
                                     $fieldArgValue,
+                                    $errorMessage,
                                     QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR
                                 );
                             }
