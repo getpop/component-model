@@ -169,7 +169,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
                     $separatorPos = QueryUtils::findFirstSymbolPosition($fieldArg, QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_CLOSING]);
                     if ($separatorPos === false) {
                         $fieldArgValue = $fieldArg;
-                        if (!isset($orderedFieldArgNames[$i])) {
+                        if (!$orderedFieldArgNamesEnabled || !isset($orderedFieldArgNames[$i])) {
                             // Throw an error, if $schemaWarnings is provided (no need when extracting args for the resultItem, only for the schema)
                             if (!is_null($schemaWarnings)) {
                                 $errorMessage = $orderedFieldArgNamesEnabled ?
