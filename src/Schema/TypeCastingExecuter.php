@@ -21,7 +21,7 @@ class TypeCastingExecuter implements TypeCastingExecuterInterface
      * @param string $value
      * @return void
      */
-    public function cast(string $type, string $value)
+    public function cast(string $type, $value)
     {
         switch ($type) {
             // case SchemaDefinition::TYPE_MIXED:
@@ -35,14 +35,23 @@ class TypeCastingExecuter implements TypeCastingExecuterInterface
             // case SchemaDefinition::TYPE_STRING:
             //     return $value;
             case SchemaDefinition::TYPE_DATE:
+                if (!is_string($value)) {
+                    return new Error(
+                        'date-cast',
+                        $this->translationAPI->__('Date must be provided as a string')
+                    );
+                }
                 // Validate that the format is 'Y-m-d'
                 // Taken from https://stackoverflow.com/a/13194398
                 $dt = \DateTime::createFromFormat("Y-m-d", $value);
                 if ($dt === false || array_sum($dt::getLastErrors())) {
-                    return new Error('date-cast', sprintf(
-                        $this->translationAPI->__('Date format must be \'%s\''),
-                        'Y-m-d'
-                    ));
+                    return new Error(
+                        'date-cast',
+                        sprintf(
+                            $this->translationAPI->__('Date format must be \'%s\''),
+                            'Y-m-d'
+                        )
+                    );
                 }
                 return $value;
             case SchemaDefinition::TYPE_INT:

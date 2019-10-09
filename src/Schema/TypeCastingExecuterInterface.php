@@ -10,5 +10,5 @@ interface TypeCastingExecuterInterface
      * @param string $value
      * @return void
      */
-    public function cast(string $type, string $value);
+    public function cast(string $type, $value);
 }
