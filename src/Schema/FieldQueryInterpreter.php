@@ -367,12 +367,14 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         if ($failedCastingFieldArgs = array_filter($castedFieldArgs, function($fieldArgValue) {
             return is_null($fieldArgValue);
         })) {
+            $fieldName = $this->getFieldName($field);
             $fieldArgNameTypes = $this->getFieldArgumentNameTypes($fieldResolver, $field);
             foreach (array_keys($failedCastingFieldArgs) as $failedCastingFieldArgName) {
                 // If it is Error, also show the error message
                 if ($fieldArgErrorMessage = $failedCastingFieldArgErrorMessages[$failedCastingFieldArgName]) {
                     $errorMessage = sprintf(
-                        $this->translationAPI->__('Casting value \'%s\' for argument \'%s\' to type \'%s\' failed: %s. It has been ignored', 'pop-component-model'),
+                        $this->translationAPI->__('For field \'%s\', casting value \'%s\' for argument \'%s\' to type \'%s\' failed: %s. It has been ignored', 'pop-component-model'),
+                        $fieldName,
                         $fieldArgs[$failedCastingFieldArgName],
                         $failedCastingFieldArgName,
                         $fieldArgNameTypes[$failedCastingFieldArgName],
@@ -380,7 +382,8 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
                     );
                 } else {
                     $errorMessage = sprintf(
-                        $this->translationAPI->__('Casting value \'%s\' for argument \'%s\' to type \'%s\' failed, so it has been ignored', 'pop-component-model'),
+                        $this->translationAPI->__('For field \'%s\', casting value \'%s\' for argument \'%s\' to type \'%s\' failed, so it has been ignored', 'pop-component-model'),
+                        $fieldName,
                         $fieldArgs[$failedCastingFieldArgName],
                         $failedCastingFieldArgName,
                         $fieldArgNameTypes[$failedCastingFieldArgName]
