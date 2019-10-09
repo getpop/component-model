@@ -324,22 +324,22 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
             return is_null($fieldArgValue);
         })) {
             $fieldArgNameTypes = $this->getFieldArgumentNameTypes($fieldResolver, $field);
-            foreach ($failedCastingFieldArgs as $fieldArgName => $fieldArgValue) {
+            foreach (array_keys($failedCastingFieldArgs) as $failedCastingFieldArgName) {
                 // If it is Error, also show the error message
-                if ($fieldArgErrorMessage = $failedCastingFieldArgErrorMessages[$fieldArgName]) {
+                if ($fieldArgErrorMessage = $failedCastingFieldArgErrorMessages[$failedCastingFieldArgName]) {
                     $errorMessage = sprintf(
                         $this->translationAPI->__('Casting value \'%s\' for argument \'%s\' to type \'%s\' failed: %s. It has been ignored', 'pop-component-model'),
-                        $fieldArgs[$fieldArgName],
-                        $fieldArgName,
-                        $fieldArgNameTypes[$fieldArgName],
+                        $fieldArgs[$failedCastingFieldArgName],
+                        $failedCastingFieldArgName,
+                        $fieldArgNameTypes[$failedCastingFieldArgName],
                         $fieldArgErrorMessage
                     );
                 } else {
                     $errorMessage = sprintf(
                         $this->translationAPI->__('Casting value \'%s\' for argument \'%s\' to type \'%s\' failed, so it has been ignored', 'pop-component-model'),
-                        $fieldArgs[$fieldArgName],
-                        $fieldArgName,
-                        $fieldArgNameTypes[$fieldArgName]
+                        $fieldArgs[$failedCastingFieldArgName],
+                        $failedCastingFieldArgName,
+                        $fieldArgNameTypes[$failedCastingFieldArgName]
                     );
                 }
                 $schemaWarnings[] = $errorMessage;
