@@ -168,7 +168,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
                             // Throw an error, is $schemaWarnings is provided (no need when extracting args for the resultItem, only for the schema)
                             if (!is_null($schemaWarnings)) {
                                 $schemaWarnings[] = sprintf(
-                                    $this->translationAPI->__('The argument on position \'%s\' (with value \'%s\') has its name missing, and this information can\'t be retrieved from the schema definition. Please define the query using the \'key%svalue\' format. This argument has been ignored', 'pop-component-model'),
+                                    $this->translationAPI->__('The argument on position number %s (with value \'%s\') has its name missing, and this information can\'t be retrieved from the schema definition. Please define the query using the \'key%svalue\' format. This argument has been ignored', 'pop-component-model'),
                                     $i+1,
                                     $fieldArgValue,
                                     QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR
