@@ -211,6 +211,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
     public function extractFieldArgumentsForResultItem($fieldResolver, $resultItem, string $field, ?array $variables = null): array
     {
         $dbErrors = [];
+        $schemaWarnings = [];
         $fieldArgs = $this->extractFieldArguments($fieldResolver, $field);
         $fieldOutputKey = $this->getFieldOutputKey($field);
         $id = $fieldResolver->getId($resultItem);
@@ -226,16 +227,16 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
             }
         }
         $fieldArgs = $this->filterFieldArgs($fieldArgs);
-        // Cast the values to their appropriate type. No need to do anything about the errors
-        $failedCastingFieldArgErrorMessages = [];
-        $fieldArgs = $this->castFieldArguments($fieldResolver, $field, $fieldArgs, $failedCastingFieldArgErrorMessages);
+        // Cast the values to their appropriate type. If casting fails, the value returns as null
+        $fieldArgs = $this->castAndValidateFieldArgumentsForResultItem($fieldResolver, $field, $fieldArgs, $schemaWarnings);
         return [
             $fieldArgs,
-            $dbErrors
+            $dbErrors,
+            $schemaWarnings
         ];
     }
 
-    protected function castFieldArguments($fieldResolver, string $field, array $fieldArgs, array &$failedCastingFieldArgErrorMessages): array
+    protected function castFieldArguments($fieldResolver, string $field, array $fieldArgs, array &$failedCastingFieldArgErrorMessages, bool $forSchema): array
     {
         // Get the field argument types, to know to what type it will cast the value
         if ($fieldArgNameTypes = $this->getFieldArgumentNameTypes($fieldResolver, $field)) {
@@ -243,19 +244,39 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
             foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
                 // Maybe cast the value to the appropriate type. Eg: from string to boolean
                 if ($fieldArgType = $fieldArgNameTypes[$fieldArgName]) {
-                    $fieldArgValue = $this->typeCastingExecuter->cast($fieldArgType, $fieldArgValue);
-                    // If the response is an error, extract the error message and set value to null
-                    if (GeneralUtils::isError($fieldArgValue)) {
-                        $error = $fieldArgValue;
-                        $failedCastingFieldArgErrorMessages[$fieldArgName] = $error->getErrorMessage();
-                        $fieldArgs[$fieldArgName] = null;
-                        continue;
+                    // There are 2 possibilities for casting:
+                    // 1. $forSchema = true: Cast all items except fields (eg: has-comments())
+                    // 2. $forSchema = false: Cast only fields (needed for ResultItem)
+                    // Otherwise, simply add the fieldArgValue directly, it will be eventually casted by the other function
+                    $fieldArgValueIsAField = $this->isFieldArgumentValueAField($fieldResolver, $fieldArgValue);
+                    if (
+                        ($forSchema && !$fieldArgValueIsAField) ||
+                        (!$forSchema && $fieldArgValueIsAField)
+                    ) {
+                        $fieldArgValue = $this->typeCastingExecuter->cast($fieldArgType, $fieldArgValue);
+                        // If the response is an error, extract the error message and set value to null
+                        if (GeneralUtils::isError($fieldArgValue)) {
+                            $error = $fieldArgValue;
+                            $failedCastingFieldArgErrorMessages[$fieldArgName] = $error->getErrorMessage();
+                            $fieldArgs[$fieldArgName] = null;
+                            continue;
+                        }
                     }
                     $fieldArgs[$fieldArgName] = $fieldArgValue;
                 }
             }
         }
         return $fieldArgs;
+    }
+
+    protected function castFieldArgumentsForSchema($fieldResolver, string $field, array $fieldArgs, array &$failedCastingFieldArgErrorMessages): array
+    {
+        return $this->castFieldArguments($fieldResolver, $field, $fieldArgs, $failedCastingFieldArgErrorMessages, true);
+    }
+
+    protected function castFieldArgumentsForResultItem($fieldResolver, string $field, array $fieldArgs, array &$failedCastingFieldArgErrorMessages): array
+    {
+        return $this->castFieldArguments($fieldResolver, $field, $fieldArgs, $failedCastingFieldArgErrorMessages, false);
     }
 
     protected function getFieldArgumentNameTypes($fieldResolver, string $field): array
@@ -280,10 +301,22 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         return $fieldArgNameTypes;
     }
 
-    protected function castAndValidateFieldArguments($fieldResolver, string $field, array $fieldArgs, array &$schemaWarnings): array
+    protected function castAndValidateFieldArgumentsForSchema($fieldResolver, string $field, array $fieldArgs, array &$schemaWarnings): array
     {
         $failedCastingFieldArgErrorMessages = [];
-        $castedFieldArgs = $this->castFieldArguments($fieldResolver, $field, $fieldArgs, $failedCastingFieldArgErrorMessages);
+        $castedFieldArgs = $this->castFieldArgumentsForSchema($fieldResolver, $field, $fieldArgs, $failedCastingFieldArgErrorMessages);
+        return $this->castAndValidateFieldArguments($fieldResolver, $castedFieldArgs, $failedCastingFieldArgErrorMessages, $field, $fieldArgs, $schemaWarnings);
+    }
+
+    protected function castAndValidateFieldArgumentsForResultItem($fieldResolver, string $field, array $fieldArgs, array &$schemaWarnings): array
+    {
+        $failedCastingFieldArgErrorMessages = [];
+        $castedFieldArgs = $this->castFieldArgumentsForResultItem($fieldResolver, $field, $fieldArgs, $failedCastingFieldArgErrorMessages);
+        return $this->castAndValidateFieldArguments($fieldResolver, $castedFieldArgs, $failedCastingFieldArgErrorMessages, $field, $fieldArgs, $schemaWarnings);
+    }
+
+    protected function castAndValidateFieldArguments($fieldResolver, array $castedFieldArgs, array &$failedCastingFieldArgErrorMessages, string $field, array $fieldArgs, array &$schemaWarnings): array
+    {
         // If any casting can't be done, show an error
         if ($failedCastingFieldArgs = array_filter($castedFieldArgs, function($fieldArgValue) {
             return is_null($fieldArgValue);
@@ -348,7 +381,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
             }
             $fieldArgs = $this->filterFieldArgs($fieldArgs);
             // Cast the values to their appropriate type. If casting fails, the value returns as null
-            $fieldArgs = $this->castAndValidateFieldArguments($fieldResolver, $field, $fieldArgs, $schemaWarnings);
+            $fieldArgs = $this->castAndValidateFieldArgumentsForSchema($fieldResolver, $field, $fieldArgs, $schemaWarnings);
         }
         return [
             $fieldArgs,

@@ -17,15 +17,15 @@ trait DirectiveValidatorTrait
 
         // If there were errors, save them and remove the corresponding args from the directive
         if ($directiveSchemaErrors || $directiveSchemaWarnings || $directiveSchemaDeprecations) {
-            $directiveOutputKey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($directive);
+            $directiveOutputKey = $fieldQueryInterpreter->getFieldOutputKey($directive);
             foreach ($directiveSchemaErrors as $error) {
                 $schemaErrors[$directiveOutputKey][] = $error;
             }
-            foreach ($directiveSchemaWarnings as $error) {
-                $schemaWarnings[$directiveOutputKey][] = $error;
+            foreach ($directiveSchemaWarnings as $warning) {
+                $schemaWarnings[$directiveOutputKey][] = $warning;
             }
-            foreach ($directiveSchemaDeprecations as $error) {
-                $schemaDeprecations[$directiveOutputKey][] = $error;
+            foreach ($directiveSchemaDeprecations as $deprecation) {
+                $schemaDeprecations[$directiveOutputKey][] = $deprecation;
             }
             // If there's an error, those args will be removed. Then, re-create the fieldDirective to pass it to the function below
             $directiveName = $fieldQueryInterpreter->getFieldDirectiveName($directive);
@@ -40,13 +40,20 @@ trait DirectiveValidatorTrait
         ];
     }
 
-    protected function validateDirectiveForResultItem($fieldResolver, $resultItem, string $directive, array &$dbErrors): array
+    protected function validateDirectiveForResultItem($fieldResolver, $resultItem, string $directive, array &$dbErrors, array &$schemaWarnings): array
     {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         list(
             $directiveArgs,
-            $nestedDBErrors
+            $nestedDBErrors,
+            $nestedSchemaWarnings
         ) = $fieldQueryInterpreter->extractFieldArgumentsForResultItem($fieldResolver, $resultItem, $directive);
+        if ($nestedSchemaWarnings) {
+            $directiveOutputKey = $fieldQueryInterpreter->getFieldOutputKey($directive);
+            foreach ($nestedSchemaWarnings as $warning) {
+                $schemaWarnings[$directiveOutputKey][] = $warning;
+            }
+        }
         if ($nestedDBErrors) {
             foreach ($nestedDBErrors as $id => $fieldOutputKeyErrorMessages) {
                 $dbErrors[$id] = array_merge(
