@@ -1,7 +1,8 @@
 <?php
 namespace PoP\ComponentModel\Schema;
-use PoP\Translation\Contracts\TranslationAPIInterface;
 use PoP\ComponentModel\GeneralUtils;
+use PoP\Translation\Contracts\TranslationAPIInterface;
+use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 
 class FieldQueryInterpreter implements FieldQueryInterpreterInterface
 {
@@ -155,7 +156,10 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         if ($fieldArgsStr = trim($fieldArgsStr)) {
             // Iterate all the elements, and extract them into the array
             if ($fieldArgElems = GeneralUtils::splitElements($fieldArgsStr, QuerySyntax::SYMBOL_FIELDARGS_ARGSEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING])) {
-                $orderedFieldArgNamesEnabled = $fieldResolver->enableOrderedFieldDocumentationArgs($field);
+                // Important: provide the $fieldName instead of the $field to avoid an infinite loop
+                $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+                $fieldName = $fieldQueryInterpreter->getFieldName($field);
+                $orderedFieldArgNamesEnabled = $fieldResolver->enableOrderedFieldDocumentationArgs($fieldName);
                 if ($orderedFieldArgNamesEnabled) {
                     $orderedFieldArgNames = array_keys($this->getFieldArgumentNameTypes($fieldResolver, $field));
                 }
