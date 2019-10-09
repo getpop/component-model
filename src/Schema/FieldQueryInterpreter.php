@@ -174,7 +174,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
                             if (!is_null($schemaWarnings)) {
                                 $errorMessage = $orderedFieldArgNamesEnabled ?
                                     $this->translationAPI->__('documentation for this argument in the schema definition has not been defined, hence it can\'t be deduced from there', 'pop-component-model') :
-                                    $this->translationAPI->__('retrieving this information from the schema definition is disabled for this FieldResolver', 'pop-component-model');
+                                    $this->translationAPI->__('retrieving this information from the schema definition is disabled for the corresponding “fieldResolver”', 'pop-component-model');
                                 $schemaWarnings[] = sprintf(
                                     $this->translationAPI->__('The argument on position number %s (with value \'%s\') has its name missing, and %s. Please define the query using the \'key%svalue\' format. This argument has been ignored', 'pop-component-model'),
                                     $i+1,
