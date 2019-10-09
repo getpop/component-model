@@ -123,15 +123,15 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         return substr($field, $fieldArgsOpeningSymbolPos, $fieldArgsClosingSymbolPos+strlen(QuerySyntax::SYMBOL_FIELDARGS_CLOSING)-$fieldArgsOpeningSymbolPos);
     }
 
-    protected function extractFieldArguments(string $field): array
+    protected function extractFieldArguments($fieldResolver, string $field, ?array &$schemaWarnings = null): array
     {
-        if (!isset($this->extractedFieldArgumentsCache[$field])) {
-            $this->extractedFieldArgumentsCache[$field] = $this->doExtractFieldArguments($field);
+        if (!isset($this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field])) {
+            $this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field] = $this->doExtractFieldArguments($fieldResolver, $field, $schemaWarnings);
         }
-        return $this->extractedFieldArgumentsCache[$field];
+        return $this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field];
     }
 
-    protected function doExtractFieldArguments(string $field): array
+    protected function doExtractFieldArguments($fieldResolver, string $field, ?array &$schemaWarnings = null): array
     {
         $fieldArgs = [];
         // Extract the args from the string into an array
@@ -141,11 +141,35 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         // Remove the white spaces before and after
         if ($fieldArgsStr = trim($fieldArgsStr)) {
             // Iterate all the elements, and extract them into the array
-            foreach (GeneralUtils::splitElements($fieldArgsStr, QuerySyntax::SYMBOL_FIELDARGS_ARGSEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING]) as $fieldArg) {
-                $fieldArgParts = GeneralUtils::splitElements($fieldArg, QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_CLOSING]);
-                $fieldArgName = trim($fieldArgParts[0]);
-                $fieldArgValue = trim($fieldArgParts[1]);
-                $fieldArgs[$fieldArgName] = $fieldArgValue;
+            if ($fieldArgElems = GeneralUtils::splitElements($fieldArgsStr, QuerySyntax::SYMBOL_FIELDARGS_ARGSEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING])) {
+                $orderedFieldArgNames = array_keys($this->getFieldArgumentNameTypes($fieldResolver, $field));
+                for ($i=0; $i<count($fieldArgElems); $i++) {
+                    $fieldArg = $fieldArgElems[$i];
+                    // Either one of 2 formats are accepted:
+                    // 1. The key:value pair
+                    // 2. Only the value, and extract the key from the schema definition (if enabled for that field)
+                    $separatorPos = QueryUtils::findFirstSymbolPosition($fieldArg, QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_CLOSING]);
+                    if ($separatorPos === false) {
+                        $fieldArgValue = $fieldArg;
+                        if (!isset($orderedFieldArgNames[$i])) {
+                            // Throw an error, is $schemaWarnings is provided (no need when extracting args for the resultItem, only for the schema)
+                            if (!is_null($schemaWarnings)) {
+                                $schemaWarnings[] = sprintf(
+                                    $this->translationAPI->__('The argument name to which assign value \'%s\' is missing, and this information can\'t be retrieved from the schema definition. Please define the query using the \'key%svalue\' format. This argument has been ignored', 'pop-component-model'),
+                                    $fieldArgValue,
+                                    QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR
+                                );
+                            }
+                            // Ignore extracting this argument
+                            continue;
+                        }
+                        $fieldArgName = $orderedFieldArgNames[$i];
+                    } else {
+                        $fieldArgName = trim(substr($fieldArg, 0, $separatorPos));
+                        $fieldArgValue = trim(substr($fieldArg, $separatorPos + strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR)));
+                    }
+                    $fieldArgs[$fieldArgName] = $fieldArgValue;
+                }
             }
         }
 
@@ -164,7 +188,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
     public function extractFieldArgumentsForResultItem($fieldResolver, $resultItem, string $field, ?array $variables = null): array
     {
         $dbErrors = [];
-        $fieldArgs = $this->extractFieldArguments($field);
+        $fieldArgs = $this->extractFieldArguments($fieldResolver, $field);
         $fieldOutputKey = $this->getFieldOutputKey($field);
         $id = $fieldResolver->getId($resultItem);
         foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
@@ -272,7 +296,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         $schemaErrors = [];
         $schemaWarnings = [];
         $schemaDeprecations = [];
-        if ($fieldArgs = $this->extractFieldArguments($field)) {
+        if ($fieldArgs = $this->extractFieldArguments($fieldResolver, $field, $schemaWarnings)) {
             foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
                 $fieldArgValue = $this->maybeConvertFieldArgumentValue($fieldArgValue, $variables);
                 // Validate it
