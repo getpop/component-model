@@ -155,7 +155,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         if ($fieldArgsStr = trim($fieldArgsStr)) {
             // Iterate all the elements, and extract them into the array
             if ($fieldArgElems = GeneralUtils::splitElements($fieldArgsStr, QuerySyntax::SYMBOL_FIELDARGS_ARGSEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING])) {
-                $orderedFieldArgNamesEnabled = true;
+                $orderedFieldArgNamesEnabled = $fieldResolver->enableOrderedFieldDocumentationArgs($field);
                 if ($orderedFieldArgNamesEnabled) {
                     $orderedFieldArgNames = array_keys($this->getFieldArgumentNameTypes($fieldResolver, $field));
                 }
