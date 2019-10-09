@@ -9,10 +9,10 @@ class ErrorMessageStore implements ErrorMessageStoreInterface
 
     public function addDBWarnings(array $dbWarnings)
     {
-        foreach ($dbWarnings as $dbObjectID => $dbObjectWarnings) {
-            $this->$dbWarnings[$dbObjectID] = array_merge(
-                $this->$dbWarnings[$dbObjectID] ?? [],
-                $dbObjectWarnings
+        foreach ($dbWarnings as $resultItemID => $resultItemWarnings) {
+            $this->dbWarnings[$resultItemID] = array_merge(
+                $this->dbWarnings[$resultItemID] ?? [],
+                $resultItemWarnings
             );
         }
     }
