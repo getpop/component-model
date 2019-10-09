@@ -246,12 +246,11 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
                 if ($fieldArgType = $fieldArgNameTypes[$fieldArgName]) {
                     // There are 2 possibilities for casting:
                     // 1. $forSchema = true: Cast all items except fields (eg: has-comments())
-                    // 2. $forSchema = false: Cast only fields (needed for ResultItem)
+                    // 2. $forSchema = false: Should be cast only fields, however by now we can't tell which are fields and which are not, since fields have already been resolved to their value. Hence, cast everything (fieldArgValues that failed at the schema level will not be provided in the input array, so won't be validated twice)
                     // Otherwise, simply add the fieldArgValue directly, it will be eventually casted by the other function
-                    $fieldArgValueIsAField = $this->isFieldArgumentValueAField($fieldResolver, $fieldArgValue);
                     if (
-                        ($forSchema && !$fieldArgValueIsAField) ||
-                        (!$forSchema && $fieldArgValueIsAField)
+                        ($forSchema && !$this->isFieldArgumentValueAField($fieldResolver, $fieldArgValue)) ||
+                        !$forSchema
                     ) {
                         $fieldArgValue = $this->typeCastingExecuter->cast($fieldArgType, $fieldArgValue);
                         // If the response is an error, extract the error message and set value to null
