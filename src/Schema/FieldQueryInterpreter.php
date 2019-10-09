@@ -216,14 +216,15 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         if ($fieldArgs = $this->extractFieldArguments($fieldResolver, $field, $schemaWarnings)) {
             foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
                 $fieldArgValue = $this->maybeConvertFieldArgumentValue($fieldArgValue, $variables);
+                $fieldArgs[$fieldArgName] = $fieldArgValue;
                 // Validate it
                 if ($maybeErrors = $this->resolveFieldArgumentValueErrorDescriptionsForSchema($fieldResolver, $fieldArgValue)) {
                     $schemaErrors = array_merge(
                         $schemaErrors,
                         $maybeErrors
                     );
+                    // Because it's an error, set the value to null, so it will be filtered out
                     $fieldArgs[$fieldArgName] = null;
-                    continue;
                 }
                 // Find warnings and deprecations
                 if ($maybeWarnings = $this->resolveFieldArgumentValueWarningsForSchema($fieldResolver, $fieldArgValue)) {
@@ -238,7 +239,6 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
                         $maybeDeprecations
                     );
                 }
-                $fieldArgs[$fieldArgName] = $fieldArgValue;
             }
             $fieldArgs = $this->filterFieldArgs($fieldArgs);
             // Cast the values to their appropriate type. If casting fails, the value returns as null
@@ -265,9 +265,9 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
                 $error = $fieldArgValue;
                 $dbErrors[(string)$id][$fieldOutputKey][] = $error->getErrorMessage();
                 $fieldArgs[$fieldArgName] = null;
-            } else {
-                $fieldArgs[$fieldArgName] = $fieldArgValue;
+                continue;
             }
+            $fieldArgs[$fieldArgName] = $fieldArgValue;
         }
         $fieldArgs = $this->filterFieldArgs($fieldArgs);
         // Cast the values to their appropriate type. If casting fails, the value returns as null
