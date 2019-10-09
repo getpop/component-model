@@ -40,25 +40,25 @@ trait DirectiveValidatorTrait
         ];
     }
 
-    protected function validateDirectiveForResultItem($fieldResolver, $resultItem, string $directive, array &$dbErrors, array &$schemaWarnings): array
+    protected function validateDirectiveForResultItem($fieldResolver, $resultItem, string $directive, array &$dbErrors, array &$dbWarnings): array
     {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         list(
             $directiveArgs,
             $nestedDBErrors,
-            $nestedSchemaWarnings
+            $nestedDBWarnings
         ) = $fieldQueryInterpreter->extractFieldArgumentsForResultItem($fieldResolver, $resultItem, $directive);
-        if ($nestedSchemaWarnings) {
-            $directiveOutputKey = $fieldQueryInterpreter->getFieldOutputKey($directive);
-            foreach ($nestedSchemaWarnings as $warning) {
-                $schemaWarnings[$directiveOutputKey][] = $warning;
-            }
-        }
-        if ($nestedDBErrors) {
+        if ($nestedDBWarnings || $nestedDBErrors) {
             foreach ($nestedDBErrors as $id => $fieldOutputKeyErrorMessages) {
                 $dbErrors[$id] = array_merge(
                     $dbErrors[$id] ?? [],
                     $fieldOutputKeyErrorMessages
+                );
+            }
+            foreach ($nestedDBWarnings as $id => $fieldOutputKeyWarningMessages) {
+                $dbWarnings[$id] = array_merge(
+                    $dbWarnings[$id] ?? [],
+                    $fieldOutputKeyWarningMessages
                 );
             }
             // If there's an error, those args will be removed. Then, re-create the fieldDirective to pass it to the function below
