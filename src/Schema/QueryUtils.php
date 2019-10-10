@@ -12,7 +12,7 @@ class QueryUtils
         }
         // Split on that searching element: If it appears within the string, it will produce an array with at least 2 elements
         // The length of the first element equals the position of that symbol
-        $symbolElems = GeneralUtils::splitElements($haystack, $needle, $skipFromChars, $skipUntilChars);
+        $symbolElems = GeneralUtils::splitElements($haystack, $needle, $skipFromChars, $skipUntilChars, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING);
         if (count($symbolElems) >= 2) {
             return strlen($symbolElems[0]);
         }
@@ -32,7 +32,7 @@ class QueryUtils
         }
         // Split on that searching element: If it appears within the string, it will produce an array with at least 2 elements
         // The length of the string minus the length of the last element element equals the position of that symbol
-        $symbolElems = GeneralUtils::splitElements($haystack, $needle, $skipFromChars, $skipUntilChars);
+        $symbolElems = GeneralUtils::splitElements($haystack, $needle, $skipFromChars, $skipUntilChars, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING);
         $symbolElemCount = count($symbolElems);
         if ($symbolElemCount >= 2) {
             return strlen($haystack)-(strlen($symbolElems[$symbolElemCount-1])+strlen($needle));
