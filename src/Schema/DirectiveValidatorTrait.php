@@ -4,7 +4,7 @@ use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 
 trait DirectiveValidatorTrait
 {
-    protected function validateDirectiveForResultItem($fieldResolver, $resultItem, string $directive, array &$dbErrors, array &$dbWarnings): array
+    protected function dissectAndValidateDirectiveForResultItem($fieldResolver, $resultItem, string $directive, array &$dbErrors, array &$dbWarnings): array
     {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         list(
