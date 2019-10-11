@@ -215,6 +215,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         $schemaErrors = [];
         $schemaWarnings = [];
         $schemaDeprecations = [];
+        $validField = $field;
         $fieldName = $this->getFieldName($field);
         if ($fieldArgs = $this->extractFieldArguments($fieldResolver, $field, $schemaWarnings)) {
             foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
@@ -252,14 +253,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
             $validField = null;
         } elseif ($schemaWarnings) {
             // Re-create the field, eliminating the fieldArgs that failed
-            $validField = $this->getField(
-                $fieldName,
-                $fieldArgs,
-                $this->getFieldAlias($field),
-                $this->getDirectives($field)
-            );
-        } else {
-            $validField = $field;
+            $validField = $this->replaceFieldArgs($field, $fieldArgs);
         }
         return [
             $validField,
@@ -269,6 +263,33 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
             $schemaWarnings,
             $schemaDeprecations,
         ];
+    }
+
+    /**
+     * Replace the fieldArgs in the field
+     *
+     * @param string $field
+     * @param array $fieldArgs
+     * @return string
+     */
+    protected function replaceFieldArgs(string $field, array $fieldArgs = []): string
+    {
+        // Return a new field, replacing its fieldArgs (if any) with the provided ones
+        // Used when validating a field and removing the fieldArgs that threw a warning
+        list(
+            $fieldArgsOpeningSymbolPos,
+            $fieldArgsClosingSymbolPos
+        ) = QueryHelpers::listFieldArgsSymbolPositions($field);
+
+        // If it currently has fieldArgs, append the fieldArgs after the fieldName
+        if ($fieldArgsOpeningSymbolPos !== false && $fieldArgsClosingSymbolPos !== false) {
+            $fieldName = $this->getFieldName($field);
+            return substr($field, 0, $fieldArgsOpeningSymbolPos).$this->getFieldArgsAsString($fieldArgs).substr($field, $fieldArgsClosingSymbolPos+strlen(QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING));
+        }
+
+        // Otherwise there are none. Then add the fieldArgs between the fieldName and whatever may come after (alias, directives, or nothing)
+        $fieldName = $this->getFieldName($field);
+        return $fieldName.$this->getFieldArgsAsString($fieldArgs).substr($field, strlen($fieldName));
     }
 
     public function extractFieldArgumentsForResultItem(FieldResolverInterface $fieldResolver, $resultItem, string $field, ?array $variables = null): array
@@ -312,12 +333,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
                 $validField = null;
             } elseif ($dbWarnings) {
                 // Re-create the field, eliminating the fieldArgs that failed
-                $validField = $this->getField(
-                    $fieldName,
-                    $fieldArgs,
-                    $this->getFieldAlias($field),
-                    $this->getDirectives($field)
-                );
+                $validField = $this->replaceFieldArgs($field, $fieldArgs);
             }
         }
         return [
@@ -852,21 +868,48 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         return $fieldDirectiveOpeningSymbolElems[0];
     }
 
-    public function getField(string $fieldName, array $fieldArgs = [], string $fieldAlias = null, array $fieldDirectives = []): string
+    public function getField(string $fieldName, array $fieldArgs = [], ?string $fieldAlias = null, ?array $fieldDirectives = []): string
     {
+        return $fieldName.
+            $this->getFieldArgsAsString($fieldArgs).
+            $this->getFieldAliasAsString($fieldAlias).
+            $this->getFieldDirectivesAsString($fieldDirectives);
+    }
+
+    protected function getFieldArgsAsString(array $fieldArgs = []): string
+    {
+        if (!$fieldArgs) {
+            return '';
+        }
         $elems = [];
         foreach ($fieldArgs as $key => $value) {
             $elems[] = $key.QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR.$value;
         }
-        return $fieldName.
-            (!empty($elems) ? QuerySyntax::SYMBOL_FIELDARGS_OPENING.implode(QuerySyntax::SYMBOL_FIELDARGS_ARGSEPARATOR, $elems).QuerySyntax::SYMBOL_FIELDARGS_CLOSING : '').
-            ($fieldAlias ? QuerySyntax::SYMBOL_FIELDALIAS_PREFIX.$fieldAlias : '').
-            ($fieldDirectives ? array_map(
+        return QuerySyntax::SYMBOL_FIELDARGS_OPENING.implode(QuerySyntax::SYMBOL_FIELDARGS_ARGSEPARATOR, $elems).QuerySyntax::SYMBOL_FIELDARGS_CLOSING;
+    }
+
+    protected function getFieldAliasAsString(?string $fieldAlias = null): string
+    {
+        if (!$fieldAlias) {
+            return '';
+        }
+        return QuerySyntax::SYMBOL_FIELDALIAS_PREFIX.$fieldAlias;
+    }
+
+    protected function getFieldDirectivesAsString(?array $fieldDirectives = []): string
+    {
+        if (!$fieldDirectives) {
+            return '';
+        }
+        return
+            QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING.
+            array_map(
                 function($fieldDirective) {
                     return $this->getFieldDirectiveAsString($fieldDirective);
                 },
                 $fieldDirectives
-            ) : '');
+            ).
+            QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING;
     }
 
     public function getFieldDirectiveAsString(array $fieldDirectives): string
