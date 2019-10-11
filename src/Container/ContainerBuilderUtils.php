@@ -1,7 +1,7 @@
 <?php
 namespace PoP\ComponentModel\Container;
 
-use PoP\ComponentModel\FieldValueResolvers\FieldValueResolverInterface;
+use PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups;
 use PoP\Root\Container\ContainerBuilderUtils as RootContainerBuilderUtils;
 
 class ContainerBuilderUtils {
@@ -15,10 +15,7 @@ class ContainerBuilderUtils {
     public static function attachFieldValueResolversFromNamespace(string $namespace): void
     {
         foreach (RootContainerBuilderUtils::getNamespaceServiceIds($namespace) as $serviceClass) {
-            // Make sure this class is a fieldValueResolver, which implements the Attachable trait
-            // if ($serviceClass::class instanceof FieldValueResolverInterface) {
-                $serviceClass::attach(POP_ATTACHABLEEXTENSIONGROUP_FIELDVALUERESOLVERS);
-            // }
+            $serviceClass::attach(AttachableExtensionGroups::FIELDVALUERESOLVERS);
         }
     }
 }
