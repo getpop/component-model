@@ -22,7 +22,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
      * @param array $fieldArgs
      * @return boolean
      */
-    public function resolveCanProcess(string $fieldName, array $fieldArgs = []): bool
+    public function resolveCanProcess($fieldResolver, string $fieldName, array $fieldArgs = []): bool
     {
         return true;
     }
@@ -86,13 +86,13 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         $documentation = [
             SchemaDefinition::ARGNAME_NAME => $fieldName,
         ];
-        if ($type = $this->getFieldDocumentationType($fieldName)) {
+        if ($type = $this->getFieldDocumentationType($fieldResolver, $fieldName)) {
             $documentation[SchemaDefinition::ARGNAME_TYPE] = $type;
         }
-        if ($description = $this->getFieldDocumentationDescription($fieldName)) {
+        if ($description = $this->getFieldDocumentationDescription($fieldResolver, $fieldName)) {
             $documentation[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
         }
-        if ($deprecationDescription = $this->getFieldDocumentationDeprecationDescription($fieldName, $fieldArgs)) {
+        if ($deprecationDescription = $this->getFieldDocumentationDeprecationDescription($fieldResolver, $fieldName, $fieldArgs)) {
             $documentation[SchemaDefinition::ARGNAME_DEPRECATED] = true;
             $documentation[SchemaDefinition::ARGNAME_DEPRECATEDDESCRIPTION] = $deprecationDescription;
         }
@@ -106,12 +106,12 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         return $documentation;
     }
 
-    public function getFieldDocumentationType(string $fieldName): ?string
+    public function getFieldDocumentationType($fieldResolver, string $fieldName): ?string
     {
         return null;
     }
 
-    public function getFieldDocumentationDescription(string $fieldName): ?string
+    public function getFieldDocumentationDescription($fieldResolver, string $fieldName): ?string
     {
         return null;
     }
@@ -121,7 +121,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         return null;
     }
 
-    public function enableOrderedFieldDocumentationArgs(string $fieldName): bool
+    public function enableOrderedFieldDocumentationArgs($fieldResolver, string $fieldName): bool
     {
         return true;
     }
@@ -131,7 +131,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         return null;
     }
 
-    public function getFieldDocumentationDeprecationDescription(string $fieldName, array $fieldArgs = []): ?string
+    public function getFieldDocumentationDeprecationDescription($fieldResolver, string $fieldName, array $fieldArgs = []): ?string
     {
         return null;
     }
