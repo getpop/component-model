@@ -3,6 +3,7 @@ namespace PoP\ComponentModel\FieldValueResolvers;
 use PoP\ComponentModel\Facades\Managers\InstanceManagerFacade;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\Schema\SchemaDefinition;
+use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 
 abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
 {
