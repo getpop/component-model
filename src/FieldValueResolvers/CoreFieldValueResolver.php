@@ -54,6 +54,3 @@ class CoreFieldValueResolver extends AbstractDBDataFieldValueResolver
         return parent::resolveFieldDefaultDataloaderClass($fieldResolver, $fieldName, $fieldArgs);
     }
 }
-
-// Static Initialization: Attach
-CoreFieldValueResolver::attach(POP_ATTACHABLEEXTENSIONGROUP_FIELDVALUERESOLVERS);

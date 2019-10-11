@@ -65,3 +65,8 @@ services:
     type_casting_executer:
         class: \PoP\ComponentModel\Schema\TypeCastingExecuter
         public: true
+
+    PoP\ComponentModel\FieldValueResolvers\:
+        resource: '../src/FieldValueResolvers/*'
+        public: true
+
