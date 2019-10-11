@@ -297,7 +297,23 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         foreach ($resultItemDBWarnings as $warning) {
             $dbWarnings[(string)$id][$fieldOutputKey][] = $warning;
         }
+        $fieldName = $this->getFieldName($field);
+        if ($dbErrors) {
+            $validField = null;
+        } elseif ($dbWarnings) {
+            // Re-create the field, eliminating the fieldArgs that failed
+            $validField = $this->getField(
+                $fieldName,
+                $fieldArgs,
+                $this->getFieldAlias($field),
+                $this->getDirectives($field)
+            );
+        } else {
+            $validField = $field;
+        }
         return [
+            $validField,
+            $fieldName,
             $fieldArgs,
             $dbErrors,
             $dbWarnings

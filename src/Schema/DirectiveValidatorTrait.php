@@ -8,6 +8,8 @@ trait DirectiveValidatorTrait
     {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         list(
+            $validDirective,
+            $directiveName,
             $directiveArgs,
             $nestedDBErrors,
             $nestedDBWarnings
@@ -25,15 +27,10 @@ trait DirectiveValidatorTrait
                     $fieldOutputKeyWarningMessages
                 );
             }
-            // If there's an error, those args will be removed. Then, re-create the fieldDirective to pass it to the function below
-            $directiveName = $fieldQueryInterpreter->getFieldDirectiveName($directive);
-            return [
-                $fieldQueryInterpreter->getFieldDirective($directiveName, $directiveArgs),
-                $directiveArgs
-            ];
         }
         return [
-            $directive,
+            $validDirective,
+            $directiveName,
             $directiveArgs,
         ];
     }
