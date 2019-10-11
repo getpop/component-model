@@ -4,7 +4,7 @@ namespace PoP\ComponentModel\Container;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups;
 use PoP\Root\Container\ContainerBuilderUtils as RootContainerBuilderUtils;
 
-class ContainerBuilderUtils {
+class ContainerBuilderUtils extends RootContainerBuilderUtils {
 
     /**
      * Attach all fieldValueResolvers located under the specified namespace
@@ -14,7 +14,7 @@ class ContainerBuilderUtils {
      */
     public static function attachFieldValueResolversFromNamespace(string $namespace): void
     {
-        foreach (RootContainerBuilderUtils::getServiceClassesUnderNamespace($namespace) as $serviceClass) {
+        foreach (self::getServiceClassesUnderNamespace($namespace) as $serviceClass) {
             $serviceClass::attach(AttachableExtensionGroups::FIELDVALUERESOLVERS);
         }
     }
@@ -27,7 +27,7 @@ class ContainerBuilderUtils {
      */
     public static function attachDirectiveResolversFromNamespace(string $namespace): void
     {
-        foreach (RootContainerBuilderUtils::getServiceClassesUnderNamespace($namespace) as $serviceClass) {
+        foreach (self::getServiceClassesUnderNamespace($namespace) as $serviceClass) {
             $serviceClass::attach(AttachableExtensionGroups::FIELDDIRECTIVERESOLVERS);
         }
     }
