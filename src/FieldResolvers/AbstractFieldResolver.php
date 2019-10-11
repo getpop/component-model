@@ -104,7 +104,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $directiveSchemaErrors,
             $directiveSchemaWarnings,
             $directiveSchemaDeprecations
-        ) = $fieldQueryInterpreter->extractFieldArgumentsForSchema($this, $directive);
+        ) = $fieldQueryInterpreter->extractDirectiveArgumentsForSchema($this, $directive);
 
         // If there were errors, save them and remove the corresponding args from the directive
         if ($directiveSchemaErrors || $directiveSchemaWarnings || $directiveSchemaDeprecations) {

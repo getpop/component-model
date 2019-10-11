@@ -265,6 +265,11 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         ];
     }
 
+    public function extractDirectiveArgumentsForSchema(FieldResolverInterface $fieldResolver, string $field, ?array $variables = null): array
+    {
+        return $this->extractFieldArgumentsForSchema($fieldResolver, $field, $variables);
+    }
+
     /**
      * Replace the fieldArgs in the field
      *
@@ -343,6 +348,11 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
             $dbErrors,
             $dbWarnings
         ];
+    }
+
+    public function extractDirectiveArgumentsForResultItem(FieldResolverInterface $fieldResolver, $resultItem, string $field, ?array $variables = null): array
+    {
+        return $this->extractFieldArgumentsForResultItem($fieldResolver, $resultItem, $field, $variables);
     }
 
     protected function castFieldArguments(FieldResolverInterface $fieldResolver, string $field, array $fieldArgs, array &$failedCastingFieldArgErrorMessages, bool $forSchema): array
