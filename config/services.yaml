@@ -74,3 +74,6 @@ services:
         resource: '../src/FieldValueResolvers/*'
         public: true
 
+    PoP\ComponentModel\DirectiveResolvers\:
+        resource: '../src/DirectiveResolvers/*'
+        public: true
