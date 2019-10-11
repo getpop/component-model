@@ -247,6 +247,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
         // If we reach here, no fieldValueResolver processes this field, which is an error
         $translationAPI = TranslationAPIFacade::getInstance();
+        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+        $fieldName = $fieldQueryInterpreter->getFieldName($field);
         return [
             sprintf(
                 $translationAPI->__('No FieldValueResolver resolves field \'%s\'', 'pop-component-model'),
