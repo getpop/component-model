@@ -18,4 +18,17 @@ class ContainerBuilderUtils {
             $serviceClass::attach(AttachableExtensionGroups::FIELDVALUERESOLVERS);
         }
     }
+
+    /**
+     * Attach all directiveResolvers located under the specified namespace
+     *
+     * @param string $namespace
+     * @return void
+     */
+    public static function attachDirectiveResolversFromNamespace(string $namespace): void
+    {
+        foreach (RootContainerBuilderUtils::getServiceClassesUnderNamespace($namespace) as $serviceClass) {
+            $serviceClass::attach(AttachableExtensionGroups::FIELDDIRECTIVERESOLVERS);
+        }
+    }
 }

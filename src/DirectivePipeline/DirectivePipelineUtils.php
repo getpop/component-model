@@ -1,5 +1,5 @@
 <?php
-namespace PoP\ComponentModel\DirectiveResolvers;
+namespace PoP\ComponentModel\DirectivePipeline;
 
 class DirectivePipelineUtils
 {

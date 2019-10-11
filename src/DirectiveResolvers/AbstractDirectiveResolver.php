@@ -1,8 +1,9 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
 use League\Pipeline\StageInterface;
-use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 use PoP\ComponentModel\FieldResolverBase;
+use PoP\ComponentModel\DirectivePipeline\DirectivePipelineUtils;
+use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 
 abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, StageInterface
 {
