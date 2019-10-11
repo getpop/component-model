@@ -116,7 +116,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         return null;
     }
 
-    public function getFieldDocumentationArgs($fieldResolver, string $fieldName): ?array
+    public function getFieldDocumentationArgs($fieldResolver, string $fieldName): array
     {
         return null;
     }
