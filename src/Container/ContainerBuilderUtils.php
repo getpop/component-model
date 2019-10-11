@@ -14,7 +14,7 @@ class ContainerBuilderUtils {
      */
     public static function attachFieldValueResolversFromNamespace(string $namespace): void
     {
-        foreach (RootContainerBuilderUtils::getNamespaceServiceIds($namespace) as $serviceClass) {
+        foreach (RootContainerBuilderUtils::getServiceClassesUnderNamespace($namespace) as $serviceClass) {
             $serviceClass::attach(AttachableExtensionGroups::FIELDVALUERESOLVERS);
         }
     }
