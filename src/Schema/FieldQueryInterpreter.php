@@ -263,7 +263,11 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
             // Validate it
             if (\PoP\ComponentModel\GeneralUtils::isError($fieldArgValue)) {
                 $error = $fieldArgValue;
-                $dbErrors[(string)$id][$fieldOutputKey][] = $error->getErrorMessage();
+                if ($errorData = $error->getErrorData()) {
+                    $errorOutputKey = $errorData['fieldName'];
+                }
+                $errorOutputKey = $errorOutputKey ?? $fieldOutputKey;
+                $dbErrors[(string)$id][$errorOutputKey][] = $error->getErrorMessage();
                 $fieldArgs[$fieldArgName] = null;
                 continue;
             }
