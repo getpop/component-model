@@ -562,9 +562,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         do {
             // Important: do array_reverse to enable more specific hooks, which are initialized later on in the project, to be the chosen ones (if their priority is the same)
             foreach ($attachableExtensionManager->getExtensionClasses($class, \PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups::FIELDDIRECTIVERESOLVERS) as $extensionClass => $extensionPriority) {
-                // $directiveResolver = $instanceManager->getInstance($extensionClass);
-                // // Don't override classes for those already-set directive names
-                // $directiveName = $directiveResolver->getDirectiveName();
                 $directiveName = $extensionClass::DIRECTIVE_NAME;
                 if (!in_array($directiveName, array_keys($ret))) {
                     $ret[$directiveName] = $extensionClass;
