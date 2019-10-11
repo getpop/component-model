@@ -1,9 +1,9 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
 use League\Pipeline\StageInterface;
-use PoP\ComponentModel\FieldResolverBase;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineUtils;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
+use PoP\ComponentModel\FieldResolvers\AbstractFieldResolver;
 
 abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, StageInterface
 {
@@ -18,7 +18,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     {
         // By default, be attached to all fieldResolvers
         return [
-            FieldResolverBase::class,
+            AbstractFieldResolver::class,
         ];
     }
 
