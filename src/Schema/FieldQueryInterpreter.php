@@ -1,7 +1,8 @@
 <?php
 namespace PoP\ComponentModel\Schema;
-use PoP\Translation\Contracts\TranslationAPIInterface;
 use PoP\ComponentModel\GeneralUtils;
+use PoP\ComponentModel\Schema\FieldQueryUtils;
+use PoP\Translation\Contracts\TranslationAPIInterface;
 
 class FieldQueryInterpreter implements FieldQueryInterpreterInterface
 {
@@ -272,44 +273,51 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
     public function extractFieldArgumentsForResultItem($fieldResolver, $resultItem, string $field, ?array $variables = null): array
     {
         $dbErrors = $dbWarnings = [];
-        $fieldArgs = $this->extractFieldArguments($fieldResolver, $field);
-        $fieldOutputKey = $this->getFieldOutputKey($field);
-        $id = $fieldResolver->getId($resultItem);
-        foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
-            $fieldArgValue = $this->maybeResolveFieldArgumentValueForResultItem($fieldResolver, $resultItem, $fieldArgValue, $variables);
-            // Validate it
-            if (\PoP\ComponentModel\GeneralUtils::isError($fieldArgValue)) {
-                $error = $fieldArgValue;
-                if ($errorData = $error->getErrorData()) {
-                    $errorOutputKey = $errorData['fieldName'];
-                }
-                $errorOutputKey = $errorOutputKey ?? $fieldOutputKey;
-                $dbErrors[(string)$id][$errorOutputKey][] = $error->getErrorMessage();
-                $fieldArgs[$fieldArgName] = null;
-                continue;
-            }
-            $fieldArgs[$fieldArgName] = $fieldArgValue;
-        }
-        $fieldArgs = $this->filterFieldArgs($fieldArgs);
-        // Cast the values to their appropriate type. If casting fails, the value returns as null
-        $resultItemDBWarnings = [];
-        $fieldArgs = $this->castAndValidateFieldArgumentsForResultItem($fieldResolver, $field, $fieldArgs, $resultItemDBWarnings);
-        foreach ($resultItemDBWarnings as $warning) {
-            $dbWarnings[(string)$id][$fieldOutputKey][] = $warning;
-        }
+        $validField = $field;
         $fieldName = $this->getFieldName($field);
-        if ($dbErrors) {
-            $validField = null;
-        } elseif ($dbWarnings) {
-            // Re-create the field, eliminating the fieldArgs that failed
-            $validField = $this->getField(
-                $fieldName,
-                $fieldArgs,
-                $this->getFieldAlias($field),
-                $this->getDirectives($field)
-            );
-        } else {
-            $validField = $field;
+        $fieldArgs = $this->extractFieldArguments($fieldResolver, $field);
+
+        // Only need to extract arguments if they have fields
+        if (FieldQueryUtils::isAnyFieldArgumentValueAField(
+            array_values(
+                $fieldArgs
+            )
+        )) {
+            $fieldOutputKey = $this->getFieldOutputKey($field);
+            $id = $fieldResolver->getId($resultItem);
+            foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
+                $fieldArgValue = $this->maybeResolveFieldArgumentValueForResultItem($fieldResolver, $resultItem, $fieldArgValue, $variables);
+                // Validate it
+                if (\PoP\ComponentModel\GeneralUtils::isError($fieldArgValue)) {
+                    $error = $fieldArgValue;
+                    if ($errorData = $error->getErrorData()) {
+                        $errorOutputKey = $errorData['fieldName'];
+                    }
+                    $errorOutputKey = $errorOutputKey ?? $fieldOutputKey;
+                    $dbErrors[(string)$id][$errorOutputKey][] = $error->getErrorMessage();
+                    $fieldArgs[$fieldArgName] = null;
+                    continue;
+                }
+                $fieldArgs[$fieldArgName] = $fieldArgValue;
+            }
+            $fieldArgs = $this->filterFieldArgs($fieldArgs);
+            // Cast the values to their appropriate type. If casting fails, the value returns as null
+            $resultItemDBWarnings = [];
+            $fieldArgs = $this->castAndValidateFieldArgumentsForResultItem($fieldResolver, $field, $fieldArgs, $resultItemDBWarnings);
+            foreach ($resultItemDBWarnings as $warning) {
+                $dbWarnings[(string)$id][$fieldOutputKey][] = $warning;
+            }
+            if ($dbErrors) {
+                $validField = null;
+            } elseif ($dbWarnings) {
+                // Re-create the field, eliminating the fieldArgs that failed
+                $validField = $this->getField(
+                    $fieldName,
+                    $fieldArgs,
+                    $this->getFieldAlias($field),
+                    $this->getDirectives($field)
+                );
+            }
         }
         return [
             $validField,
