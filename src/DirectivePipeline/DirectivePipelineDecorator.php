@@ -1,6 +1,7 @@
 <?php
 namespace PoP\ComponentModel\DirectivePipeline;
 use League\Pipeline\PipelineInterface;
+use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 
 class DirectivePipelineDecorator
 {
@@ -9,7 +10,7 @@ class DirectivePipelineDecorator
     {
         $this->pipeline = $pipeline;
     }
-    public function resolvePipeline($fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    public function resolvePipeline(FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         $payload = $this->pipeline->process(
             DirectivePipelineUtils::convertArgumentsToPayload(

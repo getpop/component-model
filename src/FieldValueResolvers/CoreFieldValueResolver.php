@@ -3,6 +3,7 @@ namespace PoP\ComponentModel\FieldValueResolvers;
 use PoP\ComponentModel\FieldResolvers\AbstractFieldResolver;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
+use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 
 class CoreFieldValueResolver extends AbstractDBDataFieldValueResolver
 {
@@ -20,7 +21,7 @@ class CoreFieldValueResolver extends AbstractDBDataFieldValueResolver
         ];
     }
 
-    public function getFieldDocumentationType($fieldResolver, string $fieldName): ?string
+    public function getFieldDocumentationType(FieldResolverInterface $fieldResolver, string $fieldName): ?string
     {
         $types = [
             'id' => SchemaDefinition::TYPE_ID,
@@ -28,7 +29,7 @@ class CoreFieldValueResolver extends AbstractDBDataFieldValueResolver
         return $types[$fieldName] ?? parent::getFieldDocumentationType($fieldResolver, $fieldName);
     }
 
-    public function getFieldDocumentationDescription($fieldResolver, string $fieldName): ?string
+    public function getFieldDocumentationDescription(FieldResolverInterface $fieldResolver, string $fieldName): ?string
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         $descriptions = [
@@ -37,7 +38,7 @@ class CoreFieldValueResolver extends AbstractDBDataFieldValueResolver
         return $descriptions[$fieldName] ?? parent::getFieldDocumentationDescription($fieldResolver, $fieldName);
     }
 
-    public function resolveValue($fieldResolver, $resultItem, string $fieldName, array $fieldArgs = [])
+    public function resolveValue(FieldResolverInterface $fieldResolver, $resultItem, string $fieldName, array $fieldArgs = [])
     {
         switch ($fieldName) {
             case 'id':
@@ -47,7 +48,7 @@ class CoreFieldValueResolver extends AbstractDBDataFieldValueResolver
         return parent::resolveValue($fieldResolver, $resultItem, $fieldName, $fieldArgs);
     }
 
-    public function resolveFieldDefaultDataloaderClass($fieldResolver, string $fieldName, array $fieldArgs = []): ?string
+    public function resolveFieldDefaultDataloaderClass(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?string
     {
         switch ($fieldName) {
             case 'id':

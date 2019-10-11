@@ -3,6 +3,7 @@ namespace PoP\ComponentModel\Schema;
 use PoP\ComponentModel\GeneralUtils;
 use PoP\ComponentModel\Schema\FieldQueryUtils;
 use PoP\Translation\Contracts\TranslationAPIInterface;
+use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 
 class FieldQueryInterpreter implements FieldQueryInterpreterInterface
 {
@@ -125,7 +126,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         return substr($field, $fieldArgsOpeningSymbolPos, $fieldArgsClosingSymbolPos+strlen(QuerySyntax::SYMBOL_FIELDARGS_CLOSING)-$fieldArgsOpeningSymbolPos);
     }
 
-    public function extractFieldArguments($fieldResolver, string $field, ?array &$schemaWarnings = null): array
+    public function extractFieldArguments(FieldResolverInterface $fieldResolver, string $field, ?array &$schemaWarnings = null): array
     {
         if (!isset($this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field])) {
             $fieldSchemaWarnings = [];
@@ -145,7 +146,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         return $this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field];
     }
 
-    protected function doExtractFieldArguments($fieldResolver, string $field, ?array &$schemaWarnings = null): array
+    protected function doExtractFieldArguments(FieldResolverInterface $fieldResolver, string $field, ?array &$schemaWarnings = null): array
     {
         $fieldArgs = [];
         // Extract the args from the string into an array
@@ -209,7 +210,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         });
     }
 
-    public function extractFieldArgumentsForSchema($fieldResolver, string $field, ?array $variables = null): array
+    public function extractFieldArgumentsForSchema(FieldResolverInterface $fieldResolver, string $field, ?array $variables = null): array
     {
         $schemaErrors = [];
         $schemaWarnings = [];
@@ -270,7 +271,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         ];
     }
 
-    public function extractFieldArgumentsForResultItem($fieldResolver, $resultItem, string $field, ?array $variables = null): array
+    public function extractFieldArgumentsForResultItem(FieldResolverInterface $fieldResolver, $resultItem, string $field, ?array $variables = null): array
     {
         $dbErrors = $dbWarnings = [];
         $validField = $field;
@@ -328,7 +329,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         ];
     }
 
-    protected function castFieldArguments($fieldResolver, string $field, array $fieldArgs, array &$failedCastingFieldArgErrorMessages, bool $forSchema): array
+    protected function castFieldArguments(FieldResolverInterface $fieldResolver, string $field, array $fieldArgs, array &$failedCastingFieldArgErrorMessages, bool $forSchema): array
     {
         // Get the field argument types, to know to what type it will cast the value
         if ($fieldArgNameTypes = $this->getFieldArgumentNameTypes($fieldResolver, $field)) {
@@ -360,17 +361,17 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         return $fieldArgs;
     }
 
-    protected function castFieldArgumentsForSchema($fieldResolver, string $field, array $fieldArgs, array &$failedCastingFieldArgErrorMessages): array
+    protected function castFieldArgumentsForSchema(FieldResolverInterface $fieldResolver, string $field, array $fieldArgs, array &$failedCastingFieldArgErrorMessages): array
     {
         return $this->castFieldArguments($fieldResolver, $field, $fieldArgs, $failedCastingFieldArgErrorMessages, true);
     }
 
-    protected function castFieldArgumentsForResultItem($fieldResolver, string $field, array $fieldArgs, array &$failedCastingFieldArgErrorMessages): array
+    protected function castFieldArgumentsForResultItem(FieldResolverInterface $fieldResolver, string $field, array $fieldArgs, array &$failedCastingFieldArgErrorMessages): array
     {
         return $this->castFieldArguments($fieldResolver, $field, $fieldArgs, $failedCastingFieldArgErrorMessages, false);
     }
 
-    protected function getFieldArgumentNameTypes($fieldResolver, string $field): array
+    protected function getFieldArgumentNameTypes(FieldResolverInterface $fieldResolver, string $field): array
     {
         if (!isset($this->fieldArgumentNameTypesCache[get_class($fieldResolver)][$field])) {
             $this->fieldArgumentNameTypesCache[get_class($fieldResolver)][$field] = $this->doGetFieldArgumentNameTypes($fieldResolver, $field);
@@ -378,7 +379,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         return $this->fieldArgumentNameTypesCache[get_class($fieldResolver)][$field];
     }
 
-    protected function doGetFieldArgumentNameTypes($fieldResolver, string $field): array
+    protected function doGetFieldArgumentNameTypes(FieldResolverInterface $fieldResolver, string $field): array
     {
         // Get the field argument types, to know to what type it will cast the value
         $fieldArgNameTypes = [];
@@ -392,21 +393,21 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         return $fieldArgNameTypes;
     }
 
-    protected function castAndValidateFieldArgumentsForSchema($fieldResolver, string $field, array $fieldArgs, array &$schemaWarnings): array
+    protected function castAndValidateFieldArgumentsForSchema(FieldResolverInterface $fieldResolver, string $field, array $fieldArgs, array &$schemaWarnings): array
     {
         $failedCastingFieldArgErrorMessages = [];
         $castedFieldArgs = $this->castFieldArgumentsForSchema($fieldResolver, $field, $fieldArgs, $failedCastingFieldArgErrorMessages);
         return $this->castAndValidateFieldArguments($fieldResolver, $castedFieldArgs, $failedCastingFieldArgErrorMessages, $field, $fieldArgs, $schemaWarnings);
     }
 
-    protected function castAndValidateFieldArgumentsForResultItem($fieldResolver, string $field, array $fieldArgs, array &$dbWarnings): array
+    protected function castAndValidateFieldArgumentsForResultItem(FieldResolverInterface $fieldResolver, string $field, array $fieldArgs, array &$dbWarnings): array
     {
         $failedCastingFieldArgErrorMessages = [];
         $castedFieldArgs = $this->castFieldArgumentsForResultItem($fieldResolver, $field, $fieldArgs, $failedCastingFieldArgErrorMessages);
         return $this->castAndValidateFieldArguments($fieldResolver, $castedFieldArgs, $failedCastingFieldArgErrorMessages, $field, $fieldArgs, $dbWarnings);
     }
 
-    protected function castAndValidateFieldArguments($fieldResolver, array $castedFieldArgs, array &$failedCastingFieldArgErrorMessages, string $field, array $fieldArgs, array &$schemaWarnings): array
+    protected function castAndValidateFieldArguments(FieldResolverInterface $fieldResolver, array $castedFieldArgs, array &$failedCastingFieldArgErrorMessages, string $field, array $fieldArgs, array &$schemaWarnings): array
     {
         // If any casting can't be done, show an error
         if ($failedCastingFieldArgs = array_filter($castedFieldArgs, function($fieldArgValue) {
@@ -527,7 +528,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
      * @param [type] $variables
      * @return mixed
      */
-    protected function maybeResolveFieldArgumentValueForResultItem($fieldResolver, $resultItem, $fieldArgValue, array $variables = null)
+    protected function maybeResolveFieldArgumentValueForResultItem(FieldResolverInterface $fieldResolver, $resultItem, $fieldArgValue, array $variables = null)
     {
         // Do a conversion first.
         $convertedValue = $this->maybeConvertFieldArgumentValue($fieldArgValue, $variables);
@@ -563,7 +564,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         return $convertedValue;
     }
 
-    protected function resolveFieldArgumentValueErrorDescriptionsForSchema($fieldResolver, $fieldArgValue, array $variables = null): ?array
+    protected function resolveFieldArgumentValueErrorDescriptionsForSchema(FieldResolverInterface $fieldResolver, $fieldArgValue, array $variables = null): ?array
     {
         // If it is an array, apply this function on all elements
         if (is_array($fieldArgValue)) {
@@ -625,7 +626,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         return null;
     }
 
-    protected function resolveFieldArgumentValueWarningsForSchema($fieldResolver, $fieldArgValue, array $variables = null): ?array
+    protected function resolveFieldArgumentValueWarningsForSchema(FieldResolverInterface $fieldResolver, $fieldArgValue, array $variables = null): ?array
     {
         // If it is an array, apply this function on all elements
         if (is_array($fieldArgValue)) {
@@ -642,7 +643,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         return null;
     }
 
-    protected function resolveFieldArgumentValueDeprecationsForSchema($fieldResolver, $fieldArgValue, array $variables = null): ?array
+    protected function resolveFieldArgumentValueDeprecationsForSchema(FieldResolverInterface $fieldResolver, $fieldArgValue, array $variables = null): ?array
     {
         // If it is an array, apply this function on all elements
         if (is_array($fieldArgValue)) {

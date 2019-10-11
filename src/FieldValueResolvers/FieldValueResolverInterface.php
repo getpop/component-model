@@ -1,5 +1,6 @@
 <?php
 namespace PoP\ComponentModel\FieldValueResolvers;
+use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 
 interface FieldValueResolverInterface
 {
@@ -18,23 +19,23 @@ interface FieldValueResolverInterface
      * @param array $fieldArgs
      * @return boolean
      */
-    public function resolveCanProcess($fieldResolver, string $fieldName, array $fieldArgs = []): bool;
-    public function resolveSchemaValidationErrorDescription($fieldResolver, string $fieldName, array $fieldArgs = []): ?string;
+    public function resolveCanProcess(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): bool;
+    public function resolveSchemaValidationErrorDescription(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?string;
 
     /**
      * Get the "schema" properties as for the fieldName
      *
      * @return array
      */
-    public function getFieldDocumentation($fieldResolver, string $fieldName, array $fieldArgs = []): array;
-    public function getFieldDocumentationType($fieldResolver, string $fieldName): ?string;
-    public function getFieldDocumentationDescription($fieldResolver, string $fieldName): ?string;
-    public function getFieldDocumentationArgs($fieldResolver, string $fieldName): array;
-    public function enableOrderedFieldDocumentationArgs($fieldResolver, string $fieldName): bool;
-    public function resolveSchemaValidationWarningDescription($fieldResolver, string $fieldName, array $fieldArgs = []): ?string;
-    public function getFieldDocumentationDeprecationDescription($fieldResolver, string $fieldName, array $fieldArgs = []): ?string;
-    public function resolveCanProcessResultItem($fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []): bool;
-    public function getValidationErrorDescription($fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?string;
-    public function resolveValue($fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []);
-    public function resolveFieldDefaultDataloaderClass($fieldResolver, string $fieldName, array $fieldArgs = []): ?string;
+    public function getFieldDocumentation(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): array;
+    public function getFieldDocumentationType(FieldResolverInterface $fieldResolver, string $fieldName): ?string;
+    public function getFieldDocumentationDescription(FieldResolverInterface $fieldResolver, string $fieldName): ?string;
+    public function getFieldDocumentationArgs(FieldResolverInterface $fieldResolver, string $fieldName): array;
+    public function enableOrderedFieldDocumentationArgs(FieldResolverInterface $fieldResolver, string $fieldName): bool;
+    public function resolveSchemaValidationWarningDescription(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?string;
+    public function getFieldDocumentationDeprecationDescription(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?string;
+    public function resolveCanProcessResultItem(FieldResolverInterface $fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []): bool;
+    public function getValidationErrorDescription(FieldResolverInterface $fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?string;
+    public function resolveValue(FieldResolverInterface $fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []);
+    public function resolveFieldDefaultDataloaderClass(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?string;
 }

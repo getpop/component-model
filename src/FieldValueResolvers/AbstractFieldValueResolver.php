@@ -6,6 +6,7 @@ use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 use PoP\ComponentModel\ModuleProcessorManagerFactory;
 use PoP\ComponentModel\GeneralUtils;
+use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 
 abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
 {
@@ -22,11 +23,11 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
      * @param array $fieldArgs
      * @return boolean
      */
-    public function resolveCanProcess($fieldResolver, string $fieldName, array $fieldArgs = []): bool
+    public function resolveCanProcess(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): bool
     {
         return true;
     }
-    public function resolveSchemaValidationErrorDescription($fieldResolver, string $fieldName, array $fieldArgs = []): ?string
+    public function resolveSchemaValidationErrorDescription(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?string
     {
         // Iterate all the mandatory fieldArgs and, if they are not present, throw an error
         if ($args = $this->getFieldDocumentationArgs($fieldResolver, $fieldName)) {
@@ -51,7 +52,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         return null;
     }
 
-    protected function validateNotMissingFieldArguments($fieldResolver, $fieldArgumentProperties, string $fieldName, array $fieldArgs = []): ?string
+    protected function validateNotMissingFieldArguments(FieldResolverInterface $fieldResolver, $fieldArgumentProperties, string $fieldName, array $fieldArgs = []): ?string
     {
         $missing = [];
         foreach ($fieldArgumentProperties as $fieldArgumentProperty) {
@@ -81,7 +82,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
      *
      * @return array
      */
-    public function getFieldDocumentation($fieldResolver, string $fieldName, array $fieldArgs = []): array
+    public function getFieldDocumentation(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): array
     {
         $documentation = [
             SchemaDefinition::ARGNAME_NAME => $fieldName,
@@ -106,32 +107,32 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         return $documentation;
     }
 
-    public function getFieldDocumentationType($fieldResolver, string $fieldName): ?string
+    public function getFieldDocumentationType(FieldResolverInterface $fieldResolver, string $fieldName): ?string
     {
         return null;
     }
 
-    public function getFieldDocumentationDescription($fieldResolver, string $fieldName): ?string
+    public function getFieldDocumentationDescription(FieldResolverInterface $fieldResolver, string $fieldName): ?string
     {
         return null;
     }
 
-    public function getFieldDocumentationArgs($fieldResolver, string $fieldName): array
+    public function getFieldDocumentationArgs(FieldResolverInterface $fieldResolver, string $fieldName): array
     {
         return [];
     }
 
-    public function enableOrderedFieldDocumentationArgs($fieldResolver, string $fieldName): bool
+    public function enableOrderedFieldDocumentationArgs(FieldResolverInterface $fieldResolver, string $fieldName): bool
     {
         return true;
     }
 
-    public function resolveSchemaValidationWarningDescription($fieldResolver, string $fieldName, array $fieldArgs = []): ?string
+    public function resolveSchemaValidationWarningDescription(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?string
     {
         return null;
     }
 
-    public function getFieldDocumentationDeprecationDescription($fieldResolver, string $fieldName, array $fieldArgs = []): ?string
+    public function getFieldDocumentationDeprecationDescription(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?string
     {
         return null;
     }
@@ -143,7 +144,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
     {
     }
 
-    protected function getFieldArgumentsDocumentation($fieldResolver, string $fieldName, array $fieldArgs = []): array
+    protected function getFieldArgumentsDocumentation(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): array
     {
         if ($filterDataloadingModule = $this->getFieldDefaultFilterDataloadingModule($fieldResolver, $fieldName, $fieldArgs)) {
             $moduleprocessor_manager = ModuleProcessorManagerFactory::getInstance();
@@ -156,22 +157,22 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         return [];
     }
 
-    public function resolveCanProcessResultItem($fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []): bool
+    public function resolveCanProcessResultItem(FieldResolverInterface $fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []): bool
     {
         return true;
     }
 
-    protected function getValidationCheckpoints($fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?array
+    protected function getValidationCheckpoints(FieldResolverInterface $fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?array
     {
         return null;
     }
 
-    protected function getValidationCheckpointsErrorMessage($fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?string
+    protected function getValidationCheckpointsErrorMessage(FieldResolverInterface $fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?string
     {
         return null;
     }
 
-    public function getValidationErrorDescription($fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?string
+    public function getValidationErrorDescription(FieldResolverInterface $fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?string
     {
         // Can perform validation through checkpoints
         if ($checkpoints = $this->getValidationCheckpoints($fieldResolver, $resultItem, $fieldName, $fieldArgs)) {
@@ -198,17 +199,17 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         return null;
     }
 
-    public function resolveValue($fieldResolver, $resultItem, string $fieldName, array $fieldArgs = [])
+    public function resolveValue(FieldResolverInterface $fieldResolver, $resultItem, string $fieldName, array $fieldArgs = [])
     {
         return null;
     }
 
-    public function resolveFieldDefaultDataloaderClass($fieldResolver, string $fieldName, array $fieldArgs = []): ?string
+    public function resolveFieldDefaultDataloaderClass(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?string
     {
         return null;
     }
 
-    protected function getFieldDefaultFilterDataloadingModule($fieldResolver, string $fieldName, array $fieldArgs = []): ?array
+    protected function getFieldDefaultFilterDataloadingModule(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?array
     {
         $instanceManager = InstanceManagerFacade::getInstance();
         $dataloaderClass = $this->resolveFieldDefaultDataloaderClass($fieldResolver, $fieldName, $fieldArgs);
@@ -216,7 +217,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         return $dataloader->getFilterDataloadingModule();
     }
 
-    protected function addFilterDataloadQueryArgs(array &$options, $fieldResolver, string $fieldName, array $fieldArgs = [])
+    protected function addFilterDataloadQueryArgs(array &$options, FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = [])
     {
         $options['filter-dataload-query-args'] = [
             'source' => $fieldArgs,

@@ -1,6 +1,7 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
+use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 
 class ValidateDirectiveResolver extends AbstractDirectiveResolver
 {
@@ -9,12 +10,12 @@ class ValidateDirectiveResolver extends AbstractDirectiveResolver
     //     return self::DIRECTIVE_NAME;
     // }
 
-    public function resolveDirective($fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    public function resolveDirective(FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         $this->validateAndFilterFields($fieldResolver, $idsDataFields, $schemaErrors, $schemaWarnings, $schemaDeprecations);
     }
 
-    protected function validateAndFilterFields($fieldResolver, array &$idsDataFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    protected function validateAndFilterFields(FieldResolverInterface $fieldResolver, array &$idsDataFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Validate that the schema and the provided data match, eg: passing mandatory values
         // (Such as fieldArg "status" for field "is-status")
@@ -48,7 +49,7 @@ class ValidateDirectiveResolver extends AbstractDirectiveResolver
         }
     }
 
-    protected function validateField($fieldResolver, string $field, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$failedDataFields): bool {
+    protected function validateField(FieldResolverInterface $fieldResolver, string $field, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$failedDataFields): bool {
         // Check for errors first, warnings and deprecations then
         $fieldOutputKey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($field);
         $success = true;
@@ -75,7 +76,7 @@ class ValidateDirectiveResolver extends AbstractDirectiveResolver
         return $success;
     }
 
-    protected function validateAndFilterConditionalFields($fieldResolver, string $conditionField, array &$rootConditionFields, array &$validatedFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$failedDataFields) {
+    protected function validateAndFilterConditionalFields(FieldResolverInterface $fieldResolver, string $conditionField, array &$rootConditionFields, array &$validatedFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$failedDataFields) {
         // The root has key conditionField, and value conditionalFields
         // Check if the conditionField is valid. If it is not, remove from the root object
         // This will work because at the leaves we have empty arrays, so every data-field is a conditionField

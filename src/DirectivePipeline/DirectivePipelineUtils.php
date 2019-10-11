@@ -1,9 +1,10 @@
 <?php
 namespace PoP\ComponentModel\DirectivePipeline;
+use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 
 class DirectivePipelineUtils
 {
-    public static function convertArgumentsToPayload($fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    public static function convertArgumentsToPayload(FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         return [
             'fieldResolver' => &$fieldResolver,

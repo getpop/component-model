@@ -1,10 +1,11 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
+use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 
 trait DirectiveValidatorTrait
 {
-    protected function dissectAndValidateDirectiveForResultItem($fieldResolver, $resultItem, string $directive, array &$dbErrors, array &$dbWarnings): array
+    protected function dissectAndValidateDirectiveForResultItem(FieldResolverInterface $fieldResolver, $resultItem, string $directive, array &$dbErrors, array &$dbWarnings): array
     {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         list(

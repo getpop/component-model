@@ -2,6 +2,7 @@
 namespace PoP\ComponentModel\DirectiveResolvers;
 use PoP\ComponentModel\Facades\Schema\ErrorMessageStoreFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
+use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 
 class ResolveValueAndMergeDirectiveResolver extends AbstractDirectiveResolver
 {
@@ -9,7 +10,7 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractDirectiveResolver
     // public function getDirectiveName(): string {
     //     return self::DIRECTIVE_NAME;
     // }
-    public function resolveDirective($fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    public function resolveDirective(FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Iterate data, extract into final results
         if ($resultIDItems) {
@@ -17,7 +18,7 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractDirectiveResolver
         }
     }
 
-    protected function resolveValueForResultItems($fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    protected function resolveValueForResultItems(FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         foreach (array_keys($idsDataFields) as $id) {
             // Obtain its ID and the required data-fields for that ID
@@ -44,21 +45,21 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractDirectiveResolver
         }
     }
 
-    protected function resolveValuesForResultItem($fieldResolver, $id, $resultItem, array $dataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings)
+    protected function resolveValuesForResultItem(FieldResolverInterface $fieldResolver, $id, $resultItem, array $dataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings)
     {
         foreach ($dataFields as $field) {
             $this->resolveValueForResultItem($fieldResolver, $id, $resultItem, $field, $dbItems, $dbErrors, $dbWarnings);
         }
     }
 
-    protected function resolveValueForResultItem($fieldResolver, $id, $resultItem, string $field, array &$dbItems, array &$dbErrors, array &$dbWarnings)
+    protected function resolveValueForResultItem(FieldResolverInterface $fieldResolver, $id, $resultItem, string $field, array &$dbItems, array &$dbErrors, array &$dbWarnings)
     {
         // Get the value, and add it to the database
         $value = $this->resolveFieldValue($fieldResolver, $id, $resultItem, $field, $dbWarnings);
         $this->addValueForResultItem($fieldResolver, $id, $field, $value, $dbItems, $dbErrors);
     }
 
-    protected function resolveFieldValue($fieldResolver, $id, $resultItem, string $field, array &$dbWarnings)
+    protected function resolveFieldValue(FieldResolverInterface $fieldResolver, $id, $resultItem, string $field, array &$dbWarnings)
     {
         $value = $fieldResolver->resolveValue($resultItem, $field);
         // Merge the dbWarnings, if any
@@ -73,7 +74,7 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractDirectiveResolver
         return $value;
     }
 
-    protected function addValueForResultItem($fieldResolver, $id, string $field, $value, array &$dbItems, array &$dbErrors)
+    protected function addValueForResultItem(FieldResolverInterface $fieldResolver, $id, string $field, $value, array &$dbItems, array &$dbErrors)
     {
         // If there is an alias, store the results under this. Otherwise, on the fieldName+fieldArgs
         $fieldOutputKey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($field);

@@ -1,5 +1,6 @@
 <?php
 namespace PoP\ComponentModel\Schema;
+use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 
 interface FieldQueryInterpreterInterface
 {
@@ -21,8 +22,8 @@ interface FieldQueryInterpreterInterface
     public function getField(string $fieldName, array $fieldArgs = [], string $fieldAlias = null, array $fieldDirectives = []): string;
     public function getFieldDirectiveAsString(array $fieldDirectives): string;
     public function isFieldArgumentValueAField($fieldArgValue): bool;
-    public function extractFieldArguments($fieldResolver, string $field, ?array &$schemaWarnings = null): array;
-    public function extractFieldArgumentsForResultItem($fieldResolver, $resultItem, string $field, ?array $variables = null): array;
-    public function extractFieldArgumentsForSchema($fieldResolver, string $field, ?array $variables = null): array;
+    public function extractFieldArguments(FieldResolverInterface $fieldResolver, string $field, ?array &$schemaWarnings = null): array;
+    public function extractFieldArgumentsForResultItem(FieldResolverInterface $fieldResolver, $resultItem, string $field, ?array $variables = null): array;
+    public function extractFieldArgumentsForSchema(FieldResolverInterface $fieldResolver, string $field, ?array $variables = null): array;
 
 }
