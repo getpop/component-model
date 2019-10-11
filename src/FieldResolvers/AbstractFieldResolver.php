@@ -1,5 +1,5 @@
 <?php
-namespace PoP\ComponentModel;
+namespace PoP\ComponentModel\FieldResolvers;
 use League\Pipeline\PipelineBuilder;
 use PoP\ComponentModel\Schema\FieldQueryUtils;
 use PoP\ComponentModel\Schema\SchemaDefinition;

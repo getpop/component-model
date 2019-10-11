@@ -1,5 +1,5 @@
 <?php
-namespace PoP\ComponentModel;
+namespace PoP\ComponentModel\FieldResolvers;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 
 abstract class AbstractConvertibleFieldResolverPicker

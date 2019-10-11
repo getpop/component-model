@@ -1,5 +1,5 @@
 <?php
-namespace PoP\ComponentModel;
+namespace PoP\ComponentModel\FieldResolvers;
 use PoP\ComponentModel\Facades\Managers\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\Schema\SchemaDefinition;
