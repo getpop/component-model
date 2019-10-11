@@ -12,7 +12,7 @@ use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
 
-abstract class AbstractFieldResolver
+abstract class AbstractFieldResolver implements FieldResolverInterface
 {
     /**
      * Cache of which fieldValueResolvers will process the given field
@@ -32,9 +32,6 @@ abstract class AbstractFieldResolver
     private $fieldDirectiveInstanceCache = [];
     private $fieldDirectivesFromFieldCache = [];
     private $dissectedFieldForSchemaCache = [];
-
-    abstract public function getId($resultItem);
-    abstract public function getIdFieldDataloaderClass();
 
     public function getFieldNamesToResolve(): array
     {
