@@ -913,9 +913,18 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         }
         $elems = [];
         foreach ($fieldArgs as $key => $value) {
+            // Convert from array to its representation of array in a string
+            if (is_array($value)) {
+                $value = $this->getArrayAsStringForQuery($value);
+            }
             $elems[] = $key.QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR.$value;
         }
         return QuerySyntax::SYMBOL_FIELDARGS_OPENING.implode(QuerySyntax::SYMBOL_FIELDARGS_ARGSEPARATOR, $elems).QuerySyntax::SYMBOL_FIELDARGS_CLOSING;
+    }
+
+    protected function getArrayAsStringForQuery(array $value): string
+    {
+        return QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING.implode(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_SEPARATOR, $value).QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING;
     }
 
     protected function getFieldAliasAsString(?string $fieldAlias = null): string
