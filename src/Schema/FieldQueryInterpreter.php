@@ -699,6 +699,11 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
             strpos($fieldArgValue, QuerySyntax::SYMBOL_FIELDARGS_OPENING);
     }
 
+    public function getAsFieldArgValueField(string $fieldName): string
+    {
+        return $fieldName.QuerySyntax::SYMBOL_FIELDARGS_OPENING.QuerySyntax::SYMBOL_FIELDARGS_CLOSING;
+    }
+
     public function getFieldAlias(string $field): ?string
     {
         if (!isset($this->fieldAliasesCache[$field])) {

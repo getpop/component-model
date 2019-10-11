@@ -28,5 +28,5 @@ interface FieldQueryInterpreterInterface
     public function extractFieldArgumentsForSchema(FieldResolverInterface $fieldResolver, string $field, ?array $variables = null): array;
     public function extractDirectiveArgumentsForResultItem(FieldResolverInterface $fieldResolver, $resultItem, string $field, ?array $variables = null): array;
     public function extractDirectiveArgumentsForSchema(FieldResolverInterface $fieldResolver, string $field, ?array $variables = null): array;
-
+    public function getAsFieldArgValueField(string $fieldName): string;
 }
