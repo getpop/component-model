@@ -1,8 +1,7 @@
 <?php
-namespace PoP\ComponentModel;
+namespace PoP\ComponentModel\DirectiveResolvers;
 use PoP\ComponentModel\Facades\Schema\ErrorMessageStoreFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
-use PoP\ComponentModel\DirectiveResolvers\AbstractDirectiveResolver;
 
 class ResolveValueAndMergeDirectiveResolver extends AbstractDirectiveResolver
 {

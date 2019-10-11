@@ -1,7 +1,6 @@
 <?php
-namespace PoP\ComponentModel;
+namespace PoP\ComponentModel\DirectiveResolvers;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
-use PoP\ComponentModel\DirectiveResolvers\AbstractDirectiveResolver;
 
 class ValidateDirectiveResolver extends AbstractDirectiveResolver
 {
