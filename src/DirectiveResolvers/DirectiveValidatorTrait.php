@@ -1,5 +1,5 @@
 <?php
-namespace PoP\ComponentModel\Schema;
+namespace PoP\ComponentModel\DirectiveResolvers;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 
 trait DirectiveValidatorTrait
