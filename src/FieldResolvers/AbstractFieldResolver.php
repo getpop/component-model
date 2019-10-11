@@ -218,7 +218,6 @@ abstract class AbstractFieldResolver
         }
     }
 
-
     protected function dissectFieldForSchema(string $field): ?array
     {
         if (!isset($this->dissectedFieldForSchemaCache[$field])) {
@@ -232,13 +231,6 @@ abstract class AbstractFieldResolver
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         return $fieldQueryInterpreter->extractFieldArgumentsForSchema($this, $field);
     }
-
-
-
-
-
-
-
 
     public function resolveSchemaValidationErrorDescriptions(string $field): ?array
     {
