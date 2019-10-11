@@ -878,6 +878,16 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         return $fieldDirectiveOpeningSymbolElems[0];
     }
 
+    public function listField(string $field): array
+    {
+        return [
+            $this->getFieldName($field),
+            $this->getFieldArgs($field),
+            $this->getFieldAlias($field),
+            $this->getDirectives($field),
+        ];
+    }
+
     public function getField(string $fieldName, array $fieldArgs = [], ?string $fieldAlias = null, ?array $fieldDirectives = []): string
     {
         return $fieldName.
