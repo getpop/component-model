@@ -26,7 +26,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
     public function resolveSchemaValidationErrorDescription($fieldResolver, string $fieldName, array $fieldArgs = []): ?string
     {
         // Iterate all the mandatory fieldArgs and, if they are not present, throw an error
-        if ($args = $this->getFieldDocumentationArgs($fieldName)) {
+        if ($args = $this->getFieldDocumentationArgs($fieldResolver, $fieldName)) {
             if ($mandatoryArgs = array_filter(
                 $args,
                 function($arg) {
@@ -78,7 +78,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
      *
      * @return array
      */
-    public function getFieldDocumentation(string $fieldName, array $fieldArgs = []): array
+    public function getFieldDocumentation($fieldResolver, string $fieldName, array $fieldArgs = []): array
     {
         $documentation = [
             SchemaDefinition::ARGNAME_NAME => $fieldName,
@@ -93,10 +93,10 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
             $documentation[SchemaDefinition::ARGNAME_DEPRECATED] = true;
             $documentation[SchemaDefinition::ARGNAME_DEPRECATEDDESCRIPTION] = $deprecationDescription;
         }
-        if ($args = $this->getFieldDocumentationArgs($fieldName)) {
+        if ($args = $this->getFieldDocumentationArgs($fieldResolver, $fieldName)) {
             $documentation[SchemaDefinition::ARGNAME_ARGS] = $args;
         }
-        if (!is_null($this->resolveFieldDefaultDataloaderClass($fieldName, $fieldArgs))) {
+        if (!is_null($this->resolveFieldDefaultDataloaderClass($fieldResolver, $fieldName, $fieldArgs))) {
             $documentation[SchemaDefinition::ARGNAME_RELATIONAL] = true;
         }
         $this->addFieldDocumentation($documentation, $fieldName);
@@ -113,7 +113,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         return null;
     }
 
-    public function getFieldDocumentationArgs(string $fieldName): ?array
+    public function getFieldDocumentationArgs($fieldResolver, string $fieldName): ?array
     {
         return null;
     }
@@ -140,9 +140,9 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
     {
     }
 
-    protected function getFieldArgumentsDocumentation(string $fieldName, array $fieldArgs = []): array
+    protected function getFieldArgumentsDocumentation($fieldResolver, string $fieldName, array $fieldArgs = []): array
     {
-        if ($filterDataloadingModule = $this->getFieldDefaultFilterDataloadingModule($fieldName, $fieldArgs)) {
+        if ($filterDataloadingModule = $this->getFieldDefaultFilterDataloadingModule($fieldResolver, $fieldName, $fieldArgs)) {
             $moduleprocessor_manager = ModuleProcessorManagerFactory::getInstance();
             $filterqueryargs_modules = $moduleprocessor_manager->getProcessor($filterDataloadingModule)->getDataloadQueryArgsFilteringModules($filterDataloadingModule);
             return GeneralUtils::arrayFlatten(array_map(function($module) use($moduleprocessor_manager) {
@@ -200,24 +200,24 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         return null;
     }
 
-    public function resolveFieldDefaultDataloaderClass(string $fieldName, array $fieldArgs = []): ?string
+    public function resolveFieldDefaultDataloaderClass($fieldResolver, string $fieldName, array $fieldArgs = []): ?string
     {
         return null;
     }
 
-    protected function getFieldDefaultFilterDataloadingModule(string $fieldName, array $fieldArgs = []): ?array
+    protected function getFieldDefaultFilterDataloadingModule($fieldResolver, string $fieldName, array $fieldArgs = []): ?array
     {
         $instanceManager = InstanceManagerFacade::getInstance();
-        $dataloaderClass = $this->resolveFieldDefaultDataloaderClass($fieldName, $fieldArgs);
+        $dataloaderClass = $this->resolveFieldDefaultDataloaderClass($fieldResolver, $fieldName, $fieldArgs);
         $dataloader = $instanceManager->getInstance($dataloaderClass);
         return $dataloader->getFilterDataloadingModule();
     }
 
-    protected function addFilterDataloadQueryArgs(array &$options, string $fieldName, array $fieldArgs = [])
+    protected function addFilterDataloadQueryArgs(array &$options, $fieldResolver, string $fieldName, array $fieldArgs = [])
     {
         $options['filter-dataload-query-args'] = [
             'source' => $fieldArgs,
-            'module' => $this->getFieldDefaultFilterDataloadingModule($fieldName, $fieldArgs),
+            'module' => $this->getFieldDefaultFilterDataloadingModule($fieldResolver, $fieldName, $fieldArgs),
         ];
     }
 }

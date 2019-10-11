@@ -26,15 +26,15 @@ interface FieldValueResolverInterface
      *
      * @return array
      */
-    public function getFieldDocumentation(string $fieldName, array $fieldArgs = []): array;
+    public function getFieldDocumentation($fieldResolver, string $fieldName, array $fieldArgs = []): array;
     public function getFieldDocumentationType(string $fieldName): ?string;
     public function getFieldDocumentationDescription(string $fieldName): ?string;
-    public function getFieldDocumentationArgs(string $fieldName): ?array;
+    public function getFieldDocumentationArgs($fieldResolver, string $fieldName): ?array;
     public function enableOrderedFieldDocumentationArgs(string $fieldName): bool;
     public function resolveSchemaValidationWarningDescription($fieldResolver, string $fieldName, array $fieldArgs = []): ?string;
     public function getFieldDocumentationDeprecationDescription(string $fieldName, array $fieldArgs = []): ?string;
     public function resolveCanProcessResultItem($fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []): bool;
     public function getValidationErrorDescription($fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?string;
     public function resolveValue($fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []);
-    public function resolveFieldDefaultDataloaderClass(string $fieldName, array $fieldArgs = []): ?string;
+    public function resolveFieldDefaultDataloaderClass($fieldResolver, string $fieldName, array $fieldArgs = []): ?string;
 }
