@@ -901,6 +901,11 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
             $this->getFieldDirectivesAsString($fieldDirectives);
     }
 
+    public function composeField(string $fieldName, string $fieldArgs = '', string $fieldAlias = '', string $fieldDirectives = ''): string
+    {
+        return $fieldName.$fieldArgs.$fieldAlias.$fieldDirectives;
+    }
+
     protected function getFieldArgsAsString(array $fieldArgs = []): string
     {
         if (!$fieldArgs) {
