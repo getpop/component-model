@@ -480,8 +480,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         do {
             foreach (array_reverse($attachableExtensionManager->getExtensionClasses($class, \PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups::FIELDVALUERESOLVERS)) as $extensionClass => $extensionPriority) {
                 // Process the fields which have not been processed yet
-                $instance = $instanceManager->getInstance($extensionClass);
-                foreach (array_diff($instance->getFieldNamesToResolve(), array_unique(array_map([$fieldQueryInterpreter, 'getFieldName'], array_keys($this->fieldValueResolvers)))) as $fieldName) {
+                foreach (array_diff($extensionClass::getFieldNamesToResolve(), array_unique(array_map([$fieldQueryInterpreter, 'getFieldName'], array_keys($this->fieldValueResolvers)))) as $fieldName) {
                     // Watch out here: no fieldArgs!!!! So this deals with the base case (static), not with all cases (runtime)
                     $this->getFieldValueResolversForField($fieldName);
                 }
@@ -528,9 +527,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             // Important: do array_reverse to enable more specific hooks, which are initialized later on in the project, to be the chosen ones (if their priority is the same)
             foreach (array_reverse($attachableExtensionManager->getExtensionClasses($class, \PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups::FIELDVALUERESOLVERS)) as $extensionClass => $extensionPriority) {
                 // Check if this fieldValueResolver can process this field, and if its priority is bigger than the previous found instance attached to the same class
-                $fieldValueResolver = $instanceManager->getInstance($extensionClass);
-                if (in_array($fieldName, $fieldValueResolver->getFieldNamesToResolve())) {
+                if (in_array($fieldName, $extensionClass::getFieldNamesToResolve())) {
                     // Check that the fieldValueResolver can handle the field based on other parameters (eg: "version" in the fieldArgs)
+                    $fieldValueResolver = $instanceManager->getInstance($extensionClass);
                     if ($fieldValueResolver->resolveCanProcess($this, $fieldName, $fieldArgs)) {
                         $classFieldResolverPriorities[] = $extensionPriority;
                         $classFieldValueResolvers[] = $fieldValueResolver;
@@ -590,10 +589,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         do {
             // Important: do array_reverse to enable more specific hooks, which are initialized later on in the project, to be the chosen ones (if their priority is the same)
             foreach ($attachableExtensionManager->getExtensionClasses($class, \PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups::FIELDVALUERESOLVERS) as $extensionClass => $extensionPriority) {
-                $fieldValueResolver = $instanceManager->getInstance($extensionClass);
                 $ret = array_merge(
                     $ret,
-                    $fieldValueResolver->getFieldNamesToResolve()
+                    $extensionClass::getFieldNamesToResolve()
                 );
             }
             // Continue iterating for the class parents

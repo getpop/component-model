@@ -9,7 +9,7 @@ interface FieldValueResolverInterface
      *
      * @return array
      */
-    public function getFieldNamesToResolve(): array;
+    public static function getFieldNamesToResolve(): array;
 
     /**
      * Indicates if the fieldValueResolver can process this combination of fieldName and fieldArgs

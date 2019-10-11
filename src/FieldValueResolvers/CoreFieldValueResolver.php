@@ -14,7 +14,7 @@ class CoreFieldValueResolver extends AbstractDBDataFieldValueResolver
         ];
     }
 
-    public function getFieldNamesToResolve(): array
+    public static function getFieldNamesToResolve(): array
     {
         return [
             'id',
