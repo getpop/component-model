@@ -1,11 +1,11 @@
 <?php
 namespace PoP\ComponentModel\DirectivePipeline;
-use League\Pipeline\Pipeline;
+use League\Pipeline\PipelineInterface;
 
 class DirectivePipelineDecorator
 {
     private $pipeline;
-    function __construct(Pipeline $pipeline)
+    function __construct(PipelineInterface $pipeline)
     {
         $this->pipeline = $pipeline;
     }
