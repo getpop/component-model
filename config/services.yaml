@@ -66,6 +66,10 @@ services:
         class: \PoP\ComponentModel\Schema\TypeCastingExecuter
         public: true
 
+    attachable_extension_manager:
+        class: \PoP\ComponentModel\AttachableExtensions\AttachableExtensionManager
+        public: true
+
     PoP\ComponentModel\FieldValueResolvers\:
         resource: '../src/FieldValueResolvers/*'
         public: true
