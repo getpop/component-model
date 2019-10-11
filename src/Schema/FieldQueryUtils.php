@@ -1,6 +1,8 @@
 <?php
 namespace PoP\ComponentModel\Schema;
 
+use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
+
 class FieldQueryUtils
 {
     public static function isAnyFieldArgumentValueAField(array $fieldArgValues): bool
