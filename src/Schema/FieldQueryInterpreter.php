@@ -213,6 +213,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         $schemaErrors = [];
         $schemaWarnings = [];
         $schemaDeprecations = [];
+        $fieldName = $this->getFieldName($field);
         if ($fieldArgs = $this->extractFieldArguments($fieldResolver, $field, $schemaWarnings)) {
             foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
                 $fieldArgValue = $this->maybeConvertFieldArgumentValue($fieldArgValue, $variables);
@@ -244,7 +245,23 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
             // Cast the values to their appropriate type. If casting fails, the value returns as null
             $fieldArgs = $this->castAndValidateFieldArgumentsForSchema($fieldResolver, $field, $fieldArgs, $schemaWarnings);
         }
+        // If there's an error, those args will be removed. Then, re-create the fieldDirective to pass it to the function below
+        if ($schemaErrors) {
+            $validField = null;
+        } elseif ($schemaWarnings) {
+            // Re-create the field, eliminating the fieldArgs that failed
+            $validField = $this->getField(
+                $fieldName,
+                $fieldArgs,
+                $this->getFieldAlias($field),
+                $this->getDirectives($field)
+            );
+        } else {
+            $validField = $field;
+        }
         return [
+            $validField,
+            $fieldName,
             $fieldArgs,
             $schemaErrors,
             $schemaWarnings,
