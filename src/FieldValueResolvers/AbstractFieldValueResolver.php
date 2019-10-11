@@ -4,6 +4,8 @@ use PoP\ComponentModel\Facades\Managers\InstanceManagerFacade;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
+use PoP\ComponentModel\ModuleProcessorManagerFactory;
+use PoP\ComponentModel\GeneralUtils;
 
 abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
 {

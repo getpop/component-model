@@ -1,6 +1,8 @@
 <?php
 namespace PoP\ComponentModel\FieldValueResolvers;
 use \PoP\ComponentModel\FieldResolverBase;
+use PoP\ComponentModel\Schema\SchemaDefinition;
+use PoP\Translation\Facades\TranslationAPIFacade;
 
 class CoreFieldValueResolver extends AbstractDBDataFieldValueResolver
 {
