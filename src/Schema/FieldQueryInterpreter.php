@@ -68,10 +68,10 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         }
         // Extract the query until the found position
         if ($pos !== false) {
-            return strtolower(substr($field, 0, $pos));
+            return substr($field, 0, $pos);
         }
         // No fieldArgs, no alias => The field is the fieldName
-        return strtolower($field);
+        return $field;
     }
 
     protected function getVariablesFromRequest(): array
