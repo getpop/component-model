@@ -3,7 +3,7 @@ namespace PoP\ComponentModel\ModuleProcessors;
 use PoP\Hooks\Facades\HooksAPIFacade;
 use PoP\ComponentModel\Facades\Managers\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
-use PoP\ComponentModel\QueryHandler\ParamConstants;
+use PoP\ComponentModel\QueryHandlers\ParamConstants;
 
 trait QueryDataModuleProcessorTrait
 {

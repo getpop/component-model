@@ -1,5 +1,5 @@
 <?php
-namespace PoP\ComponentModel\QueryHandler;
+namespace PoP\ComponentModel\QueryHandlers;
 
 class ResponseConstants {
     const ERRORCODES = 'errorcodes';
