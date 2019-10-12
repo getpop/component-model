@@ -11,7 +11,7 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
         }
         // If it is a normal module, it is the first added, then simply get the fields from $vars
         $vars = \PoP\ComponentModel\Engine_Vars::getVars();
-        return isset($vars['fields']) ? $vars['fields'] : array();
+        return $vars['fields'] ?? [];
     }
 
     public function getDataFields(array $module, array &$props): array
@@ -54,7 +54,7 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
             $ret[$field] = array(
                 POP_CONSTANT_SUBCOMPONENTDATALOADER_DEFAULTFROMFIELD => array(
                     [
-                        $module[0], 
+                        $module[0],
                         $module[1],
                         ['fields' => $subfields]
                     ],
