@@ -4,7 +4,7 @@ use PoP\Hooks\Facades\HooksAPIFacade;
 use PoP\ComponentModel\Facades\Managers\ModuleFilterManagerFacade;
 use PoP\ComponentModel\Managers\ModuleFilterManager;
 use PoP\ComponentModel\Facades\Managers\ModulePathHelpersFacade;
-use PoP\ComponentModel\ModuleUtils;
+use PoP\ComponentModel\Modules\ModuleUtils;
 use PoP\ComponentModel\ModuleFilters\ModulePaths;
 use PoP\ComponentModel\Facades\Managers\InstanceManagerFacade;
 use PoP\ComponentModel\Schema\QuerySyntax;

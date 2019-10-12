@@ -1,5 +1,5 @@
 <?php
-namespace PoP\ComponentModel\Modules;
+namespace PoP\ComponentModel\Items;
 
 class Constants
 {

@@ -1,6 +1,6 @@
 <?php
 namespace PoP\ComponentModel\Managers;
-use PoP\ComponentModel\ModuleUtils;
+use PoP\ComponentModel\Modules\ModuleUtils;
 
 class ModulePathHelpers implements ModulePathHelpersInterface
 {
