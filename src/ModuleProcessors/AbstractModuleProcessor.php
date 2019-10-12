@@ -11,6 +11,7 @@ use PoP\ComponentModel\Schema\QuerySyntax;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
 use PoP\ComponentModel\Engine_Vars;
+use PoP\ComponentModel\DataloadUtils;
 
 abstract class AbstractModuleProcessor implements ModuleProcessorInterface
 {
