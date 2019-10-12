@@ -18,13 +18,6 @@ abstract class AbstractModuleProcessor
     public const HOOK_INIT_REQUEST_PROPS = __CLASS__.':initRequestProps';
     public const HOOK_ADD_HEADDATASETMODULE_DATAPROPERTIES = __CLASS__.':addHeaddatasetmoduleDataProperties';
 
-    public function __construct()
-    {
-    }
-
-    //-------------------------------------------------
-    // PUBLIC Functions
-    //-------------------------------------------------
     abstract public function getModulesToProcess(): array;
 
     public function getSubmodules(array $module): array
