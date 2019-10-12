@@ -1328,15 +1328,12 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                     )));
                 }
                 if ($subcomponent_modules_data_properties['conditional-data-fields']) {
-                    foreach ($subcomponent_modules_data_properties['conditional-data-fields'] as $conditionField => $conditionalDataFields) {
-                        $subcomponent_modules_data_properties['conditional-data-fields'][$conditionField] = array_values(array_unique($conditionalDataFields));
-                    }
                     $ret['subcomponents'][$subcomponent_data_field][$subcomponent_dataloader_class]['conditional-data-fields'] = $ret['subcomponents'][$subcomponent_data_field][$subcomponent_dataloader_class]['conditional-data-fields'] ?? [];
                     foreach ($subcomponent_modules_data_properties['conditional-data-fields'] as $conditionDataField => $conditionalDataFields) {
-                        $ret['subcomponents'][$subcomponent_data_field][$subcomponent_dataloader_class]['conditional-data-fields'][$conditionDataField] = array_values(array_unique(array_merge(
+                        $ret['subcomponents'][$subcomponent_data_field][$subcomponent_dataloader_class]['conditional-data-fields'][$conditionDataField] = array_merge_recursive(
                             $ret['subcomponents'][$subcomponent_data_field][$subcomponent_dataloader_class]['conditional-data-fields'][$conditionDataField] ?? [],
-                            $subcomponent_modules_data_properties['conditional-data-fields'][$conditionDataField]
-                        )));
+                            $conditionalDataFields
+                        );
                     }
                 }
 
