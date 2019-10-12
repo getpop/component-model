@@ -3,6 +3,7 @@ namespace PoP\ComponentModel\ModuleProcessors;
 use PoP\Hooks\Facades\HooksAPIFacade;
 use PoP\ComponentModel\Facades\Managers\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
+use PoP\ComponentModel\QueryHandler\ParamConstants;
 
 trait QueryDataModuleProcessorTrait
 {
@@ -28,7 +29,7 @@ trait QueryDataModuleProcessorTrait
         $ret = parent::getImmutableHeaddatasetmoduleDataProperties($module, $props);
 
         // Attributes to pass to the query
-        $ret[GD_DATALOAD_QUERYARGS] = $this->getImmutableDataloadQueryArgs($module, $props);
+        $ret[ParamConstants::QUERYARGS] = $this->getImmutableDataloadQueryArgs($module, $props);
 
         return $ret;
     }
@@ -46,8 +47,8 @@ trait QueryDataModuleProcessorTrait
         $ret = parent::getMutableonmodelHeaddatasetmoduleDataProperties($module, $props);
 
         // Attributes overriding the dataloader args, taken from the request
-        if (!$ret[GD_DATALOAD_IGNOREREQUESTPARAMS]) {
-            $ret[GD_DATALOAD_QUERYARGSFILTERINGMODULES] = $this->getQueryArgsFilteringModules($module, $props);
+        if (!$ret[ParamConstants::IGNOREREQUESTPARAMS]) {
+            $ret[ParamConstants::QUERYARGSFILTERINGMODULES] = $this->getQueryArgsFilteringModules($module, $props);
         }
 
         // // Set the filter if it has one
@@ -114,7 +115,7 @@ trait QueryDataModuleProcessorTrait
     {
         $ret = parent::getMutableonrequestHeaddatasetmoduleDataProperties($module, $props);
 
-        $ret[GD_DATALOAD_QUERYARGS] = $this->getMutableonrequestDataloadQueryArgs($module, $props);
+        $ret[ParamConstants::QUERYARGS] = $this->getMutableonrequestDataloadQueryArgs($module, $props);
 
         return $ret;
     }
@@ -124,8 +125,8 @@ trait QueryDataModuleProcessorTrait
         $instanceManager = InstanceManagerFacade::getInstance();
 
         // Prepare the Query to get data from the DB
-        $datasource = $data_properties[GD_DATALOAD_DATASOURCE];
-        if ($datasource == POP_DATALOAD_DATASOURCE_MUTABLEONREQUEST && !$data_properties[GD_DATALOAD_IGNOREREQUESTPARAMS]) {
+        $datasource = $data_properties[ParamConstants::DATASOURCE];
+        if ($datasource == POP_DATALOAD_DATASOURCE_MUTABLEONREQUEST && !$data_properties[ParamConstants::IGNOREREQUESTPARAMS]) {
             // Merge with $_REQUEST, so that params passed through the URL can be used for the query (eg: ?limit=5)
             // But whitelist the params that can be taken, to avoid hackers peering inside the system and getting custom data (eg: params "include", "post-status" => "draft", etc)
             $whitelisted_params = (array)HooksAPIFacade::getInstance()->applyFilters(
@@ -161,8 +162,8 @@ trait QueryDataModuleProcessorTrait
             );
 
             // Finally merge it into the data properties
-            $data_properties[GD_DATALOAD_QUERYARGS] = array_merge(
-                $data_properties[GD_DATALOAD_QUERYARGS],
+            $data_properties[ParamConstants::QUERYARGS] = array_merge(
+                $data_properties[ParamConstants::QUERYARGS],
                 $params_from_request
             );
         }
@@ -170,7 +171,7 @@ trait QueryDataModuleProcessorTrait
         if ($queryHandlerClass = $this->getQueryHandlerClass($module)) {
             // Allow the queryhandler to override/normalize the query args
             $queryhandler = $instanceManager->getInstance($queryHandlerClass);
-            $queryhandler->prepareQueryArgs($data_properties[GD_DATALOAD_QUERYARGS]);
+            $queryhandler->prepareQueryArgs($data_properties[ParamConstants::QUERYARGS]);
         }
 
         $dataloader = $instanceManager->getInstance($this->getDataloaderClass($module));

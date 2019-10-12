@@ -13,6 +13,7 @@ use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
 use PoP\ComponentModel\Engine_Vars;
 use PoP\ComponentModel\DataloadUtils;
 use PoP\ComponentModel\Utils;
+use PoP\ComponentModel\QueryHandler\ParamConstants;
 
 abstract class AbstractModuleProcessor implements ModuleProcessorInterface
 {
@@ -752,7 +753,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
 
         // From the State property we find out if it's Static of Stateful
         $datasource = $this->getDatasource($module, $props);
-        $ret[GD_DATALOAD_DATASOURCE] = $datasource;
+        $ret[ParamConstants::DATASOURCE] = $datasource;
 
         // Add the properties below either as static or mutableonrequest
         if ($datasource == POP_DATALOAD_DATASOURCE_IMMUTABLE) {
@@ -772,21 +773,21 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         $vars = Engine_Vars::getVars();
 
         // Is the component lazy-load?
-        $ret[GD_DATALOAD_LAZYLOAD] = $this->isLazyload($module, $props);
+        $ret[ParamConstants::LAZYLOAD] = $this->isLazyload($module, $props);
 
         // Loading data from a different site?
-        $ret[GD_DATALOAD_EXTERNALLOAD] = $this->queriesExternalDomain($module, $props);
+        $ret[ParamConstants::EXTERNALLOAD] = $this->queriesExternalDomain($module, $props);
 
         // Do not load data when doing lazy load, unless passing URL param ?action=loadlazy, which is needed to initialize the lazy components.
         // Do not load data for Search page (initially, before the query was submitted)
         // Do not load data when querying data from another domain, since evidently we don't have that data in this site, then the load must be triggered from the client
-        $ret[GD_DATALOAD_SKIPDATALOAD] =
-            (!in_array(POP_ACTION_LOADLAZY, $vars['actions'])  && $ret[GD_DATALOAD_LAZYLOAD]) ||
-            $ret[GD_DATALOAD_EXTERNALLOAD] ||
+        $ret[ParamConstants::SKIPDATALOAD] =
+            (!in_array(POP_ACTION_LOADLAZY, $vars['actions'])  && $ret[ParamConstants::LAZYLOAD]) ||
+            $ret[ParamConstants::EXTERNALLOAD] ||
             $this->getProp($module, $props, 'skip-data-load');
 
         // Use Mock DB Object Data for the Skeleton Screen
-        $ret[GD_DATALOAD_USEMOCKDBOBJECTDATA] = $this->getProp($module, $props, 'use-mock-dbobject-data') ?? false;
+        $ret[ParamConstants::USEMOCKDBOBJECTDATA] = $this->getProp($module, $props, 'use-mock-dbobject-data') ?? false;
 
         /**
          * Allow to add more stuff
@@ -833,7 +834,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         // Fetch params from request?
         $ignore_params_from_request = $this->getProp($module, $props, 'ignore-request-params');
         if (!is_null($ignore_params_from_request)) {
-            $ret[GD_DATALOAD_IGNOREREQUESTPARAMS] = $ignore_params_from_request;
+            $ret[ParamConstants::IGNOREREQUESTPARAMS] = $ignore_params_from_request;
         }
 
         return $ret;
@@ -877,7 +878,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         }
 
         if ($dataload_source = $this->getDataloadSource($module, $props)) {
-            $ret[GD_DATALOAD_SOURCE] = $dataload_source;
+            $ret[ParamConstants::SOURCE] = $dataload_source;
         }
 
         // When loading data or execution an action, check if to validate checkpoints?
@@ -961,14 +962,14 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
 
         if ($query_multidomain_urls = $this->getDataloadMultidomainQuerySources($module, $props)) {
             $ret['multidomaindataloadsources'] = $query_multidomain_urls;
-        } elseif ($dataload_source = $data_properties[GD_DATALOAD_SOURCE]) {
+        } elseif ($dataload_source = $data_properties[ParamConstants::SOURCE]) {
             $ret['dataloadsource'] = $dataload_source;
         }
 
-        if ($data_properties[GD_DATALOAD_LAZYLOAD]) {
+        if ($data_properties[ParamConstants::LAZYLOAD]) {
             $ret['lazyload'] = true;
         }
-        // if ($data_properties[GD_DATALOAD_EXTERNALLOAD]) {
+        // if ($data_properties[ParamConstants::EXTERNALLOAD]) {
         //     $ret['externalload'] = true;
         // }
 
