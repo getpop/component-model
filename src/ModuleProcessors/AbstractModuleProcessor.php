@@ -10,15 +10,13 @@ use PoP\ComponentModel\Facades\Managers\InstanceManagerFacade;
 use PoP\ComponentModel\Schema\QuerySyntax;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 
-abstract class AbstractModuleProcessor
+abstract class AbstractModuleProcessor implements ModuleProcessorInterface
 {
     use ModulePathProcessorTrait;
 
     public const HOOK_INIT_MODEL_PROPS = __CLASS__.':initModelProps';
     public const HOOK_INIT_REQUEST_PROPS = __CLASS__.':initRequestProps';
     public const HOOK_ADD_HEADDATASETMODULE_DATAPROPERTIES = __CLASS__.':addHeaddatasetmoduleDataProperties';
-
-    abstract public function getModulesToProcess(): array;
 
     public function getSubmodules(array $module): array
     {
