@@ -1,6 +1,6 @@
 <?php
 namespace PoP\ComponentModel\Items;
-use PoP\Engine\DefinitionUtils;
+use PoP\Definitions\DefinitionUtils;
 
 class ProcessorItemUtils
 {

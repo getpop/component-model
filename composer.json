@@ -22,6 +22,7 @@
         "symfony/cache": "^4.3",
         "league/pipeline": "^1.0",
         "jrfnl/php-cast-to-type": "^2.0",
+        "getpop/definitions": "dev-master",
         "getpop/migrate-component-model": "^1.0@dev"
     },
     "require-dev": {
