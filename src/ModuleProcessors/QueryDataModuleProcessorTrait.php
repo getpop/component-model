@@ -3,6 +3,7 @@ namespace PoP\ComponentModel\ModuleProcessors;
 use PoP\Hooks\Facades\HooksAPIFacade;
 use PoP\ComponentModel\Facades\Managers\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
+use PoP\ComponentModel\Facades\Managers\QueryHandlerManagerFacade;
 
 trait QueryDataModuleProcessorTrait
 {
@@ -169,7 +170,7 @@ trait QueryDataModuleProcessorTrait
 
         if ($queryhandler_name = $this->getQueryhandler($module)) {
             // Allow the queryhandler to override/normalize the query args
-            $queryhandler_manager = QueryHandlerManagerFactory::getInstance();
+            $queryhandler_manager = QueryHandlerManagerFacade::getInstance();
             $queryhandler = $queryhandler_manager->get($queryhandler_name);
             $queryhandler->prepareQueryArgs($data_properties[GD_DATALOAD_QUERYARGS]);
         }
@@ -183,7 +184,7 @@ trait QueryDataModuleProcessorTrait
         $ret = parent::getDatasetmeta($module, $props, $data_properties, $dataaccess_checkpoint_validation, $actionexecution_checkpoint_validation, $executed, $dbObjectIDOrIDs);
 
         if ($queryhandler_name = $this->getQueryhandler($module)) {
-            $queryhandler_manager = QueryHandlerManagerFactory::getInstance();
+            $queryhandler_manager = QueryHandlerManagerFacade::getInstance();
             $queryhandler = $queryhandler_manager->get($queryhandler_name);
 
             if ($query_state = $queryhandler->getQueryState($data_properties, $dataaccess_checkpoint_validation, $actionexecution_checkpoint_validation, $executed, $dbObjectIDOrIDs)) {

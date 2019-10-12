@@ -1,0 +1,23 @@
+<?php
+namespace PoP\ComponentModel\QueryHandler;
+
+class Constants {
+    const GD_DATALOAD_PARAMS = 'params';
+    const GD_DATALOAD_VISIBLEPARAMS = 'visibleparams';
+    const GD_DATALOAD_PUSHURLATTS = 'pushurlprops';
+    const GD_DATALOAD_LAZYLOAD = 'lazy-load';
+    const GD_DATALOAD_EXTERNALLOAD = 'external-load';
+    const GD_DATALOAD_USEMOCKDBOBJECTDATA = 'use-mock-dbobject-data';
+    const GD_DATALOAD_SKIPDATALOAD = 'skip-data-load';
+    const GD_DATALOAD_DATASOURCE = 'state';
+    const GD_DATALOAD_QUERYARGS = 'query-args';
+    // const GD_DATALOAD_FILTER = 'filter';
+    const GD_DATALOAD_QUERYARGSFILTERINGMODULES = 'query-args-filtering-modules';
+    const GD_DATALOAD_SOURCE = 'dataload-source';
+    const GD_DATALOAD_IGNOREREQUESTPARAMS = 'ignore-request-params';
+
+    const GD_DATALOAD_QUERYHANDLERRESPONSE_ERRORCODES = 'errorcodes';
+    const GD_DATALOAD_QUERYHANDLERRESPONSE_ERRORSTRINGS = 'errorstrings';
+    const GD_DATALOAD_QUERYHANDLERRESPONSE_SUCCESS = 'success';
+    const GD_DATALOAD_QUERYHANDLERRESPONSE_SUCCESSSTRINGS = 'successstrings';
+}
