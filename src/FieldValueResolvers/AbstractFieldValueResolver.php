@@ -4,7 +4,7 @@ use PoP\ComponentModel\Facades\Managers\InstanceManagerFacade;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
-use PoP\ComponentModel\ModuleProcessorManagerFactory;
+use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
 use PoP\ComponentModel\GeneralUtils;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 
@@ -147,7 +147,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
     protected function getFieldArgumentsDocumentation(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): array
     {
         if ($filterDataloadingModule = $this->getFieldDefaultFilterDataloadingModule($fieldResolver, $fieldName, $fieldArgs)) {
-            $moduleprocessor_manager = ModuleProcessorManagerFactory::getInstance();
+            $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
             $filterqueryargs_modules = $moduleprocessor_manager->getProcessor($filterDataloadingModule)->getDataloadQueryArgsFilteringModules($filterDataloadingModule);
             return GeneralUtils::arrayFlatten(array_map(function($module) use($moduleprocessor_manager) {
                 return $moduleprocessor_manager->getProcessor($module)->getFilterDocumentationItems($module);

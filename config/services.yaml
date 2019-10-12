@@ -54,6 +54,10 @@ services:
         class: \PoP\ComponentModel\Managers\InstanceManager
         public: true
 
+    module_processor_manager:
+        class: \PoP\ComponentModel\Managers\ModuleProcessorManager
+        public: true
+
     error_message_store:
         class: \PoP\ComponentModel\Schema\ErrorMessageStore
         public: true

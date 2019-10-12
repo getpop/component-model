@@ -9,6 +9,7 @@ use PoP\ComponentModel\ModuleFilters\ModulePaths;
 use PoP\ComponentModel\Facades\Managers\InstanceManagerFacade;
 use PoP\ComponentModel\Schema\QuerySyntax;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
+use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
 
 abstract class AbstractModuleProcessor implements ModuleProcessorInterface
 {
@@ -40,7 +41,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
     public function executeInitPropsModuletree($eval_self_fn, $get_props_for_descendant_modules_fn, $get_props_for_descendant_datasetmodules_fn, $propagate_fn, array $module, array &$props, $wildcard_props_to_propagate, $targetted_props_to_propagate)
     {
         // Convert the module to its string representation to access it in the array
-        $moduleprocessor_manager = ModuleProcessorManagerFactory::getInstance();
+        $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
         $moduleFullName = ModuleUtils::getModuleFullName($module);
 
         // Initialize. If this module had been added props, then use them already
@@ -539,7 +540,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
 
     protected function hasNoDataloader(array $module): bool
     {
-        $moduleprocessor_manager = ModuleProcessorManagerFactory::getInstance();
+        $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
         return is_null($moduleprocessor_manager->getProcessor($module)->getDataloaderClass($module));
     }
 
@@ -553,7 +554,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         }
 
         // Propagate to all submodules which have no dataloader
-        $moduleprocessor_manager = ModuleProcessorManagerFactory::getInstance();
+        $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
         $moduleFullName = ModuleUtils::getModuleFullName($module);
 
         $modulefilter_manager = ModuleFilterManagerFacade::getInstance();
@@ -708,7 +709,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         // $this->flattenDatasetmoduletreeModules(__FUNCTION__, $ret, $module);
         // Exclude the subcomponent modules here
         if ($submodules = $this->getModulesToPropagateDataProperties($module)) {
-            $moduleprocessor_manager = ModuleProcessorManagerFactory::getInstance();
+            $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
             foreach ($submodules as $submodule) {
                 $submodule_processor = $moduleprocessor_manager->getProcessor($submodule);
 
@@ -724,7 +725,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
     // {
     //     // Exclude the subcomponent modules here
     //     if ($submodules = $this->getModulesToPropagateDataProperties($module)) {
-    //         $moduleprocessor_manager = ModuleProcessorManagerFactory::getInstance();
+    //         $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
     //         foreach ($submodules as $submodule) {
     //             $submodule_processor = $moduleprocessor_manager->getProcessor($submodule);
 
@@ -1102,7 +1103,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                 // );
             } else {
                 $cmsenginehelpers = \PoP\Engine\HelperAPIFactory::getInstance();
-                $moduleprocessor_manager = ModuleProcessorManagerFactory::getInstance();
+                $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
                 $flattened_datafields = $moduleprocessor_manager->getProcessor($module)->getDatasetmoduletreeSectionFlattenedDataFields($module, $props);
                 $apifields = [];
                 $heap = [
@@ -1198,7 +1199,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
 
     protected function flattenDatasetmoduletreeDataProperties($propagate_fn, &$ret, array $module, array &$props)
     {
-        $moduleprocessor_manager = ModuleProcessorManagerFactory::getInstance();
+        $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
         $moduleFullName = ModuleUtils::getModuleFullName($module);
 
         // Exclude the subcomponent modules here
@@ -1291,7 +1292,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
 
     protected function flattenRelationaldbobjectDataProperties($propagate_fn, &$ret, array $module, array &$props)
     {
-        $moduleprocessor_manager = ModuleProcessorManagerFactory::getInstance();
+        $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
         $moduleFullName = ModuleUtils::getModuleFullName($module);
 
         // If it has subcomponent modules, integrate them under 'subcomponents'

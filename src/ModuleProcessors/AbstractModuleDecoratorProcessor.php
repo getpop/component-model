@@ -1,5 +1,6 @@
 <?php
 namespace PoP\ComponentModel\ModuleProcessors;
+use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
 
 abstract class AbstractModuleDecoratorProcessor implements ModuleDecoratorProcessorInterface
 {
@@ -22,7 +23,7 @@ abstract class AbstractModuleDecoratorProcessor implements ModuleDecoratorProces
 
     final protected function getDecoratedmoduleProcessor(array $module)
     {
-        $moduleprocessor_manager = ModuleProcessorManagerFactory::getInstance();
+        $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
         return $moduleprocessor_manager->getProcessor($module);
     }
 
@@ -36,7 +37,7 @@ abstract class AbstractModuleDecoratorProcessor implements ModuleDecoratorProces
     //-------------------------------------------------
     final public function getAllSubmodules(array $module): array
     {
-        $moduleprocessor_manager = ModuleProcessorManagerFactory::getInstance();
+        $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
         $processor = $moduleprocessor_manager->getProcessor($module);
         return $processor->getAllSubmodules($module);
     }

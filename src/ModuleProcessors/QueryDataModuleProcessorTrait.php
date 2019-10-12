@@ -2,6 +2,7 @@
 namespace PoP\ComponentModel\ModuleProcessors;
 use PoP\Hooks\Facades\HooksAPIFacade;
 use PoP\ComponentModel\Facades\Managers\InstanceManagerFacade;
+use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
 
 trait QueryDataModuleProcessorTrait
 {
@@ -59,7 +60,7 @@ trait QueryDataModuleProcessorTrait
     public function filterHeadmoduleDataloadQueryArgs(array $module, array &$query, array $source = null)
     {
         if ($active_filterqueryargs_modules = $this->getActiveDataloadQueryArgsFilteringModules($module, $source)) {
-            $moduleprocessor_manager = ModuleProcessorManagerFactory::getInstance();
+            $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
             global $pop_filterinputprocessor_manager;
             foreach ($active_filterqueryargs_modules as $submodule) {
 
@@ -82,7 +83,7 @@ trait QueryDataModuleProcessorTrait
         }
 
         $modules = [];
-        $moduleprocessor_manager = ModuleProcessorManagerFactory::getInstance();
+        $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
         // Check if the module has any filtercomponent
         if ($filterqueryargs_modules = $this->getDataloadQueryArgsFilteringModules($module)) {
             // Check if if we're currently filtering by any filtercomponent
@@ -100,7 +101,7 @@ trait QueryDataModuleProcessorTrait
 
     public function getDataloadQueryArgsFilteringModules(array $module): array
     {
-        $moduleprocessor_manager = ModuleProcessorManagerFactory::getInstance();
+        $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
         return array_values(array_filter(
             $this->getDatasetmoduletreeSectionFlattenedModules($module),
             function($module) use($moduleprocessor_manager) {

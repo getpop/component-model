@@ -1,12 +1,13 @@
 <?php
 namespace PoP\ComponentModel\ModuleProcessors;
 use PoP\ComponentModel\Facades\Managers\ModuleFilterManagerFacade;
+use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
 
 trait ModulePathProcessorTrait
 {
     protected function getModuleProcessor(array $module)
     {
-        $moduleprocessor_manager = ModuleProcessorManagerFactory::getInstance();
+        $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
         return $moduleprocessor_manager->getProcessor($module);
     }
 
