@@ -58,10 +58,6 @@ services:
         class: \PoP\ComponentModel\Managers\ModuleProcessorManager
         public: true
 
-    query_handler_manager:
-        class: \PoP\ComponentModel\Managers\QueryHandlerManager
-        public: true
-
     error_message_store:
         class: \PoP\ComponentModel\Schema\ErrorMessageStore
         public: true

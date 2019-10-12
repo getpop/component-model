@@ -3,7 +3,6 @@ namespace PoP\ComponentModel\ModuleProcessors;
 use PoP\Hooks\Facades\HooksAPIFacade;
 use PoP\ComponentModel\Facades\Managers\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
-use PoP\ComponentModel\Facades\Managers\QueryHandlerManagerFacade;
 
 trait QueryDataModuleProcessorTrait
 {
@@ -15,7 +14,7 @@ trait QueryDataModuleProcessorTrait
     {
         return array();
     }
-    public function getQueryhandler(array $module)
+    public function getQueryHandlerClass(array $module): ?string
     {
         return GD_DATALOAD_QUERYHANDLER_ACTIONEXECUTION;
     }
@@ -168,10 +167,9 @@ trait QueryDataModuleProcessorTrait
             );
         }
 
-        if ($queryhandler_name = $this->getQueryhandler($module)) {
+        if ($queryHandlerClass = $this->getQueryHandlerClass($module)) {
             // Allow the queryhandler to override/normalize the query args
-            $queryhandler_manager = QueryHandlerManagerFacade::getInstance();
-            $queryhandler = $queryhandler_manager->get($queryhandler_name);
+            $queryhandler = $instanceManager->getInstance($queryHandlerClass);
             $queryhandler->prepareQueryArgs($data_properties[GD_DATALOAD_QUERYARGS]);
         }
 
@@ -183,9 +181,8 @@ trait QueryDataModuleProcessorTrait
     {
         $ret = parent::getDatasetmeta($module, $props, $data_properties, $dataaccess_checkpoint_validation, $actionexecution_checkpoint_validation, $executed, $dbObjectIDOrIDs);
 
-        if ($queryhandler_name = $this->getQueryhandler($module)) {
-            $queryhandler_manager = QueryHandlerManagerFacade::getInstance();
-            $queryhandler = $queryhandler_manager->get($queryhandler_name);
+        if ($queryHandlerClass = $this->getQueryHandlerClass($module)) {
+            $queryhandler = $instanceManager->getInstance($queryHandlerClass);
 
             if ($query_state = $queryhandler->getQueryState($data_properties, $dataaccess_checkpoint_validation, $actionexecution_checkpoint_validation, $executed, $dbObjectIDOrIDs)) {
                 $ret['querystate'] = $query_state;

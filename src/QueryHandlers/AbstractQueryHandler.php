@@ -1,17 +1,8 @@
 <?php
-namespace PoP\ComponentModel;
-use PoP\ComponentModel\Facades\Managers\QueryHandlerManagerFacade;
+namespace PoP\ComponentModel\QueryHandlers;
 
-abstract class AbstractQueryHandler
+abstract class AbstractQueryHandler implements QueryHandlerInterface
 {
-    public function __construct()
-    {
-        $queryhandler_manager = QueryHandlerManagerFacade::getInstance();
-        $queryhandler_manager->add($this->getName(), $this);
-    }
-
-    abstract public function getName();
-
     public function prepareQueryArgs(&$query_args)
     {
     }
