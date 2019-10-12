@@ -16,7 +16,7 @@ trait QueryDataModuleProcessorTrait
     }
     public function getQueryHandlerClass(array $module): ?string
     {
-        return GD_DATALOAD_QUERYHANDLER_ACTIONEXECUTION;
+        return \PoP\Engine\QueryHandler_ActionExecution::class;
     }
     // public function getFilter(array $module)
     // {
