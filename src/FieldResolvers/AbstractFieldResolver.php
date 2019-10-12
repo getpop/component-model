@@ -11,6 +11,7 @@ use PoP\ComponentModel\Facades\Schema\ErrorMessageStoreFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
+use PoP\ComponentModel\ErrorUtils;
 
 abstract class AbstractFieldResolver implements FieldResolverInterface
 {
