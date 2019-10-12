@@ -2,6 +2,7 @@
 namespace PoP\ComponentModel\ModuleProcessors;
 use PoP\ComponentModel\Facades\Managers\ModuleFilterManagerFacade;
 use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
+use PoP\ComponentModel\Modules\ModuleUtils;
 
 trait ModulePathProcessorTrait
 {
