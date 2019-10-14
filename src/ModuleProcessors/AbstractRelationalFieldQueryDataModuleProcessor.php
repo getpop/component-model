@@ -1,9 +1,7 @@
 <?php
 namespace PoP\ComponentModel\ModuleProcessors;
 
-use PoP\ComponentModel\DataloadUtils;
 use PoP\ComponentModel\Schema\QueryHelpers;
-use PoP\ComponentModel\Facades\Managers\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 
 abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQueryDataModuleProcessor
@@ -142,22 +140,21 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
     public function getDomainSwitchingSubmodules(array $module): array
     {
         $ret = parent::getDomainSwitchingSubmodules($module);
+        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
 
         // The fields which are not numeric are the keys from which to switch database domain
         $fieldNestedFields = $this->getFieldsWithNestedSubfields($module);
 
-        // // Replace the "skip output if null" fields with their not(isNull($field)) corresponding version
-        // $fields = array_keys($fieldNestedFields);
-        // // $replacedFields = $this->replaceSkipOutputIfNullFields($fields);
-        // $replacedFields = $fields;
-        // // Create the field=>nestedFields array again, combining the replaced fields with the original nestedFields
-        // $replacedFieldNestedFields = [];
-        // for ($i=0; $i<count($fields); $i++) {
-        //     $replacedFieldNestedFields[$replacedFields[$i]] = $fieldNestedFields[$fields[$i]];
-        // }
+        // Process only the fields without "skip output if null". Those will be processed on function `getConditionalOnDataFieldDomainSwitchingSubmodules`
+        $fieldNestedFields = array_filter(
+            $this->getFieldsWithNestedSubfields($module),
+            function ($field) use ($fieldQueryInterpreter) {
+                return !$fieldQueryInterpreter->isSkipOuputIfNullField($field);
+            },
+            ARRAY_FILTER_USE_KEY
+        );
 
-        // // Create a "virtual" module with the fields corresponding to the next level module
-        // foreach ($replacedFieldNestedFields as $field => $nestedFields) {
+        // Create a "virtual" module with the fields corresponding to the next level module
         foreach ($fieldNestedFields as $field => $nestedFields) {
             $ret[$field] = array(
                 POP_CONSTANT_SUBCOMPONENTDATALOADER_DEFAULTFROMFIELD => array(
@@ -184,9 +181,20 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
                 return $fieldQueryInterpreter->isSkipOuputIfNullField($field);
             }
         );
+        $relationalFields = array_keys(array_filter(
+            $this->getFieldsWithNestedSubfields($module),
+            function ($field) use ($fieldQueryInterpreter) {
+                return $fieldQueryInterpreter->isSkipOuputIfNullField($field);
+            },
+            ARRAY_FILTER_USE_KEY
+        ));
+        $fields = array_values(array_unique(array_merge(
+            $propertyFields,
+            $relationalFields
+        )));
 
         // Create a "virtual" module with the fields corresponding to the next level module
-        foreach ($propertyFields as $field) {
+        foreach ($fields as $field) {
             $conditionField = $this->getNotIsEmptyConditionField($field);
             $conditionalField = $fieldQueryInterpreter->removeSkipOuputIfNullFromField($field);
             $ret[$conditionField][] = [
@@ -216,11 +224,6 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
         foreach ($fieldNestedFields as $field => $nestedFields) {
             $conditionField = $this->getNotIsEmptyConditionField($field);
             $conditionalField = $fieldQueryInterpreter->removeSkipOuputIfNullFromField($field);
-            // $ret[$conditionField][] = [
-            //     $module[0],
-            //     $module[1],
-            //     ['fields' => [$nonSkipOutputIfNullField => $nestedFields]]
-            // ];
             $ret[$conditionField][$conditionalField] = array(
                 POP_CONSTANT_SUBCOMPONENTDATALOADER_DEFAULTFROMFIELD => array(
                     [
