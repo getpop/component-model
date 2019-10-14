@@ -20,6 +20,7 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractDirectiveResolver
 
     protected function resolveValueForResultItems(FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
+        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         foreach (array_keys($idsDataFields) as $id) {
             // Obtain its ID and the required data-fields for that ID
             $resultItem = $resultIDItems[$id];
@@ -30,7 +31,7 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractDirectiveResolver
             // If the conditionalDataFields are empty, we already reached the end of the tree. Nothing else to do
             foreach (array_filter($idsDataFields[$id]['conditional']) as $conditionDataField => $conditionalDataFields) {
                 // Check if the condition field has value `true`
-                if ($dbItems[$id][FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($conditionDataField)]) {
+                if ($dbItems[$id][$fieldQueryInterpreter->getFieldOutputKey($conditionDataField)]) {
                     $fieldResolver->addDataitemsToHeap(
                         [
                             (string)$id => [
