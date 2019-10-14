@@ -6,7 +6,8 @@ interface FieldQueryInterpreterInterface
 {
     public function getFieldName(string $field): string;
     public function getFieldArgs(string $field): ?string;
-    public function isSkipOuputIfNull(string $field): bool;
+    public function isSkipOuputIfNullField(string $field): bool;
+    public function removeSkipOuputIfNullFromField(string $field): string;
     public function getFieldAlias(string $field): ?string;
     public function getFieldDirectives(string $field): ?string;
     public function getDirectives(string $field): array;

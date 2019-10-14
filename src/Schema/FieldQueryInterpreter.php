@@ -131,17 +131,31 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         return substr($field, $fieldArgsOpeningSymbolPos, $fieldArgsClosingSymbolPos+strlen(QuerySyntax::SYMBOL_FIELDARGS_CLOSING)-$fieldArgsOpeningSymbolPos);
     }
 
-    public function isSkipOuputIfNull(string $field): bool
+    public function isSkipOuputIfNullField(string $field): bool
     {
         if (!isset($this->skipOutputIfNullCache[$field])) {
-            $this->skipOutputIfNullCache[$field] = $this->doIsSkipOuputIfNull($field);
+            $this->skipOutputIfNullCache[$field] = $this->doIsSkipOuputIfNullField($field);
         }
         return $this->skipOutputIfNullCache[$field];
     }
 
-    protected function doIsSkipOuputIfNull(string $field): bool
+    protected function doIsSkipOuputIfNullField(string $field): bool
     {
         return QueryHelpers::findSkipOutputIfNullSymbolPosition($field) !== false;
+    }
+
+    public function removeSkipOuputIfNullFromField(string $field): string
+    {
+        $pos = QueryHelpers::findSkipOutputIfNullSymbolPosition($field);
+        if ($pos !== false) {
+            // Replace the "?" with nothing
+            $field = str_replace(
+                QuerySyntax::SYMBOL_SKIPOUTPUTIFNULL,
+                '',
+                $field
+            );
+        }
+        return $field;
     }
 
     public function extractFieldArguments(FieldResolverInterface $fieldResolver, string $field, ?array &$schemaWarnings = null): array
