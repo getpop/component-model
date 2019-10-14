@@ -169,12 +169,12 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $this->directiveResultSet[$fieldDirectives][$id] = $resultIDItems[$id];
                 $this->fieldDirectiveIDsFields[$fieldDirectives][$id]['direct'][] = $field;
                 $this->fieldDirectiveIDsFields[$fieldDirectives][$id]['conditional'] = $this->fieldDirectiveIDsFields[$fieldDirectives][$id]['conditional'] ?? [];
-                if ($conditionalFields = $ids_data_fields[$id]['conditional'][$field]) {
-                    $this->fieldDirectiveIDsFields[$fieldDirectives][$id]['conditional'][$field] = array_merge_recursive(
-                        $this->fieldDirectiveIDsFields[$fieldDirectives][$id]['conditional'][$field] ?? [],
-                        $conditionalFields
-                    );
-                }
+            }
+            foreach ($data_fields['conditional'] as $field => $conditionalFields) {
+                $this->fieldDirectiveIDsFields[$fieldDirectives][$id]['conditional'][$field] = array_merge_recursive(
+                    $this->fieldDirectiveIDsFields[$fieldDirectives][$id]['conditional'][$field] ?? [],
+                    $conditionalFields
+                );
             }
         }
     }
