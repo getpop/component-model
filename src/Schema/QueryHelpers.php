@@ -36,4 +36,9 @@ class QueryHelpers
             QueryUtils::findLastSymbolPosition($field, QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDARGS_CLOSING),
         ];
     }
+
+    public static function getEmptyFieldArgs(): string
+    {
+        return QuerySyntax::SYMBOL_FIELDARGS_OPENING.QuerySyntax::SYMBOL_FIELDARGS_CLOSING;
+    }
 }
