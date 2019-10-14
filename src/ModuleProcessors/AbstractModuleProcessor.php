@@ -212,15 +212,15 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
             }
             foreach ($this->getConditionalOnDataFieldDomainSwitchingSubmodules($module) as $conditionDataField => $dataFieldDataloaderOptionsConditionalSubmodules) {
                 foreach ($dataFieldDataloaderOptionsConditionalSubmodules as $conditionalDataField => $dataloaderOptionsConditionalSubmodules) {
-                    foreach ($dataloaderOptionsConditionalSubmodules as $dataloaderClass => $conditionalSubmodules) {
+                    foreach ($dataloaderOptionsConditionalSubmodules as $subcomponentDataloaderClass => $conditionalSubmodules) {
                         // If the subcomponent dataloader is not explicitly set in `getConditionalOnDataFieldDomainSwitchingSubmodules`, then retrieve it now from the current dataloader's fieldResolver
-                        if ($dataloaderClass == POP_CONSTANT_SUBCOMPONENTDATALOADER_DEFAULTFROMFIELD) {
-                            $dataloaderClass = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($dataloader_class, $conditionalDataField);
+                        if ($subcomponentDataloaderClass == POP_CONSTANT_SUBCOMPONENTDATALOADER_DEFAULTFROMFIELD) {
+                            $subcomponentDataloaderClass = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($dataloader_class, $conditionalDataField);
                         }
-                        // If passing a subcomponent fieldname that doesn't exist to the API, then $dataloaderClass will be empty
-                        if ($dataloaderClass) {
+                        // If passing a subcomponent fieldname that doesn't exist to the API, then $subcomponentDataloaderClass will be empty
+                        if ($subcomponentDataloaderClass) {
                             foreach ($conditionalSubmodules as $conditionalSubmodule) {
-                                $this->setProp($conditionalSubmodule, $props, 'succeeding-dataloader', $dataloaderClass);
+                                $this->setProp($conditionalSubmodule, $props, 'succeeding-dataloader', $subcomponentDataloaderClass);
                             }
                         }
                     }
@@ -539,15 +539,15 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
             }
             foreach ($this->getConditionalOnDataFieldDomainSwitchingSubmodules($module) as $conditionDataField => $dataFieldDataloaderOptionsConditionalSubmodules) {
                 foreach ($dataFieldDataloaderOptionsConditionalSubmodules as $conditionalDataField => $dataloaderOptionsConditionalSubmodules) {
-                    $dataloaderClasses = array_keys($dataloaderOptionsConditionalSubmodules);
-                    foreach ($dataloaderClasses as $dataloaderClass) {
+                    $subcomponentDataloaderClasses = array_keys($dataloaderOptionsConditionalSubmodules);
+                    foreach ($subcomponentDataloaderClasses as $subcomponentDataloaderClass) {
                         // If the subcomponent dataloader is not explicitly set in `getConditionalOnDataFieldDomainSwitchingSubmodules`, then retrieve it now from the current dataloader's fieldResolver
-                        if ($dataloaderClass == POP_CONSTANT_SUBCOMPONENTDATALOADER_DEFAULTFROMFIELD) {
-                            $dataloaderClass = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($dataloader_class, $conditionalDataField);
+                        if ($subcomponentDataloaderClass == POP_CONSTANT_SUBCOMPONENTDATALOADER_DEFAULTFROMFIELD) {
+                            $subcomponentDataloaderClass = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($dataloader_class, $conditionalDataField);
                         }
-                        // If passing a subcomponent fieldname that doesn't exist to the API, then $dataloaderClass will be empty
-                        if ($dataloaderClass) {
-                            $subcomponent_dataloader = $instanceManager->getInstance($dataloaderClass);
+                        // If passing a subcomponent fieldname that doesn't exist to the API, then $subcomponentDataloaderClass will be empty
+                        if ($subcomponentDataloaderClass) {
+                            $subcomponent_dataloader = $instanceManager->getInstance($subcomponentDataloaderClass);
                             // If there is an alias, store the results under this. Otherwise, on the fieldName+fieldArgs
                             $subcomponent_data_field_outputkey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($conditionalDataField);
                             $ret[$subcomponent_data_field_outputkey] = $subcomponent_dataloader->getDatabaseKey();
@@ -1375,9 +1375,9 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         $domainSwitchingSubmodules = $this->getDomainSwitchingSubmodules($module);
         foreach ($this->getConditionalOnDataFieldDomainSwitchingSubmodules($module) as $conditionDataField => $dataFieldDataloaderOptionsConditionalSubmodules) {
             foreach ($dataFieldDataloaderOptionsConditionalSubmodules as $conditionalDataField => $dataloaderOptionsConditionalSubmodules) {
-                foreach ($dataloaderOptionsConditionalSubmodules as $dataloaderClass => $conditionalSubmodules) {
-                    $domainSwitchingSubmodules[$conditionalDataField][$dataloaderClass] = array_values(array_unique(array_merge(
-                        $conditionalDataField[$conditionalDataField][$dataloaderClass] ?? [],
+                foreach ($dataloaderOptionsConditionalSubmodules as $subcomponentDataloaderClass => $conditionalSubmodules) {
+                    $domainSwitchingSubmodules[$conditionalDataField][$subcomponentDataloaderClass] = array_values(array_unique(array_merge(
+                        $conditionalDataField[$conditionalDataField][$subcomponentDataloaderClass] ?? [],
                         $conditionalSubmodules
                     )));
                 }
@@ -1516,7 +1516,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         if (in_array(self::MODULECOMPONENT_CONDITIONALONDATAFIELDDOMAINSWITCHINGSUBMODULES, $components)) {
             foreach ($this->getConditionalOnDataFieldDomainSwitchingSubmodules($module) as $conditionDataField => $dataFieldDataloaderOptionsConditionalSubmodules) {
                 foreach ($dataFieldDataloaderOptionsConditionalSubmodules as $conditionalDataField => $dataloaderOptions) {
-                    foreach ($dataloaderOptions as $dataloaderClass => $subcomponentModules) {
+                    foreach ($dataloaderOptions as $subcomponentDataloaderClass => $subcomponentModules) {
                         $ret = array_values(
                             array_unique(
                                 array_merge(
