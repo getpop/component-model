@@ -73,28 +73,6 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
     }
 
     /**
-     * Replace the "skip output if null" fields with their not(isNull($field)) corresponding version
-     *
-     * @param array $fields
-     * @return array
-     */
-    protected function replaceSkipOutputIfNullFields(array $fields): array
-    {
-        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
-        return array_map(
-            function ($field) use ($fieldQueryInterpreter) {
-                // If the field has a "?", then it must not be output if its value is null
-                // To achieve this, we replace this field with a conditionField "not(isNull($field))", and then $field is conditional to it
-                if ($fieldQueryInterpreter->isSkipOuputIfNullField($field)) {
-                    return $this->getNotIsEmptyConditionField($field);
-                }
-                return $field;
-            },
-            $fields
-        );
-    }
-
-    /**
      * Given a field, return its corresponding "not(isEmpty($field))
      *
      * @param array $fields
@@ -129,12 +107,14 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
     public function getDataFields(array $module, array &$props): array
     {
         // The fields which have a numeric key only are the data-fields for the current module level
-        $fields = $this->getPropertyFields($module);
-
-        // Replace the "skip output if null" fields with their not(isNull($field)) corresponding version
-        $fields = $this->replaceSkipOutputIfNullFields($fields);
-
-        return $fields;
+        // Process only the fields without "skip output if null". Those will be processed on function `getConditionalOnDataFieldSubmodules`
+        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+        return array_filter(
+            $this->getPropertyFields($module),
+            function ($field) use ($fieldQueryInterpreter) {
+                return !$fieldQueryInterpreter->isSkipOuputIfNullField($field);
+            }
+        );
     }
 
     public function getDomainSwitchingSubmodules(array $module): array
