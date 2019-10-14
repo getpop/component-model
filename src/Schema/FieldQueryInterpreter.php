@@ -919,9 +919,8 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         if ($fieldAlias = $this->getFieldAlias($field)) {
             return $fieldAlias;
         }
-        // Otherwise, use fieldName+fieldArgs (hence, $field minus the directive)
-        $fieldDirectiveOpeningSymbolElems = GeneralUtils::splitElements($field, QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING, QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING);
-        return $fieldDirectiveOpeningSymbolElems[0];
+        // Otherwise, use fieldName+fieldArgs
+        return $this->getFieldName($field).$this->getFieldArgs($field);
     }
 
     public function listField(string $field): array
