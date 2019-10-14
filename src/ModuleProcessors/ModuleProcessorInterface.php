@@ -37,6 +37,7 @@ interface ModuleProcessorInterface
     public function getDataFields(array $module, array &$props): array;
     public function getDomainSwitchingSubmodules(array $module): array;
     public function getConditionalOnDataFieldSubmodules(array $module): array;
+    public function getConditionalOnDataFieldDomainSwitchingSubmodules(array $module): array;
     public function getImmutableDataPropertiesDatasetmoduletree(array $module, array &$props): array;
     public function getImmutableDataPropertiesDatasetmoduletreeFullsection(array $module, array &$props): array;
     public function getDatasetmoduletreeSectionFlattenedDataFields(array $module, array &$props): array;
