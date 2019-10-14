@@ -3,6 +3,7 @@ namespace PoP\ComponentModel\DirectiveResolvers;
 use PoP\ComponentModel\Facades\Schema\ErrorMessageStoreFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
+use PoP\ComponentModel\GeneralUtils;
 
 class ResolveValueAndMergeDirectiveResolver extends AbstractDirectiveResolver
 {
@@ -31,7 +32,17 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractDirectiveResolver
             // If the conditionalDataFields are empty, we already reached the end of the tree. Nothing else to do
             foreach (array_filter($idsDataFields[$id]['conditional']) as $conditionDataField => $conditionalDataFields) {
                 // Check if the condition field has value `true`
-                if ($dbItems[$id][$fieldQueryInterpreter->getFieldOutputKey($conditionDataField)]) {
+                // There are 2 possibilities:
+                // 1. `outputConditionFields` => true in the ModuleProcessor: The conditionField has been defined as to be resolved, then it will be in $dbItems and can be retrieved from there
+                // 2. `outputConditionFields` => false in the ModuleProcessor: The conditionField is not present in $dbItems, so it must be resolved now
+                $conditionFieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($conditionDataField);
+                if (isset($dbItems[$id]) && array_key_exists($conditionFieldOutputKey, $dbItems[$id])) {
+                    $conditionSatisfied = (bool)$dbItems[$id][$conditionFieldOutputKey];
+                } else {
+                    $conditionFieldValue = $this->resolveFieldValue($fieldResolver, $id, $resultItem, $conditionDataField, $dbWarnings);
+                    $conditionSatisfied = $conditionFieldValue && !GeneralUtils::isError($conditionFieldValue);
+                }
+                if ($conditionSatisfied) {
                     $fieldResolver->addDataitemsToHeap(
                         [
                             (string)$id => [
@@ -82,7 +93,7 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractDirectiveResolver
 
         // The dataitem can contain both rightful values and also errors (eg: when the field doesn't exist, or the field validation fails)
         // Extract the errors and add them on the other array
-        if (\PoP\ComponentModel\GeneralUtils::isError($value)) {
+        if (GeneralUtils::isError($value)) {
             // Extract the error message
             $error = $value;
             $dbErrors[(string)$id][$fieldOutputKey] = array_merge(
