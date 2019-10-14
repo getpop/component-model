@@ -51,13 +51,13 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         // Successively search for the position of some edge symbol
         // Everything before "(" (for the fieldArgs)
         list($pos) = QueryHelpers::listFieldArgsSymbolPositions($field);
-        // Everything before "?" (for "skip output if null")
-        if ($pos === false) {
-            $pos = QueryHelpers::findSkipOutputIfNullSymbolPosition($field);
-        }
         // Everything before "@" (for the alias)
         if ($pos === false) {
             $pos = QueryHelpers::findFieldAliasSymbolPosition($field);
+        }
+        // Everything before "?" (for "skip output if null")
+        if ($pos === false) {
+            $pos = QueryHelpers::findSkipOutputIfNullSymbolPosition($field);
         }
         // Everything before "<" (for the field directive)
         if ($pos === false) {
@@ -776,12 +776,22 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
             // Extract the alias, without the "@" symbol
             $alias = substr($field, $aliasPrefixSymbolPos+strlen(QuerySyntax::SYMBOL_FIELDALIAS_PREFIX));
 
-            // If there is a field directive (after the alias), remove it
-            list(
-                $fieldDirectivesOpeningSymbolPos
-            ) = QueryHelpers::listFieldDirectivesSymbolPositions($alias);
-            if ($fieldDirectivesOpeningSymbolPos !== false) {
-                $alias = substr($alias, 0, $fieldDirectivesOpeningSymbolPos);
+            // If there is a "]", "?" or "<" after the alias, remove the string from then on
+            // Everything before "]" (for if the alias is inside the bookmark)
+            list (
+                $bookmarkOpeningSymbolPos,
+                $pos
+            ) = QueryHelpers::listFieldBookmarkSymbolPositions($alias);
+            // Everything before "?" (for "skip output if null")
+            if ($pos === false) {
+                $pos = QueryHelpers::findSkipOutputIfNullSymbolPosition($alias);
+            }
+            // Everything before "<" (for the field directive)
+            if ($pos === false) {
+                list($pos) = QueryHelpers::listFieldDirectivesSymbolPositions($alias);
+            }
+            if ($pos !== false) {
+                $alias = substr($alias, 0, $pos);
             }
             return $alias;
         }
