@@ -183,6 +183,7 @@ trait QueryDataModuleProcessorTrait
         $ret = parent::getDatasetmeta($module, $props, $data_properties, $dataaccess_checkpoint_validation, $actionexecution_checkpoint_validation, $executed, $dbObjectIDOrIDs);
 
         if ($queryHandlerClass = $this->getQueryHandlerClass($module)) {
+            $instanceManager = InstanceManagerFacade::getInstance();
             $queryhandler = $instanceManager->getInstance($queryHandlerClass);
 
             if ($query_state = $queryhandler->getQueryState($data_properties, $dataaccess_checkpoint_validation, $actionexecution_checkpoint_validation, $executed, $dbObjectIDOrIDs)) {

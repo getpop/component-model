@@ -14,6 +14,7 @@ use PoP\ComponentModel\Engine_Vars;
 use PoP\ComponentModel\DataloadUtils;
 use PoP\ComponentModel\Utils;
 use PoP\ComponentModel\QueryHandlers\ParamConstants;
+use PoP\ComponentModel\Settings\SettingsManagerFactory;
 
 abstract class AbstractModuleProcessor implements ModuleProcessorInterface
 {
@@ -1069,7 +1070,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
     {
         if ($route = $this->getRelevantRoute($module, $props)) {
             if ($this->getRelevantRouteCheckpointTarget($module, $props) == GD_DATALOAD_DATAACCESSCHECKPOINTS) {
-                return $this->maybeOverrideCheckpoints(Settings\SettingsManagerFactory::getInstance()->getCheckpoints($route));
+                return $this->maybeOverrideCheckpoints(SettingsManagerFactory::getInstance()->getCheckpoints($route));
             }
         }
 
