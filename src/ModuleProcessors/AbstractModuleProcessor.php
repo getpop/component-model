@@ -201,6 +201,18 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                     }
                 }
             }
+            foreach ($this->getConditionalOnDataFieldSubmodules($module) as $conditionDataField => $conditionalSubmodules) {
+
+                // $subcomponent_dataloader_class = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($dataloader_class, $conditionDataField);
+
+                // // If passing a subcomponent fieldname that doesn't exist to the API, then $subcomponent_dataloader_class will be empty
+                // if ($subcomponent_dataloader_class) {
+                    foreach ($conditionalSubmodules as $conditionalSubmodule) {
+                //         $this->setProp($conditionalSubmodule, $props, 'succeeding-dataloader', $subcomponent_dataloader_class);
+                        $this->setProp($conditionalSubmodule, $props, 'succeeding-dataloader', $dataloader_class);
+                    }
+                // }
+            }
         }
 
         /**
@@ -490,9 +502,9 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
             }
         }
 
-        if ($subcomponents = $this->getDomainSwitchingSubmodules($module)) {
-            // This prop is set for both dataloading and non-dataloading modules
-            if ($dataloader_class = $this->getProp($module, $props, 'succeeding-dataloader')) {
+        // This prop is set for both dataloading and non-dataloading modules
+        if ($dataloader_class = $this->getProp($module, $props, 'succeeding-dataloader')) {
+            if ($subcomponents = $this->getDomainSwitchingSubmodules($module)) {
                 foreach ($subcomponents as $subcomponent_data_field => $subcomponent_dataloader_options) {
                     // Watch out that, if a module has 2 subcomponents on the same data-field but different dataloaders, then
                     // the dataloaders' db-key must be the same! Otherwise, the 2nd one will override the 1st one
@@ -514,8 +526,30 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                     }
                 }
             }
+            if ($conditionalOnDataFieldSubmodules = $this->getConditionalOnDataFieldSubmodules($module)) {
+                // Any conditionField which has a dataloader, also add its DBKey
+                $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
+                $moduleFullName = ModuleUtils::getModuleFullName($module);
+                foreach ($conditionalOnDataFieldSubmodules as $conditionDataField => $conditionalSubmodules) {
+                    foreach ($conditionalSubmodules as $conditionalSubmodule) {
+                        $ret = array_merge(
+                            $ret,
+                            $moduleprocessor_manager->getProcessor($conditionalSubmodule)->getDatabaseKeys($conditionalSubmodule, $props[$moduleFullName][POP_PROPS_SUBMODULES])
+                        );
+                    }
+                    // $conditionFieldDataloaderClass = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($dataloader_class, $conditionDataField);
+                    // // var_dump($conditionDataField, $conditionFieldDataloaderClass, $conditionalSubmodules);
+                    // // If passing a subcomponent fieldname that doesn't exist to the API, then $conditionFieldDataloaderClass will be empty
+                    // if ($conditionFieldDataloaderClass) {
+                    //     $conditionFieldDataloader = $instanceManager->getInstance($conditionFieldDataloaderClass);
+                    //     // If there is an alias, store the results under this. Otherwise, on the fieldName+fieldArgs
+                    //     $conditionFieldOutputKey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($subcomponent_data_field);
+                    //     $ret[$conditionFieldOutputKey] = $conditionFieldDataloader->getDatabaseKey();
+                    // }
+                }
+            }
         }
-
+// var_dump('ret', $ret);
         return $ret;
     }
 
