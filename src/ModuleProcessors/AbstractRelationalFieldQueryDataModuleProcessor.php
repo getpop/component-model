@@ -178,7 +178,6 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
 
         // Calculate the property fields with "skip output if null" on true
-        // var_dump($module, $this->getPropertyFields($module));
         $propertyFields = array_filter(
             $this->getPropertyFields($module),
             function ($field) use ($fieldQueryInterpreter) {
@@ -222,7 +221,6 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
         $ret = parent::getDatabaseKeys($module, $props);
 
         // This prop is set for both dataloading and non-dataloading modules
-        // var_dump('dataloader_class', $this->getProp($module, $props, 'succeeding-dataloader'));
         if ($dataloader_class = $this->getProp($module, $props, 'succeeding-dataloader')) {
             $instanceManager = InstanceManagerFacade::getInstance();
 
@@ -242,7 +240,6 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
                 // the dataloaders' db-key must be the same! Otherwise, the 2nd one will override the 1st one
                 // Eg: a module using POSTLIST, another one using CONVERTIBLEPOSTLIST, it doesn't conflict since the db-key for both is "posts"
                 $subcomponent_dataloader_class = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($dataloader_class, $subcomponent_data_field);
-                // var_dump('$subcomponent_data_field', $subcomponent_data_field, $subcomponent_dataloader_class);
                 // If passing a subcomponent fieldname that doesn't exist to the API, then $subcomponent_dataloader_class will be empty
                 if ($subcomponent_dataloader_class) {
                     $subcomponent_dataloader = $instanceManager->getInstance($subcomponent_dataloader_class);
@@ -252,7 +249,7 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
                 }
             }
         }
-// var_dump('ret', $ret);
+
         return $ret;
     }
 }
