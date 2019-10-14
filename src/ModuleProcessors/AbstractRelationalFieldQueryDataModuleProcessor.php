@@ -6,6 +6,11 @@ use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 
 abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQueryDataModuleProcessor
 {
+    public function outputConditionFields(array $module, array &$props): bool
+    {
+        return false;
+    }
+
     protected function getFields(array $module, $moduleAtts): array
     {
         // If it is a virtual module, the fields are coded inside the virtual module atts
