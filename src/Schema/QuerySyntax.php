@@ -10,6 +10,7 @@ class QuerySyntax {
     const SYMBOL_FIELDALIAS_PREFIX = '@';
     const SYMBOL_BOOKMARK_OPENING = '[';
     const SYMBOL_BOOKMARK_CLOSING = ']';
+    const SYMBOL_SKIPOUTPUTIFNULL = '?';
     const SYMBOL_FIELDDIRECTIVE_OPENING = '<';
     const SYMBOL_FIELDDIRECTIVE_CLOSING = '>';
     const SYMBOL_FIELDARGS_ARGSEPARATOR = ',';

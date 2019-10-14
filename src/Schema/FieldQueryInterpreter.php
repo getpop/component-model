@@ -10,6 +10,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
     // Cache the output from functions
     private $fieldNamesCache = [];
     private $fieldArgsCache = [];
+    private $skipOutputIfNullCache = [];
     private $extractedFieldArgumentsCache = [];
     private $extractedFieldArgumentWarningsCache = [];
     private $fieldArgumentNameTypesCache = [];
@@ -50,6 +51,10 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         // Successively search for the position of some edge symbol
         // Everything before "(" (for the fieldArgs)
         list($pos) = QueryHelpers::listFieldArgsSymbolPositions($field);
+        // Everything before "?" (for "skip output if null")
+        if ($pos === false) {
+            $pos = QueryHelpers::findSkipOutputIfNullSymbolPosition($field);
+        }
         // Everything before "@" (for the alias)
         if ($pos === false) {
             $pos = QueryHelpers::findFieldAliasSymbolPosition($field);
@@ -124,6 +129,19 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
 
         // We have field args. Extract them, including the brackets
         return substr($field, $fieldArgsOpeningSymbolPos, $fieldArgsClosingSymbolPos+strlen(QuerySyntax::SYMBOL_FIELDARGS_CLOSING)-$fieldArgsOpeningSymbolPos);
+    }
+
+    public function isSkipOuputIfNull(string $field): bool
+    {
+        if (!isset($this->skipOutputIfNullCache[$field])) {
+            $this->skipOutputIfNullCache[$field] = $this->doIsSkipOuputIfNull($field);
+        }
+        return $this->skipOutputIfNullCache[$field];
+    }
+
+    protected function doIsSkipOuputIfNull(string $field): bool
+    {
+        return QueryHelpers::findSkipOutputIfNullSymbolPosition($field) !== false;
     }
 
     public function extractFieldArguments(FieldResolverInterface $fieldResolver, string $field, ?array &$schemaWarnings = null): array
@@ -902,17 +920,19 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         ];
     }
 
-    public function getField(string $fieldName, array $fieldArgs = [], ?string $fieldAlias = null, ?array $fieldDirectives = []): string
+    public function getField(string $fieldName, array $fieldArgs = [], ?string $fieldAlias = null, ?bool $skipOutputIfNull = false, ?array $fieldDirectives = []): string
     {
-        return $fieldName.
+        return
+            $fieldName.
             $this->getFieldArgsAsString($fieldArgs).
             $this->getFieldAliasAsString($fieldAlias).
+            $this->getFieldSkipOutputIfNullAsString($skipOutputIfNull).
             $this->getFieldDirectivesAsString($fieldDirectives);
     }
 
-    public function composeField(string $fieldName, string $fieldArgs = '', string $fieldAlias = '', string $fieldDirectives = ''): string
+    public function composeField(string $fieldName, string $fieldArgs = '', string $fieldAlias = '', string $skipOutputIfNull = '', string $fieldDirectives = ''): string
     {
-        return $fieldName.$fieldArgs.$fieldAlias.$fieldDirectives;
+        return $fieldName.$fieldArgs.$fieldAlias.$skipOutputIfNull.$fieldDirectives;
     }
 
     protected function getFieldArgsAsString(array $fieldArgs = []): string
@@ -942,6 +962,14 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
             return '';
         }
         return QuerySyntax::SYMBOL_FIELDALIAS_PREFIX.$fieldAlias;
+    }
+
+    protected function getFieldSkipOutputIfNullAsString(?bool $skipOutputIfNull = false): string
+    {
+        if (!$skipOutputIfNull) {
+            return '';
+        }
+        return QuerySyntax::SYMBOL_SKIPOUTPUTIFNULL;
     }
 
     protected function getFieldDirectivesAsString(?array $fieldDirectives = []): string

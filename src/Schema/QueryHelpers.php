@@ -24,6 +24,11 @@ class QueryHelpers
         return QueryUtils::findFirstSymbolPosition($field, QuerySyntax::SYMBOL_FIELDALIAS_PREFIX, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING]);
     }
 
+    public static function findSkipOutputIfNullSymbolPosition(string $field)
+    {
+        return QueryUtils::findFirstSymbolPosition($field, QuerySyntax::SYMBOL_SKIPOUTPUTIFNULL, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_BOOKMARK_OPENING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_BOOKMARK_CLOSING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING]);
+    }
+
     public static function listFieldDirectivesSymbolPositions(string $field): array
     {
         return [
