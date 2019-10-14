@@ -552,19 +552,6 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                     }
                 }
             }
-            // if ($conditionalOnDataFieldSubmodules = $this->getConditionalOnDataFieldSubmodules($module)) {
-            //     // Any conditionField which has a dataloader, also add its DBKey
-            //     $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
-            //     $moduleFullName = ModuleUtils::getModuleFullName($module);
-            //     foreach ($conditionalOnDataFieldSubmodules as $conditionDataField => $conditionalSubmodules) {
-            //         foreach ($conditionalSubmodules as $conditionalSubmodule) {
-            //             $ret = array_merge(
-            //                 $ret,
-            //                 $moduleprocessor_manager->getProcessor($conditionalSubmodule)->getDatabaseKeys($conditionalSubmodule, $props[$moduleFullName][POP_PROPS_SUBMODULES])
-            //             );
-            //         }
-            //     }
-            // }
         }
 
         return $ret;
