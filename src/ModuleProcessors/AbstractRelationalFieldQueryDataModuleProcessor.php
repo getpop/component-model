@@ -146,17 +146,19 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
         // The fields which are not numeric are the keys from which to switch database domain
         $fieldNestedFields = $this->getFieldsWithNestedSubfields($module);
 
-        // Replace the "skip output if null" fields with their not(isNull($field)) corresponding version
-        $fields = array_keys($fieldNestedFields);
-        $replacedFields = $this->replaceSkipOutputIfNullFields($fields);
-        // Create the field=>nestedFields array again, combining the replaced fields with the original nestedFields
-        $replacedFieldNestedFields = [];
-        for ($i=0; $i<count($fields); $i++) {
-            $replacedFieldNestedFields[$replacedFields[$i]] = $fieldNestedFields[$fields[$i]];
-        }
+        // // Replace the "skip output if null" fields with their not(isNull($field)) corresponding version
+        // $fields = array_keys($fieldNestedFields);
+        // // $replacedFields = $this->replaceSkipOutputIfNullFields($fields);
+        // $replacedFields = $fields;
+        // // Create the field=>nestedFields array again, combining the replaced fields with the original nestedFields
+        // $replacedFieldNestedFields = [];
+        // for ($i=0; $i<count($fields); $i++) {
+        //     $replacedFieldNestedFields[$replacedFields[$i]] = $fieldNestedFields[$fields[$i]];
+        // }
 
-        // Create a "virtual" module with the fields corresponding to the next level module
-        foreach ($replacedFieldNestedFields as $field => $nestedFields) {
+        // // Create a "virtual" module with the fields corresponding to the next level module
+        // foreach ($replacedFieldNestedFields as $field => $nestedFields) {
+        foreach ($fieldNestedFields as $field => $nestedFields) {
             $ret[$field] = array(
                 POP_CONSTANT_SUBCOMPONENTDATALOADER_DEFAULTFROMFIELD => array(
                     [
@@ -176,6 +178,7 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
 
         // Calculate the property fields with "skip output if null" on true
+        // var_dump($module, $this->getPropertyFields($module));
         $propertyFields = array_filter(
             $this->getPropertyFields($module),
             function ($field) use ($fieldQueryInterpreter) {
@@ -219,6 +222,7 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
         $ret = parent::getDatabaseKeys($module, $props);
 
         // This prop is set for both dataloading and non-dataloading modules
+        // var_dump('dataloader_class', $this->getProp($module, $props, 'succeeding-dataloader'));
         if ($dataloader_class = $this->getProp($module, $props, 'succeeding-dataloader')) {
             $instanceManager = InstanceManagerFacade::getInstance();
 
@@ -228,7 +232,7 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
             $nestedFields = array_filter(
                 $fields,
                 function ($key) {
-                    return !is_numeric($key);
+                    return !is_numeric($key)/* && strpos($key, '?') !== false*/;
                 },
                 ARRAY_FILTER_USE_KEY
             );
@@ -238,6 +242,7 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
                 // the dataloaders' db-key must be the same! Otherwise, the 2nd one will override the 1st one
                 // Eg: a module using POSTLIST, another one using CONVERTIBLEPOSTLIST, it doesn't conflict since the db-key for both is "posts"
                 $subcomponent_dataloader_class = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($dataloader_class, $subcomponent_data_field);
+                // var_dump('$subcomponent_data_field', $subcomponent_data_field, $subcomponent_dataloader_class);
                 // If passing a subcomponent fieldname that doesn't exist to the API, then $subcomponent_dataloader_class will be empty
                 if ($subcomponent_dataloader_class) {
                     $subcomponent_dataloader = $instanceManager->getInstance($subcomponent_dataloader_class);
@@ -247,6 +252,7 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
                 }
             }
         }
+// var_dump('ret', $ret);
         return $ret;
     }
 }
