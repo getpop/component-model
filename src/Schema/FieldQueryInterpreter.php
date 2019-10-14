@@ -742,7 +742,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
 
     public function createFieldArgValueAsFieldFromFieldName(string $fieldName): string
     {
-        return $fieldName.QuerySyntax::SYMBOL_FIELDARGS_OPENING.QuerySyntax::SYMBOL_FIELDARGS_CLOSING;
+        return $fieldName.QueryHelpers::getEmptyFieldArgs();
     }
 
     public function getFieldAlias(string $field): ?string
