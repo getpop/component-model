@@ -930,6 +930,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
             $this->getFieldName($field),
             $this->getFieldArgs($field),
             $this->getFieldAlias($field),
+            $this->isSkipOuputIfNullField($field),
             $this->getDirectives($field),
         ];
     }
