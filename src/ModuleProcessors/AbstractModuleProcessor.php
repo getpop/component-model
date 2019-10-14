@@ -150,7 +150,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         $ret = array();
 
         // If this module loads data, then add several properties
-        if ($dataloader_class = $this->getDataloaderClass($module)) {
+        if ($this->getDataloaderClass($module)) {
             if ($this->queriesExternalDomain($module, $props)) {
                 $ret['external-domain'] = true;
             }
