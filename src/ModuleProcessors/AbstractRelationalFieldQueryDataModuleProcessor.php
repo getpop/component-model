@@ -234,41 +234,4 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
 
         return $ret;
     }
-
-    // public function getDatabaseKeys(array $module, array &$props): array
-    // {
-    //     $ret = parent::getDatabaseKeys($module, $props);
-
-    //     // This prop is set for both dataloading and non-dataloading modules
-    //     if ($dataloader_class = $this->getProp($module, $props, 'succeeding-dataloader')) {
-    //         $instanceManager = InstanceManagerFacade::getInstance();
-
-    //         $moduleAtts = count($module) >= 3 ? $module[2] : null;
-    //         $fields = $this->getFields($module, $moduleAtts);
-
-    //         $nestedFields = array_filter(
-    //             $fields,
-    //             function ($key) {
-    //                 return !is_numeric($key)/* && strpos($key, '?') !== false*/;
-    //             },
-    //             ARRAY_FILTER_USE_KEY
-    //         );
-
-    //         foreach (array_keys($nestedFields) as $subcomponent_data_field) {
-    //             // Watch out that, if a module has 2 subcomponents on the same data-field but different dataloaders, then
-    //             // the dataloaders' db-key must be the same! Otherwise, the 2nd one will override the 1st one
-    //             // Eg: a module using POSTLIST, another one using CONVERTIBLEPOSTLIST, it doesn't conflict since the db-key for both is "posts"
-    //             $subcomponent_dataloader_class = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($dataloader_class, $subcomponent_data_field);
-    //             // If passing a subcomponent fieldname that doesn't exist to the API, then $subcomponent_dataloader_class will be empty
-    //             if ($subcomponent_dataloader_class) {
-    //                 $subcomponent_dataloader = $instanceManager->getInstance($subcomponent_dataloader_class);
-    //                 // If there is an alias, store the results under this. Otherwise, on the fieldName+fieldArgs
-    //                 $subcomponent_data_field_outputkey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($subcomponent_data_field);
-    //                 $ret[$subcomponent_data_field_outputkey] = $subcomponent_dataloader->getDatabaseKey();
-    //             }
-    //         }
-    //     }
-
-    //     return $ret;
-    // }
 }
