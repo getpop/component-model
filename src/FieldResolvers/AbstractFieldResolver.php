@@ -472,7 +472,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
     protected function calculateAllFieldValueResolvers()
     {
-        $instanceManager = InstanceManagerFacade::getInstance();
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         $attachableExtensionManager = AttachableExtensionManagerFacade::getInstance();
 
