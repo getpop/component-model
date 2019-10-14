@@ -166,11 +166,8 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
 
     public function initModelProps(array $module, array &$props)
     {
-
         // If it is a dataloader module, then set all the props related to data
         if ($dataloader_class = $this->getDataloaderClass($module)) {
-            $vars = Engine_Vars::getVars();
-
             // If it is multidomain, add a flag for inner layouts to know and react
             if ($this->isMultidomain($module, $props)) {
                 // $this->add_general_prop($props, 'is-multidomain', true);
