@@ -247,9 +247,10 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         $schemaErrors = [];
         $schemaWarnings = [];
         $schemaDeprecations = [];
-        $validField = $field;
+        $validAndResolvedField = $field;
         $fieldName = $this->getFieldName($field);
-        if ($fieldArgs = $this->extractFieldArguments($fieldResolver, $field, $schemaWarnings)) {
+        $extractedFieldArgs = $fieldArgs = $this->extractFieldArguments($fieldResolver, $field, $schemaWarnings);
+        if ($fieldArgs) {
             foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
                 $fieldArgValue = $this->maybeConvertFieldArgumentValue($fieldArgValue, $variables);
                 $fieldArgs[$fieldArgName] = $fieldArgValue;
@@ -282,13 +283,17 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
         }
         // If there's an error, those args will be removed. Then, re-create the fieldDirective to pass it to the function below
         if ($schemaErrors) {
-            $validField = null;
-        } elseif ($schemaWarnings) {
-            // Re-create the field, eliminating the fieldArgs that failed
-            $validField = $this->replaceFieldArgs($field, $fieldArgs);
+            $validAndResolvedField = null;
+        } else {
+            // There are 2 reasons why the field might have changed:
+            // 1. validField: There are $schemaWarnings: remove the fieldArgs that failed
+            // 2. resolvedField: Some fieldArg was a variable: replace it with its value
+            if ($extractedFieldArgs != $fieldArgs) {
+                $validAndResolvedField = $this->replaceFieldArgs($field, $fieldArgs);
+            }
         }
         return [
-            $validField,
+            $validAndResolvedField,
             $fieldName,
             $fieldArgs,
             $schemaErrors,
@@ -332,9 +337,9 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
     public function extractFieldArgumentsForResultItem(FieldResolverInterface $fieldResolver, $resultItem, string $field, ?array $variables = null): array
     {
         $dbErrors = $dbWarnings = [];
-        $validField = $field;
+        $validAndResolvedField = $field;
         $fieldName = $this->getFieldName($field);
-        $fieldArgs = $this->extractFieldArguments($fieldResolver, $field);
+        $extractedFieldArgs = $fieldArgs = $this->extractFieldArguments($fieldResolver, $field);
 
         // Only need to extract arguments if they have fields
         if (FieldQueryUtils::isAnyFieldArgumentValueAField(
@@ -367,14 +372,18 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
                 $dbWarnings[(string)$id][$fieldOutputKey][] = $warning;
             }
             if ($dbErrors) {
-                $validField = null;
-            } elseif ($dbWarnings) {
-                // Re-create the field, eliminating the fieldArgs that failed
-                $validField = $this->replaceFieldArgs($field, $fieldArgs);
+                $validAndResolvedField = null;
+            } else {
+                // There are 2 reasons why the field might have changed:
+                // 1. validField: There are $dbWarnings: remove the fieldArgs that failed
+                // 2. resolvedField: Some fieldArg was a variable: replace it with its value
+                if ($extractedFieldArgs != $fieldArgs) {
+                    $validAndResolvedField = $this->replaceFieldArgs($field, $fieldArgs);
+                }
             }
         }
         return [
-            $validField,
+            $validAndResolvedField,
             $fieldName,
             $fieldArgs,
             $dbErrors,
