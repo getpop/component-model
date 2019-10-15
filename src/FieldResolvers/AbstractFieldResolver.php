@@ -63,7 +63,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             foreach ($directiveSet as $directive) {
                 $fieldDirective = $fieldQueryInterpreter->convertDirectiveToFieldDirective($directive);
                 if (is_null($this->fieldDirectiveInstanceCache[$fieldDirective])) {
-                    // Validate schema (eg of error in schema: ?fields=posts<include(if:this-field-doesnt-exist())>)
+                    // Validate schema (eg of error in schema: ?query=posts<include(if:this-field-doesnt-exist())>)
                     list(
                         $validFieldDirective,
                         $directiveName,
@@ -97,7 +97,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     protected function dissectAndValidateDirectiveForSchema(string $directive, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
-        // First validate schema (eg of error in schema: ?fields=posts<include(if:this-field-doesnt-exist())>)
+        // First validate schema (eg of error in schema: ?query=posts<include(if:this-field-doesnt-exist())>)
         list(
             $validDirective,
             $directiveName,
@@ -371,7 +371,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             // Calculate $validateSchemaOnResultItem: if any value containes a field, then we must perform the schemaValidation on the item, such as checking that all mandatory fields are there
             // For instance: After resolving a field and being casted it may be incorrect, so the value is invalidated, and after the schemaValidation the proper error is shown
             // Also need to check for variables, since these must be resolved too
-            // For instance: ?fields=posts(limit:3),post(id:$id).id|title&id=112
+            // For instance: ?query=posts(limit:3),post(id:$id).id|title&id=112
             $validateSchemaOnResultItem = FieldQueryUtils::isAnyFieldArgumentValueAFieldOrVariable(
                 array_values(
                     $fieldQueryInterpreter->extractFieldArguments($this, $field)
