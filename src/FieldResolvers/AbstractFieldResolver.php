@@ -70,7 +70,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     ) = $this->dissectAndValidateDirectiveForSchema($fieldDirective, $schemaErrors, $schemaWarnings, $schemaDeprecations);
                     // Check that the directive is a valid one (eg: no schema errors)
                     if (is_null($validFieldDirective)) {
-                        $schemaErrors[$directiveName] = $translationAPI->__('This directive can\'t be processed due to previous errors', 'pop-component-model');
+                        $schemaErrors[$directiveName][] = $translationAPI->__('This directive can\'t be processed due to previous errors', 'pop-component-model');
                         continue;
                     }
                     $directiveName = $fieldQueryInterpreter->getDirectiveName($directive);
