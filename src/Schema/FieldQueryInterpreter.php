@@ -536,8 +536,8 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
 
     protected function maybeConvertFieldArgumentVariableValue($fieldArgValue, array $variables = null)
     {
-        // If it starts with "$", it is a variable. Then, retrieve the actual value from the request
-        if (substr($fieldArgValue, 0, strlen(QuerySyntax::SYMBOL_VARIABLE_PREFIX)) == QuerySyntax::SYMBOL_VARIABLE_PREFIX) {
+        // If it is a variable, retrieve the actual value from the request
+        if ($this->isFieldArgumentValueAVariable($fieldArgValue)) {
             // Variables: allow to pass a field argument "key:$input", and then resolve it as ?variable[input]=value
             // Expected input is similar to GraphQL: https://graphql.org/learn/queries/#variables
             // If not passed the variables parameter, use $_REQUEST["variables"] by default
@@ -738,6 +738,12 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
             // Please notice: if position is 0 (i.e. for a string "(something)") then it's not a field, since the fieldName is missing
             // Then it's ok asking for strpos: either `false` or `0` must both fail
             strpos($fieldArgValue, QuerySyntax::SYMBOL_FIELDARGS_OPENING);
+    }
+
+    public function isFieldArgumentValueAVariable($fieldArgValue): bool
+    {
+        // If it starts with "$", it is a variable
+        return substr($fieldArgValue, 0, strlen(QuerySyntax::SYMBOL_VARIABLE_PREFIX)) == QuerySyntax::SYMBOL_VARIABLE_PREFIX;
     }
 
     public function createFieldArgValueAsFieldFromFieldName(string $fieldName): string

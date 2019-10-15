@@ -26,6 +26,7 @@ interface FieldQueryInterpreterInterface
     public function composeField(string $fieldName, string $fieldArgs = '', string $fieldAlias = '', string $skipOutputIfNull = '', string $fieldDirectives = ''): string;
     public function getFieldDirectiveAsString(array $fieldDirectives): string;
     public function isFieldArgumentValueAField($fieldArgValue): bool;
+    public function isFieldArgumentValueAVariable($fieldArgValue): bool;
     public function extractFieldArguments(FieldResolverInterface $fieldResolver, string $field, ?array &$schemaWarnings = null): array;
     public function extractFieldArgumentsForResultItem(FieldResolverInterface $fieldResolver, $resultItem, string $field, ?array $variables = null): array;
     public function extractFieldArgumentsForSchema(FieldResolverInterface $fieldResolver, string $field, ?array $variables = null): array;
