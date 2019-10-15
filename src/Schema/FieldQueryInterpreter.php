@@ -688,7 +688,7 @@ class FieldQueryInterpreter implements FieldQueryInterpreterInterface
             if ($fieldArgsClosingSymbolPos !== strlen($fieldArgValue)-1) {
                 return [
                     sprintf(
-                        $this->translationAPI->__('Field \'%s\' must end with argument symbol \'%s\', so it has been ignored', 'pop-component-model'),
+                        $this->translationAPI->__('Field \'%s\' has arguments, but because the closing argument symbol \'%s\' is not at the end, it has been ignored', 'pop-component-model'),
                         $fieldArgValue,
                         QuerySyntax::SYMBOL_FIELDARGS_CLOSING
                     ),
