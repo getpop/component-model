@@ -1210,15 +1210,23 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                 if ($apifields) {
                     return array_map(
                         function ($source) use ($cmsenginehelpers, $apifields) {
-                            return $cmsenginehelpers->addQueryArgs([
-                                    GD_URLPARAM_FIELDS => implode(QuerySyntax::SYMBOL_QUERYFIELDS_SEPARATOR, $apifields),
-                                ],
-                                \PoP\Engine\APIUtils::getEndpoint($source, [
-                                    GD_URLPARAM_DATAOUTPUTITEMS_MODULEDATA,
-                                    GD_URLPARAM_DATAOUTPUTITEMS_DATABASES,
-                                    GD_URLPARAM_DATAOUTPUTITEMS_META,
-                                ])
-                            );
+                            return 
+                                $cmsenginehelpers->addQueryArgs(
+                                    [
+                                        GD_URLPARAM_FIELDS => implode(
+                                            QuerySyntax::SYMBOL_QUERYFIELDS_SEPARATOR, 
+                                            $apifields
+                                        ),
+                                    ],
+                                    \PoP\Engine\APIUtils::getEndpoint(
+                                        $source, 
+                                        [
+                                            GD_URLPARAM_DATAOUTPUTITEMS_MODULEDATA,
+                                            GD_URLPARAM_DATAOUTPUTITEMS_DATABASES,
+                                            GD_URLPARAM_DATAOUTPUTITEMS_META,
+                                        ]
+                                    )
+                                );
                         },
                         $sources
                     );
