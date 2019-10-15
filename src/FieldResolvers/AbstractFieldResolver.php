@@ -99,7 +99,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         // First validate schema (eg of error in schema: ?fields=posts<include(if:this-field-doesnt-exist())>)
         list(
-            $directive,
+            $validDirective,
             $directiveName,
             $directiveArgs,
             $directiveSchemaErrors,
@@ -121,7 +121,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             }
         }
         return [
-            $directive,
+            $validDirective,
             $directiveName,
             $directiveArgs,
         ];
