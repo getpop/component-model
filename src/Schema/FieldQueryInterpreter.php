@@ -7,8 +7,9 @@ use PoP\Translation\Contracts\TranslationAPIInterface;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\QueryParsing\Parsers\QueryParserInterface;
 use PoP\FieldQuery\Query\QueryHelpers;
+use PoP\FieldQuery\Query\QuerySyntax;
 
-class FieldQueryInterpreter implements FieldQueryInterpreterInterface
+class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter implements FieldQueryInterpreterInterface
 {
     // Cache the output from functions
     private $extractedFieldArgumentsCache = [];
