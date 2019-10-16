@@ -1,10 +1,9 @@
 <?php
 namespace PoP\ComponentModel\Schema;
 
-class ErrorMessageStore implements ErrorMessageStoreInterface
+class ErrorMessageStore extends \PoP\FieldQuery\Query\ErrorMessageStore implements ErrorMessageStoreInterface
 {
     protected $schemaErrors = [];
-    protected $queryErrors = [];
     protected $dbWarnings = [];
 
     public function addDBWarnings(array $dbWarnings)
@@ -16,10 +15,6 @@ class ErrorMessageStore implements ErrorMessageStoreInterface
             );
         }
     }
-    // public function clearDBWarnings()
-    // {
-    //     $this->dbWarnings = [];
-    // }
     public function retrieveAndClearResultItemDBWarnings($resultItemID): ?array
     {
         $resultItemDBWarnings = $this->dbWarnings[$resultItemID];
@@ -41,13 +36,5 @@ class ErrorMessageStore implements ErrorMessageStoreInterface
     public function getSchemaErrorsForField(string $dbKey, string $field): ?array
     {
         return $this->schemaErrors[$dbKey][$field];
-    }
-    public function addQueryError(string $error)
-    {
-        $this->queryErrors[] = $error;
-    }
-    public function getQueryErrors(): array
-    {
-        return array_unique($this->queryErrors);
     }
 }

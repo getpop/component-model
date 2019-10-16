@@ -1,7 +1,7 @@
 <?php
 namespace PoP\ComponentModel\ModuleProcessors;
 
-use PoP\ComponentModel\Schema\QueryHelpers;
+use PoP\FieldQuery\Query\QueryHelpers;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 
 abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQueryDataModuleProcessor

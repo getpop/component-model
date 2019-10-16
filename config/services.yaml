@@ -11,6 +11,7 @@ services:
             PoP\ComponentModel\ModelInstance\ModelInstanceInterface: '@model_instance'
             PoP\ComponentModel\Schema\ErrorMessageStoreInterface: '@error_message_store'
             PoP\ComponentModel\Schema\TypeCastingExecuterInterface: '@type_casting_executer'
+            PoP\QueryParsing\Parser\QueryParserInterface: '@query_parser'
 
     memory_cache_item_pool:
         class: \Symfony\Component\Cache\Adapter\ArrayAdapter
