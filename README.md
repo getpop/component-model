@@ -782,7 +782,7 @@ All the properties of the modules are implemented through objects called [Module
 -->
 ### Virtual Modules
 
-Virtual modules are "dynamically-generated" modules: modules with a base personality and dynamic behaviour. For instance, the [custom-querying capabilities of the API](ArchitectureDesignAndImplementation.md#API-Custom-Querying-Capabilities) create the component hierarchy based on the value of URL parameter `fields`, creating a virtual module along its path for each of the nested relationships. 
+Virtual modules are "dynamically-generated" modules: modules with a base personality and dynamic behaviour. For instance, the [custom-querying capabilities of the API](ArchitectureDesignAndImplementation.md#API-Custom-Querying-Capabilities) create the component hierarchy based on the value of URL parameter `query`, creating a virtual module along its path for each of the nested relationships. 
 <!--
 Another example (yet to be implemented) involves the integration of PoP with [WordPress Gutenberg](https://wordpress.org/gutenberg/): Gutenberg allows to drag-and-drop blocks to the page and customize them through properties; then, to have Gutenberg input modules and PoP save them, two blocks from the same block/component must be made unique, hence they can be dynamically created by selecting a base module for its personality (a scroll of posts, a calendar of events, etc) and then assigning a random id to each, or a serialization of their properties, for its dynamic behaviour.
 -->
