@@ -38,7 +38,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
     {
         if (!isset($this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field])) {
             $fieldSchemaWarnings = [];
-            $this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field] = $this->doExtractFieldArguments($fieldResolver, $field, $fieldSchemaWarnings);
+            $this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field] = $this->doExtractFieldArguments($fieldResolver, $field, $variables, $fieldSchemaWarnings);
             // Also cache the schemaWarnings
             if (!is_null($schemaWarnings)) {
                 $this->extractedFieldArgumentWarningsCache[get_class($fieldResolver)][$field] = $fieldSchemaWarnings;
@@ -54,7 +54,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
         return $this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field];
     }
 
-    protected function doExtractFieldArguments(FieldResolverInterface $fieldResolver, string $field, ?array &$schemaWarnings = null): array
+    protected function doExtractFieldArguments(FieldResolverInterface $fieldResolver, string $field, ?array $variables = null, ?array &$schemaWarnings = null): array
     {
         $fieldArgs = [];
         // Extract the args from the string into an array
