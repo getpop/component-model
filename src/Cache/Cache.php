@@ -7,12 +7,12 @@ use PoP\ComponentModel\ModelInstance\ModelInstanceInterface;
 class Cache implements CacheInterface
 {
     use ReplaceCurrentExecutionDataWithPlaceholdersTrait;
-    private $cacheItemPool;
-    private $hooksAPI;
-    private $modelInstance;
+    protected $cacheItemPool;
+    protected $hooksAPI;
+    protected $modelInstance;
 
     public function __construct(
-        CacheItemPoolInterface $cacheItemPool, 
+        CacheItemPoolInterface $cacheItemPool,
         HooksAPIInterface $hooksAPI,
         ModelInstanceInterface $modelInstance
     ) {
@@ -67,7 +67,7 @@ class Cache implements CacheInterface
     {
         // Before saving the cache, replace the data specific to this execution with generic placeholders
         $content = $this->replaceCurrentExecutionDataWithPlaceholders($content);
-        
+
         $cacheItem = $this->getCacheItem($id, $type);
         $cacheItem->set($content);
         $this->cacheItemPool->saveDeferred($cacheItem);
