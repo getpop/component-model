@@ -17,10 +17,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
     private $fieldArgumentNameTypesCache = [];
 
     // Services
-    private $translationAPI;
-    private $errorMessageStore;
-    private $typeCastingExecuter;
-    private $queryParser;
+    protected $typeCastingExecuter;
 
     public function __construct(
         TranslationAPIInterface $translationAPI,
@@ -28,10 +25,8 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
         TypeCastingExecuterInterface $typeCastingExecuter,
         QueryParserInterface $queryParser
     ) {
-        $this->translationAPI = $translationAPI;
-        $this->errorMessageStore = $errorMessageStore;
+        parent::__construct($translationAPI, $errorMessageStore, $queryParser);
         $this->typeCastingExecuter = $typeCastingExecuter;
-        $this->queryParser = $queryParser;
     }
 
     public function extractFieldArguments(FieldResolverInterface $fieldResolver, string $field, ?array $variables = null, ?array &$schemaWarnings = null): array
