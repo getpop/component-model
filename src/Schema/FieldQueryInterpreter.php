@@ -456,38 +456,35 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
      */
     protected function maybeResolveFieldArgumentValueForResultItem(FieldResolverInterface $fieldResolver, $resultItem, $fieldArgValue, array $variables = null)
     {
-        // Do a conversion first.
-        $convertedValue = $this->maybeConvertFieldArgumentValue($fieldArgValue, $variables);
-
         // If it is an array, apply this function on all elements
-        if (is_array($convertedValue)) {
-            return array_map(function($convertedValueElem) use($fieldResolver, $resultItem, $variables) {
-                return $this->maybeResolveFieldArgumentValueForResultItem($fieldResolver, $resultItem, $convertedValueElem, $variables);
-            }, $convertedValue);
+        if (is_array($fieldArgValue)) {
+            return array_map(function($fieldArgValueElem) use($fieldResolver, $resultItem, $variables) {
+                return $this->maybeResolveFieldArgumentValueForResultItem($fieldResolver, $resultItem, $fieldArgValueElem, $variables);
+            }, (array)$fieldArgValue);
         }
 
         // Convert field, remove quotes from strings
-        if (!empty($convertedValue) && is_string($convertedValue)) {
-            // If the result convertedValue is a string (i.e. not numeric), and it has brackets (...),
+        if (!empty($fieldArgValue) && is_string($fieldArgValue)) {
+            // If the result fieldArgValue is a string (i.e. not numeric), and it has brackets (...),
             // then it is a field. Validate it and resolve it
             if (
-                substr($convertedValue, -1*strlen(QuerySyntax::SYMBOL_FIELDARGS_CLOSING)) == QuerySyntax::SYMBOL_FIELDARGS_CLOSING &&
+                substr($fieldArgValue, -1*strlen(QuerySyntax::SYMBOL_FIELDARGS_CLOSING)) == QuerySyntax::SYMBOL_FIELDARGS_CLOSING &&
                 // Please notice: if position is 0 (i.e. for a string "(something)") then it's not a field, since the fieldName is missing
                 // Then it's ok asking for strpos: either `false` or `0` must both fail
-                strpos($convertedValue, QuerySyntax::SYMBOL_FIELDARGS_OPENING)
+                strpos($fieldArgValue, QuerySyntax::SYMBOL_FIELDARGS_OPENING)
             ) {
-                return $fieldResolver->resolveValue($resultItem, $convertedValue);
+                return $fieldResolver->resolveValue($resultItem, (string)$fieldArgValue);
             }
             // If it has quotes at the beginning and end, it's a string. Remove them
             if (
-                substr($convertedValue, 0, strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING)) == QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING &&
-                substr($convertedValue, -1*strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING)) == QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING
+                substr($fieldArgValue, 0, strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING)) == QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING &&
+                substr($fieldArgValue, -1*strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING)) == QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING
             ) {
-                return substr($convertedValue, strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING), strlen($convertedValue)-strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING)-strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING));
+                return substr($fieldArgValue, strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING), strlen($fieldArgValue)-strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING)-strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING));
             }
         }
 
-        return $convertedValue;
+        return $fieldArgValue;
     }
 
     protected function resolveFieldArgumentValueErrorDescriptionsForSchema(FieldResolverInterface $fieldResolver, $fieldArgValue, array $variables = null): ?array
