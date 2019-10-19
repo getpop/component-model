@@ -134,7 +134,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
             foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
                 $fieldArgs[$fieldArgName] = $fieldArgValue;
                 // Validate it
-                if ($maybeErrors = $this->resolveFieldArgumentValueErrorDescriptionsForSchema($fieldResolver, $fieldArgValue)) {
+                if ($maybeErrors = $this->resolveFieldArgumentValueErrorDescriptionsForSchema($fieldResolver, $fieldArgValue, $variables)) {
                     $schemaErrors = array_merge(
                         $schemaErrors,
                         $maybeErrors
@@ -143,13 +143,13 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
                     $fieldArgs[$fieldArgName] = null;
                 }
                 // Find warnings and deprecations
-                if ($maybeWarnings = $this->resolveFieldArgumentValueWarningsForSchema($fieldResolver, $fieldArgValue)) {
+                if ($maybeWarnings = $this->resolveFieldArgumentValueWarningsForSchema($fieldResolver, $fieldArgValue, $variables)) {
                     $schemaWarnings = array_merge(
                         $schemaWarnings,
                         $maybeWarnings
                     );
                 }
-                if ($maybeDeprecations = $this->resolveFieldArgumentValueDeprecationsForSchema($fieldResolver, $fieldArgValue)) {
+                if ($maybeDeprecations = $this->resolveFieldArgumentValueDeprecationsForSchema($fieldResolver, $fieldArgValue, $variables)) {
                     $schemaDeprecations = array_merge(
                         $schemaDeprecations,
                         $maybeDeprecations
