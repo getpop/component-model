@@ -62,9 +62,10 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
             if ($fieldArgElems = $this->queryParser->splitElements($fieldArgsStr, QuerySyntax::SYMBOL_FIELDARGS_ARGSEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING], QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING)) {
                 // Important: provide the $fieldName instead of the $field to avoid an infinite loop
                 $fieldName = $this->getFieldName($field);
+                $fieldArgumentNameTypes = $this->getFieldArgumentNameTypes($fieldResolver, $field);
                 $orderedFieldArgNamesEnabled = $fieldResolver->enableOrderedFieldDocumentationArgs($fieldName);
                 if ($orderedFieldArgNamesEnabled) {
-                    $orderedFieldArgNames = array_keys($this->getFieldArgumentNameTypes($fieldResolver, $field));
+                    $orderedFieldArgNames = array_keys($fieldArgumentNameTypes);
                 }
                 for ($i=0; $i<count($fieldArgElems); $i++) {
                     $fieldArg = $fieldArgElems[$i];
@@ -95,6 +96,16 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
                     } else {
                         $fieldArgName = trim(substr($fieldArg, 0, $separatorPos));
                         $fieldArgValue = trim(substr($fieldArg, $separatorPos + strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR)));
+                        // Validate that this argument exists in the schema, or show a warning if not
+                        // But don't skip it! It may be that the engine accepts the property, it is just not documented!
+                        if (!array_key_exists($fieldArgName, $fieldArgumentNameTypes)) {
+                            if (!is_null($schemaWarnings)) {
+                                $schemaWarnings[] = sprintf(
+                                    $this->translationAPI->__('Argument with name %s has not been documented in the schema, so it may have no effect on the query (it has not been removed from the query, though)', 'pop-component-model'),
+                                    $fieldArgName
+                                );
+                            }
+                        }
                     }
 
                     // If the field is an array in its string representation, convert it to array
