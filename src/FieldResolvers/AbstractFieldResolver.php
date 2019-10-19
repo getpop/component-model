@@ -12,6 +12,7 @@ use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
 use PoP\ComponentModel\ErrorUtils;
+use PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups;
 
 abstract class AbstractFieldResolver implements FieldResolverInterface
 {
@@ -135,22 +136,22 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         // Stages "validate" and "resolve value and merge" are mandatory. Check if they were provided, otherwise add them:
         // 1. Start with the "validate" stage
         $hasValidate = array_reduce($fieldDirectiveSet, function($hasItem, $directive) use ($fieldQueryInterpreter) {
-            $hasItem = $hasItem || $fieldQueryInterpreter->getDirectiveName($directive) == ValidateDirectiveResolver::DIRECTIVE_NAME;
+            $hasItem = $hasItem || $fieldQueryInterpreter->getDirectiveName($directive) == ValidateDirectiveResolver::getDirectiveName();
             return $hasItem;
         }, false);
         if (!$hasValidate) {
             // Add it at the beginning
-            array_unshift($fieldDirectiveSet, $fieldQueryInterpreter->listFieldDirective(ValidateDirectiveResolver::DIRECTIVE_NAME));
+            array_unshift($fieldDirectiveSet, $fieldQueryInterpreter->listFieldDirective(ValidateDirectiveResolver::getDirectiveName()));
         }
 
         // 2. End with the "resolve value and merge" stage
         $hasMerge = array_reduce($fieldDirectiveSet, function($hasItem, $directive) use ($fieldQueryInterpreter) {
-            $hasItem = $hasItem || $fieldQueryInterpreter->getDirectiveName($directive) == ResolveValueAndMergeDirectiveResolver::DIRECTIVE_NAME;
+            $hasItem = $hasItem || $fieldQueryInterpreter->getDirectiveName($directive) == ResolveValueAndMergeDirectiveResolver::getDirectiveName();
             return $hasItem;
         }, false);
         if (!$hasMerge) {
             // Add it at the end
-            $fieldDirectiveSet[] = $fieldQueryInterpreter->listFieldDirective(ResolveValueAndMergeDirectiveResolver::DIRECTIVE_NAME);
+            $fieldDirectiveSet[] = $fieldQueryInterpreter->listFieldDirective(ResolveValueAndMergeDirectiveResolver::getDirectiveName());
         }
 
         return $fieldDirectiveSet;
@@ -480,7 +481,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         // Iterate classes from the current class towards the parent classes until finding fieldResolver that satisfies processing this field
         $class = get_called_class();
         do {
-            foreach (array_reverse($attachableExtensionManager->getExtensionClasses($class, \PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups::FIELDVALUERESOLVERS)) as $extensionClass => $extensionPriority) {
+            foreach (array_reverse($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDVALUERESOLVERS)) as $extensionClass => $extensionPriority) {
                 // Process the fields which have not been processed yet
                 foreach (array_diff($extensionClass::getFieldNamesToResolve(), array_unique(array_map([$fieldQueryInterpreter, 'getFieldName'], array_keys($this->fieldValueResolvers)))) as $fieldName) {
                     // Watch out here: no fieldArgs!!!! So this deals with the base case (static), not with all cases (runtime)
@@ -527,7 +528,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $classFieldValueResolvers = [];
 
             // Important: do array_reverse to enable more specific hooks, which are initialized later on in the project, to be the chosen ones (if their priority is the same)
-            foreach (array_reverse($attachableExtensionManager->getExtensionClasses($class, \PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups::FIELDVALUERESOLVERS)) as $extensionClass => $extensionPriority) {
+            foreach (array_reverse($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDVALUERESOLVERS)) as $extensionClass => $extensionPriority) {
                 // Check if this fieldValueResolver can process this field, and if its priority is bigger than the previous found instance attached to the same class
                 if (in_array($fieldName, $extensionClass::getFieldNamesToResolve())) {
                     // Check that the fieldValueResolver can handle the field based on other parameters (eg: "version" in the fieldArgs)
@@ -554,7 +555,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
     protected function calculateFieldDirectiveNameClasses(): array
     {
-        // $instanceManager = InstanceManagerFacade::getInstance();
         $attachableExtensionManager = AttachableExtensionManagerFacade::getInstance();
 
         $ret = [];
@@ -563,8 +563,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         $class = get_called_class();
         do {
             // Important: do array_reverse to enable more specific hooks, which are initialized later on in the project, to be the chosen ones (if their priority is the same)
-            foreach ($attachableExtensionManager->getExtensionClasses($class, \PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups::FIELDDIRECTIVERESOLVERS) as $extensionClass => $extensionPriority) {
-                $directiveName = $extensionClass::DIRECTIVE_NAME;
+            foreach ($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDDIRECTIVERESOLVERS) as $extensionClass => $extensionPriority) {
+                $directiveName = $extensionClass::getDirectiveName();
                 if (!in_array($directiveName, array_keys($ret))) {
                     $ret[$directiveName] = $extensionClass;
                 }
@@ -587,7 +587,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         $class = get_called_class();
         do {
             // Important: do array_reverse to enable more specific hooks, which are initialized later on in the project, to be the chosen ones (if their priority is the same)
-            foreach ($attachableExtensionManager->getExtensionClasses($class, \PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups::FIELDVALUERESOLVERS) as $extensionClass => $extensionPriority) {
+            foreach ($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDVALUERESOLVERS) as $extensionClass => $extensionPriority) {
                 $ret = array_merge(
                     $ret,
                     $extensionClass::getFieldNamesToResolve()

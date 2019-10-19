@@ -6,9 +6,9 @@ use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 class ValidateDirectiveResolver extends AbstractDirectiveResolver
 {
     const DIRECTIVE_NAME = 'validate';
-    // public function getDirectiveName(): string {
-    //     return self::DIRECTIVE_NAME;
-    // }
+    public static function getDirectiveName(): string {
+        return self::DIRECTIVE_NAME;
+    }
 
     public function resolveDirective(FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {

@@ -8,9 +8,10 @@ use PoP\ComponentModel\GeneralUtils;
 class ResolveValueAndMergeDirectiveResolver extends AbstractDirectiveResolver
 {
     const DIRECTIVE_NAME = 'resolve-value-and-merge';
-    // public function getDirectiveName(): string {
-    //     return self::DIRECTIVE_NAME;
-    // }
+    public static function getDirectiveName(): string {
+        return self::DIRECTIVE_NAME;
+    }
+
     public function resolveDirective(FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Iterate data, extract into final results
