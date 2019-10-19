@@ -371,7 +371,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
      * @param [type] $variables
      * @return mixed
      */
-    protected function maybeConvertFieldArgumentValue($fieldArgValue, array $variables = null)
+    protected function maybeConvertFieldArgumentValue($fieldArgValue, ?array $variables)
     {
         // Remove the white spaces before and after
         if ($fieldArgValue = trim($fieldArgValue)) {
@@ -394,7 +394,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
         return $fieldArgValue;
     }
 
-    protected function maybeConvertFieldArgumentVariableValue($fieldArgValue, array $variables = null)
+    protected function maybeConvertFieldArgumentVariableValue($fieldArgValue, ?array $variables)
     {
         // If it is a variable, retrieve the actual value from the request
         if ($this->isFieldArgumentValueAVariable($fieldArgValue)) {
@@ -429,7 +429,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
         return $fieldArgValue;
     }
 
-    protected function maybeConvertFieldArgumentArrayValue(string $fieldArgValue, array $variables = null)
+    protected function maybeConvertFieldArgumentArrayValue(string $fieldArgValue, ?array $variables)
     {
         $fieldArgValue = $this->maybeConvertFieldArgumentArrayValueFromStringToArray($fieldArgValue);
         if (is_array($fieldArgValue)) {
@@ -455,7 +455,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
      * @param [type] $variables
      * @return mixed
      */
-    protected function maybeResolveFieldArgumentValueForResultItem(FieldResolverInterface $fieldResolver, $resultItem, $fieldArgValue, array $variables = null)
+    protected function maybeResolveFieldArgumentValueForResultItem(FieldResolverInterface $fieldResolver, $resultItem, $fieldArgValue, ?array $variables)
     {
         // If it is an array, apply this function on all elements
         if (is_array($fieldArgValue)) {
@@ -488,7 +488,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
         return $fieldArgValue;
     }
 
-    protected function resolveFieldArgumentValueErrorDescriptionsForSchema(FieldResolverInterface $fieldResolver, $fieldArgValue, array $variables = null): ?array
+    protected function resolveFieldArgumentValueErrorDescriptionsForSchema(FieldResolverInterface $fieldResolver, $fieldArgValue, ?array $variables): ?array
     {
         // If it is an array, apply this function on all elements
         if (is_array($fieldArgValue)) {
@@ -550,7 +550,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
         return null;
     }
 
-    protected function resolveFieldArgumentValueWarningsForSchema(FieldResolverInterface $fieldResolver, $fieldArgValue, array $variables = null): ?array
+    protected function resolveFieldArgumentValueWarningsForSchema(FieldResolverInterface $fieldResolver, $fieldArgValue, ?array $variables): ?array
     {
         // If it is an array, apply this function on all elements
         if (is_array($fieldArgValue)) {
@@ -567,7 +567,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
         return null;
     }
 
-    protected function resolveFieldArgumentValueDeprecationsForSchema(FieldResolverInterface $fieldResolver, $fieldArgValue, array $variables = null): ?array
+    protected function resolveFieldArgumentValueDeprecationsForSchema(FieldResolverInterface $fieldResolver, $fieldArgValue, ?array $variables): ?array
     {
         // If it is an array, apply this function on all elements
         if (is_array($fieldArgValue)) {
