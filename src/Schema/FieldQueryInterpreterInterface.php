@@ -9,5 +9,4 @@ interface FieldQueryInterpreterInterface extends \PoP\FieldQuery\Query\FieldQuer
     public function extractDirectiveArgumentsForSchema(FieldResolverInterface $fieldResolver, string $field, ?array $variables = null): array;
     public function extractFieldArgumentsForResultItem(FieldResolverInterface $fieldResolver, $resultItem, string $field, ?array $variables = null): array;
     public function extractDirectiveArgumentsForResultItem(FieldResolverInterface $fieldResolver, $resultItem, string $field, ?array $variables = null): array;
-    public function maybeConvertFieldArgumentArrayValueFromStringToArray(string $fieldArgValue);
 }

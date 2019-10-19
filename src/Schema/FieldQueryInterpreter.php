@@ -417,7 +417,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
         return $fieldArgValue;
     }
 
-    public function maybeConvertFieldArgumentArrayValueFromStringToArray(string $fieldArgValue)
+    protected function maybeConvertFieldArgumentArrayValueFromStringToArray(string $fieldArgValue)
     {
         // If surrounded by [...], it is an array
         if ($this->isFieldArgumentValueAnArray($fieldArgValue)) {
