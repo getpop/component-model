@@ -97,7 +97,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
                         // But don't skip it! It may be that the engine accepts the property, it is just not documented!
                         if (!array_key_exists($fieldArgName, $fieldArgumentNameTypes)) {
                             $schemaWarnings[] = sprintf(
-                                $this->translationAPI->__('Argument with name %s has not been documented in the schema, so it may have no effect on the query (it has not been removed from the query, though)', 'pop-component-model'),
+                                $this->translationAPI->__('Argument with name \'%s\' has not been documented in the schema, so it may have no effect on the query (it has not been removed from the query, though)', 'pop-component-model'),
                                 $fieldArgName
                             );
                         }
