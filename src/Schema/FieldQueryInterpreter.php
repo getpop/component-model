@@ -29,11 +29,11 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
         $this->typeCastingExecuter = $typeCastingExecuter;
     }
 
-    public function extractFieldArguments(FieldResolverInterface $fieldResolver, string $field, ?array $variables = null, ?array &$schemaWarnings = null): array
+    public function extractFieldArguments(FieldResolverInterface $fieldResolver, string $field, ?array &$schemaWarnings = null, ?array $variables = null): array
     {
         if (!isset($this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field])) {
             $fieldSchemaWarnings = [];
-            $this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field] = $this->doExtractFieldArguments($fieldResolver, $field, $variables, $fieldSchemaWarnings);
+            $this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field] = $this->doExtractFieldArguments($fieldResolver, $field, $fieldSchemaWarnings, $variables);
             // Also cache the schemaWarnings
             if (!is_null($schemaWarnings)) {
                 $this->extractedFieldArgumentWarningsCache[get_class($fieldResolver)][$field] = $fieldSchemaWarnings;
@@ -49,7 +49,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
         return $this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field];
     }
 
-    protected function doExtractFieldArguments(FieldResolverInterface $fieldResolver, string $field, ?array $variables = null, ?array &$schemaWarnings = null): array
+    protected function doExtractFieldArguments(FieldResolverInterface $fieldResolver, string $field, array &$schemaWarnings, ?array $variables = null): array
     {
         $fieldArgs = [];
         // Extract the args from the string into an array
@@ -76,19 +76,16 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
                     if ($separatorPos === false) {
                         $fieldArgValue = $fieldArg;
                         if (!$orderedFieldArgNamesEnabled || !isset($orderedFieldArgNames[$i])) {
-                            // Throw an error, if $schemaWarnings is provided (no need when extracting args for the resultItem, only for the schema)
-                            if (!is_null($schemaWarnings)) {
-                                $errorMessage = $orderedFieldArgNamesEnabled ?
-                                    $this->translationAPI->__('documentation for this argument in the schema definition has not been defined, hence it can\'t be deduced from there', 'pop-component-model') :
-                                    $this->translationAPI->__('retrieving this information from the schema definition is disabled for the corresponding “fieldResolver”', 'pop-component-model');
-                                $schemaWarnings[] = sprintf(
-                                    $this->translationAPI->__('The argument on position number %s (with value \'%s\') has its name missing, and %s. Please define the query using the \'key%svalue\' format. This argument has been ignored', 'pop-component-model'),
-                                    $i+1,
-                                    $fieldArgValue,
-                                    $errorMessage,
-                                    QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR
-                                );
-                            }
+                            $errorMessage = $orderedFieldArgNamesEnabled ?
+                                $this->translationAPI->__('documentation for this argument in the schema definition has not been defined, hence it can\'t be deduced from there', 'pop-component-model') :
+                                $this->translationAPI->__('retrieving this information from the schema definition is disabled for the corresponding “fieldResolver”', 'pop-component-model');
+                            $schemaWarnings[] = sprintf(
+                                $this->translationAPI->__('The argument on position number %s (with value \'%s\') has its name missing, and %s. Please define the query using the \'key%svalue\' format. This argument has been ignored', 'pop-component-model'),
+                                $i+1,
+                                $fieldArgValue,
+                                $errorMessage,
+                                QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR
+                            );
                             // Ignore extracting this argument
                             continue;
                         }
@@ -99,12 +96,10 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
                         // Validate that this argument exists in the schema, or show a warning if not
                         // But don't skip it! It may be that the engine accepts the property, it is just not documented!
                         if (!array_key_exists($fieldArgName, $fieldArgumentNameTypes)) {
-                            if (!is_null($schemaWarnings)) {
-                                $schemaWarnings[] = sprintf(
-                                    $this->translationAPI->__('Argument with name %s has not been documented in the schema, so it may have no effect on the query (it has not been removed from the query, though)', 'pop-component-model'),
-                                    $fieldArgName
-                                );
-                            }
+                            $schemaWarnings[] = sprintf(
+                                $this->translationAPI->__('Argument with name %s has not been documented in the schema, so it may have no effect on the query (it has not been removed from the query, though)', 'pop-component-model'),
+                                $fieldArgName
+                            );
                         }
                     }
 
@@ -134,7 +129,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
         $schemaDeprecations = [];
         $validAndResolvedField = $field;
         $fieldName = $this->getFieldName($field);
-        $extractedFieldArgs = $fieldArgs = $this->extractFieldArguments($fieldResolver, $field, $variables, $schemaWarnings);
+        $extractedFieldArgs = $fieldArgs = $this->extractFieldArguments($fieldResolver, $field, $schemaWarnings, $variables);
         if ($fieldArgs) {
             foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
                 $fieldArgs[$fieldArgName] = $fieldArgValue;
@@ -196,7 +191,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
         $dbErrors = $dbWarnings = [];
         $validAndResolvedField = $field;
         $fieldName = $this->getFieldName($field);
-        $extractedFieldArgs = $fieldArgs = $this->extractFieldArguments($fieldResolver, $field, $variables);
+        $extractedFieldArgs = $fieldArgs = $this->extractFieldArguments($fieldResolver, $field, null, $variables);
         // Only need to extract arguments if they have fields or arrays
         if (FieldQueryUtils::isAnyFieldArgumentValueAField(
             array_values(
