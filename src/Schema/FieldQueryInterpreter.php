@@ -29,11 +29,11 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
         $this->typeCastingExecuter = $typeCastingExecuter;
     }
 
-    public function extractFieldArguments(FieldResolverInterface $fieldResolver, string $field, ?array &$schemaWarnings = null, ?array $variables = null): array
+    public function extractFieldArguments(FieldResolverInterface $fieldResolver, string $field, ?array $variables = null, ?array &$schemaWarnings = null): array
     {
         if (!isset($this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field])) {
             $fieldSchemaWarnings = [];
-            $this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field] = $this->doExtractFieldArguments($fieldResolver, $field, $fieldSchemaWarnings, $variables);
+            $this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field] = $this->doExtractFieldArguments($fieldResolver, $field, $variables, $fieldSchemaWarnings);
             // Also cache the schemaWarnings
             if (!is_null($schemaWarnings)) {
                 $this->extractedFieldArgumentWarningsCache[get_class($fieldResolver)][$field] = $fieldSchemaWarnings;
@@ -49,7 +49,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
         return $this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field];
     }
 
-    protected function doExtractFieldArguments(FieldResolverInterface $fieldResolver, string $field, array &$schemaWarnings, ?array $variables = null): array
+    protected function doExtractFieldArguments(FieldResolverInterface $fieldResolver, string $field, ?array $variables, array &$schemaWarnings): array
     {
         $fieldArgs = [];
         // Extract the args from the string into an array
@@ -129,7 +129,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
         $schemaDeprecations = [];
         $validAndResolvedField = $field;
         $fieldName = $this->getFieldName($field);
-        $extractedFieldArgs = $fieldArgs = $this->extractFieldArguments($fieldResolver, $field, $schemaWarnings, $variables);
+        $extractedFieldArgs = $fieldArgs = $this->extractFieldArguments($fieldResolver, $field, $variables, $schemaWarnings);
         if ($fieldArgs) {
             foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
                 $fieldArgs[$fieldArgName] = $fieldArgValue;
@@ -191,7 +191,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
         $dbErrors = $dbWarnings = [];
         $validAndResolvedField = $field;
         $fieldName = $this->getFieldName($field);
-        $extractedFieldArgs = $fieldArgs = $this->extractFieldArguments($fieldResolver, $field, null, $variables);
+        $extractedFieldArgs = $fieldArgs = $this->extractFieldArguments($fieldResolver, $field, $variables);
         // Only need to extract arguments if they have fields or arrays
         if (FieldQueryUtils::isAnyFieldArgumentValueAField(
             array_values(
