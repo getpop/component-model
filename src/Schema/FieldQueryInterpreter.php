@@ -90,6 +90,16 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
                             continue;
                         }
                         $fieldArgName = $orderedFieldArgNames[$i];
+                        // Debug the found fieldArgName
+                        $this->errorMessageStore->addLogEntry(
+                            sprintf(
+                                $this->translationAPI->__('In query field \'%s\', the argument on position number %s (with value \'%s\') is resolved as argument \'%s\'', 'pop-component-model'),
+                                $field,
+                                $i+1,
+                                $fieldArgValue,
+                                $fieldArgName
+                            )
+                        );
                     } else {
                         $fieldArgName = trim(substr($fieldArg, 0, $separatorPos));
                         $fieldArgValue = trim(substr($fieldArg, $separatorPos + strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR)));

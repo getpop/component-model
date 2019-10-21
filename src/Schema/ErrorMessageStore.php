@@ -5,6 +5,7 @@ class ErrorMessageStore extends \PoP\FieldQuery\Query\ErrorMessageStore implemen
 {
     protected $schemaErrors = [];
     protected $dbWarnings = [];
+    protected $logEntries = [];
 
     public function addDBWarnings(array $dbWarnings)
     {
@@ -36,5 +37,13 @@ class ErrorMessageStore extends \PoP\FieldQuery\Query\ErrorMessageStore implemen
     public function getSchemaErrorsForField(string $dbKey, string $field): ?array
     {
         return $this->schemaErrors[$dbKey][$field];
+    }
+
+    public function addLogEntry(string $entry): void {
+        $this->logEntries[] = $entry;
+    }
+
+    public function getLogEntries(): array {
+        return $this->logEntries;
     }
 }

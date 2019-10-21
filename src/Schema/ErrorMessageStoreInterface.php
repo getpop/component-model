@@ -8,4 +8,6 @@ interface ErrorMessageStoreInterface extends \PoP\FieldQuery\Query\ErrorMessageS
     function maybeAddSchemaError(string $dbKey, string $field, string $error);
     function getSchemaErrors(): array;
     function getSchemaErrorsForField(string $dbKey, string $field): ?array;
+    function addLogEntry(string $entry): void;
+    function getLogEntries(): array;
 }
