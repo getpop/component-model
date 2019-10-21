@@ -181,10 +181,17 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         }
     }
 
-    final public function fillResultItemsFromIDs(array $ids_data_fields, array &$resultIDItems, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    public function fillResultItemsFromIDs(array $ids_data_fields, array &$resultIDItems, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
+        // Enqueue the items
         $this->enqueueFillingResultItemsFromIDs($ids_data_fields, $resultIDItems);
 
+        // Process them
+        $this->processFillingResultItemsFromIDs($dbItems, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+    }
+
+    protected function processFillingResultItemsFromIDs(array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    {
         // Iterate while there are directives with data to be processed
         while (!empty($this->fieldDirectiveIDsFields)) {
             // Move the pointer to the first element, and get it
