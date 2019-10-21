@@ -3,7 +3,7 @@ namespace PoP\ComponentModel\ModuleProcessors;
 use PoP\Hooks\Facades\HooksAPIFacade;
 use PoP\ComponentModel\Facades\Managers\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
-use PoP\ComponentModel\QueryInputOutputHandlers\ParamConstants;
+use PoP\ComponentModel\ModuleProcessors\DataloadingConstants;
 
 trait QueryDataModuleProcessorTrait
 {
@@ -29,7 +29,7 @@ trait QueryDataModuleProcessorTrait
         $ret = parent::getImmutableHeaddatasetmoduleDataProperties($module, $props);
 
         // Attributes to pass to the query
-        $ret[ParamConstants::QUERYARGS] = $this->getImmutableDataloadQueryArgs($module, $props);
+        $ret[DataloadingConstants::QUERYARGS] = $this->getImmutableDataloadQueryArgs($module, $props);
 
         return $ret;
     }
@@ -47,8 +47,8 @@ trait QueryDataModuleProcessorTrait
         $ret = parent::getMutableonmodelHeaddatasetmoduleDataProperties($module, $props);
 
         // Attributes overriding the dataloader args, taken from the request
-        if (!$ret[ParamConstants::IGNOREREQUESTPARAMS]) {
-            $ret[ParamConstants::QUERYARGSFILTERINGMODULES] = $this->getQueryArgsFilteringModules($module, $props);
+        if (!$ret[DataloadingConstants::IGNOREREQUESTPARAMS]) {
+            $ret[DataloadingConstants::QUERYARGSFILTERINGMODULES] = $this->getQueryArgsFilteringModules($module, $props);
         }
 
         // // Set the filter if it has one
@@ -115,7 +115,7 @@ trait QueryDataModuleProcessorTrait
     {
         $ret = parent::getMutableonrequestHeaddatasetmoduleDataProperties($module, $props);
 
-        $ret[ParamConstants::QUERYARGS] = $this->getMutableonrequestDataloadQueryArgs($module, $props);
+        $ret[DataloadingConstants::QUERYARGS] = $this->getMutableonrequestDataloadQueryArgs($module, $props);
 
         return $ret;
     }
@@ -125,8 +125,8 @@ trait QueryDataModuleProcessorTrait
         $instanceManager = InstanceManagerFacade::getInstance();
 
         // Prepare the Query to get data from the DB
-        $datasource = $data_properties[ParamConstants::DATASOURCE];
-        if ($datasource == POP_DATALOAD_DATASOURCE_MUTABLEONREQUEST && !$data_properties[ParamConstants::IGNOREREQUESTPARAMS]) {
+        $datasource = $data_properties[DataloadingConstants::DATASOURCE];
+        if ($datasource == POP_DATALOAD_DATASOURCE_MUTABLEONREQUEST && !$data_properties[DataloadingConstants::IGNOREREQUESTPARAMS]) {
             // Merge with $_REQUEST, so that params passed through the URL can be used for the query (eg: ?limit=5)
             // But whitelist the params that can be taken, to avoid hackers peering inside the system and getting custom data (eg: params "include", "post-status" => "draft", etc)
             $whitelisted_params = (array)HooksAPIFacade::getInstance()->applyFilters(
@@ -162,8 +162,8 @@ trait QueryDataModuleProcessorTrait
             );
 
             // Finally merge it into the data properties
-            $data_properties[ParamConstants::QUERYARGS] = array_merge(
-                $data_properties[ParamConstants::QUERYARGS],
+            $data_properties[DataloadingConstants::QUERYARGS] = array_merge(
+                $data_properties[DataloadingConstants::QUERYARGS],
                 $params_from_request
             );
         }
@@ -171,7 +171,7 @@ trait QueryDataModuleProcessorTrait
         if ($queryHandlerClass = $this->getQueryInputOutputHandlerClass($module)) {
             // Allow the queryhandler to override/normalize the query args
             $queryhandler = $instanceManager->getInstance($queryHandlerClass);
-            $queryhandler->prepareQueryArgs($data_properties[ParamConstants::QUERYARGS]);
+            $queryhandler->prepareQueryArgs($data_properties[DataloadingConstants::QUERYARGS]);
         }
 
         $dataloader = $instanceManager->getInstance($this->getDataloaderClass($module));

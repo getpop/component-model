@@ -13,7 +13,7 @@ use PoP\ComponentModel\Facades\ModelInstance\ModelInstanceFacade;
 use PoP\ComponentModel\Facades\Managers\ModuleFilterManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
-use PoP\ComponentModel\QueryInputOutputHandlers\ParamConstants;
+use PoP\ComponentModel\ModuleProcessors\DataloadingConstants;
 use PoP\ComponentModel\Engine_Vars;
 use PoP\ComponentModel\Settings\SiteConfigurationProcessorManagerFactory;
 use PoP\ComponentModel\Server\Utils as ServerUtils;
@@ -849,7 +849,7 @@ class Engine implements EngineInterface
                 $data_properties = &$data_properties[$submoduleFullName][GD_JS_SUBMODULES];
             }
             $data_properties = &$data_properties[$moduleFullName][POP_CONSTANT_DATAPROPERTIES];
-            $datasource = $data_properties[ParamConstants::DATASOURCE];
+            $datasource = $data_properties[DataloadingConstants::DATASOURCE];
 
             // If we are only requesting data from the model alone, and this dataloading module depends on mutableonrequest, then skip it
             if ($datasources == GD_URLPARAM_DATASOURCES_ONLYMODEL && $datasource == POP_DATALOAD_DATASOURCE_MUTABLEONREQUEST) {
@@ -857,7 +857,7 @@ class Engine implements EngineInterface
             }
 
             // Load data if the property Skip Data Load is not true
-            $load_data = !$data_properties[ParamConstants::SKIPDATALOAD];
+            $load_data = !$data_properties[DataloadingConstants::SKIPDATALOAD];
 
             // ------------------------------------------
             // Checkpoint validation
@@ -929,7 +929,7 @@ class Engine implements EngineInterface
                 $processor->prepareDataPropertiesAfterActionexecution($module, $module_props, $data_properties);
 
                 // Re-calculate $data_load, it may have been changed by `prepareDataPropertiesAfterActionexecution`
-                $load_data = !$data_properties[ParamConstants::SKIPDATALOAD];
+                $load_data = !$data_properties[DataloadingConstants::SKIPDATALOAD];
                 if ($load_data) {
                     // ------------------------------------------
                     // Data Properties Query Args: add mutableonrequest data
