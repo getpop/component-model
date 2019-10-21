@@ -20,6 +20,8 @@ use PoP\ComponentModel\Server\Utils as ServerUtils;
 use PoP\ComponentModel\DataQueryManagerFactory;
 use PoP\ComponentModel\DataloadUtils;
 use PoP\ComponentModel\Utils;
+use PoP\ComponentModel\GeneralUtils;
+use Exception;
 
 class Engine implements EngineInterface
 {
@@ -55,12 +57,12 @@ class Engine implements EngineInterface
     {
         $siteconfiguration = SiteConfigurationProcessorManagerFactory::getInstance()->getProcessor();
         if (!$siteconfiguration) {
-            throw new \Exception('There is no Site Configuration. Hence, we can\'t continue.');
+            throw new Exception('There is no Site Configuration. Hence, we can\'t continue.');
         }
 
         $fullyQualifiedModule = $siteconfiguration->getEntryModule();
         if (!$fullyQualifiedModule) {
-            throw new \Exception(sprintf('No entry module for this request (%s)', fullUrl()));
+            throw new Exception(sprintf('No entry module for this request (%s)', fullUrl()));
         }
 
         return $fullyQualifiedModule;
@@ -147,7 +149,7 @@ class Engine implements EngineInterface
         // Check here, since we can't rely on addAction('popcms:init') to check, since we don't know if it was implemented!
         $loosecontract_manager = \PoP\LooseContracts\CMSLooseContractManagerFactory::getInstance();
         if ($notImplementedHooks = $loosecontract_manager->getNotImplementedRequiredHooks()) {
-            throw new \Exception(
+            throw new Exception(
                 sprintf(
                     TranslationAPIFacade::getInstance()->__('The following hooks have not been implemented by the CMS: "%s". Hence, we can\'t continue.'),
                     implode(TranslationAPIFacade::getInstance()->__('", "'), $notImplementedHooks)
@@ -155,7 +157,7 @@ class Engine implements EngineInterface
             );
         }
         if ($notImplementedNames = $loosecontract_manager->getNotImplementedRequiredNames()) {
-            throw new \Exception(
+            throw new Exception(
                 sprintf(
                     TranslationAPIFacade::getInstance()->__('The following names have not been implemented by the CMS: "%s". Hence, we can\'t continue.'),
                     implode(TranslationAPIFacade::getInstance()->__('", "'), $notImplementedNames)
@@ -175,7 +177,7 @@ class Engine implements EngineInterface
 
             // To obtain the nature for each URI, we use a hack: change the current URI and create a new WP object, which will process the query_vars and from there obtain the nature
             // First make a backup of the current URI to set it again later
-            $vars = &\PoP\ComponentModel\Engine_Vars::$vars;
+            $vars = &Engine_Vars::$vars;
             $current_route = $vars['route'];
 
             // Process each extra URI, and merge its results with all others
@@ -419,7 +421,7 @@ class Engine implements EngineInterface
     {
         $vars = Engine_Vars::getVars();
         // For the API: maybe remove the entry module from the output
-        if (!\PoP\ComponentModel\ServerUtils::disableAPI() && $vars['scheme'] == POP_SCHEME_API && in_array(POP_ACTION_REMOVE_ENTRYMODULE_FROM_OUTPUT, $vars['actions'])) {
+        if (!ServerUtils::disableAPI() && $vars['scheme'] == POP_SCHEME_API && in_array(POP_ACTION_REMOVE_ENTRYMODULE_FROM_OUTPUT, $vars['actions'])) {
             list($has_extra_routes) = $this->listExtraRouteVars();
             return $has_extra_routes ? array_values(array_values($results)[0])[0] : array_values($results)[0];
         }
@@ -735,7 +737,7 @@ class Engine implements EngineInterface
         // Iterate through the list of all checkpoints, process all of them, if any produces an error, already return it
         foreach ($checkpoints as $checkpoint) {
             $result = $checkpointprocessor_manager->getProcessor($checkpoint)->process($checkpoint);
-            if (\PoP\ComponentModel\GeneralUtils::isError($result)) {
+            if (GeneralUtils::isError($result)) {
                 return $result;
             }
         }
@@ -865,7 +867,7 @@ class Engine implements EngineInterface
             if ($load_data && $checkpoints = $data_properties[GD_DATALOAD_DATAACCESSCHECKPOINTS]) {
                 // Check if the module fails checkpoint validation. If so, it must not load its data or execute the actionexecuter
                 $dataaccess_checkpoint_validation = $this->validateCheckpoints($checkpoints);
-                $load_data = !\PoP\ComponentModel\GeneralUtils::isError($dataaccess_checkpoint_validation);
+                $load_data = !GeneralUtils::isError($dataaccess_checkpoint_validation);
             }
 
             // The $props is directly moving the array to the corresponding path
@@ -913,7 +915,7 @@ class Engine implements EngineInterface
                         if ($actionexecution_checkpoints = $data_properties[GD_DATALOAD_ACTIONEXECUTIONCHECKPOINTS]) {
                             // Check if the module fails checkpoint validation. If so, it must not load its data or execute the actionexecuter
                             $actionexecution_checkpoint_validation = $this->validateCheckpoints($actionexecution_checkpoints);
-                            $execute = !\PoP\ComponentModel\GeneralUtils::isError($actionexecution_checkpoint_validation);
+                            $execute = !GeneralUtils::isError($actionexecution_checkpoint_validation);
                         }
 
                         if ($execute) {
@@ -1382,7 +1384,7 @@ class Engine implements EngineInterface
                 if ($forceserverload['ids']) {
                     $forceserverload['fields'] = array_unique($forceserverload['fields']);
 
-                    $url = \PoP\ComponentModel\Utils::getRouteURL($dataquery->getNonCacheableRoute());
+                    $url = Utils::getRouteURL($dataquery->getNonCacheableRoute());
                     $url = $cmsenginehelpers->addQueryArgs([
                         $objectid_fieldname => $forceserverload['ids'],
                         GD_URLPARAM_FIELDS => $forceserverload['fields'],
@@ -1402,7 +1404,7 @@ class Engine implements EngineInterface
                         SORT_REGULAR
                     );
 
-                    $url = \PoP\ComponentModel\Utils::getRouteURL($dataquery->getCacheableRoute());
+                    $url = Utils::getRouteURL($dataquery->getCacheableRoute());
                     $url = $cmsenginehelpers->addQueryArgs([
                         $objectid_fieldname => $lazyload['ids'],
                         // Convert from module to moduleFullName
