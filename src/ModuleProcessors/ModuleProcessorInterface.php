@@ -44,7 +44,6 @@ interface ModuleProcessorInterface
     public function getDatasetmoduletreeSectionFlattenedDataFields(array $module, array &$props): array;
     public function getDatasetmoduletreeSectionFlattenedModules(array $module): array;
     public function getImmutableHeaddatasetmoduleDataProperties(array $module, array &$props): array;
-    public function isLazyload(array $module, array &$props): bool;
     public function getMutableonmodelDataPropertiesDatasetmoduletree(array $module, array &$props): array;
     public function getMutableonmodelDataPropertiesDatasetmoduletreeFullsection(array $module, array &$props): array;
     public function getMutableonmodelHeaddatasetmoduleDataProperties(array $module, array &$props): array;

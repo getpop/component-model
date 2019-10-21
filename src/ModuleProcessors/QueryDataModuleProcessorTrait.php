@@ -4,6 +4,7 @@ use PoP\Hooks\Facades\HooksAPIFacade;
 use PoP\ComponentModel\Facades\Managers\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
 use PoP\ComponentModel\ModuleProcessors\DataloadingConstants;
+use PoP\Application\QueryInputOutputHandlers\ActionExecutionQueryInputOutputHandler;
 
 trait QueryDataModuleProcessorTrait
 {
@@ -17,7 +18,7 @@ trait QueryDataModuleProcessorTrait
     }
     public function getQueryInputOutputHandlerClass(array $module): ?string
     {
-        return \PoP\Engine\QueryInputOutputHandler_ActionExecution::class;
+        return ActionExecutionQueryInputOutputHandler::class;
     }
     // public function getFilter(array $module)
     // {

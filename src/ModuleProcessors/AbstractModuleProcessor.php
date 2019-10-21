@@ -805,11 +805,6 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         return $ret;
     }
 
-    public function isLazyload(array $module, array &$props): bool
-    {
-        return $this->getProp($module, $props, 'lazy-load') ?? false;
-    }
-
     protected function addHeaddatasetmoduleDataProperties(&$ret, array $module, array &$props)
     {
         /**
