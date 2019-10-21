@@ -181,7 +181,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         }
     }
 
-    final public function addDataitems(array $ids_data_fields, array &$resultIDItems, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    final public function fillResultItemsFromIDs(array $ids_data_fields, array &$resultIDItems, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         $this->enqueueDataitems($ids_data_fields, $resultIDItems);
 
