@@ -7,7 +7,7 @@ interface FieldResolverInterface
     public function getIdFieldDataloaderClass();
     public function getFieldNamesToResolve(): array;
     public function getDirectiveNameClasses(): array;
-    public function addDataitemsToHeap(array $ids_data_fields, array &$resultIDItems);
+    public function enqueueDataitems(array $ids_data_fields, array &$resultIDItems);
     public function addDataitems(array $ids_data_fields, array &$resultIDItems, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations);
     public function resolveSchemaValidationErrorDescriptions(string $field): ?array;
     public function getFieldDocumentationWarningDescriptions(string $field): ?array;

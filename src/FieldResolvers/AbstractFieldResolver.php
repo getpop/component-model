@@ -158,7 +158,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         return $fieldDirectiveSet;
     }
 
-    final public function addDataitemsToHeap(array $ids_data_fields, array &$resultIDItems)
+    final public function enqueueDataitems(array $ids_data_fields, array &$resultIDItems)
     {
         // Collect all combinations of ID/data-fields for each directive
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
@@ -183,7 +183,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
     final public function addDataitems(array $ids_data_fields, array &$resultIDItems, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
-        $this->addDataitemsToHeap($ids_data_fields, $resultIDItems);
+        $this->enqueueDataitems($ids_data_fields, $resultIDItems);
 
         // Iterate while there are directives with data to be processed
         while (!empty($this->fieldDirectiveIDsFields)) {
