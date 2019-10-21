@@ -7,6 +7,7 @@ use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
 use PoP\ComponentModel\GeneralUtils;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
+use PoP\ComponentModel\Facades\Engine\EngineFacade;
 
 abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
 {
@@ -176,7 +177,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
     {
         // Can perform validation through checkpoints
         if ($checkpoints = $this->getValidationCheckpoints($fieldResolver, $resultItem, $fieldName, $fieldArgs)) {
-            $engine = \PoP\ComponentModel\EngineFactory::getInstance();
+            $engine = EngineFacade::getInstance();
             $validation = $engine->validateCheckpoints($checkpoints);
             if (\PoP\ComponentModel\GeneralUtils::isError($validation)) {
                 // Check if there is a custom error message
