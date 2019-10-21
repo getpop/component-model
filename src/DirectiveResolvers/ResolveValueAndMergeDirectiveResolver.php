@@ -44,7 +44,7 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractDirectiveResolver
                     $conditionSatisfied = $conditionFieldValue && !GeneralUtils::isError($conditionFieldValue);
                 }
                 if ($conditionSatisfied) {
-                    $fieldResolver->enqueueDataitems(
+                    $fieldResolver->enqueueFillingResultItemsFromIDs(
                         [
                             (string)$id => [
                                 'direct' => array_keys($conditionalDataFields),
