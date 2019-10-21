@@ -1083,7 +1083,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
     {
         if ($route = $this->getRelevantRoute($module, $props)) {
             if ($this->getRelevantRouteCheckpointTarget($module, $props) == GD_DATALOAD_ACTIONEXECUTIONCHECKPOINTS) {
-                return $this->maybeOverrideCheckpoints(Settings\SettingsManagerFactory::getInstance()->getCheckpoints($route));
+                return $this->maybeOverrideCheckpoints(SettingsManagerFactory::getInstance()->getCheckpoints($route));
             }
         }
 

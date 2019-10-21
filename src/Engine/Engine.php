@@ -21,6 +21,7 @@ use PoP\ComponentModel\DataQueryManagerFactory;
 use PoP\ComponentModel\DataloadUtils;
 use PoP\ComponentModel\Utils;
 use PoP\ComponentModel\GeneralUtils;
+use PoP\ComponentModel\CheckpointProcessorManagerFactory;
 use Exception;
 
 class Engine implements EngineInterface
