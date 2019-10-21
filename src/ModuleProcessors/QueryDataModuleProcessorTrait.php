@@ -3,7 +3,7 @@ namespace PoP\ComponentModel\ModuleProcessors;
 use PoP\Hooks\Facades\HooksAPIFacade;
 use PoP\ComponentModel\Facades\Managers\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
-use PoP\ComponentModel\QueryHandlers\ParamConstants;
+use PoP\ComponentModel\QueryInputOutputHandlers\ParamConstants;
 
 trait QueryDataModuleProcessorTrait
 {
@@ -15,9 +15,9 @@ trait QueryDataModuleProcessorTrait
     {
         return array();
     }
-    public function getQueryHandlerClass(array $module): ?string
+    public function getQueryInputOutputHandlerClass(array $module): ?string
     {
-        return \PoP\Engine\QueryHandler_ActionExecution::class;
+        return \PoP\Engine\QueryInputOutputHandler_ActionExecution::class;
     }
     // public function getFilter(array $module)
     // {
@@ -168,7 +168,7 @@ trait QueryDataModuleProcessorTrait
             );
         }
 
-        if ($queryHandlerClass = $this->getQueryHandlerClass($module)) {
+        if ($queryHandlerClass = $this->getQueryInputOutputHandlerClass($module)) {
             // Allow the queryhandler to override/normalize the query args
             $queryhandler = $instanceManager->getInstance($queryHandlerClass);
             $queryhandler->prepareQueryArgs($data_properties[ParamConstants::QUERYARGS]);
@@ -182,7 +182,7 @@ trait QueryDataModuleProcessorTrait
     {
         $ret = parent::getDatasetmeta($module, $props, $data_properties, $dataaccess_checkpoint_validation, $actionexecution_checkpoint_validation, $executed, $dbObjectIDOrIDs);
 
-        if ($queryHandlerClass = $this->getQueryHandlerClass($module)) {
+        if ($queryHandlerClass = $this->getQueryInputOutputHandlerClass($module)) {
             $instanceManager = InstanceManagerFacade::getInstance();
             $queryhandler = $instanceManager->getInstance($queryHandlerClass);
 

@@ -1298,9 +1298,9 @@ function getFilter($module)
 }
 ```
 -->
-##### Defining the QueryHandler
+##### Defining the QueryInputOutputHandler
 
-After fetching data, we can communicate state (eg: are there more results? what's the next paging number? etc) through [QueryHandler](#queryhandler) objects, defined through function `getQueryhandler`. By default, it returns object with name `GD_DATALOAD_QUERYHANDLER_ACTIONEXECUTION`, needed when executing an operation (see section [Data-Posting and Operations](#data-posting-and-operations)):
+After fetching data, we can communicate state (eg: are there more results? what's the next paging number? etc) through [QueryInputOutputHandler](#queryhandler) objects, defined through function `getQueryhandler`. By default, it returns object with name `GD_DATALOAD_QUERYHANDLER_ACTIONEXECUTION`, needed when executing an operation (see section [Data-Posting and Operations](#data-posting-and-operations)):
 
 ```php
 function getQueryhandler($module) 
@@ -1316,7 +1316,7 @@ function getQueryhandler($module)
 
 ##### Defining the Data Properties
 
-If the module needs to pass a variable to any other object involved in fetching/processing data ([Dataloader](#dataloader), [QueryHandler](#queryhandler), [ActionExecuter](#actionexecuter), etc), it can do so through "data properties", set through functions `getImmutableHeaddatasetmoduleDataProperties` and `getMutableonrequestHeaddatasetmoduleDataProperties`:
+If the module needs to pass a variable to any other object involved in fetching/processing data ([Dataloader](#dataloader), [QueryInputOutputHandler](#queryhandler), [ActionExecuter](#actionexecuter), etc), it can do so through "data properties", set through functions `getImmutableHeaddatasetmoduleDataProperties` and `getMutableonrequestHeaddatasetmoduleDataProperties`:
 
 ```php
 function getImmutableHeaddatasetmoduleDataProperties($module, &$props) 
@@ -1715,9 +1715,9 @@ class TextFilterInputs extends TextFormInputsBase implements \PoP\ComponentModel
 }
 ```
 
-### QueryHandler
+### QueryInputOutputHandler
 
-The QueryHandler is an object that synchronizes the state of the query between client and server. It must inherit from class `QueryHandlerBase` and implement the following functions:
+The QueryInputOutputHandler is an object that synchronizes the state of the query between client and server. It must inherit from class `QueryInputOutputHandlerBase` and implement the following functions:
 
 Before fetching data from the database, function `prepareQueryArgs` populates the `$query_args` object used passed to the dataloader to fetch data. It can get values from the request (eg: set through the application in the client) or define default values.
 

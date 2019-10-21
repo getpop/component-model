@@ -1,7 +1,7 @@
 <?php
-namespace PoP\ComponentModel\QueryHandlers;
+namespace PoP\ComponentModel\QueryInputOutputHandlers;
 
-interface QueryHandlerInterface
+interface QueryInputOutputHandlerInterface
 {
     public function prepareQueryArgs(&$query_args);
     public function getQueryState($data_properties, $dataaccess_checkpoint_validation, $actionexecution_checkpoint_validation, $executed, $dbObjectIDOrIDs): array;

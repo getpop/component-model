@@ -1,5 +1,5 @@
 <?php
-namespace PoP\ComponentModel\QueryHandlers;
+namespace PoP\ComponentModel\QueryInputOutputHandlers;
 
 class ParamConstants {
     const PARAMS = 'params';

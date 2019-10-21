@@ -1,7 +1,7 @@
 <?php
-namespace PoP\ComponentModel\QueryHandlers;
+namespace PoP\ComponentModel\QueryInputOutputHandlers;
 
-abstract class AbstractQueryHandler implements QueryHandlerInterface
+abstract class AbstractQueryInputOutputHandler implements QueryInputOutputHandlerInterface
 {
     public function prepareQueryArgs(&$query_args)
     {

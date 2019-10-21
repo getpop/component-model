@@ -12,7 +12,7 @@ use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
 use PoP\ComponentModel\Engine_Vars;
 use PoP\ComponentModel\DataloadUtils;
 use PoP\ComponentModel\Utils;
-use PoP\ComponentModel\QueryHandlers\ParamConstants;
+use PoP\ComponentModel\QueryInputOutputHandlers\ParamConstants;
 use PoP\ComponentModel\Settings\SettingsManagerFactory;
 
 abstract class AbstractModuleProcessor implements ModuleProcessorInterface
