@@ -98,9 +98,7 @@ class Engine implements EngineInterface
 
             // Allow plug-ins to replace their own non-needed content (eg: thumbprints, defined in Core)
             $commoncode = HooksAPIFacade::getInstance()->applyFilters('\PoP\ComponentModel\Engine:etag_header:commoncode', $commoncode);
-
-            $cmsenginehelpers = \PoP\Engine\HelperAPIFactory::getInstance();
-            header("ETag: ".$cmsenginehelpers->hash($commoncode));
+            header("ETag: ".hash('md5', $commoncode));
         }
     }
 
