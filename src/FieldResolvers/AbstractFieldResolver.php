@@ -34,6 +34,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     private $fieldDirectiveInstanceCache = [];
     private $fieldDirectivesFromFieldCache = [];
     private $dissectedFieldForSchemaCache = [];
+    private $fieldResolverSchemaIdsCache = [];
 
     public function getFieldNamesToResolve(): array
     {
@@ -401,7 +402,27 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         return ErrorUtils::getNoFieldError($fieldName);
     }
 
-    protected function getFieldResolverSchemaId(string $class): string {
+    protected function getFieldResolverSchemaId(string $class): string
+    {
+        if (!isset($this->fieldResolverSchemaIdsCache[$class])) {
+            $this->fieldResolverSchemaIdsCache[$class] = $this->doGetFieldResolverSchemaId($class);
+
+            // Log how the hash and the class are related
+            $errorMessageStore = ErrorMessageStoreFacade::getInstance();
+            $translationAPI = TranslationAPIFacade::getInstance();
+            $errorMessageStore->addLogEntry(
+                sprintf(
+                    $translationAPI->__('Field resolver with ID \'%s\' corresponds to class \'%s\'', 'pop-component-model'),
+                    $this->fieldResolverSchemaIdsCache[$class],
+                    $class
+                )
+            );
+        }
+        return $this->fieldResolverSchemaIdsCache[$class];
+    }
+
+    protected function doGetFieldResolverSchemaId(string $class): string
+    {
         return hash('md5', $class);
     }
 
