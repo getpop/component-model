@@ -7,7 +7,7 @@ use PoP\ComponentModel\DirectiveResolvers\ValidateDirectiveResolver;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\DirectiveResolvers\ResolveValueAndMergeDirectiveResolver;
 use PoP\ComponentModel\Facades\Managers\InstanceManagerFacade;
-use PoP\ComponentModel\Facades\Schema\ErrorMessageStoreFacade;
+use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
@@ -363,8 +363,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             ) = $fieldQueryInterpreter->extractFieldArgumentsForResultItem($this, $resultItem, $field);
             // Store the warnings to be read if needed
             if ($dbWarnings) {
-                $errorMessageStore = ErrorMessageStoreFacade::getInstance();
-                $errorMessageStore->addDBWarnings($dbWarnings);
+                $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();
+                $feedbackMessageStore->addDBWarnings($dbWarnings);
             }
             if ($dbErrors) {
                 return ErrorUtils::getNestedDBErrorsFieldError($dbErrors, $fieldName);
@@ -408,9 +408,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $this->fieldResolverSchemaIdsCache[$class] = $this->doGetFieldResolverSchemaId($class);
 
             // Log how the hash and the class are related
-            $errorMessageStore = ErrorMessageStoreFacade::getInstance();
+            $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();
             $translationAPI = TranslationAPIFacade::getInstance();
-            $errorMessageStore->addLogEntry(
+            $feedbackMessageStore->addLogEntry(
                 sprintf(
                     $translationAPI->__('Field resolver with ID \'%s\' corresponds to class \'%s\'', 'pop-component-model'),
                     $this->fieldResolverSchemaIdsCache[$class],

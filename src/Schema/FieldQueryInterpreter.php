@@ -21,11 +21,11 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
 
     public function __construct(
         TranslationAPIInterface $translationAPI,
-        ErrorMessageStoreInterface $errorMessageStore,
+        FeedbackMessageStoreInterface $feedbackMessageStore,
         TypeCastingExecuterInterface $typeCastingExecuter,
         QueryParserInterface $queryParser
     ) {
-        parent::__construct($translationAPI, $errorMessageStore, $queryParser);
+        parent::__construct($translationAPI, $feedbackMessageStore, $queryParser);
         $this->typeCastingExecuter = $typeCastingExecuter;
     }
 
@@ -91,7 +91,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
                         }
                         $fieldArgName = $orderedFieldArgNames[$i];
                         // Log the found fieldArgName
-                        $this->errorMessageStore->addLogEntry(
+                        $this->feedbackMessageStore->addLogEntry(
                             sprintf(
                                 $this->translationAPI->__('In query field \'%s\', the argument on position number %s (with value \'%s\') is resolved as argument \'%s\'', 'pop-component-model'),
                                 $field,
@@ -417,7 +417,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter 
                 return $variables[$variableName];
             }
             // If the variable is not set, then show the error under entry "variableErrors"
-            $this->errorMessageStore->addQueryError(sprintf(
+            $this->feedbackMessageStore->addQueryError(sprintf(
                 $this->translationAPI->__('Variable \'%s\' is undefined', 'pop-component-model'),
                 $variableName
             ));

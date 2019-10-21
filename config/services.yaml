@@ -9,7 +9,7 @@ services:
             PoP\ComponentModel\Info\ApplicationInfoInterface: '@application_info'
             PoP\ComponentModel\Managers\ModulePathManagerInterface: '@module_path_manager'
             PoP\ComponentModel\ModelInstance\ModelInstanceInterface: '@model_instance'
-            PoP\ComponentModel\Schema\ErrorMessageStoreInterface: '@error_message_store'
+            PoP\ComponentModel\Schema\FeedbackMessageStoreInterface: '@feedback_message_store'
             PoP\ComponentModel\Schema\TypeCastingExecuterInterface: '@type_casting_executer'
             PoP\QueryParsing\Parsers\QueryParserInterface: '@query_parser'
 
@@ -59,8 +59,8 @@ services:
         class: \PoP\ComponentModel\Managers\ModuleProcessorManager
         public: true
 
-    error_message_store:
-        class: \PoP\ComponentModel\Schema\ErrorMessageStore
+    feedback_message_store:
+        class: \PoP\ComponentModel\Schema\FeedbackMessageStore
         public: true
 
     field_query_interpreter:

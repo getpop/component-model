@@ -1,6 +1,6 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
-use PoP\ComponentModel\Facades\Schema\ErrorMessageStoreFacade;
+use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\GeneralUtils;
@@ -76,8 +76,8 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractDirectiveResolver
     {
         $value = $fieldResolver->resolveValue($resultItem, $field);
         // Merge the dbWarnings, if any
-        $errorMessageStore = ErrorMessageStoreFacade::getInstance();
-        if ($resultItemDBWarnings = $errorMessageStore->retrieveAndClearResultItemDBWarnings($id)) {
+        $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();
+        if ($resultItemDBWarnings = $feedbackMessageStore->retrieveAndClearResultItemDBWarnings($id)) {
             $dbWarnings[$id] = array_merge(
                 $dbWarnings[$id] ?? [],
                 $resultItemDBWarnings
