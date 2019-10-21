@@ -12,6 +12,7 @@ use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
 use PoP\ComponentModel\Engine_Vars;
 use PoP\ComponentModel\DataloadUtils;
 use PoP\ComponentModel\Utils;
+use PoP\ComponentModel\GeneralUtils;
 use PoP\ComponentModel\QueryInputOutputHandlers\ParamConstants;
 use PoP\ComponentModel\Settings\SettingsManagerFactory;
 
@@ -1102,8 +1103,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         // Because a component can interact with itself by adding ?modulepaths=...,
         // then, by default, we simply set the dataload source to point to itself!
         $stringified_module_propagation_current_path = ModulePathHelpersFacade::getInstance()->getStringifiedModulePropagationCurrentPath($module);
-        $cmsenginehelpers = \PoP\Engine\HelperAPIFactory::getInstance();
-        $ret = $cmsenginehelpers->addQueryArgs([
+        $ret = GeneralUtils::addQueryArgs([
             ModuleFilterManager::URLPARAM_MODULEFILTER => \PoP\ComponentModel\ModuleFilters\ModulePaths::NAME,
             ModulePaths::URLPARAM_MODULEPATHS.'[]' => $stringified_module_propagation_current_path,
         ], Utils::getCurrentUrl());
@@ -1117,7 +1117,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         // Allow to add extra modulepaths set from above
         if ($extra_module_paths = $this->getProp($module, $props, 'dataload-source-add-modulepaths')) {
             foreach ($extra_module_paths as $modulepath) {
-                $ret = $cmsenginehelpers->addQueryArgs([
+                $ret = GeneralUtils::addQueryArgs([
                     ModulePaths::URLPARAM_MODULEPATHS.'[]' => ModulePathHelpersFacade::getInstance()->stringifyModulePath($modulepath),
                 ], $ret);
             }
@@ -1125,7 +1125,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
 
         // Add the actionpath too
         if ($this->getActionexecuterClass($module)) {
-            $ret = $cmsenginehelpers->addQueryArgs([
+            $ret = GeneralUtils::addQueryArgs([
                 GD_URLPARAM_ACTIONPATH => $stringified_module_propagation_current_path,
             ], $ret);
         }
@@ -1133,7 +1133,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         // Add the format to the query url
         if ($this instanceof FormattableModuleInterface) {
             if ($format = $this->getFormat($module)) {
-                $ret = $cmsenginehelpers->addQueryArgs([
+                $ret = GeneralUtils::addQueryArgs([
                     GD_URLPARAM_FORMAT => $format,
                 ], $ret);
             }

@@ -1201,7 +1201,6 @@ class Engine implements EngineInterface
     {
         $instanceManager = InstanceManagerFacade::getInstance();
         $dataquery_manager = DataQueryManagerFactory::getInstance();
-        $cmsenginehelpers = \PoP\Engine\HelperAPIFactory::getInstance();
 
         $vars = Engine_Vars::getVars();
 
@@ -1383,7 +1382,7 @@ class Engine implements EngineInterface
                     $forceserverload['fields'] = array_unique($forceserverload['fields']);
 
                     $url = Utils::getRouteURL($dataquery->getNonCacheableRoute());
-                    $url = $cmsenginehelpers->addQueryArgs([
+                    $url = GeneralUtils::addQueryArgs([
                         $objectid_fieldname => $forceserverload['ids'],
                         GD_URLPARAM_FIELDS => $forceserverload['fields'],
                         GD_URLPARAM_FORMAT => POP_FORMAT_FIELDS,
@@ -1403,7 +1402,7 @@ class Engine implements EngineInterface
                     );
 
                     $url = Utils::getRouteURL($dataquery->getCacheableRoute());
-                    $url = $cmsenginehelpers->addQueryArgs([
+                    $url = GeneralUtils::addQueryArgs([
                         $objectid_fieldname => $lazyload['ids'],
                         // Convert from module to moduleFullName
                         GD_URLPARAM_LAYOUTS => array_map(
