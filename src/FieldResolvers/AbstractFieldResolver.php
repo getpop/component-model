@@ -158,7 +158,16 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         return $fieldDirectiveSet;
     }
 
-    final public function enqueueFillingResultItemsFromIDs(array $ids_data_fields, array &$resultIDItems)
+    public function fillResultItemsFromIDs(array $ids_data_fields, array &$resultIDItems, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    {
+        // Enqueue the items
+        $this->enqueueFillingResultItemsFromIDs($ids_data_fields, $resultIDItems);
+
+        // Process them
+        $this->processFillingResultItemsFromIDs($dbItems, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+    }
+
+    public function enqueueFillingResultItemsFromIDs(array $ids_data_fields, array &$resultIDItems)
     {
         // Collect all combinations of ID/data-fields for each directive
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
@@ -179,15 +188,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 );
             }
         }
-    }
-
-    public function fillResultItemsFromIDs(array $ids_data_fields, array &$resultIDItems, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
-    {
-        // Enqueue the items
-        $this->enqueueFillingResultItemsFromIDs($ids_data_fields, $resultIDItems);
-
-        // Process them
-        $this->processFillingResultItemsFromIDs($dbItems, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations);
     }
 
     protected function processFillingResultItemsFromIDs(array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
