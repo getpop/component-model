@@ -148,36 +148,13 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
 
     public function getModelPropsForDescendantDatasetmodules(array $module, array &$props): array
     {
-        $ret = array();
-
-        // If this module loads data, then add several properties
-        if ($this->getDataloaderClass($module)) {
-            if ($this->queriesExternalDomain($module, $props)) {
-                $ret['external-domain'] = true;
-            }
-
-            // If it is multidomain, add a flag for inner layouts to know and react
-            if ($this->isMultidomain($module, $props)) {
-                $ret['multidomain'] = true;
-            }
-        }
-
-        return $ret;
+        return [];
     }
 
     public function initModelProps(array $module, array &$props)
     {
-        // If it is a dataloader module, then set all the props related to data
-        if ($dataloader_class = $this->getDataloaderClass($module)) {
-            // If it is multidomain, add a flag for inner layouts to know and react
-            if ($this->isMultidomain($module, $props)) {
-                // $this->add_general_prop($props, 'is-multidomain', true);
-                $this->appendProp($module, $props, 'class', 'pop-multidomain');
-            }
-        }
-
         // Set property "succeeding-dataloader" on every module, so they know which is their dataloader, needed to calculate the subcomponent data-fields when using dataloader "*"
-        if ($dataloader_class) {
+        if ($dataloader_class = $this->getDataloaderClass($module)) {
             $this->setProp($module, $props, 'succeeding-dataloader', $dataloader_class);
         }
         // Get the prop assigned to the module by its ancestor
@@ -840,9 +817,6 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         // Is the component lazy-load?
         $ret[ParamConstants::LAZYLOAD] = $this->isLazyload($module, $props);
 
-        // Loading data from a different site?
-        $ret[ParamConstants::EXTERNALLOAD] = $this->queriesExternalDomain($module, $props);
-
         // Do not load data when doing lazy load, unless passing URL param ?action=loadlazy, which is needed to initialize the lazy components.
         // Do not load data for Search page (initially, before the query was submitted)
         // Do not load data when querying data from another domain, since evidently we don't have that data in this site, then the load must be triggered from the client
@@ -1025,18 +999,13 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
     {
         $ret = array();
 
-        if ($query_multidomain_urls = $this->getDataloadMultidomainQuerySources($module, $props)) {
-            $ret['multidomaindataloadsources'] = $query_multidomain_urls;
-        } elseif ($dataload_source = $data_properties[ParamConstants::SOURCE]) {
+        if ($dataload_source = $data_properties[ParamConstants::SOURCE]) {
             $ret['dataloadsource'] = $dataload_source;
         }
 
         if ($data_properties[ParamConstants::LAZYLOAD]) {
             $ret['lazyload'] = true;
         }
-        // if ($data_properties[ParamConstants::EXTERNALLOAD]) {
-        //     $ret['externalload'] = true;
-        // }
 
         return $ret;
     }
@@ -1140,45 +1109,6 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         }
 
         return $ret;
-    }
-
-    public function getDataloadMultidomainSources(array $module, array &$props): array
-    {
-        if ($sources = $this->getProp($module, $props, 'dataload-multidomain-sources')) {
-            return is_array($sources) ? $sources : [$sources];
-        }
-
-        return [];
-    }
-
-    public function getDataloadMultidomainQuerySources(array $module, array &$props): array
-    {
-        return $this->getDataloadMultidomainSources($module, $props);
-    }
-
-    public function queriesExternalDomain(array $module, array &$props): bool
-    {
-        if ($sources = $this->getDataloadMultidomainSources($module, $props)) {
-            $cmsengineapi = \PoP\Engine\FunctionAPIFactory::getInstance();
-            $domain = $cmsengineapi->getSiteURL();
-            foreach ($sources as $source) {
-                if (substr($source, 0, strlen($domain)) != $domain) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    public function isMultidomain(array $module, array &$props): bool
-    {
-        if (!$this->queriesExternalDomain($module, $props)) {
-            return false;
-        }
-
-        $multidomain_urls = $this->getDataloadMultidomainSources($module, $props);
-        return is_array($multidomain_urls) && count($multidomain_urls) >= 2;
     }
 
     public function getModulesToPropagateDataProperties(array $module): array

@@ -64,10 +64,6 @@ interface ModuleProcessorInterface
     public function getActionexecutionCheckpoints(array $module, array &$props): array;
     public function executeAction(array $module, array &$props);
     public function getDataloadSource(array $module, array &$props): string;
-    public function getDataloadMultidomainSources(array $module, array &$props): array;
-    public function getDataloadMultidomainQuerySources(array $module, array &$props): array;
-    public function queriesExternalDomain(array $module, array &$props): bool;
-    public function isMultidomain(array $module, array &$props): bool;
     public function getModulesToPropagateDataProperties(array $module): array;
     public function getModelSupplementaryDbobjectdataModuletree(array $module, array &$props): array;
     public function getModelSupplementaryDbobjectdata(array $module, array &$props): array;

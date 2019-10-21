@@ -1165,7 +1165,7 @@ function initModelProps($module, &$props)
       break;
   }
 
-  return parent::initModelProps($module, $props);
+  parent::initModelProps($module, $props);
 }
 ```
 
@@ -1180,7 +1180,7 @@ function initModelProps($module, &$props)
       break;
   }
 
-  return parent::initModelProps($module, $props);
+  parent::initModelProps($module, $props);
 }
 ```
 
