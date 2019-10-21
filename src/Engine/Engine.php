@@ -1320,6 +1320,9 @@ class Engine implements EngineInterface
                 }
             }
 
+            // Comment Leo 21/10/2019: This code will soon be deleted, so I can momentarily comment it
+            // ------------------------------------------------------------
+            /*
             // Keep the list of elements that must be retrieved once again from the server
             if ($dataquery_name = $dataloader->getDataquery()) {
                 $dataquery = $dataquery_manager->get($dataquery_name);
@@ -1415,6 +1418,9 @@ class Engine implements EngineInterface
                     $this->backgroundload_urls[urldecode($url)] = array(POP_TARGET_MAIN);
                 }
             }
+            */
+            // ------------------------------------------------------------
+
 
 
             // Important: query like this: obtain keys first instead of iterating directly on array, because it will keep adding elements
