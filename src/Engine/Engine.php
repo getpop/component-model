@@ -1365,7 +1365,7 @@ class Engine implements EngineInterface
                 if ($forceserverload['ids']) {
                     $forceserverload['fields'] = array_unique($forceserverload['fields']);
 
-                    $url = Utils::getRouteURL($dataquery->getNonCacheableRoute());
+                    $url = RouteUtils::getRouteURL($dataquery->getNonCacheableRoute());
                     $url = GeneralUtils::addQueryArgs([
                         $objectid_fieldname => $forceserverload['ids'],
                         GD_URLPARAM_FIELDS => $forceserverload['fields'],
@@ -1385,7 +1385,7 @@ class Engine implements EngineInterface
                         SORT_REGULAR
                     );
 
-                    $url = Utils::getRouteURL($dataquery->getCacheableRoute());
+                    $url = RouteUtils::getRouteURL($dataquery->getCacheableRoute());
                     $url = GeneralUtils::addQueryArgs([
                         $objectid_fieldname => $lazyload['ids'],
                         // Convert from module to moduleFullName
