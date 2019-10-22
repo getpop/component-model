@@ -22,7 +22,6 @@ use PoP\ComponentModel\DataloadUtils;
 use PoP\ComponentModel\Utils;
 use PoP\ComponentModel\GeneralUtils;
 use PoP\ComponentModel\CheckpointProcessorManagerFactory;
-use PoP\LooseContracts\Facades\Contracts\LooseContractManagerFacade;
 use Exception;
 
 class Engine implements EngineInterface
