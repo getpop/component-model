@@ -145,26 +145,6 @@ class Engine implements EngineInterface
 
     public function generateData()
     {
-        // Check if there are hooks that must be implemented by the CMS, that have not been done so.
-        // Check here, since we can't rely on addAction('popcms:init') to check, since we don't know if it was implemented!
-        $loosecontract_manager = LooseContractManagerFacade::getInstance();
-        if ($notImplementedHooks = $loosecontract_manager->getNotImplementedRequiredHooks()) {
-            throw new Exception(
-                sprintf(
-                    TranslationAPIFacade::getInstance()->__('The following hooks have not been implemented by the CMS: "%s". Hence, we can\'t continue.'),
-                    implode(TranslationAPIFacade::getInstance()->__('", "'), $notImplementedHooks)
-                )
-            );
-        }
-        if ($notImplementedNames = $loosecontract_manager->getNotImplementedRequiredNames()) {
-            throw new Exception(
-                sprintf(
-                    TranslationAPIFacade::getInstance()->__('The following names have not been implemented by the CMS: "%s". Hence, we can\'t continue.'),
-                    implode(TranslationAPIFacade::getInstance()->__('", "'), $notImplementedNames)
-                )
-            );
-        }
-
         HooksAPIFacade::getInstance()->doAction('\PoP\ComponentModel\Engine:beginning');
 
         // Process the request and obtain the results
