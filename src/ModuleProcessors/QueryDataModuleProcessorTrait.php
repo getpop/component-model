@@ -15,6 +15,10 @@ trait QueryDataModuleProcessorTrait
     {
         return array();
     }
+    public function getQueryInputOutputHandlerClass(array $module): ?string
+    {
+        return null;
+    }
     // public function getFilter(array $module)
     // {
     //     return null;
