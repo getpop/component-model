@@ -1054,8 +1054,10 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
 
         // If we are in the API currently, stay in the API
         $vars = Engine_Vars::getVars();
-        if ($vars['scheme'] == POP_SCHEME_API) {
-            $ret = \PoP\Engine\APIUtils::getEndpoint($ret, $vars['dataoutputitems']);
+        if ($scheme = $vars['scheme']) {
+            $ret = GeneralUtils::addQueryArgs([
+                GD_URLPARAM_SCHEME => $scheme,
+            ], $ret);
         }
 
         // Allow to add extra modulepaths set from above
@@ -1081,6 +1083,13 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                     GD_URLPARAM_FORMAT => $format,
                 ], $ret);
             }
+        }
+
+        // If mangled, make it mandle
+        if ($mangled = $_REQUEST[GD_URLPARAM_MANGLED]) {
+            $ret = GeneralUtils::addQueryArgs([
+                GD_URLPARAM_MANGLED => $mangled,
+            ], $ret);
         }
 
         return $ret;
