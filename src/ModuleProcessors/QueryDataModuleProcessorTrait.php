@@ -1,9 +1,10 @@
 <?php
 namespace PoP\ComponentModel\ModuleProcessors;
 use PoP\Hooks\Facades\HooksAPIFacade;
+use PoP\ComponentModel\ModuleProcessors\DataloadingConstants;
 use PoP\ComponentModel\Facades\Managers\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
-use PoP\ComponentModel\ModuleProcessors\DataloadingConstants;
+use PoP\ComponentModel\QueryInputOutputHandlers\ActionExecutionQueryInputOutputHandler;
 
 trait QueryDataModuleProcessorTrait
 {
@@ -17,7 +18,7 @@ trait QueryDataModuleProcessorTrait
     }
     public function getQueryInputOutputHandlerClass(array $module): ?string
     {
-        return null;
+        return ActionExecutionQueryInputOutputHandler::class;
     }
     // public function getFilter(array $module)
     // {
