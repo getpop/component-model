@@ -1086,7 +1086,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         }
 
         // If mangled, make it mandle
-        if ($mangled = $_REQUEST[GD_URLPARAM_MANGLED]) {
+        if ($mangled = $vars['mangled']) {
             $ret = GeneralUtils::addQueryArgs([
                 GD_URLPARAM_MANGLED => $mangled,
             ], $ret);
