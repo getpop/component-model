@@ -148,15 +148,6 @@ trait QueryDataModuleProcessorTrait
                 ARRAY_FILTER_USE_KEY
             );
 
-            // Handle special cases
-            // Avoid users querying all results (by passing limit=-1 or limit=0)
-            $cmsengineapi = \PoP\Engine\FunctionAPIFactory::getInstance();
-            if (isset($params_from_request[GD_URLPARAM_LIMIT])) {
-                $limit = intval($params_from_request[GD_URLPARAM_LIMIT]);
-                if ($limit === -1 || $limit === 0) {
-                    $params_from_request[GD_URLPARAM_LIMIT] = $cmsengineapi->getOption(\PoP\LooseContracts\NameResolverFactory::getInstance()->getName('popcms:option:limit'));
-                }
-            }
             $params_from_request = HooksAPIFacade::getInstance()->applyFilters(
                 'QueryDataModuleProcessorTrait:request:filter_params',
                 $params_from_request

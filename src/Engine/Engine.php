@@ -22,6 +22,7 @@ use PoP\ComponentModel\DataloadUtils;
 use PoP\ComponentModel\Utils;
 use PoP\ComponentModel\GeneralUtils;
 use PoP\ComponentModel\CheckpointProcessorManagerFactory;
+use PoP\LooseContracts\Facades\Contracts\LooseContractManagerFacade;
 use Exception;
 
 class Engine implements EngineInterface
@@ -146,7 +147,7 @@ class Engine implements EngineInterface
     {
         // Check if there are hooks that must be implemented by the CMS, that have not been done so.
         // Check here, since we can't rely on addAction('popcms:init') to check, since we don't know if it was implemented!
-        $loosecontract_manager = \PoP\LooseContracts\CMSLooseContractManagerFactory::getInstance();
+        $loosecontract_manager = LooseContractManagerFacade::getInstance();
         if ($notImplementedHooks = $loosecontract_manager->getNotImplementedRequiredHooks()) {
             throw new Exception(
                 sprintf(
