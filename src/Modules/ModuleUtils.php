@@ -14,10 +14,10 @@ class ModuleUtils
     }
     public static function getModuleOutputName(array $module): string
     {
-        return ProcessorItemUtils::getItemOutputName($module, POP_DEFINITIONGROUP_MODULES);
+        return ProcessorItemUtils::getItemOutputName($module, Definitions::DEFINITIONGROUP_MODULES);
     }
     public static function getModuleFromOutputName(string $moduleOutputName): ?array
     {
-        return ProcessorItemUtils::getItemFromOutputName($moduleOutputName, POP_DEFINITIONGROUP_MODULES);
+        return ProcessorItemUtils::getItemFromOutputName($moduleOutputName, Definitions::DEFINITIONGROUP_MODULES);
     }
 }
