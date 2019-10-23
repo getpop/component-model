@@ -15,6 +15,7 @@ use PoP\ComponentModel\Utils;
 use PoP\ComponentModel\GeneralUtils;
 use PoP\ComponentModel\ModuleProcessors\DataloadingConstants;
 use PoP\ComponentModel\Settings\SettingsManagerFactory;
+use PoP\ComponentModel\Configuration\Request;
 
 abstract class AbstractModuleProcessor implements ModuleProcessorInterface
 {
@@ -1088,7 +1089,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         // If mangled, make it mandle
         if ($mangled = $vars['mangled']) {
             $ret = GeneralUtils::addQueryArgs([
-                GD_URLPARAM_MANGLED => $mangled,
+                Request::URLPARAM_MANGLED => $mangled,
             ], $ret);
         }
 

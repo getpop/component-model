@@ -3,7 +3,7 @@ namespace PoP\ComponentModel\Config;
 
 use PoP\ComponentModel\Container\ContainerBuilderUtils;
 use PoP\Root\Component\PHPServiceConfigurationTrait;
-use PoP\ComponentModel\Server\Utils;
+use PoP\ComponentModel\Configuration\Request;
 
 class ServiceConfiguration
 {
@@ -12,7 +12,7 @@ class ServiceConfiguration
     protected static function configure()
     {
         // If `isMangled`, disable the definitions
-        if (!Utils::isMangled()) {
+        if (!Request::isMangled()) {
             ContainerBuilderUtils::injectValuesIntoService(
                 'definition_manager',
                 'setEnabled',

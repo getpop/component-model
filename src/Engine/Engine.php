@@ -22,6 +22,7 @@ use PoP\ComponentModel\DataloadUtils;
 use PoP\ComponentModel\Utils;
 use PoP\ComponentModel\GeneralUtils;
 use PoP\ComponentModel\CheckpointProcessorManagerFactory;
+use PoP\ComponentModel\Configuration\Request;
 use Exception;
 
 class Engine implements EngineInterface
@@ -526,7 +527,7 @@ class Engine implements EngineInterface
                 $meta[GD_URLPARAM_SETTINGSFORMAT] = $vars['format'];
             }
             if ($vars['mangled']) {
-                $meta[GD_URLPARAM_MANGLED] = $vars['mangled'];
+                $meta[Request::URLPARAM_MANGLED] = $vars['mangled'];
             }
             if (ServerUtils::enableConfigByParams() && $vars['config']) {
                 $meta[POP_URLPARAM_CONFIG] = $vars['config'];
