@@ -1,8 +1,9 @@
 <?php
 namespace PoP\ComponentModel\ModelInstance;
-use PoP\Translation\Contracts\TranslationAPIInterface;
 use PoP\Hooks\Contracts\HooksAPIInterface;
+use PoP\Definitions\Facades\DefinitionManagerFacade;
 use PoP\ComponentModel\Info\ApplicationInfoInterface;
+use PoP\Translation\Contracts\TranslationAPIInterface;
 
 class ModelInstance implements ModelInstanceInterface
 {
@@ -35,13 +36,28 @@ class ModelInstance implements ModelInstanceInterface
         $components = array();
 
         // Mix the information specific to the module, with that present in $vars
-        return (array)$this->hooksAPI->applyFilters(
+        $components = (array)$this->hooksAPI->applyFilters(
             self::HOOK_COMPONENTS_RESULT,
             array_merge(
                 $components,
                 $this->getModelInstanceComponentsFromVars()
             )
         );
+
+        // Add the ones from package Definitions
+
+	    // Comment Leo 05/04/2017: Also add the module-definition type, for 2 reasons:
+	    // 1. It allows to create the 2 versions (DEV/PROD) of the configuration files, to compare/debug them side by side
+	    // 2. It allows to switch from DEV/PROD without having to delete the pop-cache
+        if ($resolver = DefinitionManagerFacade::getInstance()->getDefinitionResolver()) {
+            // Name of the DefinitionResolver
+            $components[] = sprintf(
+                $this->translationAPI->__('definition resolver: %s', 'pop-engine'),
+                get_class($resolver)
+            );
+        }
+
+        return $components;
     }
 
     protected function getModelInstanceComponentsFromVars(): array
