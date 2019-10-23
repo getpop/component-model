@@ -1,7 +1,7 @@
 <?php
 namespace PoP\ComponentModel\Schema;
 
-interface FeedbackMessageStoreInterface extends \PoP\FieldQuery\Query\FeedbackMessageStoreInterface
+interface FeedbackMessageStoreInterface extends \PoP\FieldQuery\FeedbackMessageStoreInterface
 {
     function addDBWarnings(array $dbWarnings);
     function retrieveAndClearResultItemDBWarnings($resultItemID): ?array;

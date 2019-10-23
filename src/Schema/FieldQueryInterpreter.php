@@ -1,15 +1,15 @@
 <?php
 namespace PoP\ComponentModel\Schema;
 use PoP\ComponentModel\GeneralUtils;
-use PoP\FieldQuery\Query\FieldQueryUtils;
-use PoP\FieldQuery\Query\QueryUtils;
-use PoP\Translation\Contracts\TranslationAPIInterface;
+use PoP\FieldQuery\FieldQueryUtils;
+use PoP\FieldQuery\QueryUtils;
+use PoP\Translation\TranslationAPIInterface;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
-use PoP\QueryParsing\Parsers\QueryParserInterface;
-use PoP\FieldQuery\Query\QueryHelpers;
-use PoP\FieldQuery\Query\QuerySyntax;
+use PoP\QueryParsing\QueryParserInterface;
+use PoP\FieldQuery\QueryHelpers;
+use PoP\FieldQuery\QuerySyntax;
 
-class FieldQueryInterpreter extends \PoP\FieldQuery\Query\FieldQueryInterpreter implements FieldQueryInterpreterInterface
+class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implements FieldQueryInterpreterInterface
 {
     // Cache the output from functions
     private $extractedFieldArgumentsCache = [];

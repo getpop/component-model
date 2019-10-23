@@ -1,9 +1,9 @@
 <?php
 namespace PoP\ComponentModel\ModelInstance;
-use PoP\Hooks\Contracts\HooksAPIInterface;
+use PoP\Hooks\HooksAPIInterface;
 use PoP\Definitions\Facades\DefinitionManagerFacade;
 use PoP\ComponentModel\Info\ApplicationInfoInterface;
-use PoP\Translation\Contracts\TranslationAPIInterface;
+use PoP\Translation\TranslationAPIInterface;
 
 class ModelInstance implements ModelInstanceInterface
 {

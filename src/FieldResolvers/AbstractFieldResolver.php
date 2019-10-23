@@ -1,7 +1,7 @@
 <?php
 namespace PoP\ComponentModel\FieldResolvers;
 use League\Pipeline\PipelineBuilder;
-use PoP\FieldQuery\Query\FieldQueryUtils;
+use PoP\FieldQuery\FieldQueryUtils;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\ComponentModel\DirectiveResolvers\ValidateDirectiveResolver;
 use PoP\Translation\Facades\TranslationAPIFacade;

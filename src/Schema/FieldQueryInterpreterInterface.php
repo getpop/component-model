@@ -2,7 +2,7 @@
 namespace PoP\ComponentModel\Schema;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 
-interface FieldQueryInterpreterInterface extends \PoP\FieldQuery\Query\FieldQueryInterpreterInterface
+interface FieldQueryInterpreterInterface extends \PoP\FieldQuery\FieldQueryInterpreterInterface
 {
     public function extractFieldArguments(FieldResolverInterface $fieldResolver, string $field, ?array $variables = null, ?array &$schemaWarnings = null): array;
     public function extractFieldArgumentsForSchema(FieldResolverInterface $fieldResolver, string $field, ?array $variables = null): array;

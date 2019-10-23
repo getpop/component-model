@@ -1,7 +1,7 @@
 <?php
 namespace PoP\ComponentModel\Schema;
 
-class FeedbackMessageStore extends \PoP\FieldQuery\Query\FeedbackMessageStore implements FeedbackMessageStoreInterface
+class FeedbackMessageStore extends \PoP\FieldQuery\FeedbackMessageStore implements FeedbackMessageStoreInterface
 {
     protected $schemaErrors = [];
     protected $dbWarnings = [];

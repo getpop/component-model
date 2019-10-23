@@ -4,14 +4,14 @@ parameters:
 services:
     _defaults:
         bind:
-            PoP\Translation\Contracts\TranslationAPIInterface: '@translation_api'
-            PoP\Hooks\Contracts\HooksAPIInterface: '@hooks_api'
+            PoP\Translation\TranslationAPIInterface: '@translation_api'
+            PoP\Hooks\HooksAPIInterface: '@hooks_api'
             PoP\ComponentModel\Info\ApplicationInfoInterface: '@application_info'
             PoP\ComponentModel\Managers\ModulePathManagerInterface: '@module_path_manager'
             PoP\ComponentModel\ModelInstance\ModelInstanceInterface: '@model_instance'
             PoP\ComponentModel\Schema\FeedbackMessageStoreInterface: '@feedback_message_store'
             PoP\ComponentModel\Schema\TypeCastingExecuterInterface: '@type_casting_executer'
-            PoP\QueryParsing\Parsers\QueryParserInterface: '@query_parser'
+            PoP\QueryParsing\QueryParserInterface: '@query_parser'
 
     memory_cache_item_pool:
         class: \Symfony\Component\Cache\Adapter\ArrayAdapter

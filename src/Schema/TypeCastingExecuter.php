@@ -2,7 +2,7 @@
 namespace PoP\ComponentModel\Schema;
 
 use PoP\ComponentModel\Error;
-use PoP\Translation\Contracts\TranslationAPIInterface;
+use PoP\Translation\TranslationAPIInterface;
 
 class TypeCastingExecuter implements TypeCastingExecuterInterface
 {
