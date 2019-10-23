@@ -35,7 +35,7 @@ class ModelInstance implements ModelInstanceInterface
         $components = array();
 
         // Mix the information specific to the module, with that present in $vars
-        return $this->hooksAPI->applyFilters(
+        return (array)$this->hooksAPI->applyFilters(
             self::HOOK_COMPONENTS_RESULT,
             array_merge(
                 $components,
