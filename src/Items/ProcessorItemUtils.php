@@ -1,6 +1,6 @@
 <?php
 namespace PoP\ComponentModel\Items;
-use PoP\Definitions\DefinitionUtils;
+use PoP\Definitions\Facades\DefinitionManagerFacade;
 
 class ProcessorItemUtils
 {
@@ -45,10 +45,10 @@ class ProcessorItemUtils
     }
     public static function getItemOutputName(array $item, string $definitionGroup): string
     {
-        return DefinitionUtils::getDefinition(self::getItemFullName($item), $definitionGroup);
+        return DefinitionManagerFacade::getInstance()->getDefinition(self::getItemFullName($item), $definitionGroup);
     }
     public static function getItemFromOutputName(string $itemOutputName, string $definitionGroup): ?array
     {
-        return self::getItemFromFullName(DefinitionUtils::getOriginalName($itemOutputName, $definitionGroup));
+        return self::getItemFromFullName(DefinitionManagerFacade::getInstance()->getOriginalName($itemOutputName, $definitionGroup));
     }
 }
