@@ -49,9 +49,12 @@ class ModelInstance implements ModelInstanceInterface
 	    // Comment Leo 05/04/2017: Also add the module-definition type, for 2 reasons:
 	    // 1. It allows to create the 2 versions (DEV/PROD) of the configuration files, to compare/debug them side by side
 	    // 2. It allows to switch from DEV/PROD without having to delete the pop-cache
-        if ($resolver = DefinitionManagerFacade::getInstance()->getDefinitionResolver()) {
-            // Name of the DefinitionResolver
-            $components[] = $this->translationAPI->__('definition resolver:', 'engine').get_class($resolver);
+        if ($definitionResolvers = DefinitionManagerFacade::getInstance()->getDefinitionResolvers()) {
+            $resolvers = [];
+            foreach ($definitionResolvers as $group => $resolverInstance) {
+                $resolvers[] = $group.'-'.get_class($resolverInstance);
+            }
+            $components[] = $this->translationAPI->__('definition resolvers:', 'engine').implode(',', $resolvers);
         }
 
         return $components;

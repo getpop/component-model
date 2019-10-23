@@ -13,7 +13,7 @@ class ServiceConfiguration
     {
         // If `isMangled`, disable the definitions
         if (!Utils::isMangled()) {
-            ContainerBuilderUtils::injectValueIntoService(
+            ContainerBuilderUtils::injectValuesIntoService(
                 'definition_manager',
                 'setEnabled',
                 false
