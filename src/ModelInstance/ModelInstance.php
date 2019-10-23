@@ -51,10 +51,7 @@ class ModelInstance implements ModelInstanceInterface
 	    // 2. It allows to switch from DEV/PROD without having to delete the pop-cache
         if ($resolver = DefinitionManagerFacade::getInstance()->getDefinitionResolver()) {
             // Name of the DefinitionResolver
-            $components[] = sprintf(
-                $this->translationAPI->__('definition resolver: %s', 'pop-engine'),
-                get_class($resolver)
-            );
+            $components[] = $this->translationAPI->__('definition resolver:', 'engine').get_class($resolver);
         }
 
         return $components;
