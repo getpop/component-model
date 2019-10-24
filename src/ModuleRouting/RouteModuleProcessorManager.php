@@ -2,6 +2,7 @@
 namespace PoP\ComponentModel\ModuleRouting;
 
 use PoP\ModuleRouting\AbstractRouteModuleProcessorManager;
+use PoP\ComponentModel\Engine_Vars;
 
 class RouteModuleProcessorManager extends AbstractRouteModuleProcessorManager
 {
