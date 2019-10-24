@@ -5,7 +5,7 @@ use PoP\ModuleRouting\AbstractRouteModuleProcessorManager;
 
 class RouteModuleProcessorManager extends AbstractRouteModuleProcessorManager
 {
-    public function getVars()
+    public function getVars(): array
     {
         return Engine_Vars::getVars();
     }
