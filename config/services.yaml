@@ -80,8 +80,8 @@ services:
         public: true
 
     route_module_processor_manager:
-            class: \PoP\ComponentModel\ModuleRouting\RouteModuleProcessorManager
-            public: true
+        class: \PoP\ComponentModel\ModuleRouting\RouteModuleProcessorManager
+        public: true
 
     PoP\ComponentModel\FieldValueResolvers\:
         resource: '../src/FieldValueResolvers/*'
