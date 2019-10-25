@@ -200,25 +200,10 @@ class Engine implements EngineInterface
     // Allow PoPWebPlatform_Engine to override this function
     protected function getEncodedDataObject($data)
     {
-        // For the API: maybe remove the entry module from the output
-        $vars = Engine_Vars::getVars();
-        if ($vars['dataoutputmode'] == GD_URLPARAM_DATAOUTPUTMODE_COMBINED) {
-            if ($data['datasetmodulesettings']) {
-                $data['datasetmodulesettings'] = $this->maybeRemoveEntryModuleFromOutput($data['datasetmodulesettings']);
-            }
-            if ($data['moduledata']) {
-                $data['moduledata'] = $this->maybeRemoveEntryModuleFromOutput($data['moduledata']);
-            }
-            if ($data['datasetmoduledata']) {
-                $data['datasetmoduledata'] = $this->maybeRemoveEntryModuleFromOutput($data['datasetmoduledata']);
-            }
-        }
-
         // Comment Leo 14/09/2018: Re-enable here:
         // if (true) {
         //     unset($data['combinedstatedata']);
         // }
-
         return $data;
     }
 
@@ -395,17 +380,6 @@ class Engine implements EngineInterface
                 }
             }
         }
-    }
-
-    protected function maybeRemoveEntryModuleFromOutput(array $results): array
-    {
-        $vars = Engine_Vars::getVars();
-        // For the API: maybe remove the entry module from the output
-        if (!ServerUtils::disableAPI() && $vars['scheme'] == POP_SCHEME_API && in_array(POP_ACTION_REMOVE_ENTRYMODULE_FROM_OUTPUT, $vars['actions'])) {
-            list($has_extra_routes) = $this->listExtraRouteVars();
-            return $has_extra_routes ? array_values(array_values($results)[0])[0] : array_values($results)[0];
-        }
-        return $results;
     }
 
     public function getModuleDatasetSettings(array $module, $model_props, array &$props)
