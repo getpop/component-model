@@ -4,7 +4,7 @@ use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
-use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
+use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
 use PoP\ComponentModel\GeneralUtils;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\Facades\Engine\EngineFacade;

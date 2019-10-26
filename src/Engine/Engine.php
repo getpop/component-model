@@ -12,7 +12,7 @@ use PoP\ComponentModel\Facades\ModulePath\ModulePathManagerFacade;
 use PoP\ComponentModel\Facades\ModelInstance\ModelInstanceFacade;
 use PoP\ComponentModel\Facades\ModuleFilters\ModuleFilterManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
-use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
+use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
 use PoP\ComponentModel\ModuleProcessors\DataloadingConstants;
 use PoP\ComponentModel\Engine_Vars;
 use PoP\ComponentModel\Settings\SiteConfigurationProcessorManagerFactory;

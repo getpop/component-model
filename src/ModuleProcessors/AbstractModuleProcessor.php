@@ -8,7 +8,7 @@ use PoP\ComponentModel\Modules\ModuleUtils;
 use PoP\ComponentModel\ModuleFilters\ModulePaths;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
-use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
+use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
 use PoP\ComponentModel\Engine_Vars;
 use PoP\ComponentModel\DataloadUtils;
 use PoP\ComponentModel\Utils;

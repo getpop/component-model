@@ -1,7 +1,7 @@
 <?php
 namespace PoP\ComponentModel\ModuleProcessors;
 use PoP\ComponentModel\Facades\ModuleFilters\ModuleFilterManagerFacade;
-use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
+use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
 use PoP\ComponentModel\Modules\ModuleUtils;
 
 trait ModulePathProcessorTrait

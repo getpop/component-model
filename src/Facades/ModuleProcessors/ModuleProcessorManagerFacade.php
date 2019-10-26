@@ -1,5 +1,5 @@
 <?php
-namespace PoP\ComponentModel\Facades\Managers;
+namespace PoP\ComponentModel\Facades\ModuleProcessors;
 
 use PoP\ComponentModel\ModuleProcessors\ModuleProcessorManagerInterface;
 use PoP\Root\Container\ContainerBuilderFactory;

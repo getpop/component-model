@@ -1,6 +1,6 @@
 <?php
 namespace PoP\ComponentModel\ModuleProcessors;
-use PoP\ComponentModel\Facades\Managers\ModuleProcessorManagerFacade;
+use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
 
 abstract class AbstractModuleDecoratorProcessor implements ModuleDecoratorProcessorInterface
 {
