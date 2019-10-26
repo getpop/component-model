@@ -5,7 +5,7 @@ class DefaultDataStructureFormatter extends AbstractDataStructureFormatter
 {
     public const NAME = 'default';
 
-    public function getName() {
+    public static function getName() {
         return self::NAME;
     }
 }
