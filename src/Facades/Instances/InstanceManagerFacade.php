@@ -1,5 +1,5 @@
 <?php
-namespace PoP\ComponentModel\Facades\Managers;
+namespace PoP\ComponentModel\Facades\Instances;
 
 use PoP\ComponentModel\Instances\InstanceManagerInterface;
 use PoP\Root\Container\ContainerBuilderFactory;

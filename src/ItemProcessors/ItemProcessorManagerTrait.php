@@ -1,6 +1,6 @@
 <?php
 namespace PoP\ComponentModel\ItemProcessors;
-use PoP\ComponentModel\Facades\Managers\InstanceManagerFacade;
+use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 
 trait ItemProcessorManagerTrait
 {

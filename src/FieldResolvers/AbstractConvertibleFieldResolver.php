@@ -1,6 +1,6 @@
 <?php
 namespace PoP\ComponentModel\FieldResolvers;
-use PoP\ComponentModel\Facades\Managers\InstanceManagerFacade;
+use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
