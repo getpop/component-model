@@ -51,6 +51,10 @@ services:
         class: \PoP\ComponentModel\ModulePath\ModulePathManager
         public: true
 
+    data_structure_manager:
+        class: \PoP\ComponentModel\DataStructure\DataStructureManager
+        public: true
+
     module_path_helpers:
         class: \PoP\ComponentModel\ModulePath\ModulePathHelpers
         public: true
