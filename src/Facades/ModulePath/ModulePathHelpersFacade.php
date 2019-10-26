@@ -1,5 +1,5 @@
 <?php
-namespace PoP\ComponentModel\Facades\Managers;
+namespace PoP\ComponentModel\Facades\ModulePath;
 
 use PoP\ComponentModel\ModulePath\ModulePathHelpersInterface;
 use PoP\Root\Container\ContainerBuilderFactory;

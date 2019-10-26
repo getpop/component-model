@@ -3,7 +3,7 @@ namespace PoP\ComponentModel\ModuleProcessors;
 use PoP\Hooks\Facades\HooksAPIFacade;
 use PoP\ComponentModel\Facades\ModuleFilters\ModuleFilterManagerFacade;
 use PoP\ComponentModel\ModuleFilters\ModuleFilterManager;
-use PoP\ComponentModel\Facades\Managers\ModulePathHelpersFacade;
+use PoP\ComponentModel\Facades\ModulePath\ModulePathHelpersFacade;
 use PoP\ComponentModel\Modules\ModuleUtils;
 use PoP\ComponentModel\ModuleFilters\ModulePaths;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
