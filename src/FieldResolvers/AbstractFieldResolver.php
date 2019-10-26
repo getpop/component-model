@@ -605,7 +605,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
     protected function calculateFieldNamesToResolve(): array
     {
-        $instanceManager = InstanceManagerFacade::getInstance();
         $attachableExtensionManager = AttachableExtensionManagerFacade::getInstance();
 
         // The ID is mandatory, since under this key is the data stored in the database object
