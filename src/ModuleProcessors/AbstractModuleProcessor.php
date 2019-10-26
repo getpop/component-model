@@ -1,7 +1,7 @@
 <?php
 namespace PoP\ComponentModel\ModuleProcessors;
 use PoP\Hooks\Facades\HooksAPIFacade;
-use PoP\ComponentModel\Facades\Managers\ModuleFilterManagerFacade;
+use PoP\ComponentModel\Facades\ModuleFilters\ModuleFilterManagerFacade;
 use PoP\ComponentModel\ModuleFilters\ModuleFilterManager;
 use PoP\ComponentModel\Facades\Managers\ModulePathHelpersFacade;
 use PoP\ComponentModel\Modules\ModuleUtils;

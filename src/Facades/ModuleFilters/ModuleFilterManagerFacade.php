@@ -1,5 +1,5 @@
 <?php
-namespace PoP\ComponentModel\Facades\Managers;
+namespace PoP\ComponentModel\Facades\ModuleFilters;
 
 use PoP\ComponentModel\ModuleFilters\ModuleFilterManagerInterface;
 use PoP\Root\Container\ContainerBuilderFactory;
