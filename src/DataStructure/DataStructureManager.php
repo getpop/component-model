@@ -1,6 +1,7 @@
 <?php
 namespace PoP\ComponentModel\DataStructure;
 use PoP\ComponentModel\Engine_Vars;
+use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 
 class DataStructureManager implements DataStructureManagerInterface
 {
