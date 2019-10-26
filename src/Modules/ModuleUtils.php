@@ -1,6 +1,6 @@
 <?php
 namespace PoP\ComponentModel\Modules;
-use PoP\ComponentModel\Items\ProcessorItemUtils;
+use PoP\ComponentModel\ItemProcessors\ProcessorItemUtils;
 
 class ModuleUtils
 {

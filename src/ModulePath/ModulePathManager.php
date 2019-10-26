@@ -1,10 +1,10 @@
 <?php
-namespace PoP\ComponentModel\Managers;
+namespace PoP\ComponentModel\ModulePath;
 
 class ModulePathManager implements ModulePathManagerInterface
 {
     protected $propagation_current_path = [];
-    
+
     public function getPropagationCurrentPath(): ?array
     {
         return $this->propagation_current_path;

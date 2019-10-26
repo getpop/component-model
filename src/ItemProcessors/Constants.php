@@ -1,5 +1,5 @@
 <?php
-namespace PoP\ComponentModel\Items;
+namespace PoP\ComponentModel\ItemProcessors;
 
 class Constants
 {

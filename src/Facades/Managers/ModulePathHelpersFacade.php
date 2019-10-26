@@ -1,7 +1,7 @@
 <?php
 namespace PoP\ComponentModel\Facades\Managers;
 
-use PoP\ComponentModel\Managers\ModulePathHelpersInterface;
+use PoP\ComponentModel\ModulePath\ModulePathHelpersInterface;
 use PoP\Root\Container\ContainerBuilderFactory;
 
 class ModulePathHelpersFacade

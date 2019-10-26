@@ -1,9 +1,9 @@
 <?php
-namespace PoP\ComponentModel\Managers;
+namespace PoP\ComponentModel\ModuleFilters;
 
 use PoP\ComponentModel\ModuleFilters\ModuleFilterInterface;
-use PoP\ComponentModel\Managers\ModulePathHelpersInterface;
-use PoP\ComponentModel\Managers\ModulePathManagerInterface;
+use PoP\ComponentModel\ModulePath\ModulePathHelpersInterface;
+use PoP\ComponentModel\ModulePath\ModulePathManagerInterface;
 
 class ModuleFilterManager implements ModuleFilterManagerInterface
 {

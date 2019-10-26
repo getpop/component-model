@@ -7,7 +7,7 @@ services:
             PoP\Translation\TranslationAPIInterface: '@translation_api'
             PoP\Hooks\HooksAPIInterface: '@hooks_api'
             PoP\ComponentModel\Info\ApplicationInfoInterface: '@application_info'
-            PoP\ComponentModel\Managers\ModulePathManagerInterface: '@module_path_manager'
+            PoP\ComponentModel\ModulePath\ModulePathManagerInterface: '@module_path_manager'
             PoP\ComponentModel\ModelInstance\ModelInstanceInterface: '@model_instance'
             PoP\ComponentModel\Schema\FeedbackMessageStoreInterface: '@feedback_message_store'
             PoP\ComponentModel\Schema\TypeCastingExecuterInterface: '@type_casting_executer'
@@ -42,25 +42,25 @@ services:
             $version: '%version%'
 
     module_filter_manager:
-        class: '\PoP\ComponentModel\Managers\ModuleFilterManager'
+        class: '\PoP\ComponentModel\ModuleFilters\ModuleFilterManager'
         public: true
         arguments:
             $modulePathHelpers: '@module_path_helpers'
 
     module_path_manager:
-        class: \PoP\ComponentModel\Managers\ModulePathManager
+        class: \PoP\ComponentModel\ModulePath\ModulePathManager
         public: true
 
     module_path_helpers:
-        class: \PoP\ComponentModel\Managers\ModulePathHelpers
+        class: \PoP\ComponentModel\ModulePath\ModulePathHelpers
         public: true
 
     instance_manager:
-        class: \PoP\ComponentModel\Managers\InstanceManager
+        class: \PoP\ComponentModel\Instances\InstanceManager
         public: true
 
     module_processor_manager:
-        class: \PoP\ComponentModel\Managers\ModuleProcessorManager
+        class: \PoP\ComponentModel\ModuleProcessors\ModuleProcessorManager
         public: true
 
     feedback_message_store:

@@ -1,13 +1,13 @@
 <?php
-namespace PoP\ComponentModel\Managers;
+namespace PoP\ComponentModel\Instances;
 use PoP\Root\Container\ContainerBuilderFactory;
 
 trait InstanceManagerTrait
 {
     private $instances = [];
     private $overridingClasses = [];
-    
-    public function overrideClass(string $overrideClass, string $withClass): void 
+
+    public function overrideClass(string $overrideClass, string $withClass): void
     {
         $this->overridingClasses[$overrideClass] = $withClass;
     }
@@ -38,7 +38,7 @@ trait InstanceManagerTrait
 
         return $this->instances[$class];
     }
-    
+
     public function getInstance(string $class)
     {
         return $this->getClassInstance($class);

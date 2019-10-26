@@ -1,7 +1,7 @@
 <?php
 namespace PoP\ComponentModel\ModuleFilters;
 
-use PoP\ComponentModel\Managers\ModulePathManagerInterface;
+use PoP\ComponentModel\ModulePath\ModulePathManagerInterface;
 
 class ModulePaths extends AbstractModuleFilter
 {
