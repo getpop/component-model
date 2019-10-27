@@ -1,6 +1,7 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
 use League\Pipeline\StageInterface;
+use PoP\ComponentModel\Environment;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\FieldResolvers\AbstractFieldResolver;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
@@ -95,7 +96,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     public function validateDirective(FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Check that the directive can be applied to all provided fields
-        $this->validateAndFilterFieldsForDirective($idsDataFields, $schemaErrors);
+        $this->validateAndFilterFieldsForDirective($idsDataFields, $schemaErrors, $schemaWarnings);
     }
 
     /**
@@ -105,7 +106,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
      * @param array $schemaErrors
      * @return void
      */
-    protected function validateAndFilterFieldsForDirective(array &$idsDataFields, array &$schemaErrors)
+    protected function validateAndFilterFieldsForDirective(array &$idsDataFields, array &$schemaErrors, array &$schemaWarnings)
     {
         $directiveSupportedFieldNames = $this->getFieldNamesToApplyTo();
 
@@ -115,6 +116,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         }
 
         // Check if all fields are supported by this directive
+        $removeFieldIfDirectiveFailed = Environment::removeFieldIfDirectiveFailed();
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         $failedFields = [];
         foreach ($idsDataFields as $id => &$data_fields) {
@@ -131,14 +133,16 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                     },
                     $unsupportedFieldNames
                 );
-                $data_fields['direct'] = array_diff(
-                    $data_fields['direct'],
-                    $unsupportedFields
-                );
                 $failedFields = array_values(array_unique(array_merge(
                     $failedFields,
                     $unsupportedFields
                 )));
+                if ($removeFieldIfDirectiveFailed) {
+                    $data_fields['direct'] = array_diff(
+                        $data_fields['direct'],
+                        $unsupportedFields
+                    );
+                }
             }
         }
         // Give an error message for all failed fields
@@ -149,12 +153,21 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 [$fieldQueryInterpreter, 'getFieldOutputKey'],
                 $failedFields
             );
-            $schemaErrors[$directiveName][] = sprintf(
-                $translationAPI->__('Directive \'%s\' doesn\'t support field(s) \'%s\', so these have been removed from the query. (The only supported field names are: \'%s\')', 'component-model'),
-                $directiveName,
-                implode($translationAPI->__('\', \''), $failedDataFieldOutputKeys),
-                implode($translationAPI->__('\', \''), $directiveSupportedFieldNames)
-            );
+            if ($removeFieldIfDirectiveFailed) {
+                $schemaErrors[$directiveName][] = sprintf(
+                    $translationAPI->__('Directive \'%s\' doesn\'t support field(s) \'%s\', so these have been removed from the query. (The only supported field names are: \'%s\')', 'component-model'),
+                    $directiveName,
+                    implode($translationAPI->__('\', \''), $failedDataFieldOutputKeys),
+                    implode($translationAPI->__('\', \''), $directiveSupportedFieldNames)
+                );
+            } else {
+                $schemaWarnings[$directiveName][] = sprintf(
+                    $translationAPI->__('Directive \'%s\' doesn\'t support field(s) \'%s\', so execution of this directive has been ignored on them. (The only supported field names are: \'%s\')', 'component-model'),
+                    $directiveName,
+                    implode($translationAPI->__('\', \''), $failedDataFieldOutputKeys),
+                    implode($translationAPI->__('\', \''), $directiveSupportedFieldNames)
+                );
+            }
         }
     }
 }
