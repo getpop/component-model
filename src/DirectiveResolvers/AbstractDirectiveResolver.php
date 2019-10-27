@@ -141,7 +141,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 )));
             }
         }
-        // Give a warning message for all failed fields
+        // Give an error message for all failed fields
         if ($failedFields) {
             $translationAPI = TranslationAPIFacade::getInstance();
             $directiveName = $this->getDirectiveName();
