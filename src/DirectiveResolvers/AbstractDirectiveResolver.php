@@ -1,11 +1,12 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
 use League\Pipeline\StageInterface;
+use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\FieldResolvers\AbstractFieldResolver;
+use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineUtils;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
-use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 
 abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, StageInterface
 {
