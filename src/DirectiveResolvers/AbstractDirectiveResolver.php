@@ -115,31 +115,42 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         }
 
         // Check if all fields are supported by this directive
-        $failedDataFields = [];
+        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+        $failedFields = [];
         foreach ($idsDataFields as $id => $data_fields) {
+            // Get the fieldName for each field
+            $nameFields = [];
+            foreach ($data_fields['direct'] as $field) {
+                $nameFields[$fieldQueryInterpreter->getFieldName($field)] = $field;
+            }
             // If any fieldName failed, remove it from the list of fields to execute for this directive
-            if ($unsupportedFieldNames = array_diff($data_fields['direct'], $directiveSupportedFieldNames)) {
-                $data_fields['direct'] = array_diff(
-                    $data_fields['direct'],
+            if ($unsupportedFieldNames = array_diff(array_keys($nameFields), $directiveSupportedFieldNames)) {
+                $unsupportedFields = array_map(
+                    function($fieldName) use ($nameFields) {
+                        return $nameFields[$fieldName];
+                    },
                     $unsupportedFieldNames
                 );
-                $failedDataFields = array_values(array_unique(array_merge(
-                    $failedDataFields,
-                    $unsupportedFieldNames
+                $data_fields['direct'] = array_diff(
+                    $data_fields['direct'],
+                    $unsupportedFields
+                );
+                $failedFields = array_values(array_unique(array_merge(
+                    $failedFields,
+                    $unsupportedFields
                 )));
             }
         }
         // Give a warning message for all failed fields
-        if ($failedDataFields) {
+        if ($failedFields) {
             $translationAPI = TranslationAPIFacade::getInstance();
-            $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
             $directiveName = $this->getDirectiveName();
             $failedDataFieldOutputKeys = array_map(
                 [$fieldQueryInterpreter, 'getFieldOutputKey'],
-                $failedDataFields
+                $failedFields
             );
             $schemaWarnings[$directiveName][] = sprintf(
-                $translationAPI->__('Directive \'%s\' cannot support the following field(s), so it has not been executed on them: \'%s\'. (The only supported fields are: \'%s\')', 'component-model'),
+                $translationAPI->__('Directive \'%s\' cannot support the following field(s), so it has not been executed on them: \'%s\'. (The only supported field names are: \'%s\')', 'component-model'),
                 $directiveName,
                 implode($translationAPI->__('\', \''), $failedDataFieldOutputKeys),
                 implode($translationAPI->__('\', \''), $directiveSupportedFieldNames)
