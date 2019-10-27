@@ -95,17 +95,17 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     public function validateDirective(FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Check that the directive can be applied to all provided fields
-        $this->validateAndFilterFieldsForDirective($idsDataFields, $schemaWarnings);
+        $this->validateAndFilterFieldsForDirective($idsDataFields, $schemaErrors);
     }
 
     /**
      * Check that the directive can be applied to all provided fields
      *
      * @param array $idsDataFields
-     * @param array $schemaWarnings
+     * @param array $schemaErrors
      * @return void
      */
-    protected function validateAndFilterFieldsForDirective(array &$idsDataFields, array &$schemaWarnings)
+    protected function validateAndFilterFieldsForDirective(array &$idsDataFields, array &$schemaErrors)
     {
         $directiveSupportedFieldNames = $this->getFieldNamesToApplyTo();
 
@@ -149,8 +149,8 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 [$fieldQueryInterpreter, 'getFieldOutputKey'],
                 $failedFields
             );
-            $schemaWarnings[$directiveName][] = sprintf(
-                $translationAPI->__('Directive \'%s\' doesn\'t support the following field(s), so it has not been executed on them: \'%s\'. (The only supported field names are: \'%s\')', 'component-model'),
+            $schemaErrors[$directiveName][] = sprintf(
+                $translationAPI->__('Directive \'%s\' doesn\'t support the following field(s), so these have been removed from the query: \'%s\'. (The only supported field names are: \'%s\')', 'component-model'),
                 $directiveName,
                 implode($translationAPI->__('\', \''), $failedDataFieldOutputKeys),
                 implode($translationAPI->__('\', \''), $directiveSupportedFieldNames)
