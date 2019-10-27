@@ -117,7 +117,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         // Check if all fields are supported by this directive
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         $failedFields = [];
-        foreach ($idsDataFields as $id => $data_fields) {
+        foreach ($idsDataFields as $id => &$data_fields) {
             // Get the fieldName for each field
             $nameFields = [];
             foreach ($data_fields['direct'] as $field) {
