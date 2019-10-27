@@ -150,7 +150,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 $failedFields
             );
             $schemaErrors[$directiveName][] = sprintf(
-                $translationAPI->__('Directive \'%s\' doesn\'t support the following field(s), so these have been removed from the query: \'%s\'. (The only supported field names are: \'%s\')', 'component-model'),
+                $translationAPI->__('Directive \'%s\' doesn\'t support field(s) \'%s\', so these have been removed from the query. (The only supported field names are: \'%s\')', 'component-model'),
                 $directiveName,
                 implode($translationAPI->__('\', \''), $failedDataFieldOutputKeys),
                 implode($translationAPI->__('\', \''), $directiveSupportedFieldNames)
