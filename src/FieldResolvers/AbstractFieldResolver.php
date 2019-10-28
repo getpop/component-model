@@ -115,23 +115,24 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                         $this->directiveResolverInstanceCache[$directiveClass][$validFieldDirective] = new $directiveClass($validFieldDirective);
                     }
                     $directiveResolverInstance = $this->directiveResolverInstanceCache[$directiveClass][$validFieldDirective];
-                    // Validate if the directive can be executed multiple times
-                    $directiveCount[$directiveName] = isset($directiveCount[$directiveName]) ? $directiveCount[$directiveName] + 1 : 1;
-                    if ($directiveCount[$directiveName] > 1) {
-                        if (!$directiveResolverInstance->canExecuteMultipleTimesInField()) {
-                            $schemaErrors[$directiveName][] = sprintf(
-                                $translationAPI->__('Directive \'%s\' can be executed only once within a field, so this execution (number %s) has been ignored', 'pop-component-model'),
-                                $directiveName,
-                                $directiveCount[$directiveName]
-                            );
-                            continue;
-                        }
-                    }
 
-                    // Directive is valid. Add it as a pipeline stage, in its required position
+                    // Directive is valid so far. Assign the instance to the cache
                     $this->fieldDirectiveInstanceCache[$fieldDirective] = $directiveResolverInstance;
                 }
                 $directiveResolverInstance = $this->fieldDirectiveInstanceCache[$fieldDirective];
+
+                // Validate if the directive can be executed multiple times
+                $directiveCount[$fieldDirective] = isset($directiveCount[$fieldDirective]) ? $directiveCount[$fieldDirective] + 1 : 1;
+                if ($directiveCount[$fieldDirective] > 1 && !$directiveResolverInstance->canExecuteMultipleTimesInField()) {
+                    $schemaErrors[$fieldDirective][] = sprintf(
+                        $translationAPI->__('Directive \'%s\' can be executed only once within a field, so the current execution (number %s) has been ignored', 'pop-component-model'),
+                        $fieldDirective,
+                        $directiveCount[$fieldDirective]
+                    );
+                    continue;
+                }
+
+                // Directive is valid. Add it as a pipeline stage, in its required position
                 $directivesByPosition[$directiveResolverInstance->getPipelinePosition()][] = $directiveResolverInstance;
             }
             // Add all the directives into the pipeline
