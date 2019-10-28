@@ -24,6 +24,17 @@ abstract class AbstractConvertibleFieldResolver extends AbstractFieldResolver
         return parent::getFieldNamesToResolve();
     }
 
+    public function getDirectiveNameClasses(): array
+    {
+        $instanceManager = InstanceManagerFacade::getInstance();
+        if ($baseFieldResolverClass = $this->getBaseFieldResolverClass()) {
+            $fieldResolver = $instanceManager->getInstance($baseFieldResolverClass);
+            return $fieldResolver->getDirectiveNameClasses();
+        }
+
+        return parent::getFieldNamesToResolve();
+    }
+
     public function hasFieldValueResolversForField(string $field): bool
     {
         $instanceManager = InstanceManagerFacade::getInstance();
