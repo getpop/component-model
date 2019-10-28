@@ -13,6 +13,24 @@ interface DirectiveResolverInterface
      */
     public static function getFieldNamesToApplyTo(): array;
     /**
+     * Define where to place the directive in the directive execution pipeline
+     * 2 directives are mandatory: Validate and ResolveAndMerge, which are executed in this order.
+     * All other directives must indicate where to position themselves, using these 2 directives as anchors.
+     * There are 3 positions:
+     * 1. At the beginning, before the Validate pipeline
+     * 2. In the middle, between the Validate and Resolve directives
+     * 3. At the end, after the ResolveAndMerge directive
+     *
+     * @return string
+     */
+    public function getPipelinePosition(): string;
+    /**
+     * Indicates if the directive can be added several times to the pipeline, or only once
+     *
+     * @return boolean
+     */
+    public function canExecuteMultipleTimesInField(): bool;
+    /**
      * Validate that the directive can be applied to all passed fields
      *
      * @param FieldResolverInterface $fieldResolver

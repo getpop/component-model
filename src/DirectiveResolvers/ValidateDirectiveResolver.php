@@ -2,12 +2,23 @@
 namespace PoP\ComponentModel\DirectiveResolvers;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
+use PoP\ComponentModel\FieldResolvers\PipelinePositions;
 
 class ValidateDirectiveResolver extends AbstractDirectiveResolver
 {
     const DIRECTIVE_NAME = 'validate';
     public static function getDirectiveName(): string {
         return self::DIRECTIVE_NAME;
+    }
+
+    /**
+     * This directive must be the first one of the group at the middle
+     *
+     * @return void
+     */
+    public function getPipelinePosition(): string
+    {
+        return PipelinePositions::MIDDLE;
     }
 
     public function resolveDirective(FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)

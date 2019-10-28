@@ -35,6 +35,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     private $fieldDirectivesFromFieldCache = [];
     private $dissectedFieldForSchemaCache = [];
     private $fieldResolverSchemaIdsCache = [];
+    private $directiveResolverInstanceCache = [];
 
     public function getFieldNamesToResolve(): array
     {
@@ -61,7 +62,31 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $pipelineBuilder = new PipelineBuilder();
             $directiveNameClasses = $this->getDirectiveNameClasses();
             // Initialize with the default values, adding "validate" and "merge" if not there yet
-            $directiveSet = $this->extractAndNormalizeFieldDirectives($fieldDirectives);
+            $directiveSet = $fieldQueryInterpreter->extractFieldDirectives($fieldDirectives);
+
+            /**
+            * The pipeline must always have directives:
+            * 1. Validate: to validate that the schema, fieldNames, etc are supported, and filter them out if not
+            * 2. ResolveAndMerge: to resolve the field and place the data into the DB object
+            * All other directives are placed somewhere in the pipeline, using these 2 directives as anchors.
+            * There are 3 positions:
+            * 1. At the beginning, before the Validate pipeline
+            * 2. In the middle, between the Validate and Resolve directives
+            * 3. At the end, after the ResolveAndMerge directive
+            */
+            $directivesByPosition = [
+                PipelinePositions::FRONT => [],
+                PipelinePositions::MIDDLE => [],
+                PipelinePositions::BACK => [],
+            ];
+            // Place the 2 mandatory directives at the beginning of the list, then they will be added to their needed position in the pipeline
+            array_unshift(
+                $directiveSet,
+                $fieldQueryInterpreter->listFieldDirective(ValidateDirectiveResolver::getDirectiveName()),
+                $fieldQueryInterpreter->listFieldDirective(ResolveValueAndMergeDirectiveResolver::getDirectiveName())
+            );
+            // Count how many times each directive is added
+            $directiveCount = [];
             foreach ($directiveSet as $directive) {
                 $fieldDirective = $fieldQueryInterpreter->convertDirectiveToFieldDirective($directive);
                 if (is_null($this->fieldDirectiveInstanceCache[$fieldDirective])) {
@@ -85,12 +110,37 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                         );
                         continue;
                     }
-                    // Add the directive as a pipeline stage
-                    $this->fieldDirectiveInstanceCache[$fieldDirective] = new $directiveClass($validFieldDirective);
+                    // Get the instance from the cache if it exists, or create it if not
+                    if (is_null($this->directiveResolverInstanceCache[$directiveClass][$validFieldDirective])) {
+                        $this->directiveResolverInstanceCache[$directiveClass][$validFieldDirective] = new $directiveClass($validFieldDirective);
+                    }
+                    $directiveResolverInstance = $this->directiveResolverInstanceCache[$directiveClass][$validFieldDirective];
+                    // Validate if the directive can be executed multiple times
+                    $directiveCount[$directiveName] = isset($directiveCount[$directiveName]) ? $directiveCount[$directiveName] + 1 : 1;
+                    if ($directiveCount[$directiveName] > 1) {
+                        if (!$directiveResolverInstance->canExecuteMultipleTimesInField()) {
+                            $schemaErrors[$directiveName][] = sprintf(
+                                $translationAPI->__('Directive \'%s\' can be executed only once within a field, so this execution (number %s) has been ignored', 'pop-component-model'),
+                                $directiveName,
+                                $directiveCount[$directiveName]
+                            );
+                            continue;
+                        }
+                    }
+
+                    // Directive is valid. Add it as a pipeline stage, in its required position
+                    $this->fieldDirectiveInstanceCache[$fieldDirective] = $directiveResolverInstance;
                 }
                 $directiveResolverInstance = $this->fieldDirectiveInstanceCache[$fieldDirective];
-                $pipelineBuilder->add($directiveResolverInstance);
+                $directivesByPosition[$directiveResolverInstance->getPipelinePosition()][] = $directiveResolverInstance;
             }
+            // Add all the directives into the pipeline
+            foreach ($directivesByPosition as $position => $directiveResolverInstances) {
+                foreach ($directiveResolverInstances as $directiveResolverInstance) {
+                    $pipelineBuilder->add($directiveResolverInstance);
+                }
+            }
+
             // Build the pipeline
             $this->fieldDirectivePipelineInstanceCache[$fieldDirectives] = new DirectivePipelineDecorator($pipelineBuilder->build());
         }
@@ -127,35 +177,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $directiveName,
             $directiveArgs,
         ];
-    }
-
-    protected function extractAndNormalizeFieldDirectives(string $fieldDirectives): array
-    {
-        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
-        $fieldDirectiveSet = $fieldQueryInterpreter->extractFieldDirectives($fieldDirectives);
-
-        // Stages "validate" and "resolve value and merge" are mandatory. Check if they were provided, otherwise add them:
-        // 1. Start with the "validate" stage
-        $hasValidate = array_reduce($fieldDirectiveSet, function($hasItem, $directive) use ($fieldQueryInterpreter) {
-            $hasItem = $hasItem || $fieldQueryInterpreter->getDirectiveName($directive) == ValidateDirectiveResolver::getDirectiveName();
-            return $hasItem;
-        }, false);
-        if (!$hasValidate) {
-            // Add it at the beginning
-            array_unshift($fieldDirectiveSet, $fieldQueryInterpreter->listFieldDirective(ValidateDirectiveResolver::getDirectiveName()));
-        }
-
-        // 2. End with the "resolve value and merge" stage
-        $hasMerge = array_reduce($fieldDirectiveSet, function($hasItem, $directive) use ($fieldQueryInterpreter) {
-            $hasItem = $hasItem || $fieldQueryInterpreter->getDirectiveName($directive) == ResolveValueAndMergeDirectiveResolver::getDirectiveName();
-            return $hasItem;
-        }, false);
-        if (!$hasMerge) {
-            // Add it at the end
-            $fieldDirectiveSet[] = $fieldQueryInterpreter->listFieldDirective(ResolveValueAndMergeDirectiveResolver::getDirectiveName());
-        }
-
-        return $fieldDirectiveSet;
     }
 
     public function fillResultItemsFromIDs(array $ids_data_fields, array &$resultIDItems, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)

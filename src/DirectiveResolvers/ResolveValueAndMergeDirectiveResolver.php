@@ -5,12 +5,23 @@ use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
+use PoP\ComponentModel\FieldResolvers\PipelinePositions;
 
 class ResolveValueAndMergeDirectiveResolver extends AbstractDirectiveResolver
 {
     const DIRECTIVE_NAME = 'resolve-value-and-merge';
     public static function getDirectiveName(): string {
         return self::DIRECTIVE_NAME;
+    }
+
+    /**
+     * This directive must be the first one of the group at the back
+     *
+     * @return void
+     */
+    public function getPipelinePosition(): string
+    {
+        return PipelinePositions::BACK;
     }
 
     public function resolveDirective(FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)

@@ -3,6 +3,7 @@ namespace PoP\ComponentModel\DirectiveResolvers;
 use League\Pipeline\StageInterface;
 use PoP\ComponentModel\Environment;
 use PoP\Translation\Facades\TranslationAPIFacade;
+use PoP\ComponentModel\FieldResolvers\PipelinePositions;
 use PoP\ComponentModel\FieldResolvers\AbstractFieldResolver;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineUtils;
@@ -36,6 +37,26 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     {
         // By default, apply to all fieldNames
         return [];
+    }
+
+    /**
+     * By default, place the directive between Validate and ResolveAndMerge directives
+     *
+     * @return void
+     */
+    public function getPipelinePosition(): string
+    {
+        return PipelinePositions::MIDDLE;
+    }
+
+    /**
+     * By default, a directive can be executed only once in the field (i.e. placed only once in the directive pipeline)
+     *
+     * @return boolean
+     */
+    public function canExecuteMultipleTimesInField(): bool
+    {
+        return false;
     }
 
     public function __invoke($payload)
