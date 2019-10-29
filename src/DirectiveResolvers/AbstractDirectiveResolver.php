@@ -137,7 +137,6 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         }
 
         // Check if all fields are supported by this directive
-        $removeFieldIfDirectiveFailed = Environment::removeFieldIfDirectiveFailed();
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         $failedFields = [];
         foreach ($idsDataFields as $id => &$data_fields) {
@@ -158,12 +157,6 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                     $failedFields,
                     $unsupportedFields
                 )));
-                if ($removeFieldIfDirectiveFailed) {
-                    $data_fields['direct'] = array_diff(
-                        $data_fields['direct'],
-                        $unsupportedFields
-                    );
-                }
             }
         }
         // Give an error message for all failed fields
@@ -174,31 +167,84 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 [$fieldQueryInterpreter, 'getFieldName'],
                 $failedFields
             );
-            if ($removeFieldIfDirectiveFailed) {
-                if (count($failedFieldNames) == 1) {
-                    $message = $translationAPI->__('Directive \'%s\' doesn\'t support field \'%s\', so it has been removed from the directive pipeline. (The only supported field names are: \'%s\')', 'component-model');
-                } else {
-                    $message = $translationAPI->__('Directive \'%s\' doesn\'t support fields \'%s\', so these have been removed from the directive pipeline. (The only supported field names are: \'%s\')', 'component-model');
-                }
-                $schemaErrors[$directiveName][] = sprintf(
-                    $message,
-                    $directiveName,
-                    implode($translationAPI->__('\', \''), $failedFieldNames),
-                    implode($translationAPI->__('\', \''), $directiveSupportedFieldNames)
-                );
+            if (count($failedFields) == 1) {
+                $message = $translationAPI->__('Directive \'%s\' doesn\'t support field \'%s\' (the only supported field names are: \'%s\')', 'component-model');
             } else {
-                if (count($failedFieldNames) == 1) {
-                    $message = $translationAPI->__('Directive \'%s\' doesn\'t support field \'%s\', so execution of this directive has been ignored on this field. (The only supported field names are: \'%s\')', 'component-model');
-                } else {
-                    $message = $translationAPI->__('Directive \'%s\' doesn\'t support fields \'%s\', so execution of this directive has been ignored on them. (The only supported field names are: \'%s\')', 'component-model');
-                }
-                $schemaWarnings[$directiveName][] = sprintf(
-                    $message,
-                    $directiveName,
-                    implode($translationAPI->__('\', \''), $failedFieldNames),
-                    implode($translationAPI->__('\', \''), $directiveSupportedFieldNames)
-                );
+                $message = $translationAPI->__('Directive \'%s\' doesn\'t support fields \'%s\' (the only supported field names are: \'%s\')', 'component-model');
             }
+            $failureMessage = sprintf(
+                $message,
+                $directiveName,
+                implode($translationAPI->__('\', \''), $failedFieldNames),
+                implode($translationAPI->__('\', \''), $directiveSupportedFieldNames)
+            );
+            $this->processFailure($failureMessage, $failedFields, $idsDataFields, $schemaErrors, $schemaWarnings);
+        }
+    }
+
+
+    /**
+     * Depending on environment configuration, either show a warning, or show an error and remove the fields from the directive pipeline for further execution
+     *
+     * @param array $schemaErrors
+     * @param array $schemaWarnings
+     * @return void
+     */
+    protected function processFailure(string $failureMessage, array $failedFields = [], array &$idsDataFields, array &$schemaErrors, array &$schemaWarnings)
+    {
+        // If the failure must be processed as an error, we must also remove the fields from the directive pipeline
+        $removeFieldIfDirectiveFailed = Environment::removeFieldIfDirectiveFailed();
+        if ($removeFieldIfDirectiveFailed) {
+            // If $failedFields is empty, it means all fields failed
+            $allFieldsFailed = empty($failedFields);
+            foreach ($idsDataFields as $id => &$data_fields) {
+                if ($allFieldsFailed) {
+                    // Calculate which fields are being removed, to add to the error
+                    $failedFields = array_merge(
+                        $failedFields,
+                        $data_fields['direct']
+                    );
+                    $data_fields['direct'] = [];
+                } else {
+                    $data_fields['direct'] = array_diff(
+                        $data_fields['direct'],
+                        $failedFields
+                    );
+                }
+            }
+            $failedFields = array_values(array_unique($failedFields));
+        }
+        // Show the failureMessage either as error or as warning
+        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+        $translationAPI = TranslationAPIFacade::getInstance();
+        $directiveName = $this->getDirectiveName();
+        $failedFieldNames = array_map(
+            [$fieldQueryInterpreter, 'getFieldName'],
+            $failedFields
+        );
+        if ($removeFieldIfDirectiveFailed) {
+            if (count($failedFieldNames) == 1) {
+                $message = $translationAPI->__('%s. Field \'%s\' has been removed from the directive pipeline', 'component-model');
+            } else {
+                $message = $translationAPI->__('%s. Fields \'%s\' have been removed from the directive pipeline', 'component-model');
+            }
+            $schemaErrors[$directiveName][] = sprintf(
+                $message,
+                $failureMessage,
+                implode($translationAPI->__('\', \''), $failedFieldNames)
+            );
+        } else {
+            if (count($failedFieldNames) == 1) {
+                $message = $translationAPI->__('%s. Execution of directive \'%s\' has been ignored on field  \'%s\'', 'component-model');
+            } else {
+                $message = $translationAPI->__('%s. Execution of directive \'%s\' has been ignored on fields  \'%s\'', 'component-model');
+            }
+            $schemaWarnings[$directiveName][] = sprintf(
+                $message,
+                $failureMessage,
+                $directiveName,
+                implode($translationAPI->__('\', \''), $failedFieldNames)
+            );
         }
     }
 }
