@@ -198,6 +198,14 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         if ($removeFieldIfDirectiveFailed || $allFieldsFailed) {
             // If $failedFields is empty, it means all fields failed
             foreach ($idsDataFields as $id => &$data_fields) {
+                // Calculate which fields are being removed, to add to the error
+                if ($allFieldsFailed) {
+                    $failedFields = array_merge(
+                        $failedFields,
+                        $data_fields['direct']
+                    );
+                }
+                // Remove the failed fields
                 if ($removeFieldIfDirectiveFailed) {
                     if ($allFieldsFailed) {
                         $data_fields['direct'] = [];
@@ -207,13 +215,6 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                             $failedFields
                         );
                     }
-                }
-                // Calculate which fields are being removed, to add to the error
-                if ($allFieldsFailed) {
-                    $failedFields = array_merge(
-                        $failedFields,
-                        $data_fields['direct']
-                    );
                 }
             }
             $failedFields = array_values(array_unique($failedFields));
