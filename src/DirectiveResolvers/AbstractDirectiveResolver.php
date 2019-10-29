@@ -235,9 +235,9 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             );
         } else {
             if (count($failedFieldNames) == 1) {
-                $message = $translationAPI->__('%s. Execution of directive \'%s\' has been ignored on field  \'%s\'', 'component-model');
+                $message = $translationAPI->__('%s. Execution of directive \'%s\' has been ignored on field \'%s\'', 'component-model');
             } else {
-                $message = $translationAPI->__('%s. Execution of directive \'%s\' has been ignored on fields  \'%s\'', 'component-model');
+                $message = $translationAPI->__('%s. Execution of directive \'%s\' has been ignored on fields \'%s\'', 'component-model');
             }
             $schemaWarnings[$directiveName][] = sprintf(
                 $message,
