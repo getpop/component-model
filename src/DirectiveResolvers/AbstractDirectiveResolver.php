@@ -176,9 +176,9 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             );
             if ($removeFieldIfDirectiveFailed) {
                 if (count($failedFieldNames) == 1) {
-                    $message = $translationAPI->__('Directive \'%s\' doesn\'t support field \'%s\', so it has been removed from the query. (The only supported field names are: \'%s\')', 'component-model');
+                    $message = $translationAPI->__('Directive \'%s\' doesn\'t support field \'%s\', so it has been removed from the directive pipeline. (The only supported field names are: \'%s\')', 'component-model');
                 } else {
-                    $message = $translationAPI->__('Directive \'%s\' doesn\'t support fields \'%s\', so these have been removed from the query. (The only supported field names are: \'%s\')', 'component-model');
+                    $message = $translationAPI->__('Directive \'%s\' doesn\'t support fields \'%s\', so these have been removed from the directive pipeline. (The only supported field names are: \'%s\')', 'component-model');
                 }
                 $schemaErrors[$directiveName][] = sprintf(
                     $message,
