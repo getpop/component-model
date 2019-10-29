@@ -59,6 +59,35 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         return false;
     }
 
+    /**
+     * Indicate if the directive needs to be passed $idsDataFields filled with data to be able to execute
+     * Because most commonly it will need, the default value is `true`
+     *
+     * @return void
+     */
+    public function needsIDsDataFieldsToExecute(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Indicate that there is data in variable $idsDataFields
+     *
+     * @param array $idsDataFields
+     * @return boolean
+     */
+    protected function hasIDsDataFields(array &$idsDataFields): bool
+    {
+        foreach ($idsDataFields as $id => &$data_fields) {
+            if ($data_fields['direct']) {
+                // If there's data-fields to fetch for any ID, that's it, there's data
+                return true;
+            }
+        }
+        // If we reached here, there is no data
+        return false;
+    }
+
     public function __invoke($payload)
     {
         // 1. Extract the arguments from the payload
@@ -87,18 +116,21 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $schemaDeprecations
         );
 
-        // 3. Execute operation
-        $this->resolveDirective(
-            $fieldResolver,
-            $resultIDItems,
-            $idsDataFields,
-            $dbItems,
-            $dbErrors,
-            $dbWarnings,
-            $schemaErrors,
-            $schemaWarnings,
-            $schemaDeprecations
-        );
+        // 3. Execute operation. First check that if the validation took away the elements, and so the directive can't execute anymore
+        // For instance, executing ?query=posts.id|title<default,translate(from:en,to:es)> will fail after directive "default", so directive "translate" must not even execute
+        if (!$this->needsIDsDataFieldsToExecute() || $this->hasIDsDataFields($idsDataFields)) {
+            $this->resolveDirective(
+                $fieldResolver,
+                $resultIDItems,
+                $idsDataFields,
+                $dbItems,
+                $dbErrors,
+                $dbWarnings,
+                $schemaErrors,
+                $schemaWarnings,
+                $schemaDeprecations
+            );
+        }
 
         // 4. Re-create the payload from the modified variables
         return DirectivePipelineUtils::convertArgumentsToPayload(
