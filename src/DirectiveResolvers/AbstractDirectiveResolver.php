@@ -175,15 +175,25 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 $failedFields
             );
             if ($removeFieldIfDirectiveFailed) {
+                if (count($failedFieldNames) == 1) {
+                    $message = $translationAPI->__('Directive \'%s\' doesn\'t support field \'%s\', so it has been removed from the query. (The only supported field names are: \'%s\')', 'component-model');
+                } else {
+                    $message = $translationAPI->__('Directive \'%s\' doesn\'t support fields \'%s\', so these have been removed from the query. (The only supported field names are: \'%s\')', 'component-model');
+                }
                 $schemaErrors[$directiveName][] = sprintf(
-                    $translationAPI->__('Directive \'%s\' doesn\'t support field(s) \'%s\', so these have been removed from the query. (The only supported field names are: \'%s\')', 'component-model'),
+                    $message,
                     $directiveName,
                     implode($translationAPI->__('\', \''), $failedFieldNames),
                     implode($translationAPI->__('\', \''), $directiveSupportedFieldNames)
                 );
             } else {
+                if (count($failedFieldNames) == 1) {
+                    $message = $translationAPI->__('Directive \'%s\' doesn\'t support field \'%s\', so execution of this directive has been ignored on this field. (The only supported field names are: \'%s\')', 'component-model');
+                } else {
+                    $message = $translationAPI->__('Directive \'%s\' doesn\'t support fields \'%s\', so execution of this directive has been ignored on them. (The only supported field names are: \'%s\')', 'component-model');
+                }
                 $schemaWarnings[$directiveName][] = sprintf(
-                    $translationAPI->__('Directive \'%s\' doesn\'t support field(s) \'%s\', so execution of this directive has been ignored on them. (The only supported field names are: \'%s\')', 'component-model'),
+                    $message,
                     $directiveName,
                     implode($translationAPI->__('\', \''), $failedFieldNames),
                     implode($translationAPI->__('\', \''), $directiveSupportedFieldNames)
