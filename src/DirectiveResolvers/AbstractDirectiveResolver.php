@@ -194,21 +194,25 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     {
         // If the failure must be processed as an error, we must also remove the fields from the directive pipeline
         $removeFieldIfDirectiveFailed = Environment::removeFieldIfDirectiveFailed();
-        if ($removeFieldIfDirectiveFailed) {
+        $allFieldsFailed = empty($failedFields);
+        if ($removeFieldIfDirectiveFailed || $allFieldsFailed) {
             // If $failedFields is empty, it means all fields failed
-            $allFieldsFailed = empty($failedFields);
             foreach ($idsDataFields as $id => &$data_fields) {
+                if ($removeFieldIfDirectiveFailed) {
+                    if ($allFieldsFailed) {
+                        $data_fields['direct'] = [];
+                    } else {
+                        $data_fields['direct'] = array_diff(
+                            $data_fields['direct'],
+                            $failedFields
+                        );
+                    }
+                }
+                // Calculate which fields are being removed, to add to the error
                 if ($allFieldsFailed) {
-                    // Calculate which fields are being removed, to add to the error
                     $failedFields = array_merge(
                         $failedFields,
                         $data_fields['direct']
-                    );
-                    $data_fields['direct'] = [];
-                } else {
-                    $data_fields['direct'] = array_diff(
-                        $data_fields['direct'],
-                        $failedFields
                     );
                 }
             }
