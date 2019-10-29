@@ -170,22 +170,22 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         if ($failedFields) {
             $translationAPI = TranslationAPIFacade::getInstance();
             $directiveName = $this->getDirectiveName();
-            $failedDataFieldOutputKeys = array_map(
-                [$fieldQueryInterpreter, 'getFieldOutputKey'],
+            $failedFieldNames = array_map(
+                [$fieldQueryInterpreter, 'getFieldName'],
                 $failedFields
             );
             if ($removeFieldIfDirectiveFailed) {
                 $schemaErrors[$directiveName][] = sprintf(
                     $translationAPI->__('Directive \'%s\' doesn\'t support field(s) \'%s\', so these have been removed from the query. (The only supported field names are: \'%s\')', 'component-model'),
                     $directiveName,
-                    implode($translationAPI->__('\', \''), $failedDataFieldOutputKeys),
+                    implode($translationAPI->__('\', \''), $failedFieldNames),
                     implode($translationAPI->__('\', \''), $directiveSupportedFieldNames)
                 );
             } else {
                 $schemaWarnings[$directiveName][] = sprintf(
                     $translationAPI->__('Directive \'%s\' doesn\'t support field(s) \'%s\', so execution of this directive has been ignored on them. (The only supported field names are: \'%s\')', 'component-model'),
                     $directiveName,
-                    implode($translationAPI->__('\', \''), $failedDataFieldOutputKeys),
+                    implode($translationAPI->__('\', \''), $failedFieldNames),
                     implode($translationAPI->__('\', \''), $directiveSupportedFieldNames)
                 );
             }
