@@ -560,11 +560,18 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
     protected function calculateFieldValueResolversForField(string $field): array
     {
-        list(
-            $field,
-            $fieldName,
-            $fieldArgs,
-        ) = $this->dissectFieldForSchema($field);
+        // Important: here we CAN'T use `dissectFieldForSchema` to get the fieldArgs, because it will attempt to validate them
+        // To validate them, the fieldQueryInterpreter needs to know the schema, so it once again calls functions from this fieldResolver
+        // Generating an infinite loop
+        // Then, just to find out which fieldValueResolvers will process this field, crudely obtain the fieldArgs, with NO schema-based validation!
+        // list(
+        //     $field,
+        //     $fieldName,
+        //     $fieldArgs,
+        // ) = $this->dissectFieldForSchema($field);
+        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+        $fieldName = $fieldQueryInterpreter->getFieldName($field);
+        $fieldArgs = $fieldQueryInterpreter->extractStaticFieldArguments($field);
 
         $instanceManager = InstanceManagerFacade::getInstance();
         $attachableExtensionManager = AttachableExtensionManagerFacade::getInstance();

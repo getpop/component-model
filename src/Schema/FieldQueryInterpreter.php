@@ -12,6 +12,7 @@ use PoP\FieldQuery\QuerySyntax;
 class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implements FieldQueryInterpreterInterface
 {
     // Cache the output from functions
+    private $extractedStaticFieldArgumentsCache = [];
     private $extractedFieldArgumentsCache = [];
     private $extractedFieldArgumentWarningsCache = [];
     private $fieldArgumentNameTypesCache = [];
@@ -27,6 +28,51 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     ) {
         parent::__construct($translationAPI, $feedbackMessageStore, $queryParser);
         $this->typeCastingExecuter = $typeCastingExecuter;
+    }
+
+    /**
+     * Extract field args without using the schema. It is needed to find out which fieldValueResolver will process a field, where we can't depend on the schema since this one needs to know who the fieldValueResolver is, creating an infitine loop
+     *
+     * @param FieldResolverInterface $fieldResolver
+     * @param string $field
+     * @return array
+     */
+    public function extractStaticFieldArguments(string $field, ?array $variables = null): array
+    {
+        if (!isset($this->extractedStaticFieldArgumentsCache[$field])) {
+            $this->extractedStaticFieldArgumentsCache[$field] = $this->doExtractStaticFieldArguments($field, $variables);
+        }
+        return $this->extractedStaticFieldArgumentsCache[$field];
+    }
+
+    protected function doExtractStaticFieldArguments(string $field, ?array $variables): array
+    {
+        $fieldArgs = [];
+        // Extract the args from the string into an array
+        $fieldArgsStr = $this->getFieldArgs($field);
+        // Remove the opening and closing brackets
+        $fieldArgsStr = substr($fieldArgsStr, strlen(QuerySyntax::SYMBOL_FIELDARGS_OPENING), strlen($fieldArgsStr)-strlen(QuerySyntax::SYMBOL_FIELDARGS_OPENING)-strlen(QuerySyntax::SYMBOL_FIELDARGS_CLOSING));
+        // Remove the white spaces before and after
+        if ($fieldArgsStr = trim($fieldArgsStr)) {
+            // Iterate all the elements, and extract them into the array
+            if ($fieldArgElems = $this->queryParser->splitElements($fieldArgsStr, QuerySyntax::SYMBOL_FIELDARGS_ARGSEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING], QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING)) {
+                for ($i=0; $i<count($fieldArgElems); $i++) {
+                    $fieldArg = $fieldArgElems[$i];
+                    // If there is no separator, then skip this arg, since it is not static (without the schema, we can't know which fieldArgName it is)
+                    $separatorPos = QueryUtils::findFirstSymbolPosition($fieldArg, QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING], QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING);
+                    if ($separatorPos === false) {
+                        continue;
+                    }
+                    $fieldArgName = trim(substr($fieldArg, 0, $separatorPos));
+                    $fieldArgValue = trim(substr($fieldArg, $separatorPos + strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR)));
+                    // If the field is an array in its string representation, convert it to array
+                    $fieldArgValue = $this->maybeConvertFieldArgumentValue($fieldArgValue, $variables);
+                    $fieldArgs[$fieldArgName] = $fieldArgValue;
+                }
+            }
+        }
+
+        return $fieldArgs;
     }
 
     public function extractFieldArguments(FieldResolverInterface $fieldResolver, string $field, ?array $variables = null, ?array &$schemaWarnings = null): array
@@ -60,10 +106,8 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         if ($fieldArgsStr = trim($fieldArgsStr)) {
             // Iterate all the elements, and extract them into the array
             if ($fieldArgElems = $this->queryParser->splitElements($fieldArgsStr, QuerySyntax::SYMBOL_FIELDARGS_ARGSEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING], QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING)) {
-                // Important: provide the $fieldName instead of the $field to avoid an infinite loop
-                $fieldName = $this->getFieldName($field);
                 $fieldArgumentNameTypes = $this->getFieldArgumentNameTypes($fieldResolver, $field);
-                $orderedFieldArgNamesEnabled = $fieldResolver->enableOrderedFieldDocumentationArgs($fieldName);
+                $orderedFieldArgNamesEnabled = $fieldResolver->enableOrderedFieldDocumentationArgs($field);
                 if ($orderedFieldArgNamesEnabled) {
                     $orderedFieldArgNames = array_keys($fieldArgumentNameTypes);
                 }
@@ -311,9 +355,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     {
         // Get the field argument types, to know to what type it will cast the value
         $fieldArgNameTypes = [];
-        // Important: we must query by $fieldName and not $field or it enters an infinite loop
-        $fieldName = $this->getFieldName($field);
-        if ($fieldDocumentationArgs = $fieldResolver->getFieldDocumentationArgs($fieldName)) {
+        if ($fieldDocumentationArgs = $fieldResolver->getFieldDocumentationArgs($field)) {
             foreach ($fieldDocumentationArgs as $fieldDocumentationArg) {
                 $fieldArgNameTypes[$fieldDocumentationArg['name']] = $fieldDocumentationArg['type'];
             }
