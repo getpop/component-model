@@ -11,10 +11,10 @@ trait DataloadQueryArgsFilterModuleProcessorTrait
      * @param array $module
      * @return array
      */
-    public function getFilterSchemaDefinitionItems(array $module): array
+    public function getFilterInputSchemaDefinitionItems(array $module): array
     {
     	$documentationItems = [
-            $this->getFilterSchemaDefinition($module),
+            $this->getFilterInputSchemaDefinition($module),
         ];
         $this->modifyFilterSchemaDefinitionItems($documentationItems, $module);
     	return $documentationItems;
@@ -31,7 +31,7 @@ trait DataloadQueryArgsFilterModuleProcessorTrait
     {
     }
 
-    public function getFilterSchemaDefinitionResolver(array $module): ?DataloadQueryArgsSchemaFilterModuleProcessorInterface
+    public function getFilterInputSchemaDefinitionResolver(array $module): ?DataloadQueryArgsSchemaFilterModuleProcessorInterface
     {
         return null;
     }
@@ -42,12 +42,12 @@ trait DataloadQueryArgsFilterModuleProcessorTrait
      * @param array $module
      * @return array
      */
-    protected function getFilterSchemaDefinition(array $module): array
+    protected function getFilterInputSchemaDefinition(array $module): array
     {
     	$documentation = [
     		SchemaDefinition::ARGNAME_NAME => $this->getName($module),
         ];
-        if ($filterSchemaDefinitionResolver = $this->getFilterSchemaDefinitionResolver($module)) {
+        if ($filterSchemaDefinitionResolver = $this->getFilterInputSchemaDefinitionResolver($module)) {
             if ($type = $filterSchemaDefinitionResolver->getFilterDocumentationType($module)) {
                 $documentation[SchemaDefinition::ARGNAME_TYPE] = $type;
             }

@@ -145,7 +145,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
             $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
             $filterqueryargs_modules = $moduleprocessor_manager->getProcessor($filterDataloadingModule)->getDataloadQueryArgsFilteringModules($filterDataloadingModule);
             return GeneralUtils::arrayFlatten(array_map(function($module) use($moduleprocessor_manager) {
-                return $moduleprocessor_manager->getProcessor($module)->getFilterSchemaDefinitionItems($module);
+                return $moduleprocessor_manager->getProcessor($module)->getFilterInputSchemaDefinitionItems($module);
             }, $filterqueryargs_modules));
         }
 
