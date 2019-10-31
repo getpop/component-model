@@ -97,29 +97,29 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
      */
     public function getSchemaDefinitionForField(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): array
     {
-        $documentation = [
+        $schemaDefinition = [
             SchemaDefinition::ARGNAME_NAME => $fieldName,
         ];
         if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver, $fieldName, $fieldArgs)) {
             if ($type = $schemaDefinitionResolver->getSchemaFieldType($fieldResolver, $fieldName)) {
-                $documentation[SchemaDefinition::ARGNAME_TYPE] = $type;
+                $schemaDefinition[SchemaDefinition::ARGNAME_TYPE] = $type;
             }
             if ($description = $schemaDefinitionResolver->getSchemaFieldDescription($fieldResolver, $fieldName)) {
-                $documentation[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
+                $schemaDefinition[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
             }
             if ($deprecationDescription = $schemaDefinitionResolver->getSchemaFieldDeprecationDescription($fieldResolver, $fieldName, $fieldArgs)) {
-                $documentation[SchemaDefinition::ARGNAME_DEPRECATED] = true;
-                $documentation[SchemaDefinition::ARGNAME_DEPRECATEDDESCRIPTION] = $deprecationDescription;
+                $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATED] = true;
+                $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATEDDESCRIPTION] = $deprecationDescription;
             }
             if ($args = $schemaDefinitionResolver->getSchemaFieldArgs($fieldResolver, $fieldName)) {
-                $documentation[SchemaDefinition::ARGNAME_ARGS] = $args;
+                $schemaDefinition[SchemaDefinition::ARGNAME_ARGS] = $args;
             }
         }
         if (!is_null($this->resolveFieldDefaultDataloaderClass($fieldResolver, $fieldName, $fieldArgs))) {
-            $documentation[SchemaDefinition::ARGNAME_RELATIONAL] = true;
+            $schemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL] = true;
         }
-        $this->addSchemaDefinitionForField($documentation, $fieldName);
-        return $documentation;
+        $this->addSchemaDefinitionForField($schemaDefinition, $fieldName);
+        return $schemaDefinition;
     }
 
     public function enableOrderedSchemaFieldArgs(FieldResolverInterface $fieldResolver, string $fieldName): bool
@@ -135,7 +135,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
     /**
      * Function to override
      */
-    protected function addSchemaDefinitionForField(array &$documentation, string $fieldName)
+    protected function addSchemaDefinitionForField(array &$schemaDefinition, string $fieldName)
     {
     }
 

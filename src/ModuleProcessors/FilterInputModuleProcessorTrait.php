@@ -13,21 +13,21 @@ trait FilterInputModuleProcessorTrait
      */
     public function getFilterInputSchemaDefinitionItems(array $module): array
     {
-    	$documentationItems = [
+    	$schemaDefinitionItems = [
             $this->getFilterInputSchemaDefinition($module),
         ];
-        $this->modifyFilterSchemaDefinitionItems($documentationItems, $module);
-    	return $documentationItems;
+        $this->modifyFilterSchemaDefinitionItems($schemaDefinitionItems, $module);
+    	return $schemaDefinitionItems;
     }
 
     /**
      * Function to override
      *
-     * @param array $documentationItems
+     * @param array $schemaDefinitionItems
      * @param array $module
      * @return void
      */
-    protected function modifyFilterSchemaDefinitionItems(array &$documentationItems, array $module)
+    protected function modifyFilterSchemaDefinitionItems(array &$schemaDefinitionItems, array $module)
     {
     }
 
@@ -44,24 +44,24 @@ trait FilterInputModuleProcessorTrait
      */
     protected function getFilterInputSchemaDefinition(array $module): array
     {
-    	$documentation = [
+    	$schemaDefinition = [
     		SchemaDefinition::ARGNAME_NAME => $this->getName($module),
         ];
         if ($filterSchemaDefinitionResolver = $this->getFilterInputSchemaDefinitionResolver($module)) {
             if ($type = $filterSchemaDefinitionResolver->getSchemaFilterInputType($module)) {
-                $documentation[SchemaDefinition::ARGNAME_TYPE] = $type;
+                $schemaDefinition[SchemaDefinition::ARGNAME_TYPE] = $type;
             }
             if ($description = $filterSchemaDefinitionResolver->getSchemaFilterInputDescription($module)) {
-                $documentation[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
+                $schemaDefinition[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
             }
             if ($filterSchemaDefinitionResolver->getSchemaFilterInputMandatory($module)) {
-                $documentation[SchemaDefinition::ARGNAME_MANDATORY] = true;
+                $schemaDefinition[SchemaDefinition::ARGNAME_MANDATORY] = true;
             }
             if ($deprecationDescription = $filterSchemaDefinitionResolver->getSchemaFilterInputDeprecationDescription($module)) {
-                $documentation[SchemaDefinition::ARGNAME_DEPRECATED] = true;
-                $documentation[SchemaDefinition::ARGNAME_DEPRECATEDDESCRIPTION] = $deprecationDescription;
+                $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATED] = true;
+                $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATEDDESCRIPTION] = $deprecationDescription;
             }
         }
-        return $documentation;
+        return $schemaDefinition;
     }
 }
