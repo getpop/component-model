@@ -20,6 +20,8 @@ class SchemaDefinition {
     const ARGNAME_CONVERTIBLE = 'convertible';
     const ARGNAME_RESOLVERSBYOBJECTNATURE = 'resolversByObjectNature';
     const ARGNAME_DIRECTIVES = 'directives';
+    const ARGNAME_DIRECTIVE_CAN_EXECUTE_MULTIPLE_TIMES = 'canExecuteMultipleTimes';
+    const ARGNAME_DIRECTIVE_NEEDS_DATA_TO_EXECUTE = 'needsDataToExecute';
 
     // Field/Directive Argument Types
     const TYPE_MIXED = 'mixed';
