@@ -107,7 +107,7 @@ trait QueryDataModuleProcessorTrait
         return array_values(array_filter(
             $this->getDatasetmoduletreeSectionFlattenedModules($module),
             function($module) use($moduleprocessor_manager) {
-                return $moduleprocessor_manager->getProcessor($module) instanceof \PoP\ComponentModel\DataloadQueryArgsFilter;
+                return $moduleprocessor_manager->getProcessor($module) instanceof \PoP\ComponentModel\ModuleProcessors\DataloadQueryArgsFilterModuleProcessorInterface;
             }
         ));
     }
