@@ -18,7 +18,13 @@ abstract class AbstractDataStructureFormatter implements DataStructureFormatterI
         return 'application/json';
     }
 
-    public function outputResponse($data)
+    public function outputResponse(&$data)
+    {
+        $this->sendHeaders();
+        $this->printData($data);
+    }
+
+    protected function sendHeaders()
     {
         if ($contentType = $this->getContentType()) {
             header(
@@ -28,6 +34,10 @@ abstract class AbstractDataStructureFormatter implements DataStructureFormatterI
                 )
             );
         }
+    }
+
+    protected function printData(&$data)
+    {
         echo json_encode($data, $this->getJsonEncodeType());
     }
 }
