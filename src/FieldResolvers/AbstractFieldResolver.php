@@ -480,14 +480,24 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     protected function addSchemaDocumentation(array $schemaFieldArgs = [], array $options = [])
     {
         $instanceManager = InstanceManagerFacade::getInstance();
-        $this->calculateAllFieldValueResolvers();
         // if ($options['is-root']) {
         //     $this->schemaDefinition['global-fields'] = $this->getGlobalFieldSchemaDocumentation();
         //     unset($options['is-root']);
         // }
-        $this->schemaDefinition[SchemaDefinition::ARGNAME_FIELDS] = [];
+
+        // Add the directives
+        $this->schemaDefinition[SchemaDefinition::ARGNAME_DIRECTIVES] = [];
+        $directiveNameClasses = $this->getDirectiveNameClasses();
+        foreach ($directiveNameClasses as $directiveName => $directiveClass) {
+            $directiveResolverInstance = $instanceManager->getInstance($directiveClass);
+            // $directiveResolverInstance = new $directiveClass($directiveName);
+            $directiveSchemaDefinition = $directiveResolverInstance->getSchemaDefinitionForDirective($this);
+            $this->schemaDefinition[SchemaDefinition::ARGNAME_DIRECTIVES][] = $directiveSchemaDefinition;
+        }
 
         // Remove all fields which are not resolved by any unit
+        $this->schemaDefinition[SchemaDefinition::ARGNAME_FIELDS] = [];
+        $this->calculateAllFieldValueResolvers();
         foreach (array_filter($this->fieldValueResolvers) as $field => $fieldValueResolvers) {
             // Copy the properties from the schemaFieldArgs to the fieldArgs, in particular "deep"
             list(

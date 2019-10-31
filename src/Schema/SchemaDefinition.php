@@ -19,6 +19,7 @@ class SchemaDefinition {
     const ARGNAME_RECURSION = 'recursion';
     const ARGNAME_CONVERTIBLE = 'convertible';
     const ARGNAME_RESOLVERSBYOBJECTNATURE = 'resolversByObjectNature';
+    const ARGNAME_DIRECTIVES = 'directives';
 
     // Field/Directive Argument Types
     const TYPE_MIXED = 'mixed';
