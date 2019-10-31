@@ -9,15 +9,15 @@ abstract class AbstractSchemaDirectiveResolver extends AbstractDirectiveResolver
     {
         return $this;
     }
-    public function getSchemaFieldDescription(FieldResolverInterface $fieldResolver): ?string
+    public function getSchemaDirectiveDescription(FieldResolverInterface $fieldResolver): ?string
     {
         return null;
     }
-    public function getSchemaFieldDeprecationDescription(FieldResolverInterface $fieldResolver): ?string
+    public function getSchemaDirectiveDeprecationDescription(FieldResolverInterface $fieldResolver): ?string
     {
         return null;
     }
-    public function getSchemaFieldArgs(FieldResolverInterface $fieldResolver): array
+    public function getSchemaDirectiveArgs(FieldResolverInterface $fieldResolver): array
     {
         return [];
     }
