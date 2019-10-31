@@ -10,6 +10,15 @@ interface FieldValueResolverInterface
      * @return array
      */
     public static function getFieldNamesToResolve(): array;
+    /**
+     * Get an instance of the object defining the schema for this fieldValueResolver
+     *
+     * @param FieldResolverInterface $fieldResolver
+     * @param string $fieldName
+     * @param array $fieldArgs
+     * @return void
+     */
+    public function getSchemaDefinitionResolver(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []);
 
     /**
      * Indicates if the fieldValueResolver can process this combination of fieldName and fieldArgs

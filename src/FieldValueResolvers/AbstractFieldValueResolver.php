@@ -31,23 +31,24 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
     public function resolveSchemaValidationErrorDescription(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?string
     {
         // Iterate all the mandatory fieldArgs and, if they are not present, throw an error
-        $schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver, $fieldName, $fieldArgs);
-        if ($args = $schemaDefinitionResolver->getSchemaFieldArgs($fieldResolver, $fieldName)) {
-            if ($mandatoryArgs = array_filter(
-                $args,
-                function($arg) {
-                    return isset($arg[SchemaDefinition::ARGNAME_MANDATORY]) && $arg[SchemaDefinition::ARGNAME_MANDATORY];
-                }
-            )) {
-                if ($maybeError = $this->validateNotMissingFieldArguments(
-                    $fieldResolver,
-                    array_map(function($arg) {
-                        return $arg[SchemaDefinition::ARGNAME_NAME];
-                    }, $mandatoryArgs),
-                    $fieldName,
-                    $fieldArgs
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver, $fieldName, $fieldArgs)) {
+            if ($args = $schemaDefinitionResolver->getSchemaFieldArgs($fieldResolver, $fieldName)) {
+                if ($mandatoryArgs = array_filter(
+                    $args,
+                    function($arg) {
+                        return isset($arg[SchemaDefinition::ARGNAME_MANDATORY]) && $arg[SchemaDefinition::ARGNAME_MANDATORY];
+                    }
                 )) {
-                    return $maybeError;
+                    if ($maybeError = $this->validateNotMissingFieldArguments(
+                        $fieldResolver,
+                        array_map(function($arg) {
+                            return $arg[SchemaDefinition::ARGNAME_NAME];
+                        }, $mandatoryArgs),
+                        $fieldName,
+                        $fieldArgs
+                    )) {
+                        return $maybeError;
+                    }
                 }
             }
         }
@@ -84,7 +85,10 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
      *
      * @return void
      */
-    abstract protected function getSchemaDefinitionResolver(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []);
+    public function getSchemaDefinitionResolver(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = [])
+    {
+        return null;
+    }
 
     /**
      * Get the "schema" properties as for the fieldName
@@ -96,19 +100,20 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         $documentation = [
             SchemaDefinition::ARGNAME_NAME => $fieldName,
         ];
-        $schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver, $fieldName, $fieldArgs);
-        if ($type = $schemaDefinitionResolver->getSchemaFieldType($fieldResolver, $fieldName)) {
-            $documentation[SchemaDefinition::ARGNAME_TYPE] = $type;
-        }
-        if ($description = $schemaDefinitionResolver->getSchemaFieldDescription($fieldResolver, $fieldName)) {
-            $documentation[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
-        }
-        if ($deprecationDescription = $schemaDefinitionResolver->getSchemaFieldDeprecationDescription($fieldResolver, $fieldName, $fieldArgs)) {
-            $documentation[SchemaDefinition::ARGNAME_DEPRECATED] = true;
-            $documentation[SchemaDefinition::ARGNAME_DEPRECATEDDESCRIPTION] = $deprecationDescription;
-        }
-        if ($args = $schemaDefinitionResolver->getSchemaFieldArgs($fieldResolver, $fieldName)) {
-            $documentation[SchemaDefinition::ARGNAME_ARGS] = $args;
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver, $fieldName, $fieldArgs)) {
+            if ($type = $schemaDefinitionResolver->getSchemaFieldType($fieldResolver, $fieldName)) {
+                $documentation[SchemaDefinition::ARGNAME_TYPE] = $type;
+            }
+            if ($description = $schemaDefinitionResolver->getSchemaFieldDescription($fieldResolver, $fieldName)) {
+                $documentation[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
+            }
+            if ($deprecationDescription = $schemaDefinitionResolver->getSchemaFieldDeprecationDescription($fieldResolver, $fieldName, $fieldArgs)) {
+                $documentation[SchemaDefinition::ARGNAME_DEPRECATED] = true;
+                $documentation[SchemaDefinition::ARGNAME_DEPRECATEDDESCRIPTION] = $deprecationDescription;
+            }
+            if ($args = $schemaDefinitionResolver->getSchemaFieldArgs($fieldResolver, $fieldName)) {
+                $documentation[SchemaDefinition::ARGNAME_ARGS] = $args;
+            }
         }
         if (!is_null($this->resolveFieldDefaultDataloaderClass($fieldResolver, $fieldName, $fieldArgs))) {
             $documentation[SchemaDefinition::ARGNAME_RELATIONAL] = true;
