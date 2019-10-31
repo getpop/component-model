@@ -1,7 +1,7 @@
 <?php
 namespace PoP\ComponentModel\DataStructure;
 
-class DefaultDataStructureFormatter extends AbstractDataStructureFormatter
+class DefaultDataStructureFormatter extends AbstractJSONDataStructureFormatter
 {
     public const NAME = 'default';
 

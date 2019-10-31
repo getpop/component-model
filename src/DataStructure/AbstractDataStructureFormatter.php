@@ -8,16 +8,6 @@ abstract class AbstractDataStructureFormatter implements DataStructureFormatterI
         return $data;
     }
 
-    public function getJsonEncodeType()
-    {
-        return null;
-    }
-
-    public function getContentType()
-    {
-        return 'application/json';
-    }
-
     public function outputResponse(&$data)
     {
         $this->sendHeaders();
@@ -38,6 +28,6 @@ abstract class AbstractDataStructureFormatter implements DataStructureFormatterI
 
     protected function printData(&$data)
     {
-        echo json_encode($data, $this->getJsonEncodeType());
+        echo $data;
     }
 }
