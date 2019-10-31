@@ -118,7 +118,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         if (!is_null($this->resolveFieldDefaultDataloaderClass($fieldResolver, $fieldName, $fieldArgs))) {
             $documentation[SchemaDefinition::ARGNAME_RELATIONAL] = true;
         }
-        $this->addFieldDocumentation($documentation, $fieldName);
+        $this->addSchemaDefinitionForField($documentation, $fieldName);
         return $documentation;
     }
 
@@ -135,7 +135,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
     /**
      * Function to override
      */
-    protected function addFieldDocumentation(array &$documentation, string $fieldName)
+    protected function addSchemaDefinitionForField(array &$documentation, string $fieldName)
     {
     }
 

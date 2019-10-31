@@ -308,14 +308,14 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 $schemaDefinition[SchemaDefinition::ARGNAME_ARGS] = $args;
             }
         }
-        $this->addSchemaDefinition($schemaDefinition);
+        $this->addSchemaDefinitionForDirective($schemaDefinition);
         return $schemaDefinition;
     }
 
     /**
      * Function to override
      */
-    protected function addSchemaDefinition(array &$schemaDefinition)
+    protected function addSchemaDefinitionForDirective(array &$schemaDefinition)
     {
     }
 }
