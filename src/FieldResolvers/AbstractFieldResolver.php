@@ -23,7 +23,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
      */
     protected $fieldValueResolvers = [];
     // protected $fieldDirectiveResolvers = [];
-    protected $schemaDocumentation;
+    protected $schemaDefinition;
     protected $fieldNamesToResolve;
     protected $directiveNameClasses;
     protected $safeVars;
@@ -467,14 +467,14 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         }
 
         $options['processed'][] = $class;
-        if (is_null($this->schemaDocumentation)) {
-            $this->schemaDocumentation = [
+        if (is_null($this->schemaDefinition)) {
+            $this->schemaDefinition = [
                 SchemaDefinition::ARGNAME_RESOLVERID => $this->getFieldResolverSchemaId($class),
             ];
             $this->addSchemaDocumentation($fieldArgs, $options);
         }
 
-        return $this->schemaDocumentation;
+        return $this->schemaDefinition;
     }
 
     protected function addSchemaDocumentation(array $schemaFieldArgs = [], array $options = [])
@@ -482,10 +482,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         $instanceManager = InstanceManagerFacade::getInstance();
         $this->calculateAllFieldValueResolvers();
         // if ($options['is-root']) {
-        //     $this->schemaDocumentation['global-fields'] = $this->getGlobalFieldSchemaDocumentation();
+        //     $this->schemaDefinition['global-fields'] = $this->getGlobalFieldSchemaDocumentation();
         //     unset($options['is-root']);
         // }
-        $this->schemaDocumentation[SchemaDefinition::ARGNAME_FIELDS] = [];
+        $this->schemaDefinition[SchemaDefinition::ARGNAME_FIELDS] = [];
 
         // Remove all fields which are not resolved by any unit
         foreach (array_filter($this->fieldValueResolvers) as $field => $fieldValueResolvers) {
@@ -503,7 +503,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
                 // Get the documentation from the first element
                 $fieldValueResolver = $fieldValueResolvers[0];
-                $fieldDocumentation = $fieldValueResolver->getSchemaDefinitionForField($this, $fieldName, $fieldArgs);
+                $fieldSchemaDefinition = $fieldValueResolver->getSchemaDefinitionForField($this, $fieldName, $fieldArgs);
 
                 // Add subfield schema if it is deep, and this fieldResolver has not been processed yet
                 if ($fieldArgs['deep']) {
@@ -513,12 +513,12 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                         $fieldDataloader = $instanceManager->getInstance($fieldDataloaderClass);
                         if ($fieldResolverClass = $fieldDataloader->getFieldResolverClass()) {
                             $fieldResolver = $instanceManager->getInstance($fieldResolverClass);
-                            $fieldDocumentation[SchemaDefinition::ARGNAME_RESOLVER] = $fieldResolver->getSchemaDocumentation($fieldArgs, $options);
+                            $fieldSchemaDefinition[SchemaDefinition::ARGNAME_RESOLVER] = $fieldResolver->getSchemaDocumentation($fieldArgs, $options);
                         }
                     }
                 }
 
-                $this->schemaDocumentation[SchemaDefinition::ARGNAME_FIELDS][] = $fieldDocumentation;
+                $this->schemaDefinition[SchemaDefinition::ARGNAME_FIELDS][] = $fieldSchemaDefinition;
             }
         }
     }
