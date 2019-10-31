@@ -211,7 +211,7 @@ abstract class AbstractConvertibleFieldResolver extends AbstractFieldResolver
         return parent::resolveSchemaValidationErrorDescriptions($field);
     }
 
-    public function getFieldDocumentationWarningDescriptions(string $field): ?array
+    public function resolveSchemaValidationWarningDescriptions(string $field): ?array
     {
         $fieldName = FieldQueryInterpreterFacade::getInstance()->getFieldName($field);
         $instanceManager = InstanceManagerFacade::getInstance();
@@ -220,7 +220,7 @@ abstract class AbstractConvertibleFieldResolver extends AbstractFieldResolver
         if ($baseFieldResolverClass = $this->getBaseFieldResolverClass()) {
             $fieldResolver = $instanceManager->getInstance($baseFieldResolverClass);
             if (in_array($fieldName, $fieldResolver->getFieldNamesToResolve())) {
-                return $fieldResolver->getFieldDocumentationWarningDescriptions($field);
+                return $fieldResolver->resolveSchemaValidationWarningDescriptions($field);
             }
         }
 
@@ -228,10 +228,10 @@ abstract class AbstractConvertibleFieldResolver extends AbstractFieldResolver
         foreach ($this->getFieldResolverPickers() as $picker) {
             $fieldResolver = $instanceManager->getInstance($picker->getFieldResolverClass());
             if (in_array($fieldName, $fieldResolver->getFieldNamesToResolve())) {
-                return $fieldResolver->getFieldDocumentationWarningDescriptions($field);
+                return $fieldResolver->resolveSchemaValidationWarningDescriptions($field);
             }
         }
-        return parent::getFieldDocumentationWarningDescriptions($field);
+        return parent::resolveSchemaValidationWarningDescriptions($field);
     }
 
     public function getFieldDocumentationDeprecationDescriptions(string $field): ?array

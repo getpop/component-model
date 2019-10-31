@@ -10,7 +10,7 @@ interface FieldResolverInterface
     public function enqueueFillingResultItemsFromIDs(array $ids_data_fields, array &$resultIDItems);
     public function fillResultItemsFromIDs(array $ids_data_fields, array &$resultIDItems, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations);
     public function resolveSchemaValidationErrorDescriptions(string $field): ?array;
-    public function getFieldDocumentationWarningDescriptions(string $field): ?array;
+    public function resolveSchemaValidationWarningDescriptions(string $field): ?array;
     public function getFieldDocumentationDeprecationDescriptions(string $field): ?array;
     public function getSchemaFieldArgs(string $field): array;
     public function enableOrderedSchemaFieldArgs(string $field): bool;

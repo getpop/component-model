@@ -72,7 +72,7 @@ class ValidateDirectiveResolver extends AbstractSchemaDirectiveResolver
             $failedDataFields[] = $field;
             $success = false;
         }
-        if ($warningDescriptions = $fieldResolver->getFieldDocumentationWarningDescriptions($field)) {
+        if ($warningDescriptions = $fieldResolver->resolveSchemaValidationWarningDescriptions($field)) {
             $schemaWarnings[$fieldOutputKey] = array_merge(
                 $schemaWarnings[$fieldOutputKey] ?? [],
                 $warningDescriptions

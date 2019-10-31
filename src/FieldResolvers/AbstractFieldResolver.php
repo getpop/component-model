@@ -289,7 +289,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         ];
     }
 
-    public function getFieldDocumentationWarningDescriptions(string $field): ?array
+    public function resolveSchemaValidationWarningDescriptions(string $field): ?array
     {
         // Get the value from a fieldValueResolver, from the first one that resolves it
         if ($fieldValueResolvers = $this->getFieldValueResolversForField($field)) {
