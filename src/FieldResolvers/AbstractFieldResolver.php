@@ -342,13 +342,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         return [];
     }
 
-    public function enableOrderedFieldDocumentationArgs(string $field): bool
+    public function enableOrderedSchemaFieldArgs(string $field): bool
     {
         // Get the value from a fieldValueResolver, from the first one that resolves it
         if ($fieldValueResolvers = $this->getFieldValueResolversForField($field)) {
             $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
             $fieldName = $fieldQueryInterpreter->getFieldName($field);
-            return $fieldValueResolvers[0]->enableOrderedFieldDocumentationArgs($this, $fieldName);
+            return $fieldValueResolvers[0]->enableOrderedSchemaFieldArgs($this, $fieldName);
         }
 
         return false;

@@ -107,7 +107,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             // Iterate all the elements, and extract them into the array
             if ($fieldArgElems = $this->queryParser->splitElements($fieldArgsStr, QuerySyntax::SYMBOL_FIELDARGS_ARGSEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING], QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING)) {
                 $fieldArgumentNameTypes = $this->getFieldArgumentNameTypes($fieldResolver, $field);
-                $orderedFieldArgNamesEnabled = $fieldResolver->enableOrderedFieldDocumentationArgs($field);
+                $orderedFieldArgNamesEnabled = $fieldResolver->enableOrderedSchemaFieldArgs($field);
                 if ($orderedFieldArgNamesEnabled) {
                     $orderedFieldArgNames = array_keys($fieldArgumentNameTypes);
                 }

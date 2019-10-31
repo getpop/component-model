@@ -13,7 +13,7 @@ interface FieldResolverInterface
     public function getFieldDocumentationWarningDescriptions(string $field): ?array;
     public function getFieldDocumentationDeprecationDescriptions(string $field): ?array;
     public function getSchemaFieldArgs(string $field): array;
-    public function enableOrderedFieldDocumentationArgs(string $field): bool;
+    public function enableOrderedSchemaFieldArgs(string $field): bool;
     public function resolveFieldDefaultDataloaderClass(string $field): ?string;
     public function resolveValue($resultItem, string $field);
     public function getSchemaDocumentation(array $fieldArgs = [], array $options = []): array;

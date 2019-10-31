@@ -122,7 +122,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         return $documentation;
     }
 
-    public function enableOrderedFieldDocumentationArgs(FieldResolverInterface $fieldResolver, string $fieldName): bool
+    public function enableOrderedSchemaFieldArgs(FieldResolverInterface $fieldResolver, string $fieldName): bool
     {
         return true;
     }
