@@ -2,6 +2,7 @@
 namespace PoP\ComponentModel\DirectiveResolvers;
 use League\Pipeline\StageInterface;
 use PoP\ComponentModel\Environment;
+use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\FieldResolvers\PipelinePositions;
 use PoP\ComponentModel\FieldResolvers\AbstractFieldResolver;
@@ -15,8 +16,10 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     use AttachableExtensionTrait, DirectiveValidatorTrait;
 
     protected $directive;
-    function __construct($directive) {
-        $this->directive = $directive;
+    function __construct($directive = null) {
+        // If the directive is not provided, then it directly the directive name
+        // This allows to instantiate the directive through the DependencyInjection component
+        $this->directive = $directive ?? $this->getDirectiveName();
     }
 
     public static function getClassesToAttachTo(): array
