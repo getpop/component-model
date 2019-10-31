@@ -56,6 +56,58 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         return true;
     }
 
+    public function resolveSchemaValidationErrorDescription(FieldResolverInterface $fieldResolver, string $directiveName, array $directiveArgs = []): ?string
+    {
+        // Iterate all the mandatory fieldArgs and, if they are not present, throw an error
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
+            if ($args = $schemaDefinitionResolver->getSchemaDirectiveArgs($fieldResolver)) {
+                if ($mandatoryArgs = array_filter(
+                    $args,
+                    function($arg) {
+                        return isset($arg[SchemaDefinition::ARGNAME_MANDATORY]) && $arg[SchemaDefinition::ARGNAME_MANDATORY];
+                    }
+                )) {
+                    if ($maybeError = $this->validateNotMissingDirectiveArguments(
+                        $fieldResolver,
+                        array_map(function($arg) {
+                            return $arg[SchemaDefinition::ARGNAME_NAME];
+                        }, $mandatoryArgs),
+                        $directiveName,
+                        $directiveArgs
+                    )) {
+                        return $maybeError;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    protected function validateNotMissingDirectiveArguments(FieldResolverInterface $fieldResolver, $directiveArgumentProperties, string $directiveName, array $directiveArgs = []): ?string
+    {
+        $missing = [];
+        foreach ($directiveArgumentProperties as $directiveArgumentProperty) {
+            if (!array_key_exists($directiveArgumentProperty, $directiveArgs)) {
+                $missing[] = $directiveArgumentProperty;
+            }
+        }
+        if ($missing) {
+            $translationAPI = TranslationAPIFacade::getInstance();
+            return count($missing) == 1 ?
+                sprintf(
+                    $translationAPI->__('Argument \'%s\' cannot be empty, so directive \'%s\' has been ignored', 'pop-component-model'),
+                    $missing[0],
+                    $directiveName
+                ) :
+                sprintf(
+                    $translationAPI->__('Arguments \'%s\' cannot be empty, so directive \'%s\' has been ignored', 'pop-component-model'),
+                    implode($translationAPI->__('\', \''), $missing),
+                    $directiveName
+                );
+        }
+        return null;
+    }
+
     /**
      * By default, place the directive between Validate and ResolveAndMerge directives
      *

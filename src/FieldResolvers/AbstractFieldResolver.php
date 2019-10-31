@@ -98,14 +98,14 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     ) = $this->dissectAndValidateDirectiveForSchema($fieldDirective, $schemaErrors, $schemaWarnings, $schemaDeprecations);
                     // Check that the directive is a valid one (eg: no schema errors)
                     if (is_null($validFieldDirective)) {
-                        $schemaErrors[$this->directive][] = $translationAPI->__('This directive can\'t be processed due to previous errors', 'pop-component-model');
+                        $schemaErrors[$fieldDirective][] = $translationAPI->__('This directive can\'t be processed due to previous errors', 'pop-component-model');
                         continue;
                     }
                     $directiveName = $fieldQueryInterpreter->getDirectiveName($directive);
                     $directiveClasses = $directiveNameClasses[$directiveName];
                     // If there is no directive with this name, show an error and skip it
                     if (is_null($directiveClasses)) {
-                        $schemaErrors[$this->directive][] = sprintf(
+                        $schemaErrors[$fieldDirective][] = sprintf(
                             $translationAPI->__('No DirectiveResolver resolves directive with name \'%s\'', 'pop-component-model'),
                             $directiveName
                         );
@@ -128,11 +128,17 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                         }
                     }
                     if (is_null($directiveResolverInstance)) {
-                        $schemaErrors[$this->directive][] = sprintf(
+                        $schemaErrors[$fieldDirective][] = sprintf(
                             $translationAPI->__('No DirectiveResolver processes directive with name \'%s\' and arguments \'%s\'', 'pop-component-model'),
                             $directiveName,
                             json_encode($directiveArgs)
                         );
+                        continue;
+                    }
+
+                    // Validate against the directiveResolver
+                    if ($maybeError = $directiveResolverInstance->resolveSchemaValidationErrorDescription($this, $directiveName, $directiveArgs)) {
+                        $schemaErrors[$fieldDirective][] = $maybeError;
                         continue;
                     }
 
