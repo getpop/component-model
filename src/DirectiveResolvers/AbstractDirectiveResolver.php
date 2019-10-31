@@ -284,4 +284,38 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             );
         }
     }
+
+    public function getSchemaDefinitionResolver(FieldResolverInterface $fieldResolver): ?SchemaDirectiveResolverInterface
+    {
+        return null;
+    }
+
+    public function getSchemaDefinitionForDirective(FieldResolverInterface $fieldResolver): array
+    {
+        $directiveName = $this->getDirectiveName();
+        $schemaDefinition = [
+            SchemaDefinition::ARGNAME_NAME => $directiveName,
+        ];
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
+            if ($description = $schemaDefinitionResolver->getSchemaFieldDescription($fieldResolver)) {
+                $schemaDefinition[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
+            }
+            if ($deprecationDescription = $schemaDefinitionResolver->getSchemaFieldDeprecationDescription($fieldResolver)) {
+                $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATED] = true;
+                $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATEDDESCRIPTION] = $deprecationDescription;
+            }
+            if ($args = $schemaDefinitionResolver->getSchemaFieldArgs($fieldResolver)) {
+                $schemaDefinition[SchemaDefinition::ARGNAME_ARGS] = $args;
+            }
+        }
+        $this->addSchemaDefinition($schemaDefinition);
+        return $schemaDefinition;
+    }
+
+    /**
+     * Function to override
+     */
+    protected function addSchemaDefinition(array &$schemaDefinition)
+    {
+    }
 }

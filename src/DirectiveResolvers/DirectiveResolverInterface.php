@@ -52,4 +52,14 @@ interface DirectiveResolverInterface
      */
     public function validateDirective(FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations);
     public function resolveDirective(FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations);
+    /**
+     * Get an instance of the object defining the schema for this fieldValueResolver
+     *
+     * @param FieldResolverInterface $fieldResolver
+     * @param string $fieldName
+     * @param array $fieldArgs
+     * @return void
+     */
+    public function getSchemaDefinitionResolver(FieldResolverInterface $fieldResolver): ?SchemaDirectiveResolverInterface;
+    public function getSchemaDefinitionForDirective(FieldResolverInterface $fieldResolver): array;
 }

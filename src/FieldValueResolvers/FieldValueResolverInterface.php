@@ -19,6 +19,7 @@ interface FieldValueResolverInterface
      * @return void
      */
     public function getSchemaDefinitionResolver(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []);
+    public function getSchemaDefinitionForField(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): array;
 
     /**
      * Indicates if the fieldValueResolver can process this combination of fieldName and fieldArgs
@@ -36,5 +37,4 @@ interface FieldValueResolverInterface
     public function resolveCanProcessResultItem(FieldResolverInterface $fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []): bool;
     public function enableOrderedSchemaFieldArgs(FieldResolverInterface $fieldResolver, string $fieldName): bool;
     public function getValidationErrorDescription(FieldResolverInterface $fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?string;
-    public function getSchemaDefinitionForField(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): array;
 }
