@@ -31,7 +31,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
     public function resolveSchemaValidationErrorDescription(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?string
     {
         // Iterate all the mandatory fieldArgs and, if they are not present, throw an error
-        if ($args = $this->getFieldDocumentationArgs($fieldResolver, $fieldName)) {
+        if ($args = $this->getSchemaFieldArgs($fieldResolver, $fieldName)) {
             if ($mandatoryArgs = array_filter(
                 $args,
                 function($arg) {
@@ -83,22 +83,22 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
      *
      * @return array
      */
-    public function getFieldDocumentation(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): array
+    public function getSchemaDefinitionForField(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): array
     {
         $documentation = [
             SchemaDefinition::ARGNAME_NAME => $fieldName,
         ];
-        if ($type = $this->getFieldDocumentationType($fieldResolver, $fieldName)) {
+        if ($type = $this->getSchemaFieldType($fieldResolver, $fieldName)) {
             $documentation[SchemaDefinition::ARGNAME_TYPE] = $type;
         }
-        if ($description = $this->getFieldDocumentationDescription($fieldResolver, $fieldName)) {
+        if ($description = $this->getSchemaFieldDescription($fieldResolver, $fieldName)) {
             $documentation[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
         }
-        if ($deprecationDescription = $this->getFieldDocumentationDeprecationDescription($fieldResolver, $fieldName, $fieldArgs)) {
+        if ($deprecationDescription = $this->getSchemaFieldDeprecationDescription($fieldResolver, $fieldName, $fieldArgs)) {
             $documentation[SchemaDefinition::ARGNAME_DEPRECATED] = true;
             $documentation[SchemaDefinition::ARGNAME_DEPRECATEDDESCRIPTION] = $deprecationDescription;
         }
-        if ($args = $this->getFieldDocumentationArgs($fieldResolver, $fieldName)) {
+        if ($args = $this->getSchemaFieldArgs($fieldResolver, $fieldName)) {
             $documentation[SchemaDefinition::ARGNAME_ARGS] = $args;
         }
         if (!is_null($this->resolveFieldDefaultDataloaderClass($fieldResolver, $fieldName, $fieldArgs))) {
@@ -108,17 +108,17 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         return $documentation;
     }
 
-    public function getFieldDocumentationType(FieldResolverInterface $fieldResolver, string $fieldName): ?string
+    public function getSchemaFieldType(FieldResolverInterface $fieldResolver, string $fieldName): ?string
     {
         return null;
     }
 
-    public function getFieldDocumentationDescription(FieldResolverInterface $fieldResolver, string $fieldName): ?string
+    public function getSchemaFieldDescription(FieldResolverInterface $fieldResolver, string $fieldName): ?string
     {
         return null;
     }
 
-    public function getFieldDocumentationArgs(FieldResolverInterface $fieldResolver, string $fieldName): array
+    public function getSchemaFieldArgs(FieldResolverInterface $fieldResolver, string $fieldName): array
     {
         return [];
     }
@@ -133,7 +133,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         return null;
     }
 
-    public function getFieldDocumentationDeprecationDescription(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?string
+    public function getSchemaFieldDeprecationDescription(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?string
     {
         return null;
     }

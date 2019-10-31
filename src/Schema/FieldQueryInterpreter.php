@@ -355,7 +355,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     {
         // Get the field argument types, to know to what type it will cast the value
         $fieldArgNameTypes = [];
-        if ($fieldDocumentationArgs = $fieldResolver->getFieldDocumentationArgs($field)) {
+        if ($fieldDocumentationArgs = $fieldResolver->getSchemaFieldArgs($field)) {
             foreach ($fieldDocumentationArgs as $fieldDocumentationArg) {
                 $fieldArgNameTypes[$fieldDocumentationArg['name']] = $fieldDocumentationArg['type'];
             }

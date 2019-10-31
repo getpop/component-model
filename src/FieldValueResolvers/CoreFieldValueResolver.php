@@ -21,21 +21,21 @@ class CoreFieldValueResolver extends AbstractDBDataFieldValueResolver
         ];
     }
 
-    public function getFieldDocumentationType(FieldResolverInterface $fieldResolver, string $fieldName): ?string
+    public function getSchemaFieldType(FieldResolverInterface $fieldResolver, string $fieldName): ?string
     {
         $types = [
             'id' => SchemaDefinition::TYPE_ID,
         ];
-        return $types[$fieldName] ?? parent::getFieldDocumentationType($fieldResolver, $fieldName);
+        return $types[$fieldName] ?? parent::getSchemaFieldType($fieldResolver, $fieldName);
     }
 
-    public function getFieldDocumentationDescription(FieldResolverInterface $fieldResolver, string $fieldName): ?string
+    public function getSchemaFieldDescription(FieldResolverInterface $fieldResolver, string $fieldName): ?string
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         $descriptions = [
             'id' => $translationAPI->__('The DB Object ID', 'pop-component-model'),
         ];
-        return $descriptions[$fieldName] ?? parent::getFieldDocumentationDescription($fieldResolver, $fieldName);
+        return $descriptions[$fieldName] ?? parent::getSchemaFieldDescription($fieldResolver, $fieldName);
     }
 
     public function resolveValue(FieldResolverInterface $fieldResolver, $resultItem, string $fieldName, array $fieldArgs = [])

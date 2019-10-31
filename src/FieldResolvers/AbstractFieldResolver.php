@@ -321,7 +321,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $schemaWarnings,
                 $schemaDeprecations,
             ) = $this->dissectFieldForSchema($field);
-            if ($maybeDeprecation = $fieldValueResolvers[0]->getFieldDocumentationDeprecationDescription($this, $fieldName, $fieldArgs)) {
+            if ($maybeDeprecation = $fieldValueResolvers[0]->getSchemaFieldDeprecationDescription($this, $fieldName, $fieldArgs)) {
                 $schemaDeprecations[] = $maybeDeprecation;
             }
             return $schemaDeprecations;
@@ -330,13 +330,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         return null;
     }
 
-    public function getFieldDocumentationArgs(string $field): array
+    public function getSchemaFieldArgs(string $field): array
     {
         // Get the value from a fieldValueResolver, from the first one that resolves it
         if ($fieldValueResolvers = $this->getFieldValueResolversForField($field)) {
             $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
             $fieldName = $fieldQueryInterpreter->getFieldName($field);
-            return $fieldValueResolvers[0]->getFieldDocumentationArgs($this, $fieldName);
+            return $fieldValueResolvers[0]->getSchemaFieldArgs($this, $fieldName);
         }
 
         return [];
@@ -503,7 +503,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
                 // Get the documentation from the first element
                 $fieldValueResolver = $fieldValueResolvers[0];
-                $fieldDocumentation = $fieldValueResolver->getFieldDocumentation($this, $fieldName, $fieldArgs);
+                $fieldDocumentation = $fieldValueResolver->getSchemaDefinitionForField($this, $fieldName, $fieldArgs);
 
                 // Add subfield schema if it is deep, and this fieldResolver has not been processed yet
                 if ($fieldArgs['deep']) {

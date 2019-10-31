@@ -48,17 +48,17 @@ abstract class AbstractConvertibleFieldResolver extends AbstractFieldResolver
         return parent::hasFieldValueResolversForField($field);
     }
 
-    public function getFieldDocumentationArgs(string $field): array
+    public function getSchemaFieldArgs(string $field): array
     {
         $instanceManager = InstanceManagerFacade::getInstance();
         // The only FieldNames we can always guarantee are those from the base class
         // The others depend on the resultItem, to see if they satisfy the specific resolver condition
         if ($baseFieldResolverClass = $this->getBaseFieldResolverClass()) {
             $fieldResolver = $instanceManager->getInstance($baseFieldResolverClass);
-            return $fieldResolver->getFieldDocumentationArgs($field);
+            return $fieldResolver->getSchemaFieldArgs($field);
         }
 
-        return parent::getFieldDocumentationArgs($field);
+        return parent::getSchemaFieldArgs($field);
     }
 
     public function enableOrderedFieldDocumentationArgs(string $field): bool
