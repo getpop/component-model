@@ -3,7 +3,7 @@ namespace PoP\ComponentModel\ModuleProcessors;
 
 use PoP\ComponentModel\Schema\SchemaDefinition;
 
-trait DataloadQueryArgsFilterInputModuleProcessorTrait
+trait FilterInputModuleProcessorTrait
 {
     /**
      * Return an array of elements, instead of a single element, to enable filters with several inputs (such as "date", with inputs "date-from" and "date-to") to document all of them
