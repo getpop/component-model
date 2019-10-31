@@ -43,6 +43,20 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     }
 
     /**
+     * By default, the directiveResolver instance can process the directive
+     * This function can be overriden to force certain value on the directive args before it can be executed
+     *
+     * @param FieldResolverInterface $fieldResolver
+     * @param string $directiveName
+     * @param array $directiveArgs
+     * @return boolean
+     */
+    public function resolveCanProcess(FieldResolverInterface $fieldResolver, string $directiveName, array $directiveArgs = []): bool
+    {
+        return true;
+    }
+
+    /**
      * By default, place the directive between Validate and ResolveAndMerge directives
      *
      * @return void

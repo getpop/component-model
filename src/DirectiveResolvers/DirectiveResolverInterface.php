@@ -1,5 +1,6 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
+
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 
 interface DirectiveResolverInterface
@@ -24,6 +25,15 @@ interface DirectiveResolverInterface
      * @return string
      */
     public function getPipelinePosition(): string;
+    /**
+     * Indicate if the directiveResolver can process the directive with the given name and args
+     *
+     * @param FieldResolverInterface $fieldResolver
+     * @param string $directiveName
+     * @param array $directiveArgs
+     * @return boolean
+     */
+    public function resolveCanProcess(FieldResolverInterface $fieldResolver, string $directiveName, array $directiveArgs = []): bool;
     /**
      * Indicates if the directive can be added several times to the pipeline, or only once
      *

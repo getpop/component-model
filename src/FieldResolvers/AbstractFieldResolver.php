@@ -94,6 +94,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     list(
                         $validFieldDirective,
                         $directiveName,
+                        $directiveArgs,
                     ) = $this->dissectAndValidateDirectiveForSchema($fieldDirective, $schemaErrors, $schemaWarnings, $schemaDeprecations);
                     // Check that the directive is a valid one (eg: no schema errors)
                     if (is_null($validFieldDirective)) {
@@ -101,20 +102,39 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                         continue;
                     }
                     $directiveName = $fieldQueryInterpreter->getDirectiveName($directive);
-                    $directiveClass = $directiveNameClasses[$directiveName];
+                    $directiveClasses = $directiveNameClasses[$directiveName];
                     // If there is no directive with this name, show an error and skip it
-                    if (is_null($directiveClass)) {
+                    if (is_null($directiveClasses)) {
                         $schemaErrors[$this->directive][] = sprintf(
                             $translationAPI->__('No DirectiveResolver resolves directive with name \'%s\'', 'pop-component-model'),
                             $directiveName
                         );
                         continue;
                     }
-                    // Get the instance from the cache if it exists, or create it if not
-                    if (is_null($this->directiveResolverInstanceCache[$directiveClass][$validFieldDirective])) {
-                        $this->directiveResolverInstanceCache[$directiveClass][$validFieldDirective] = new $directiveClass($validFieldDirective);
+
+                    // Check that at least one class which deals with this directiveName can satisfy the directive (for instance, validating that a required directiveArg is present)
+                    $directiveResolverInstance = null;
+                    foreach ($directiveClasses as $directiveClass) {
+                        // Get the instance from the cache if it exists, or create it if not
+                        if (is_null($this->directiveResolverInstanceCache[$directiveClass][$validFieldDirective])) {
+                            $this->directiveResolverInstanceCache[$directiveClass][$validFieldDirective] = new $directiveClass($validFieldDirective);
+                        }
+                        $maybeDirectiveResolverInstance = $this->directiveResolverInstanceCache[$directiveClass][$validFieldDirective];
+
+                        // Check if this instance can process the directive
+                        if ($maybeDirectiveResolverInstance->resolveCanProcess($this, $directiveName, $directiveArgs)) {
+                            $directiveResolverInstance = $maybeDirectiveResolverInstance;
+                            break;
+                        }
                     }
-                    $directiveResolverInstance = $this->directiveResolverInstanceCache[$directiveClass][$validFieldDirective];
+                    if (is_null($directiveResolverInstance)) {
+                        $schemaErrors[$this->directive][] = sprintf(
+                            $translationAPI->__('No DirectiveResolver processes directive with name \'%s\' and arguments \'%s\'', 'pop-component-model'),
+                            $directiveName,
+                            json_encode($directiveArgs)
+                        );
+                        continue;
+                    }
 
                     // Directive is valid so far. Assign the instance to the cache
                     $this->fieldDirectiveInstanceCache[$fieldDirective] = $directiveResolverInstance;
@@ -488,11 +508,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         // Add the directives
         $this->schemaDefinition[SchemaDefinition::ARGNAME_DIRECTIVES] = [];
         $directiveNameClasses = $this->getDirectiveNameClasses();
-        foreach ($directiveNameClasses as $directiveName => $directiveClass) {
-            $directiveResolverInstance = $instanceManager->getInstance($directiveClass);
-            // $directiveResolverInstance = new $directiveClass($directiveName);
-            $directiveSchemaDefinition = $directiveResolverInstance->getSchemaDefinitionForDirective($this);
-            $this->schemaDefinition[SchemaDefinition::ARGNAME_DIRECTIVES][] = $directiveSchemaDefinition;
+        foreach ($directiveNameClasses as $directiveName => $directiveClasses) {
+            foreach ($directiveClasses as $directiveClass) {
+                $directiveResolverInstance = $instanceManager->getInstance($directiveClass);
+                // $directiveResolverInstance = new $directiveClass($directiveName);
+                $directiveSchemaDefinition = $directiveResolverInstance->getSchemaDefinitionForDirective($this);
+                $this->schemaDefinition[SchemaDefinition::ARGNAME_DIRECTIVES][] = $directiveSchemaDefinition;
+            }
         }
 
         // Remove all fields which are not resolved by any unit
@@ -633,7 +655,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             foreach ($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDDIRECTIVERESOLVERS) as $extensionClass => $extensionPriority) {
                 $directiveName = $extensionClass::getDirectiveName();
                 if (!in_array($directiveName, array_keys($ret))) {
-                    $ret[$directiveName] = $extensionClass;
+                    $ret[$directiveName][] = $extensionClass;
                 }
             }
             // Continue iterating for the class parents
