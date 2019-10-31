@@ -2,10 +2,10 @@
 namespace PoP\ComponentModel\DirectiveResolvers;
 use PoP\ComponentModel\GeneralUtils;
 use PoP\Translation\Facades\TranslationAPIFacade;
+use PoP\ComponentModel\FieldResolvers\PipelinePositions;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
-use PoP\ComponentModel\FieldResolvers\PipelinePositions;
 
 class ResolveValueAndMergeDirectiveResolver extends AbstractSchemaDirectiveResolver
 {
@@ -126,5 +126,11 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractSchemaDirectiveResol
         } else {
             $dbItems[(string)$id][$fieldOutputKey] = $value;
         }
+    }
+
+    public function getSchemaDirectiveDescription(FieldResolverInterface $fieldResolver): ?string
+    {
+        $translationAPI = TranslationAPIFacade::getInstance();
+        return $translationAPI->__('Resolve the value of the field and merge it into results. This directive is already included by the engine, since its execution is mandatory', 'component-model');
     }
 }

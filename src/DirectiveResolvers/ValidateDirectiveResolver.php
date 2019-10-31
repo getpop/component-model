@@ -1,8 +1,9 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
-use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
-use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
+use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\FieldResolvers\PipelinePositions;
+use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
+use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 
 class ValidateDirectiveResolver extends AbstractSchemaDirectiveResolver
 {
@@ -110,5 +111,11 @@ class ValidateDirectiveResolver extends AbstractSchemaDirectiveResolver
         foreach ($conditionalDataFields as $conditionalDataField => $entries) {
             $this->validateAndFilterConditionalFields($fieldResolver, $conditionalDataField, $rootConditionFields[$conditionField], $validatedFields, $schemaErrors, $schemaWarnings, $schemaDeprecations, $failedDataFields);
         }
+    }
+
+    public function getSchemaDirectiveDescription(FieldResolverInterface $fieldResolver): ?string
+    {
+        $translationAPI = TranslationAPIFacade::getInstance();
+        return $translationAPI->__('It validates the field, filtering out those field arguments that raised a warning, or directly invalidating the field if any field argument raised an error. For instance, if a mandatory field argument is not provided, then it is an error and the field is invalidated and removed from the output; if a field argument can\'t be casted to its intended type, then it is a warning, the affected field argument is removed and the field is executed without it. This directive is already included by the engine, since its execution is mandatory', 'component-model');
     }
 }
