@@ -309,7 +309,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         return null;
     }
 
-    public function getFieldDocumentationDeprecationDescriptions(string $field): ?array
+    public function getSchemaDeprecationDescriptions(string $field): ?array
     {
         // Get the value from a fieldValueResolver, from the first one that resolves it
         if ($fieldValueResolvers = $this->getFieldValueResolversForField($field)) {

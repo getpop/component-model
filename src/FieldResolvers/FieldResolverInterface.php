@@ -11,7 +11,7 @@ interface FieldResolverInterface
     public function fillResultItemsFromIDs(array $ids_data_fields, array &$resultIDItems, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations);
     public function resolveSchemaValidationErrorDescriptions(string $field): ?array;
     public function resolveSchemaValidationWarningDescriptions(string $field): ?array;
-    public function getFieldDocumentationDeprecationDescriptions(string $field): ?array;
+    public function getSchemaDeprecationDescriptions(string $field): ?array;
     public function getSchemaFieldArgs(string $field): array;
     public function enableOrderedSchemaFieldArgs(string $field): bool;
     public function resolveFieldDefaultDataloaderClass(string $field): ?string;

@@ -78,7 +78,7 @@ class ValidateDirectiveResolver extends AbstractSchemaDirectiveResolver
                 $warningDescriptions
             );
         }
-        if ($deprecationDescriptions = $fieldResolver->getFieldDocumentationDeprecationDescriptions($field)) {
+        if ($deprecationDescriptions = $fieldResolver->getSchemaDeprecationDescriptions($field)) {
             $schemaDeprecations[$fieldOutputKey] = array_merge(
                 $schemaDeprecations[$fieldOutputKey] ?? [],
                 $deprecationDescriptions
