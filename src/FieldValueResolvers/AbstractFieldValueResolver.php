@@ -9,7 +9,7 @@ use PoP\ComponentModel\GeneralUtils;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\Facades\Engine\EngineFacade;
 
-abstract class AbstractFieldValueResolver implements FieldValueResolverInterface, FieldValueResolverSchemaInterface
+abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
 {
     /**
      * This class is attached to a FieldResolver
@@ -31,7 +31,8 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
     public function resolveSchemaValidationErrorDescription(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?string
     {
         // Iterate all the mandatory fieldArgs and, if they are not present, throw an error
-        if ($args = $this->getSchemaFieldArgs($fieldResolver, $fieldName)) {
+        $schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver, $fieldName, $fieldArgs);
+        if ($args = $schemaDefinitionResolver->getSchemaFieldArgs($fieldResolver, $fieldName)) {
             if ($mandatoryArgs = array_filter(
                 $args,
                 function($arg) {
@@ -79,6 +80,13 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
     }
 
     /**
+     * Return the object implementing the schema definition for this fieldValueResolver
+     *
+     * @return void
+     */
+    abstract protected function getSchemaDefinitionResolver(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []);
+
+    /**
      * Get the "schema" properties as for the fieldName
      *
      * @return array
@@ -88,17 +96,18 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         $documentation = [
             SchemaDefinition::ARGNAME_NAME => $fieldName,
         ];
-        if ($type = $this->getSchemaFieldType($fieldResolver, $fieldName)) {
+        $schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver, $fieldName, $fieldArgs);
+        if ($type = $schemaDefinitionResolver->getSchemaFieldType($fieldResolver, $fieldName)) {
             $documentation[SchemaDefinition::ARGNAME_TYPE] = $type;
         }
-        if ($description = $this->getSchemaFieldDescription($fieldResolver, $fieldName)) {
+        if ($description = $schemaDefinitionResolver->getSchemaFieldDescription($fieldResolver, $fieldName)) {
             $documentation[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
         }
-        if ($deprecationDescription = $this->getSchemaFieldDeprecationDescription($fieldResolver, $fieldName, $fieldArgs)) {
+        if ($deprecationDescription = $schemaDefinitionResolver->getSchemaFieldDeprecationDescription($fieldResolver, $fieldName, $fieldArgs)) {
             $documentation[SchemaDefinition::ARGNAME_DEPRECATED] = true;
             $documentation[SchemaDefinition::ARGNAME_DEPRECATEDDESCRIPTION] = $deprecationDescription;
         }
-        if ($args = $this->getSchemaFieldArgs($fieldResolver, $fieldName)) {
+        if ($args = $schemaDefinitionResolver->getSchemaFieldArgs($fieldResolver, $fieldName)) {
             $documentation[SchemaDefinition::ARGNAME_ARGS] = $args;
         }
         if (!is_null($this->resolveFieldDefaultDataloaderClass($fieldResolver, $fieldName, $fieldArgs))) {
@@ -108,32 +117,12 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         return $documentation;
     }
 
-    public function getSchemaFieldType(FieldResolverInterface $fieldResolver, string $fieldName): ?string
-    {
-        return null;
-    }
-
-    public function getSchemaFieldDescription(FieldResolverInterface $fieldResolver, string $fieldName): ?string
-    {
-        return null;
-    }
-
-    public function getSchemaFieldArgs(FieldResolverInterface $fieldResolver, string $fieldName): array
-    {
-        return [];
-    }
-
     public function enableOrderedFieldDocumentationArgs(FieldResolverInterface $fieldResolver, string $fieldName): bool
     {
         return true;
     }
 
     public function resolveSchemaValidationWarningDescription(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?string
-    {
-        return null;
-    }
-
-    public function getSchemaFieldDeprecationDescription(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?string
     {
         return null;
     }
