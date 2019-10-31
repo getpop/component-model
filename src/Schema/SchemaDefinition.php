@@ -22,6 +22,7 @@ class SchemaDefinition {
     const ARGNAME_DIRECTIVES = 'directives';
     const ARGNAME_DIRECTIVE_CAN_EXECUTE_MULTIPLE_TIMES = 'canExecuteMultipleTimes';
     const ARGNAME_DIRECTIVE_NEEDS_DATA_TO_EXECUTE = 'needsDataToExecute';
+    const ARGNAME_DIRECTIVE_LIMITED_TO_FIELDS = 'limitedToFields';
 
     // Field/Directive Argument Types
     const TYPE_MIXED = 'mixed';
