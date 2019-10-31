@@ -300,14 +300,14 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             SchemaDefinition::ARGNAME_NAME => $directiveName,
         ];
         if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
-            if ($description = $schemaDefinitionResolver->getSchemaFieldDescription($fieldResolver)) {
+            if ($description = $schemaDefinitionResolver->getSchemaDirectiveDescription($fieldResolver)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
             }
-            if ($deprecationDescription = $schemaDefinitionResolver->getSchemaFieldDeprecationDescription($fieldResolver)) {
+            if ($deprecationDescription = $schemaDefinitionResolver->getSchemaDirectiveDeprecationDescription($fieldResolver)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATED] = true;
                 $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATEDDESCRIPTION] = $deprecationDescription;
             }
-            if ($args = $schemaDefinitionResolver->getSchemaFieldArgs($fieldResolver)) {
+            if ($args = $schemaDefinitionResolver->getSchemaDirectiveArgs($fieldResolver)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_ARGS] = $args;
             }
         }
