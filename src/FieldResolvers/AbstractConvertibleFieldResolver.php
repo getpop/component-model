@@ -161,19 +161,19 @@ abstract class AbstractConvertibleFieldResolver extends AbstractFieldResolver
     {
         $instanceManager = InstanceManagerFacade::getInstance();
 
-        $this->schemaDocumentation[SchemaDefinition::ARGNAME_CONVERTIBLE] = true;
+        $this->schemaDefinition[SchemaDefinition::ARGNAME_CONVERTIBLE] = true;
 
         // Default fieldResolver, under "base" condition
         $baseFields = [];
         if ($baseFieldResolverClass = $this->getBaseFieldResolverClass()) {
             $fieldResolver = $instanceManager->getInstance($baseFieldResolverClass);
-            $this->schemaDocumentation[SchemaDefinition::ARGNAME_BASERESOLVER] = $fieldResolver->getSchemaDocumentation($fieldArgs, $options);
+            $this->schemaDefinition[SchemaDefinition::ARGNAME_BASERESOLVER] = $fieldResolver->getSchemaDocumentation($fieldArgs, $options);
             $baseFields = array_map(function($fieldProps) {
                 return $fieldProps[SchemaDefinition::ARGNAME_NAME];
-            }, (array)$this->schemaDocumentation[SchemaDefinition::ARGNAME_BASERESOLVER][SchemaDefinition::ARGNAME_FIELDS]);
+            }, (array)$this->schemaDefinition[SchemaDefinition::ARGNAME_BASERESOLVER][SchemaDefinition::ARGNAME_FIELDS]);
         }
 
-        // Iterate through the fieldResolvers from all the pickers and get their docucumentation, under their object nature
+        // Iterate through the fieldResolvers from all the pickers and get their schema definitions, under their object nature
         foreach ($this->getFieldResolverPickers() as $picker) {
             $fieldResolver = $instanceManager->getInstance($picker->getFieldResolverClass());
             // Do not repeat those fields already present on the base fieldResolver
@@ -184,7 +184,7 @@ abstract class AbstractConvertibleFieldResolver extends AbstractFieldResolver
                     return !in_array($fieldProps[SchemaDefinition::ARGNAME_NAME], $baseFields);
                 }
             ));
-            $this->schemaDocumentation[SchemaDefinition::ARGNAME_RESOLVERSBYOBJECTNATURE][$picker->getSchemaDocumentationObjectNature()] = $deltaFields;
+            $this->schemaDefinition[SchemaDefinition::ARGNAME_RESOLVERSBYOBJECTNATURE][$picker->getSchemaDocumentationObjectNature()] = $deltaFields;
         }
     }
 
