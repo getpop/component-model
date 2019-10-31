@@ -9,7 +9,7 @@ use PoP\ComponentModel\GeneralUtils;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\Facades\Engine\EngineFacade;
 
-abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
+abstract class AbstractFieldValueResolver implements FieldValueResolverInterface, FieldValueResolverSchemaInterface
 {
     /**
      * This class is attached to a FieldResolver
