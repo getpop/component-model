@@ -3,8 +3,8 @@ namespace PoP\ComponentModel\ModuleProcessors;
 
 interface DataloadQueryArgsSchemaFilterInputModuleProcessorInterface
 {
-    public function getFilterDocumentationType(array $module): ?string;
-    public function getFilterDocumentationDescription(array $module): ?string;
-    public function getFilterDocumentationDeprecationDescription(array $module): ?string;
-    public function getFilterDocumentationMandatory(array $module): bool;
+    public function getSchemaFilterInputType(array $module): ?string;
+    public function getSchemaFilterInputDescription(array $module): ?string;
+    public function getSchemaFilterInputDeprecationDescription(array $module): ?string;
+    public function getSchemaFilterInputMandatory(array $module): bool;
 }

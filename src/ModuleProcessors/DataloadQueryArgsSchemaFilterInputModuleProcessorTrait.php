@@ -10,19 +10,19 @@ trait DataloadQueryArgsSchemaFilterInputModuleProcessorTrait
         return $this;
     }
 
-    public function getFilterDocumentationType(array $module): ?string
+    public function getSchemaFilterInputType(array $module): ?string
     {
         return null;
     }
-    public function getFilterDocumentationDescription(array $module): ?string
+    public function getSchemaFilterInputDescription(array $module): ?string
     {
         return null;
     }
-    public function getFilterDocumentationDeprecationDescription(array $module): ?string
+    public function getSchemaFilterInputDeprecationDescription(array $module): ?string
     {
         return null;
     }
-    public function getFilterDocumentationMandatory(array $module): bool
+    public function getSchemaFilterInputMandatory(array $module): bool
     {
         return false;
     }

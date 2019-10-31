@@ -48,16 +48,16 @@ trait DataloadQueryArgsFilterInputModuleProcessorTrait
     		SchemaDefinition::ARGNAME_NAME => $this->getName($module),
         ];
         if ($filterSchemaDefinitionResolver = $this->getFilterInputSchemaDefinitionResolver($module)) {
-            if ($type = $filterSchemaDefinitionResolver->getFilterDocumentationType($module)) {
+            if ($type = $filterSchemaDefinitionResolver->getSchemaFilterInputType($module)) {
                 $documentation[SchemaDefinition::ARGNAME_TYPE] = $type;
             }
-            if ($description = $filterSchemaDefinitionResolver->getFilterDocumentationDescription($module)) {
+            if ($description = $filterSchemaDefinitionResolver->getSchemaFilterInputDescription($module)) {
                 $documentation[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
             }
-            if ($filterSchemaDefinitionResolver->getFilterDocumentationMandatory($module)) {
+            if ($filterSchemaDefinitionResolver->getSchemaFilterInputMandatory($module)) {
                 $documentation[SchemaDefinition::ARGNAME_MANDATORY] = true;
             }
-            if ($deprecationDescription = $filterSchemaDefinitionResolver->getFilterDocumentationDeprecationDescription($module)) {
+            if ($deprecationDescription = $filterSchemaDefinitionResolver->getSchemaFilterInputDeprecationDescription($module)) {
                 $documentation[SchemaDefinition::ARGNAME_DEPRECATED] = true;
                 $documentation[SchemaDefinition::ARGNAME_DEPRECATEDDESCRIPTION] = $deprecationDescription;
             }
