@@ -32,17 +32,10 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
     public function resolveSchemaValidationErrorDescription(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?string
     {
         // Iterate all the mandatory fieldArgs and, if they are not present, throw an error
-        if ($args = $this->getSchemaFieldArgs($fieldResolver, $fieldName)) {
-            if ($mandatoryArgs = array_filter(
-                $args,
-                function($arg) {
-                    return isset($arg[SchemaDefinition::ARGNAME_MANDATORY]) && $arg[SchemaDefinition::ARGNAME_MANDATORY];
-                }
-            )) {
+        if ($schemaFieldArgs = $this->getSchemaFieldArgs($fieldResolver, $fieldName)) {
+            if ($mandatoryArgs = SchemaHelpers::getSchemaMandatoryFieldArgs($schemaFieldArgs)) {
                 if ($maybeError = $this->validateNotMissingFieldArguments(
-                    array_map(function($arg) {
-                        return $arg[SchemaDefinition::ARGNAME_NAME];
-                    }, $mandatoryArgs),
+                    SchemaHelpers::getSchemaFieldArgNames($mandatoryArgs),
                     $fieldName,
                     $fieldArgs
                 )) {

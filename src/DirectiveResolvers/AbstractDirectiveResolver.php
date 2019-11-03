@@ -60,17 +60,10 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     public function resolveSchemaValidationErrorDescription(FieldResolverInterface $fieldResolver, string $directiveName, array $directiveArgs = []): ?string
     {
         // Iterate all the mandatory fieldArgs and, if they are not present, throw an error
-        if ($args = $this->getSchemaDirectiveArgs($fieldResolver)) {
-            if ($mandatoryArgs = array_filter(
-                $args,
-                function($arg) {
-                    return isset($arg[SchemaDefinition::ARGNAME_MANDATORY]) && $arg[SchemaDefinition::ARGNAME_MANDATORY];
-                }
-            )) {
+        if ($schemaDirectiveArgs = $this->getSchemaDirectiveArgs($fieldResolver)) {
+            if ($mandatoryArgs = SchemaHelpers::getSchemaMandatoryFieldArgs($schemaDirectiveArgs)) {
                 if ($maybeError = $this->validateNotMissingDirectiveArguments(
-                    array_map(function($arg) {
-                        return $arg[SchemaDefinition::ARGNAME_NAME];
-                    }, $mandatoryArgs),
+                    SchemaHelpers::getSchemaFieldArgNames($mandatoryArgs),
                     $directiveName,
                     $directiveArgs
                 )) {
