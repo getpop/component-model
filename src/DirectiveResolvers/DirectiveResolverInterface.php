@@ -56,6 +56,13 @@ interface DirectiveResolverInterface
      */
     public function enableOrderedSchemaDirectiveArgs(FieldResolverInterface $fieldResolver): bool;
     /**
+     * Schema Directive Arguments
+     *
+     * @param FieldResolverInterface $fieldResolver
+     * @return array
+     */
+    public function getSchemaDirectiveArgs(FieldResolverInterface $fieldResolver): array;
+    /**
      * Validate that the directive can be applied to all passed fields
      *
      * @param FieldResolverInterface $fieldResolver

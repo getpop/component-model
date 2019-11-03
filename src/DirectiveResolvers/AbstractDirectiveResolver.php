@@ -165,6 +165,14 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         return true;
     }
 
+    public function getSchemaDirectiveArgs(FieldResolverInterface $fieldResolver): array
+    {
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
+            return $schemaDefinitionResolver->getSchemaDirectiveArgs($fieldResolver);
+        }
+        return [];
+    }
+
     public function __invoke($payload)
     {
         // 1. Extract the arguments from the payload
