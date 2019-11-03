@@ -156,7 +156,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
     {
     }
 
-    protected function getFieldArgumentsDocumentation(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): array
+    protected function getFieldArgumentsSchemaDefinitions(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): array
     {
         if ($filterDataloadingModule = $this->getFieldDefaultFilterDataloadingModule($fieldResolver, $fieldName, $fieldArgs)) {
             $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
