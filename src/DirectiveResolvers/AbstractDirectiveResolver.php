@@ -2,6 +2,7 @@
 namespace PoP\ComponentModel\DirectiveResolvers;
 use League\Pipeline\StageInterface;
 use PoP\ComponentModel\Environment;
+use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\FieldResolvers\PipelinePositions;
@@ -68,7 +69,6 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                     }
                 )) {
                     if ($maybeError = $this->validateNotMissingDirectiveArguments(
-                        $fieldResolver,
                         array_map(function($arg) {
                             return $arg[SchemaDefinition::ARGNAME_NAME];
                         }, $mandatoryArgs),
@@ -83,24 +83,18 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         return null;
     }
 
-    protected function validateNotMissingDirectiveArguments(FieldResolverInterface $fieldResolver, $directiveArgumentProperties, string $directiveName, array $directiveArgs = []): ?string
+    protected function validateNotMissingDirectiveArguments(array $directiveArgumentProperties, string $directiveName, array $directiveArgs = []): ?string
     {
-        $missing = [];
-        foreach ($directiveArgumentProperties as $directiveArgumentProperty) {
-            if (!array_key_exists($directiveArgumentProperty, $directiveArgs)) {
-                $missing[] = $directiveArgumentProperty;
-            }
-        }
-        if ($missing) {
+        if ($missing = SchemaHelpers::getMissingFieldArgs($directiveArgumentProperties, $directiveArgs)) {
             $translationAPI = TranslationAPIFacade::getInstance();
             return count($missing) == 1 ?
                 sprintf(
-                    $translationAPI->__('Argument \'%s\' cannot be empty, so directive \'%s\' has been ignored', 'pop-component-model'),
+                    $translationAPI->__('Directive argument \'%s\' cannot be empty, so directive \'%s\' has been ignored', 'pop-component-model'),
                     $missing[0],
                     $directiveName
                 ) :
                 sprintf(
-                    $translationAPI->__('Arguments \'%s\' cannot be empty, so directive \'%s\' has been ignored', 'pop-component-model'),
+                    $translationAPI->__('Directive arguments \'%s\' cannot be empty, so directive \'%s\' has been ignored', 'pop-component-model'),
                     implode($translationAPI->__('\', \''), $missing),
                     $directiveName
                 );

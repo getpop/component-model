@@ -1,13 +1,14 @@
 <?php
 namespace PoP\ComponentModel\FieldValueResolvers;
-use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
-use PoP\Translation\Facades\TranslationAPIFacade;
+use PoP\ComponentModel\GeneralUtils;
+use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
+use PoP\Translation\Facades\TranslationAPIFacade;
+use PoP\ComponentModel\Facades\Engine\EngineFacade;
+use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
+use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
-use PoP\ComponentModel\GeneralUtils;
-use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
-use PoP\ComponentModel\Facades\Engine\EngineFacade;
 
 abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
 {
@@ -40,7 +41,6 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
                     }
                 )) {
                     if ($maybeError = $this->validateNotMissingFieldArguments(
-                        $fieldResolver,
                         array_map(function($arg) {
                             return $arg[SchemaDefinition::ARGNAME_NAME];
                         }, $mandatoryArgs),
@@ -55,24 +55,18 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         return null;
     }
 
-    protected function validateNotMissingFieldArguments(FieldResolverInterface $fieldResolver, $fieldArgumentProperties, string $fieldName, array $fieldArgs = []): ?string
+    protected function validateNotMissingFieldArguments(array $fieldArgumentProperties, string $fieldName, array $fieldArgs = []): ?string
     {
-        $missing = [];
-        foreach ($fieldArgumentProperties as $fieldArgumentProperty) {
-            if (!array_key_exists($fieldArgumentProperty, $fieldArgs)) {
-                $missing[] = $fieldArgumentProperty;
-            }
-        }
-        if ($missing) {
+        if ($missing = SchemaHelpers::getMissingFieldArgs($fieldArgumentProperties, $fieldArgs)) {
             $translationAPI = TranslationAPIFacade::getInstance();
             return count($missing) == 1 ?
                 sprintf(
-                    $translationAPI->__('Argument \'%s\' cannot be empty, so field \'%s\' has been ignored', 'pop-component-model'),
+                    $translationAPI->__('Field argument \'%s\' cannot be empty, so field \'%s\' has been ignored', 'pop-component-model'),
                     $missing[0],
                     $fieldName
                 ) :
                 sprintf(
-                    $translationAPI->__('Arguments \'%s\' cannot be empty, so field \'%s\' has been ignored', 'pop-component-model'),
+                    $translationAPI->__('Field arguments \'%s\' cannot be empty, so field \'%s\' has been ignored', 'pop-component-model'),
                     implode($translationAPI->__('\', \''), $missing),
                     $fieldName
                 );
