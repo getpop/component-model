@@ -14,7 +14,6 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
 {
     // Cache the output from functions
     private $extractedStaticFieldArgumentsCache = [];
-    private $extractedStaticDirectiveArgumentsCache = [];
     private $extractedFieldArgumentsCache = [];
     private $extractedDirectiveArgumentsCache = [];
     private $extractedFieldArgumentWarningsCache = [];
@@ -403,7 +402,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         $directiveName = $this->getFieldDirectiveName($fieldDirective);
         $extractedDirectiveArgs = $directiveArgs = $this->extractDirectiveArguments($directiveResolver, $fieldResolver, $fieldDirective, $variables);
         // Only need to extract arguments if they have fields or arrays
-        $directiveOutputKey = $this->getFieldOutputKey($fieldDirective);
+        $directiveOutputKey = $this->getDirectiveOutputKey($fieldDirective);
         $directiveArgs = $this->extractFieldOrDirectiveArgumentsForResultItem($fieldResolver, $resultItem, $directiveArgs, $directiveOutputKey, $variables, $dbErrors);
         // Cast the values to their appropriate type. If casting fails, the value returns as null
         $resultItemDBWarnings = [];
