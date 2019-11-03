@@ -12,7 +12,7 @@ abstract class AbstractSchemaFieldValueResolver extends AbstractFieldValueResolv
      * @param array $fieldArgs
      * @return void
      */
-    public function getSchemaDefinitionResolver(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = [])
+    public function getSchemaDefinitionResolver(FieldResolverInterface $fieldResolver)
     {
         return $this;
     }

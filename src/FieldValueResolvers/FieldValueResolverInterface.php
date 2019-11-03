@@ -18,7 +18,7 @@ interface FieldValueResolverInterface
      * @param array $fieldArgs
      * @return void
      */
-    public function getSchemaDefinitionResolver(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []);
+    public function getSchemaDefinitionResolver(FieldResolverInterface $fieldResolver);
     public function getSchemaDefinitionForField(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): array;
 
     /**
