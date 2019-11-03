@@ -689,16 +689,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $extensionClasses = array_keys($extensionClassPriorities);
             $extensionPriorities = array_values($extensionClassPriorities);
             array_multisort($extensionPriorities, SORT_DESC, SORT_NUMERIC, $extensionClasses);
+            // Add them to the results. We keep the list of all resolvers, so that if the first one cannot process the directive (eg: through `resolveCanProcess`, the next one can do it)
             foreach ($extensionClasses as $extensionClass) {
                 $directiveName = $extensionClass::getDirectiveName();
-                if (!in_array($directiveName, array_keys($directiveNameClasses))) {
-                    $directiveNameClasses[$directiveName][] = $extensionClass;
-                }
+                $directiveNameClasses[$directiveName][] = $extensionClass;
             }
             // Continue iterating for the class parents
         } while ($class = get_parent_class($class));
-
-
 
         return $directiveNameClasses;
     }
