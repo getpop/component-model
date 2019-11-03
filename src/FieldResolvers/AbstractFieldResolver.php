@@ -595,7 +595,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         // Iterate classes from the current class towards the parent classes until finding fieldResolver that satisfies processing this field
         $class = get_called_class();
         do {
-            foreach (array_reverse($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDVALUERESOLVERS)) as $extensionClass => $extensionPriority) {
+            foreach ($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDVALUERESOLVERS) as $extensionClass => $extensionPriority) {
                 // Process the fields which have not been processed yet
                 foreach (array_diff($extensionClass::getFieldNamesToResolve(), array_unique(array_map([$fieldQueryInterpreter, 'getFieldName'], array_keys($this->fieldValueResolvers)))) as $fieldName) {
                     // Watch out here: no fieldArgs!!!! So this deals with the base case (static), not with all cases (runtime)
@@ -678,22 +678,29 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     {
         $attachableExtensionManager = AttachableExtensionManagerFacade::getInstance();
 
-        $ret = [];
+        $directiveNameClasses = [];
 
         // Iterate classes from the current class towards the parent classes until finding fieldResolver that satisfies processing this field
         $class = get_called_class();
         do {
             // Important: do array_reverse to enable more specific hooks, which are initialized later on in the project, to be the chosen ones (if their priority is the same)
-            foreach ($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDDIRECTIVERESOLVERS) as $extensionClass => $extensionPriority) {
+            $extensionClassPriorities = array_reverse($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDDIRECTIVERESOLVERS));
+            // Order them by priority: higher priority are evaluated first
+            $extensionClasses = array_keys($extensionClassPriorities);
+            $extensionPriorities = array_values($extensionClassPriorities);
+            array_multisort($extensionPriorities, SORT_DESC, SORT_NUMERIC, $extensionClasses);
+            foreach ($extensionClasses as $extensionClass) {
                 $directiveName = $extensionClass::getDirectiveName();
-                if (!in_array($directiveName, array_keys($ret))) {
-                    $ret[$directiveName][] = $extensionClass;
+                if (!in_array($directiveName, array_keys($directiveNameClasses))) {
+                    $directiveNameClasses[$directiveName][] = $extensionClass;
                 }
             }
             // Continue iterating for the class parents
         } while ($class = get_parent_class($class));
 
-        return $ret;
+
+
+        return $directiveNameClasses;
     }
 
     protected function calculateFieldNamesToResolve(): array
@@ -706,7 +713,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         // Iterate classes from the current class towards the parent classes until finding fieldResolver that satisfies processing this field
         $class = get_called_class();
         do {
-            // Important: do array_reverse to enable more specific hooks, which are initialized later on in the project, to be the chosen ones (if their priority is the same)
             foreach ($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDVALUERESOLVERS) as $extensionClass => $extensionPriority) {
                 $ret = array_merge(
                     $ret,
