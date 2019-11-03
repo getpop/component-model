@@ -132,6 +132,17 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         return [];
     }
 
+    /**
+     * Extract the arguments for either the field or directive. If the argument name has not been provided, attempt to deduce it from the schema, or show a warning if not possible
+     *
+     * @param string $fieldOrDirective
+     * @param array $fieldOrDirectiveArgElems
+     * @param boolean $orderedFieldOrDirectiveArgNamesEnabled
+     * @param array $fieldOrDirectiveArgumentNameTypes
+     * @param array|null $variables
+     * @param array $schemaWarnings
+     * @return array
+     */
     protected function extractAndValidateFielOrDirectiveArguments(
         string $fieldOrDirective,
         array $fieldOrDirectiveArgElems,
@@ -225,9 +236,6 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         if ($fieldArgElems = QueryHelpers::getFieldArgElements($this->getFieldArgs($field))) {
             $fieldArgumentNameTypes = $this->getFieldArgumentNameTypes($fieldResolver, $field);
             $orderedFieldArgNamesEnabled = $fieldResolver->enableOrderedSchemaFieldArgs($field);
-            if ($orderedFieldArgNamesEnabled) {
-                $orderedFieldArgNames = array_keys($fieldArgumentNameTypes);
-            }
             return $this->extractAndValidateFielOrDirectiveArguments(
                 $field,
                 $fieldArgElems,
