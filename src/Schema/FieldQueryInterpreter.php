@@ -438,21 +438,21 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                 $fieldArgs[$fieldArgName] = $fieldArgValue;
             }
             $fieldArgs = $this->filterFieldOrDirectiveArgs($fieldArgs);
-            // Cast the values to their appropriate type. If casting fails, the value returns as null
-            $resultItemDBWarnings = [];
-            $fieldArgs = $this->castAndValidateFieldArgumentsForResultItem($fieldResolver, $field, $fieldArgs, $resultItemDBWarnings);
-            foreach ($resultItemDBWarnings as $warning) {
-                $dbWarnings[(string)$id][$fieldOutputKey][] = $warning;
-            }
-            if ($dbErrors) {
-                $validAndResolvedField = null;
-            } else {
-                // There are 2 reasons why the field might have changed:
-                // 1. validField: There are $dbWarnings: remove the fieldArgs that failed
-                // 2. resolvedField: Some fieldArg was a variable: replace it with its value
-                if ($extractedFieldArgs != $fieldArgs) {
-                    $validAndResolvedField = $this->replaceArgsInFieldOrDirective($field, $fieldArgs);
-                }
+        }
+        // Cast the values to their appropriate type. If casting fails, the value returns as null
+        $resultItemDBWarnings = [];
+        $fieldArgs = $this->castAndValidateFieldArgumentsForResultItem($fieldResolver, $field, $fieldArgs, $resultItemDBWarnings);
+        foreach ($resultItemDBWarnings as $warning) {
+            $dbWarnings[(string)$id][$fieldOutputKey][] = $warning;
+        }
+        if ($dbErrors) {
+            $validAndResolvedField = null;
+        } else {
+            // There are 2 reasons why the field might have changed:
+            // 1. validField: There are $dbWarnings: remove the fieldArgs that failed
+            // 2. resolvedField: Some fieldArg was a variable: replace it with its value
+            if ($extractedFieldArgs != $fieldArgs) {
+                $validAndResolvedField = $this->replaceArgsInFieldOrDirective($field, $fieldArgs);
             }
         }
         return [
@@ -494,21 +494,21 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                 $directiveArgs[$directiveArgName] = $directiveArgValue;
             }
             $directiveArgs = $this->filterFieldOrDirectiveArgs($directiveArgs);
-            // Cast the values to their appropriate type. If casting fails, the value returns as null
-            $resultItemDBWarnings = [];
-            $directiveArgs = $this->castAndValidateDirectiveArgumentsForResultItem($directiveResolver, $fieldResolver, $fieldDirective, $directiveArgs, $resultItemDBWarnings);
-            foreach ($resultItemDBWarnings as $warning) {
-                $dbWarnings[(string)$id][$fieldOutputKey][] = $warning;
-            }
-            if ($dbErrors) {
-                $validAndResolvedDirective = null;
-            } else {
-                // There are 2 reasons why the fieldDirective might have changed:
-                // 1. validField: There are $dbWarnings: remove the directiveArgs that failed
-                // 2. resolvedField: Some directiveArg was a variable: replace it with its value
-                if ($extractedDirectiveArgs != $directiveArgs) {
-                    $validAndResolvedDirective = $this->replaceArgsInFieldOrDirective($fieldDirective, $directiveArgs);
-                }
+        }
+        // Cast the values to their appropriate type. If casting fails, the value returns as null
+        $resultItemDBWarnings = [];
+        $directiveArgs = $this->castAndValidateDirectiveArgumentsForResultItem($directiveResolver, $fieldResolver, $fieldDirective, $directiveArgs, $resultItemDBWarnings);
+        foreach ($resultItemDBWarnings as $warning) {
+            $dbWarnings[(string)$id][$fieldOutputKey][] = $warning;
+        }
+        if ($dbErrors) {
+            $validAndResolvedDirective = null;
+        } else {
+            // There are 2 reasons why the fieldDirective might have changed:
+            // 1. validField: There are $dbWarnings: remove the directiveArgs that failed
+            // 2. resolvedField: Some directiveArg was a variable: replace it with its value
+            if ($extractedDirectiveArgs != $directiveArgs) {
+                $validAndResolvedDirective = $this->replaceArgsInFieldOrDirective($fieldDirective, $directiveArgs);
             }
         }
         return [
@@ -594,6 +594,11 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         return $this->castFieldArguments($fieldResolver, $field, $fieldArgs, $failedCastingFieldArgErrorMessages, true);
     }
 
+    protected function castDirectiveArgumentsForResultItem(DirectiveResolverInterface $directiveResolver, FieldResolverInterface $fieldResolver, string $directive, array $directiveArgs, array &$failedCastingDirectiveArgErrorMessages): array
+    {
+        return $this->castDirectiveArguments($directiveResolver, $fieldResolver, $directive, $directiveArgs, $failedCastingDirectiveArgErrorMessages, false);
+    }
+
     protected function castFieldArgumentsForResultItem(FieldResolverInterface $fieldResolver, string $field, array $fieldArgs, array &$failedCastingFieldArgErrorMessages): array
     {
         return $this->castFieldArguments($fieldResolver, $field, $fieldArgs, $failedCastingFieldArgErrorMessages, false);
@@ -653,11 +658,11 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         return $this->castAndValidateFieldArguments($fieldResolver, $castedFieldArgs, $failedCastingFieldArgErrorMessages, $field, $fieldArgs, $schemaWarnings);
     }
 
-    protected function castAndValidateDirectiveArgumentsForResultItem(DirectiveResolverInterface $directiveResolver, FieldResolverInterface $fieldResolver, string $fieldDirective, array $fieldArgs, array &$dbWarnings): array
+    protected function castAndValidateDirectiveArgumentsForResultItem(DirectiveResolverInterface $directiveResolver, FieldResolverInterface $fieldResolver, string $fieldDirective, array $directiveArgs, array &$dbWarnings): array
     {
         $failedCastingDirectiveArgErrorMessages = [];
-        $castedFieldArgs = $this->castFieldArgumentsForResultItem($fieldResolver, $fieldDirective, $fieldArgs, $failedCastingDirectiveArgErrorMessages);
-        return $this->castAndValidateDirectiveArguments($directiveResolver, $fieldResolver, $castedFieldArgs, $failedCastingDirectiveArgErrorMessages, $fieldDirective, $fieldArgs, $dbWarnings);
+        $castedDirectiveArgs = $this->castDirectiveArgumentsForResultItem($directiveResolver, $fieldResolver, $fieldDirective, $directiveArgs, $failedCastingDirectiveArgErrorMessages);
+        return $this->castAndValidateDirectiveArguments($directiveResolver, $fieldResolver, $castedDirectiveArgs, $failedCastingDirectiveArgErrorMessages, $fieldDirective, $directiveArgs, $dbWarnings);
     }
 
     protected function castAndValidateFieldArgumentsForResultItem(FieldResolverInterface $fieldResolver, string $field, array $fieldArgs, array &$dbWarnings): array
