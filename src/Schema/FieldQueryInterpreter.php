@@ -9,6 +9,7 @@ use PoP\QueryParsing\QueryParserInterface;
 use PoP\Translation\TranslationAPIInterface;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\DirectiveResolvers\DirectiveResolverInterface;
+use PoP\ComponentModel\ErrorUtils;
 
 class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implements FieldQueryInterpreterInterface
 {
@@ -446,7 +447,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                 if (\PoP\ComponentModel\GeneralUtils::isError($directiveArgValue)) {
                     $error = $directiveArgValue;
                     if ($errorData = $error->getErrorData()) {
-                        $errorOutputKey = $errorData['fieldName'];
+                        $errorOutputKey = $errorData[ErrorUtils::ERRORPROPERTY_FIELD_NAME];
                     }
                     $errorOutputKey = $errorOutputKey ?? $fieldOrDirectiveOutputKey;
                     $dbErrors[(string)$id][$errorOutputKey][] = $error->getErrorMessage();
