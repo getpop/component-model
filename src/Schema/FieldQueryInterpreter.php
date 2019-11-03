@@ -276,10 +276,10 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         return $fieldArgs;
     }
 
-    protected function filterFieldOrDirectiveArgs($fieldOrDirectiveArgs): array
+    protected function filterFieldArgs($fieldArgs): array
     {
         // If there was an error, the value will be NULL. In this case, remove it
-        return array_filter($fieldOrDirectiveArgs, function($elem) {
+        return array_filter($fieldArgs, function($elem) {
             // Remove only NULL values and Errors. Keep '', 0 and false
             return !is_null($elem) && !GeneralUtils::isError($elem);
         });
@@ -297,7 +297,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
                 $fieldArgs[$fieldArgName] = $fieldArgValue;
                 // Validate it
-                if ($maybeErrors = $this->resolveFieldOrDirectiveArgumentValueErrorDescriptionsForSchema($fieldResolver, $fieldArgValue, $variables)) {
+                if ($maybeErrors = $this->resolveFieldArgumentValueErrorDescriptionsForSchema($fieldResolver, $fieldArgValue, $variables)) {
                     $schemaErrors = array_merge(
                         $schemaErrors,
                         $maybeErrors
@@ -306,20 +306,20 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                     $fieldArgs[$fieldArgName] = null;
                 }
                 // Find warnings and deprecations
-                if ($maybeWarnings = $this->resolveFieldOrDirectiveArgumentValueWarningsForSchema($fieldResolver, $fieldArgValue, $variables)) {
+                if ($maybeWarnings = $this->resolveFieldArgumentValueWarningsForSchema($fieldResolver, $fieldArgValue, $variables)) {
                     $schemaWarnings = array_merge(
                         $schemaWarnings,
                         $maybeWarnings
                     );
                 }
-                if ($maybeDeprecations = $this->resolveFieldOrDirectiveArgumentValueDeprecationsForSchema($fieldResolver, $fieldArgValue, $variables)) {
+                if ($maybeDeprecations = $this->resolveFieldArgumentValueDeprecationsForSchema($fieldResolver, $fieldArgValue, $variables)) {
                     $schemaDeprecations = array_merge(
                         $schemaDeprecations,
                         $maybeDeprecations
                     );
                 }
             }
-            $fieldArgs = $this->filterFieldOrDirectiveArgs($fieldArgs);
+            $fieldArgs = $this->filterFieldArgs($fieldArgs);
             // Cast the values to their appropriate type. If casting fails, the value returns as null
             $fieldArgs = $this->castAndValidateFieldArgumentsForSchema($fieldResolver, $field, $fieldArgs, $schemaWarnings);
         }
@@ -331,7 +331,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             // 1. validField: There are $schemaWarnings: remove the fieldArgs that failed
             // 2. resolvedField: Some fieldArg was a variable: replace it with its value
             if ($extractedFieldArgs != $fieldArgs) {
-                $validAndResolvedField = $this->replaceArgsInFieldOrDirective($field, $fieldArgs);
+                $validAndResolvedField = $this->replaceFieldArgs($field, $fieldArgs);
             }
         }
         return [
@@ -356,7 +356,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             foreach ($directiveArgs as $directiveArgName => $directiveArgValue) {
                 $directiveArgs[$directiveArgName] = $directiveArgValue;
                 // Validate it
-                if ($maybeErrors = $this->resolveFieldOrDirectiveArgumentValueErrorDescriptionsForSchema($fieldResolver, $directiveArgValue, $variables)) {
+                if ($maybeErrors = $this->resolveFieldArgumentValueErrorDescriptionsForSchema($fieldResolver, $directiveArgValue, $variables)) {
                     $schemaErrors = array_merge(
                         $schemaErrors,
                         $maybeErrors
@@ -365,20 +365,20 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                     $directiveArgs[$directiveArgName] = null;
                 }
                 // Find warnings and deprecations
-                if ($maybeWarnings = $this->resolveFieldOrDirectiveArgumentValueWarningsForSchema($fieldResolver, $directiveArgValue, $variables)) {
+                if ($maybeWarnings = $this->resolveFieldArgumentValueWarningsForSchema($fieldResolver, $directiveArgValue, $variables)) {
                     $schemaWarnings = array_merge(
                         $schemaWarnings,
                         $maybeWarnings
                     );
                 }
-                if ($maybeDeprecations = $this->resolveFieldOrDirectiveArgumentValueDeprecationsForSchema($fieldResolver, $directiveArgValue, $variables)) {
+                if ($maybeDeprecations = $this->resolveFieldArgumentValueDeprecationsForSchema($fieldResolver, $directiveArgValue, $variables)) {
                     $schemaDeprecations = array_merge(
                         $schemaDeprecations,
                         $maybeDeprecations
                     );
                 }
             }
-            $directiveArgs = $this->filterFieldOrDirectiveArgs($directiveArgs);
+            $directiveArgs = $this->filterFieldArgs($directiveArgs);
             // Cast the values to their appropriate type. If casting fails, the value returns as null
             $directiveArgs = $this->castAndValidateDirectiveArgumentsForSchema($directiveResolver, $fieldResolver, $fieldDirective, $directiveArgs, $schemaWarnings);
         }
@@ -390,7 +390,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             // 1. validField: There are $schemaWarnings: remove the directiveArgs that failed
             // 2. resolvedField: Some directiveArg was a variable: replace it with its value
             if ($extractedDirectiveArgs != $directiveArgs) {
-                $validAndResolvedDirective = $this->replaceArgsInFieldOrDirective($fieldDirective, $directiveArgs);
+                $validAndResolvedDirective = $this->replaceFieldArgs($fieldDirective, $directiveArgs);
             }
         }
         return [
@@ -423,7 +423,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             $fieldOutputKey = $this->getFieldOutputKey($field);
             $id = $fieldResolver->getId($resultItem);
             foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
-                $fieldArgValue = $this->maybeResolveFieldOrDirectiveArgumentValueForResultItem($fieldResolver, $resultItem, $fieldArgValue, $variables);
+                $fieldArgValue = $this->maybeResolveFieldArgumentValueForResultItem($fieldResolver, $resultItem, $fieldArgValue, $variables);
                 // Validate it
                 if (\PoP\ComponentModel\GeneralUtils::isError($fieldArgValue)) {
                     $error = $fieldArgValue;
@@ -437,7 +437,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                 }
                 $fieldArgs[$fieldArgName] = $fieldArgValue;
             }
-            $fieldArgs = $this->filterFieldOrDirectiveArgs($fieldArgs);
+            $fieldArgs = $this->filterFieldArgs($fieldArgs);
         }
         // Cast the values to their appropriate type. If casting fails, the value returns as null
         $resultItemDBWarnings = [];
@@ -452,7 +452,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             // 1. validField: There are $dbWarnings: remove the fieldArgs that failed
             // 2. resolvedField: Some fieldArg was a variable: replace it with its value
             if ($extractedFieldArgs != $fieldArgs) {
-                $validAndResolvedField = $this->replaceArgsInFieldOrDirective($field, $fieldArgs);
+                $validAndResolvedField = $this->replaceFieldArgs($field, $fieldArgs);
             }
         }
         return [
@@ -479,7 +479,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             $fieldOutputKey = $fieldDirective;
             $id = $fieldResolver->getId($resultItem);
             foreach ($directiveArgs as $directiveArgName => $directiveArgValue) {
-                $directiveArgValue = $this->maybeResolveFieldOrDirectiveArgumentValueForResultItem($fieldResolver, $resultItem, $directiveArgValue, $variables);
+                $directiveArgValue = $this->maybeResolveFieldArgumentValueForResultItem($fieldResolver, $resultItem, $directiveArgValue, $variables);
                 // Validate it
                 if (\PoP\ComponentModel\GeneralUtils::isError($directiveArgValue)) {
                     $error = $directiveArgValue;
@@ -493,7 +493,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                 }
                 $directiveArgs[$directiveArgName] = $directiveArgValue;
             }
-            $directiveArgs = $this->filterFieldOrDirectiveArgs($directiveArgs);
+            $directiveArgs = $this->filterFieldArgs($directiveArgs);
         }
         // Cast the values to their appropriate type. If casting fails, the value returns as null
         $resultItemDBWarnings = [];
@@ -508,7 +508,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             // 1. validField: There are $dbWarnings: remove the directiveArgs that failed
             // 2. resolvedField: Some directiveArg was a variable: replace it with its value
             if ($extractedDirectiveArgs != $directiveArgs) {
-                $validAndResolvedDirective = $this->replaceArgsInFieldOrDirective($fieldDirective, $directiveArgs);
+                $validAndResolvedDirective = $this->replaceFieldArgs($fieldDirective, $directiveArgs);
             }
         }
         return [
@@ -702,7 +702,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                 }
                 $schemaWarnings[] = $errorMessage;
             }
-            return $this->filterFieldOrDirectiveArgs($castedDirectiveArgs);
+            return $this->filterFieldArgs($castedDirectiveArgs);
         }
         return $castedDirectiveArgs;
     }
@@ -737,7 +737,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                 }
                 $schemaWarnings[] = $errorMessage;
             }
-            return $this->filterFieldOrDirectiveArgs($castedFieldArgs);
+            return $this->filterFieldArgs($castedFieldArgs);
         }
         return $castedFieldArgs;
     }
@@ -816,7 +816,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         $fieldArgValue = $this->maybeConvertFieldArgumentArrayValueFromStringToArray($fieldArgValue);
         if (is_array($fieldArgValue)) {
             // Resolve each element the same way
-            return $this->filterFieldOrDirectiveArgs(array_map(function($arrayValueElem) use($variables) {
+            return $this->filterFieldArgs(array_map(function($arrayValueElem) use($variables) {
                 return $this->maybeConvertFieldArgumentValue($arrayValueElem, $variables);
             }, $fieldArgValue));
         }
@@ -837,12 +837,12 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
      * @param [type] $variables
      * @return mixed
      */
-    protected function maybeResolveFieldOrDirectiveArgumentValueForResultItem(FieldResolverInterface $fieldResolver, $resultItem, $fieldArgValue, ?array $variables)
+    protected function maybeResolveFieldArgumentValueForResultItem(FieldResolverInterface $fieldResolver, $resultItem, $fieldArgValue, ?array $variables)
     {
         // If it is an array, apply this function on all elements
         if (is_array($fieldArgValue)) {
             return array_map(function($fieldArgValueElem) use($fieldResolver, $resultItem, $variables) {
-                return $this->maybeResolveFieldOrDirectiveArgumentValueForResultItem($fieldResolver, $resultItem, $fieldArgValueElem, $variables);
+                return $this->maybeResolveFieldArgumentValueForResultItem($fieldResolver, $resultItem, $fieldArgValueElem, $variables);
             }, (array)$fieldArgValue);
         }
 
@@ -870,12 +870,12 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         return $fieldArgValue;
     }
 
-    protected function resolveFieldOrDirectiveArgumentValueErrorDescriptionsForSchema(FieldResolverInterface $fieldResolver, $fieldArgValue, ?array $variables): ?array
+    protected function resolveFieldArgumentValueErrorDescriptionsForSchema(FieldResolverInterface $fieldResolver, $fieldArgValue, ?array $variables): ?array
     {
         // If it is an array, apply this function on all elements
         if (is_array($fieldArgValue)) {
             return GeneralUtils::arrayFlatten(array_filter(array_map(function($fieldArgValueElem) use($fieldResolver, $variables) {
-                return $this->resolveFieldOrDirectiveArgumentValueErrorDescriptionsForSchema($fieldResolver, $fieldArgValueElem, $variables);
+                return $this->resolveFieldArgumentValueErrorDescriptionsForSchema($fieldResolver, $fieldArgValueElem, $variables);
             }, $fieldArgValue)));
         }
 
@@ -932,12 +932,12 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         return null;
     }
 
-    protected function resolveFieldOrDirectiveArgumentValueWarningsForSchema(FieldResolverInterface $fieldResolver, $fieldArgValue, ?array $variables): ?array
+    protected function resolveFieldArgumentValueWarningsForSchema(FieldResolverInterface $fieldResolver, $fieldArgValue, ?array $variables): ?array
     {
         // If it is an array, apply this function on all elements
         if (is_array($fieldArgValue)) {
             return GeneralUtils::arrayFlatten(array_filter(array_map(function($fieldArgValueElem) use($fieldResolver, $variables) {
-                return $this->resolveFieldOrDirectiveArgumentValueWarningsForSchema($fieldResolver, $fieldArgValueElem, $variables);
+                return $this->resolveFieldArgumentValueWarningsForSchema($fieldResolver, $fieldArgValueElem, $variables);
             }, $fieldArgValue)));
         }
 
@@ -949,12 +949,12 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         return null;
     }
 
-    protected function resolveFieldOrDirectiveArgumentValueDeprecationsForSchema(FieldResolverInterface $fieldResolver, $fieldArgValue, ?array $variables): ?array
+    protected function resolveFieldArgumentValueDeprecationsForSchema(FieldResolverInterface $fieldResolver, $fieldArgValue, ?array $variables): ?array
     {
         // If it is an array, apply this function on all elements
         if (is_array($fieldArgValue)) {
             return GeneralUtils::arrayFlatten(array_filter(array_map(function($fieldArgValueElem) use($fieldResolver, $variables) {
-                return $this->resolveFieldOrDirectiveArgumentValueDeprecationsForSchema($fieldResolver, $fieldArgValueElem, $variables);
+                return $this->resolveFieldArgumentValueDeprecationsForSchema($fieldResolver, $fieldArgValueElem, $variables);
             }, $fieldArgValue)));
         }
 
