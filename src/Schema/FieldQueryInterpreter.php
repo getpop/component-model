@@ -115,74 +115,88 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
 
     protected function doExtractDirectiveArguments(DirectiveResolverInterface $directiveResolver, FieldResolverInterface $fieldResolver, string $fieldDirective, ?array $variables, array &$schemaWarnings): array
     {
-        $directiveArgs = [];
-        // Extract the args from the string into an array
-        $directiveArgsStr = $this->getFieldDirectiveArgs($fieldDirective);
-        // Remove the opening and closing brackets
-        $directiveArgsStr = substr($directiveArgsStr, strlen(QuerySyntax::SYMBOL_FIELDARGS_OPENING), strlen($directiveArgsStr)-strlen(QuerySyntax::SYMBOL_FIELDARGS_OPENING)-strlen(QuerySyntax::SYMBOL_FIELDARGS_CLOSING));
-        // Remove the white spaces before and after
-        if ($directiveArgsStr = trim($directiveArgsStr)) {
-            // Iterate all the elements, and extract them into the array
-            if ($directiveArgElems = $this->queryParser->splitElements($directiveArgsStr, QuerySyntax::SYMBOL_FIELDARGS_ARGSEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING], QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING)) {
-                $directiveArgumentNameTypes = $this->getDirectiveArgumentNameTypes($directiveResolver, $fieldResolver, $fieldDirective);
-                $orderedDirectiveArgNamesEnabled = $directiveResolver->enableOrderedSchemaDirectiveArgs($fieldResolver);
-                if ($orderedDirectiveArgNamesEnabled) {
-                    $orderedDirectiveArgNames = array_keys($directiveArgumentNameTypes);
-                }
-                for ($i=0; $i<count($directiveArgElems); $i++) {
-                    $directiveArg = $directiveArgElems[$i];
-                    // Either one of 2 formats are accepted:
-                    // 1. The key:value pair
-                    // 2. Only the value, and extract the key from the schema definition (if enabled for that directive)
-                    $separatorPos = QueryUtils::findFirstSymbolPosition($directiveArg, QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING], QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING);
-                    if ($separatorPos === false) {
-                        $directiveArgValue = $directiveArg;
-                        if (!$orderedDirectiveArgNamesEnabled || !isset($orderedDirectiveArgNames[$i])) {
-                            $errorMessage = $orderedDirectiveArgNamesEnabled ?
-                                $this->translationAPI->__('documentation for this argument in the schema definition has not been defined, hence it can\'t be deduced from there', 'pop-component-model') :
-                                $this->translationAPI->__('retrieving this information from the schema definition is disabled for the corresponding “fieldResolver”', 'pop-component-model');
-                            $schemaWarnings[] = sprintf(
-                                $this->translationAPI->__('The argument on position number %s (with value \'%s\') has its name missing, and %s. Please define the query using the \'key%svalue\' format. This argument has been ignored', 'pop-component-model'),
-                                $i+1,
-                                $directiveArgValue,
-                                $errorMessage,
-                                QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR
-                            );
-                            // Ignore extracting this argument
-                            continue;
-                        }
-                        $directiveArgName = $orderedDirectiveArgNames[$i];
-                        // Log the found directiveArgName
-                        $this->feedbackMessageStore->addLogEntry(
-                            sprintf(
-                                $this->translationAPI->__('In directive \'%s\', the argument on position number %s (with value \'%s\') is resolved as argument \'%s\'', 'pop-component-model'),
-                                $fieldDirective,
-                                $i+1,
-                                $directiveArgValue,
-                                $directiveArgName
-                            )
-                        );
-                    } else {
-                        $directiveArgName = trim(substr($directiveArg, 0, $separatorPos));
-                        $directiveArgValue = trim(substr($directiveArg, $separatorPos + strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR)));
-                        // Validate that this argument exists in the schema, or show a warning if not
-                        // But don't skip it! It may be that the engine accepts the property, it is just not documented!
-                        if (!array_key_exists($directiveArgName, $directiveArgumentNameTypes)) {
-                            $schemaWarnings[] = sprintf(
-                                $this->translationAPI->__('Argument with name \'%s\' has not been documented in the schema, so it may have no effect (it has not been removed from the query, though)', 'pop-component-model'),
-                                $directiveArgName
-                            );
-                        }
-                    }
-
-                    // If the field is an array in its string representation, convert it to array
-                    $directiveArgValue = $this->maybeConvertFieldArgumentValue($directiveArgValue, $variables);
-                    $directiveArgs[$directiveArgName] = $directiveArgValue;
-                }
-            }
+        // Iterate all the elements, and extract them into the array
+        if ($directiveArgElems = QueryHelpers::getFieldArgElements($this->getFieldDirectiveArgs($fieldDirective))) {
+            $directiveArgumentNameTypes = $this->getDirectiveArgumentNameTypes($directiveResolver, $fieldResolver, $fieldDirective);
+            $orderedDirectiveArgNamesEnabled = $directiveResolver->enableOrderedSchemaDirectiveArgs($fieldResolver);
+            return $this->extractAndValidateFielOrDirectiveArguments(
+                $fieldDirective,
+                $directiveArgElems,
+                $orderedDirectiveArgNamesEnabled,
+                $directiveArgumentNameTypes,
+                $variables,
+                $schemaWarnings
+            );
         }
 
-        return $directiveArgs;
+        return [];
+    }
+
+    protected function extractAndValidateFielOrDirectiveArguments(
+        string $fieldOrDirective,
+        array $fieldOrDirectiveArgElems,
+        bool $orderedFieldOrDirectiveArgNamesEnabled,
+        array $fieldOrDirectiveArgumentNameTypes,
+        ?array $variables,
+        array &$schemaWarnings
+    ): array
+    {
+        if ($orderedFieldOrDirectiveArgNamesEnabled) {
+            $orderedFieldOrDirectiveArgNames = array_keys($fieldOrDirectiveArgumentNameTypes);
+        }
+        $fieldOrDirectiveArgs = [];
+        for ($i=0; $i<count($fieldOrDirectiveArgElems); $i++) {
+            $fieldOrDirectiveArg = $fieldOrDirectiveArgElems[$i];
+            // Either one of 2 formats are accepted:
+            // 1. The key:value pair
+            // 2. Only the value, and extract the key from the schema definition (if enabled for that fieldOrDirective)
+            $separatorPos = QueryUtils::findFirstSymbolPosition($fieldOrDirectiveArg, QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING], QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING);
+            if ($separatorPos === false) {
+                $fieldOrDirectiveArgValue = $fieldOrDirectiveArg;
+                if (!$orderedFieldOrDirectiveArgNamesEnabled || !isset($orderedFieldOrDirectiveArgNames[$i])) {
+                    $errorMessage = $orderedFieldOrDirectiveArgNamesEnabled ?
+                        $this->translationAPI->__('documentation for this argument in the schema definition has not been defined, hence it can\'t be deduced from there', 'pop-component-model') :
+                        $this->translationAPI->__('retrieving this information from the schema definition is disabled for the corresponding “fieldResolver”', 'pop-component-model');
+                    $schemaWarnings[] = sprintf(
+                        $this->translationAPI->__('The argument on position number %s (with value \'%s\') has its name missing, and %s. Please define the query using the \'key%svalue\' format. This argument has been ignored', 'pop-component-model'),
+                        $i+1,
+                        $fieldOrDirectiveArgValue,
+                        $errorMessage,
+                        QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR
+                    );
+                    // Ignore extracting this argument
+                    continue;
+                }
+                $fieldOrDirectiveArgName = $orderedFieldOrDirectiveArgNames[$i];
+                // Log the found fieldOrDirectiveArgName
+                $this->feedbackMessageStore->addLogEntry(
+                    sprintf(
+                        $this->translationAPI->__('In field or directive \'%s\', the argument on position number %s (with value \'%s\') is resolved as argument \'%s\'', 'pop-component-model'),
+                        $fieldOrDirective,
+                        $i+1,
+                        $fieldOrDirectiveArgValue,
+                        $fieldOrDirectiveArgName
+                    )
+                );
+            } else {
+                $fieldOrDirectiveArgName = trim(substr($fieldOrDirectiveArg, 0, $separatorPos));
+                $fieldOrDirectiveArgValue = trim(substr($fieldOrDirectiveArg, $separatorPos + strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR)));
+                // Validate that this argument exists in the schema, or show a warning if not
+                // But don't skip it! It may be that the engine accepts the property, it is just not documented!
+                if (!array_key_exists($fieldOrDirectiveArgName, $fieldOrDirectiveArgumentNameTypes)) {
+                    $schemaWarnings[] = sprintf(
+                        $this->translationAPI->__('Argument with name \'%s\' has not been documented in the schema, so it may have no effect (it has not been removed from the query, though)', 'pop-component-model'),
+                        $fieldOrDirectiveArgName
+                    );
+                }
+            }
+
+            // If the field is an array in its string representation, convert it to array
+            $fieldOrDirectiveArgValue = $this->maybeConvertFieldArgumentValue($fieldOrDirectiveArgValue, $variables);
+            $fieldOrDirectiveArgs[$fieldOrDirectiveArgName] = $fieldOrDirectiveArgValue;
+        }
+
+        return $fieldOrDirectiveArgs;
     }
 
     public function extractFieldArguments(FieldResolverInterface $fieldResolver, string $field, ?array $variables = null, ?array &$schemaWarnings = null): array
@@ -207,74 +221,24 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
 
     protected function doExtractFieldArguments(FieldResolverInterface $fieldResolver, string $field, ?array $variables, array &$schemaWarnings): array
     {
-        $fieldArgs = [];
-        // Extract the args from the string into an array
-        $fieldArgsStr = $this->getFieldArgs($field);
-        // Remove the opening and closing brackets
-        $fieldArgsStr = substr($fieldArgsStr, strlen(QuerySyntax::SYMBOL_FIELDARGS_OPENING), strlen($fieldArgsStr)-strlen(QuerySyntax::SYMBOL_FIELDARGS_OPENING)-strlen(QuerySyntax::SYMBOL_FIELDARGS_CLOSING));
-        // Remove the white spaces before and after
-        if ($fieldArgsStr = trim($fieldArgsStr)) {
-            // Iterate all the elements, and extract them into the array
-            if ($fieldArgElems = $this->queryParser->splitElements($fieldArgsStr, QuerySyntax::SYMBOL_FIELDARGS_ARGSEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING], QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING)) {
-                $fieldArgumentNameTypes = $this->getFieldArgumentNameTypes($fieldResolver, $field);
-                $orderedFieldArgNamesEnabled = $fieldResolver->enableOrderedSchemaFieldArgs($field);
-                if ($orderedFieldArgNamesEnabled) {
-                    $orderedFieldArgNames = array_keys($fieldArgumentNameTypes);
-                }
-                for ($i=0; $i<count($fieldArgElems); $i++) {
-                    $fieldArg = $fieldArgElems[$i];
-                    // Either one of 2 formats are accepted:
-                    // 1. The key:value pair
-                    // 2. Only the value, and extract the key from the schema definition (if enabled for that field)
-                    $separatorPos = QueryUtils::findFirstSymbolPosition($fieldArg, QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING], QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING);
-                    if ($separatorPos === false) {
-                        $fieldArgValue = $fieldArg;
-                        if (!$orderedFieldArgNamesEnabled || !isset($orderedFieldArgNames[$i])) {
-                            $errorMessage = $orderedFieldArgNamesEnabled ?
-                                $this->translationAPI->__('documentation for this argument in the schema definition has not been defined, hence it can\'t be deduced from there', 'pop-component-model') :
-                                $this->translationAPI->__('retrieving this information from the schema definition is disabled for the corresponding “fieldResolver”', 'pop-component-model');
-                            $schemaWarnings[] = sprintf(
-                                $this->translationAPI->__('The argument on position number %s (with value \'%s\') has its name missing, and %s. Please define the query using the \'key%svalue\' format. This argument has been ignored', 'pop-component-model'),
-                                $i+1,
-                                $fieldArgValue,
-                                $errorMessage,
-                                QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR
-                            );
-                            // Ignore extracting this argument
-                            continue;
-                        }
-                        $fieldArgName = $orderedFieldArgNames[$i];
-                        // Log the found fieldArgName
-                        $this->feedbackMessageStore->addLogEntry(
-                            sprintf(
-                                $this->translationAPI->__('In query field \'%s\', the argument on position number %s (with value \'%s\') is resolved as argument \'%s\'', 'pop-component-model'),
-                                $field,
-                                $i+1,
-                                $fieldArgValue,
-                                $fieldArgName
-                            )
-                        );
-                    } else {
-                        $fieldArgName = trim(substr($fieldArg, 0, $separatorPos));
-                        $fieldArgValue = trim(substr($fieldArg, $separatorPos + strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR)));
-                        // Validate that this argument exists in the schema, or show a warning if not
-                        // But don't skip it! It may be that the engine accepts the property, it is just not documented!
-                        if (!array_key_exists($fieldArgName, $fieldArgumentNameTypes)) {
-                            $schemaWarnings[] = sprintf(
-                                $this->translationAPI->__('Argument with name \'%s\' has not been documented in the schema, so it may have no effect (it has not been removed from the query, though)', 'pop-component-model'),
-                                $fieldArgName
-                            );
-                        }
-                    }
-
-                    // If the field is an array in its string representation, convert it to array
-                    $fieldArgValue = $this->maybeConvertFieldArgumentValue($fieldArgValue, $variables);
-                    $fieldArgs[$fieldArgName] = $fieldArgValue;
-                }
+        // Iterate all the elements, and extract them into the array
+        if ($fieldArgElems = QueryHelpers::getFieldArgElements($this->getFieldArgs($field))) {
+            $fieldArgumentNameTypes = $this->getFieldArgumentNameTypes($fieldResolver, $field);
+            $orderedFieldArgNamesEnabled = $fieldResolver->enableOrderedSchemaFieldArgs($field);
+            if ($orderedFieldArgNamesEnabled) {
+                $orderedFieldArgNames = array_keys($fieldArgumentNameTypes);
             }
+            return $this->extractAndValidateFielOrDirectiveArguments(
+                $field,
+                $fieldArgElems,
+                $orderedFieldArgNamesEnabled,
+                $fieldArgumentNameTypes,
+                $variables,
+                $schemaWarnings
+            );
         }
 
-        return $fieldArgs;
+        return [];
     }
 
     protected function filterFieldArgs($fieldArgs): array
