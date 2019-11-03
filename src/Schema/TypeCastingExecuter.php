@@ -3,6 +3,7 @@ namespace PoP\ComponentModel\Schema;
 
 use PoP\ComponentModel\Error;
 use PoP\Translation\TranslationAPIInterface;
+use CastToType;
 
 class TypeCastingExecuter implements TypeCastingExecuterInterface
 {
@@ -55,11 +56,11 @@ class TypeCastingExecuter implements TypeCastingExecuterInterface
                 }
                 return $value;
             case SchemaDefinition::TYPE_INT:
-                return \CastToType::_int($value);
+                return CastToType::_int($value);
             case SchemaDefinition::TYPE_FLOAT:
-                return \CastToType::_float($value);
+                return CastToType::_float($value);
             case SchemaDefinition::TYPE_BOOL:
-                return \CastToType::_bool($value);
+                return CastToType::_bool($value);
             case SchemaDefinition::TYPE_TIME:
                 $converted = strtotime($value);
                 if ($converted === false) {
