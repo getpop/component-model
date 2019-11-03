@@ -14,7 +14,7 @@ trait DirectiveValidatorTrait
             $directiveArgs,
             $nestedDBErrors,
             $nestedDBWarnings
-        ) = $fieldQueryInterpreter->extractDirectiveArgumentsForResultItem($fieldResolver, $resultItem, $directive);
+        ) = $fieldQueryInterpreter->extractDirectiveArgumentsForResultItem($this, $fieldResolver, $resultItem, $directive);
         if ($nestedDBWarnings || $nestedDBErrors) {
             foreach ($nestedDBErrors as $id => $fieldOutputKeyErrorMessages) {
                 $dbErrors[$id] = array_merge(

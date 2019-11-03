@@ -46,6 +46,15 @@ interface DirectiveResolverInterface
      * @return void
      */
     public function needsIDsDataFieldsToExecute(): bool;
+
+    /**
+     * Indicates if the directive argument names can be omitted from the query, deducing them from the order in which they were defined in the schema
+     *
+     * @param FieldResolverInterface $fieldResolver
+     * @param string $directive
+     * @return boolean
+     */
+    public function enableOrderedSchemaDirectiveArgs(FieldResolverInterface $fieldResolver): bool;
     /**
      * Validate that the directive can be applied to all passed fields
      *

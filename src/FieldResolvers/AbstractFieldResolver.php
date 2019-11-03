@@ -1,18 +1,19 @@
 <?php
 namespace PoP\ComponentModel\FieldResolvers;
-use League\Pipeline\PipelineBuilder;
+use PoP\ComponentModel\ErrorUtils;
 use PoP\FieldQuery\FieldQueryUtils;
+use League\Pipeline\PipelineBuilder;
 use PoP\ComponentModel\Schema\SchemaDefinition;
-use PoP\ComponentModel\DirectiveResolvers\ValidateDirectiveResolver;
 use PoP\Translation\Facades\TranslationAPIFacade;
-use PoP\ComponentModel\DirectiveResolvers\ResolveValueAndMergeDirectiveResolver;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
-use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
-use PoP\ComponentModel\ErrorUtils;
+use PoP\ComponentModel\DirectiveResolvers\ValidateDirectiveResolver;
+use PoP\ComponentModel\DirectiveResolvers\DirectiveResolverInterface;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups;
+use PoP\ComponentModel\DirectiveResolvers\ResolveValueAndMergeDirectiveResolver;
+use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
 
 abstract class AbstractFieldResolver implements FieldResolverInterface
 {
@@ -90,18 +91,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             foreach ($directiveSet as $directive) {
                 $fieldDirective = $fieldQueryInterpreter->convertDirectiveToFieldDirective($directive);
                 if (is_null($this->fieldDirectiveInstanceCache[$fieldDirective])) {
-                    // Validate schema (eg of error in schema: ?query=posts<include(if:this-field-doesnt-exist())>)
-                    list(
-                        $validFieldDirective,
-                        $directiveName,
-                        $directiveArgs,
-                    ) = $this->dissectAndValidateDirectiveForSchema($fieldDirective, $schemaErrors, $schemaWarnings, $schemaDeprecations);
-                    // Check that the directive is a valid one (eg: no schema errors)
-                    if (is_null($validFieldDirective)) {
-                        $schemaErrors[$fieldDirective][] = $translationAPI->__('This directive can\'t be processed due to previous errors', 'pop-component-model');
-                        continue;
-                    }
                     $directiveName = $fieldQueryInterpreter->getDirectiveName($directive);
+                    $directiveArgs = $fieldQueryInterpreter->extractStaticDirectiveArguments($fieldDirective);
                     $directiveClasses = $directiveNameClasses[$directiveName];
                     // If there is no directive with this name, show an error and skip it
                     if (is_null($directiveClasses)) {
@@ -116,10 +107,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     $directiveResolverInstance = null;
                     foreach ($directiveClasses as $directiveClass) {
                         // Get the instance from the cache if it exists, or create it if not
-                        if (is_null($this->directiveResolverInstanceCache[$directiveClass][$validFieldDirective])) {
-                            $this->directiveResolverInstanceCache[$directiveClass][$validFieldDirective] = new $directiveClass($validFieldDirective);
+                        if (is_null($this->directiveResolverInstanceCache[$directiveClass][$fieldDirective])) {
+                            $this->directiveResolverInstanceCache[$directiveClass][$fieldDirective] = new $directiveClass($fieldDirective);
                         }
-                        $maybeDirectiveResolverInstance = $this->directiveResolverInstanceCache[$directiveClass][$validFieldDirective];
+                        $maybeDirectiveResolverInstance = $this->directiveResolverInstanceCache[$directiveClass][$fieldDirective];
 
                         // Check if this instance can process the directive
                         if ($maybeDirectiveResolverInstance->resolveCanProcess($this, $directiveName, $directiveArgs)) {
@@ -133,6 +124,18 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                             $directiveName,
                             json_encode($directiveArgs)
                         );
+                        continue;
+                    }
+
+                    // Validate schema (eg of error in schema: ?query=posts<include(if:this-field-doesnt-exist())>)
+                    list(
+                        $validFieldDirective,
+                        $directiveName,
+                        $directiveArgs,
+                    ) = $this->dissectAndValidateDirectiveForSchema($directiveResolverInstance, $fieldDirective, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+                    // Check that the directive is a valid one (eg: no schema errors)
+                    if (is_null($validFieldDirective)) {
+                        $schemaErrors[$fieldDirective][] = $translationAPI->__('This directive can\'t be processed due to previous errors', 'pop-component-model');
                         continue;
                     }
 
@@ -173,7 +176,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         }
         return $this->fieldDirectivePipelineInstanceCache[$fieldDirectives];
     }
-    protected function dissectAndValidateDirectiveForSchema(string $directive, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    protected function dissectAndValidateDirectiveForSchema(DirectiveResolverInterface $directiveResolver, string $directive, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         // First validate schema (eg of error in schema: ?query=posts<include(if:this-field-doesnt-exist())>)
@@ -184,21 +187,39 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $directiveSchemaErrors,
             $directiveSchemaWarnings,
             $directiveSchemaDeprecations
-        ) = $fieldQueryInterpreter->extractDirectiveArgumentsForSchema($this, $directive);
+        ) = $fieldQueryInterpreter->extractDirectiveArgumentsForSchema($directiveResolver, $this, $directive);
 
-        // If there were errors, save them and remove the corresponding args from the directive
-        if ($directiveSchemaErrors || $directiveSchemaWarnings || $directiveSchemaDeprecations) {
-            $directiveOutputKey = $fieldQueryInterpreter->getFieldOutputKey($directive);
-            foreach ($directiveSchemaErrors as $error) {
-                $schemaErrors[$directiveOutputKey][] = $error;
-            }
-            foreach ($directiveSchemaWarnings as $warning) {
-                $schemaWarnings[$directiveOutputKey][] = $warning;
-            }
-            foreach ($directiveSchemaDeprecations as $deprecation) {
-                $schemaDeprecations[$directiveOutputKey][] = $deprecation;
-            }
+        // If there were errors, warning or deprecations, integrate them into the feedback objects
+        if ($directiveSchemaErrors) {
+            $schemaErrors[$directive] = array_merge(
+                $schemaErrors[$directive] ?? [],
+                $directiveSchemaErrors
+            );
         }
+        if ($directiveSchemaWarnings) {
+            $schemaWarnings[$directive] = array_merge(
+                $schemaWarnings[$directive] ?? [],
+                $directiveSchemaWarnings
+            );
+        }
+        if ($directiveSchemaDeprecations) {
+            $schemaDeprecations[$directive] = array_merge(
+                $schemaDeprecations[$directive] ?? [],
+                $directiveSchemaDeprecations
+            );
+        }
+        // if ($directiveSchemaErrors || $directiveSchemaWarnings || $directiveSchemaDeprecations) {
+        //     $directiveOutputKey = $fieldQueryInterpreter->getFieldOutputKey($directive);
+        //     foreach ($directiveSchemaErrors as $error) {
+        //         $schemaErrors[$directiveOutputKey][] = $error;
+        //     }
+        //     foreach ($directiveSchemaWarnings as $warning) {
+        //         $schemaWarnings[$directiveOutputKey][] = $warning;
+        //     }
+        //     foreach ($directiveSchemaDeprecations as $deprecation) {
+        //         $schemaDeprecations[$directiveOutputKey][] = $deprecation;
+        //     }
+        // }
         return [
             $validDirective,
             $directiveName,

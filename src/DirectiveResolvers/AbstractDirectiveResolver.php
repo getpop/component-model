@@ -157,6 +157,14 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         return false;
     }
 
+    public function enableOrderedSchemaDirectiveArgs(FieldResolverInterface $fieldResolver): bool
+    {
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
+            return $schemaDefinitionResolver->enableOrderedSchemaDirectiveArgs($fieldResolver);
+        }
+        return true;
+    }
+
     public function __invoke($payload)
     {
         // 1. Extract the arguments from the payload

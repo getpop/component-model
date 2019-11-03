@@ -21,4 +21,8 @@ abstract class AbstractSchemaDirectiveResolver extends AbstractDirectiveResolver
     {
         return [];
     }
+    public function enableOrderedSchemaDirectiveArgs(FieldResolverInterface $fieldResolver): bool
+    {
+        return true;
+    }
 }
