@@ -461,34 +461,11 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         return $fieldOrDirectiveArgs;
     }
 
-    protected function castDirectiveArguments(DirectiveResolverInterface $directiveResolver, FieldResolverInterface $fieldResolver, string $directive, array $directiveArgs, array &$failedCastingFieldArgErrorMessages, bool $forSchema): array
+    protected function castDirectiveArguments(DirectiveResolverInterface $directiveResolver, FieldResolverInterface $fieldResolver, string $directive, array $directiveArgs, array &$failedCastingDirectiveArgErrorMessages, bool $forSchema): array
     {
         // Get the field argument types, to know to what type it will cast the value
         if ($directiveArgNameTypes = $this->getDirectiveArgumentNameTypes($directiveResolver, $fieldResolver)) {
-            // Cast all argument values
-            foreach ($directiveArgs as $directiveArgName => $directiveArgValue) {
-                // Maybe cast the value to the appropriate type. Eg: from string to boolean
-                if ($directiveArgType = $directiveArgNameTypes[$directiveArgName]) {
-                    // There are 2 possibilities for casting:
-                    // 1. $forSchema = true: Cast all items except fields (eg: has-comments())
-                    // 2. $forSchema = false: Should be cast only fields, however by now we can't tell which are fields and which are not, since fields have already been resolved to their value. Hence, cast everything (directiveArgValues that failed at the schema level will not be provided in the input array, so won't be validated twice)
-                    // Otherwise, simply add the directiveArgValue directly, it will be eventually casted by the other function
-                    if (
-                        ($forSchema && !$this->isFieldArgumentValueAField($directiveArgValue)) ||
-                        !$forSchema
-                    ) {
-                        $directiveArgValue = $this->typeCastingExecuter->cast($directiveArgType, $directiveArgValue);
-                        // If the response is an error, extract the error message and set value to null
-                        if (GeneralUtils::isError($directiveArgValue)) {
-                            $error = $directiveArgValue;
-                            $failedCastingFieldArgErrorMessages[$directiveArgName] = $error->getErrorMessage();
-                            $directiveArgs[$directiveArgName] = null;
-                            continue;
-                        }
-                    }
-                    $directiveArgs[$directiveArgName] = $directiveArgValue;
-                }
-            }
+            return $this->castFieldOrDirectiveArguments($directiveArgs, $directiveArgNameTypes, $failedCastingDirectiveArgErrorMessages, $forSchema);
         }
         return $directiveArgs;
     }
@@ -497,32 +474,38 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     {
         // Get the field argument types, to know to what type it will cast the value
         if ($fieldArgNameTypes = $this->getFieldArgumentNameTypes($fieldResolver, $field)) {
-            // Cast all argument values
-            foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
-                // Maybe cast the value to the appropriate type. Eg: from string to boolean
-                if ($fieldArgType = $fieldArgNameTypes[$fieldArgName]) {
-                    // There are 2 possibilities for casting:
-                    // 1. $forSchema = true: Cast all items except fields (eg: has-comments())
-                    // 2. $forSchema = false: Should be cast only fields, however by now we can't tell which are fields and which are not, since fields have already been resolved to their value. Hence, cast everything (fieldArgValues that failed at the schema level will not be provided in the input array, so won't be validated twice)
-                    // Otherwise, simply add the fieldArgValue directly, it will be eventually casted by the other function
-                    if (
-                        ($forSchema && !$this->isFieldArgumentValueAField($fieldArgValue)) ||
-                        !$forSchema
-                    ) {
-                        $fieldArgValue = $this->typeCastingExecuter->cast($fieldArgType, $fieldArgValue);
-                        // If the response is an error, extract the error message and set value to null
-                        if (GeneralUtils::isError($fieldArgValue)) {
-                            $error = $fieldArgValue;
-                            $failedCastingFieldArgErrorMessages[$fieldArgName] = $error->getErrorMessage();
-                            $fieldArgs[$fieldArgName] = null;
-                            continue;
-                        }
+            return $this->castFieldOrDirectiveArguments($fieldArgs, $fieldArgNameTypes, $failedCastingFieldArgErrorMessages, $forSchema);
+        }
+        return $fieldArgs;
+    }
+
+    protected function castFieldOrDirectiveArguments(array $fieldOrDirectiveArgs, array $fieldOrDirectiveArgNameTypes, array &$failedCastingFieldOrDirectiveArgErrorMessages, bool $forSchema): array
+    {
+        // Cast all argument values
+        foreach ($fieldOrDirectiveArgs as $argName => $argValue) {
+            // Maybe cast the value to the appropriate type. Eg: from string to boolean
+            if ($fieldArgType = $fieldOrDirectiveArgNameTypes[$argName]) {
+                // There are 2 possibilities for casting:
+                // 1. $forSchema = true: Cast all items except fields (eg: has-comments())
+                // 2. $forSchema = false: Should be cast only fields, however by now we can't tell which are fields and which are not, since fields have already been resolved to their value. Hence, cast everything (fieldArgValues that failed at the schema level will not be provided in the input array, so won't be validated twice)
+                // Otherwise, simply add the argValue directly, it will be eventually casted by the other function
+                if (
+                    ($forSchema && !$this->isFieldArgumentValueAField($argValue)) ||
+                    !$forSchema
+                ) {
+                    $argValue = $this->typeCastingExecuter->cast($fieldArgType, $argValue);
+                    // If the response is an error, extract the error message and set value to null
+                    if (GeneralUtils::isError($argValue)) {
+                        $error = $argValue;
+                        $failedCastingFieldOrDirectiveArgErrorMessages[$argName] = $error->getErrorMessage();
+                        $fieldOrDirectiveArgs[$argName] = null;
+                        continue;
                     }
-                    $fieldArgs[$fieldArgName] = $fieldArgValue;
+                    $fieldOrDirectiveArgs[$argName] = $argValue;
                 }
             }
         }
-        return $fieldArgs;
+        return $fieldOrDirectiveArgs;
     }
 
     protected function castDirectiveArgumentsForSchema(DirectiveResolverInterface $directiveResolver, FieldResolverInterface $fieldResolver, string $fieldDirective, array $directiveArgs, array &$failedCastingDirectiveArgErrorMessages): array
