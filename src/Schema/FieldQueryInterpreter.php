@@ -3,13 +3,14 @@ namespace PoP\ComponentModel\Schema;
 use PoP\FieldQuery\QueryUtils;
 use PoP\FieldQuery\QuerySyntax;
 use PoP\FieldQuery\QueryHelpers;
+use PoP\ComponentModel\ErrorUtils;
 use PoP\FieldQuery\FieldQueryUtils;
 use PoP\ComponentModel\GeneralUtils;
 use PoP\QueryParsing\QueryParserInterface;
 use PoP\Translation\TranslationAPIInterface;
+use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\DirectiveResolvers\DirectiveResolverInterface;
-use PoP\ComponentModel\ErrorUtils;
 
 class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implements FieldQueryInterpreterInterface
 {
@@ -493,7 +494,23 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                     ($forSchema && !$this->isFieldArgumentValueAField($argValue)) ||
                     !$forSchema
                 ) {
-                    $argValue = $this->typeCastingExecuter->cast($fieldArgType, $argValue);
+                    // If the value is an array, and the type is a combination of types, then cast each element to the item type
+                    $isArray = false;
+                    if ($maybeFieldArgTypeCombiningElems = TypeCastingHelpers::maybeGetTypeCombinationElements($fieldArgType)) {
+                        $isArray = $maybeFieldArgTypeCombiningElems[0] == SchemaDefinition::TYPE_ARRAY && is_array($argValue);
+                    }
+                    if ($isArray) {
+                        $arrayFieldArgType = $maybeFieldArgTypeCombiningElems[1];
+                        $argValue = array_map(
+                            function($arrayArgValueElem) use($arrayFieldArgType) {
+                                return $this->typeCastingExecuter->cast($arrayFieldArgType, $arrayArgValueElem);
+                            },
+                            $argValue
+                        );
+                    } else {
+                        // Otherwise, simply cast the given value directly
+                        $argValue = $this->typeCastingExecuter->cast($fieldArgType, $argValue);
+                    }
                     // If the response is an error, extract the error message and set value to null
                     if (GeneralUtils::isError($argValue)) {
                         $error = $argValue;
