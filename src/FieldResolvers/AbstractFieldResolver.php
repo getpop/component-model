@@ -89,9 +89,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             // Count how many times each directive is added
             $directiveCount = [];
             foreach ($directiveSet as $directive) {
+                $directiveName = $fieldQueryInterpreter->getDirectiveName($directive);
                 $fieldDirective = $fieldQueryInterpreter->convertDirectiveToFieldDirective($directive);
                 if (is_null($this->fieldDirectiveInstanceCache[$fieldDirective])) {
-                    $directiveName = $fieldQueryInterpreter->getDirectiveName($directive);
                     $directiveArgs = $fieldQueryInterpreter->extractStaticDirectiveArguments($fieldDirective);
                     $directiveClasses = $directiveNameClasses[$directiveName];
                     // If there is no directive with this name, show an error and skip it
@@ -151,12 +151,12 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $directiveResolverInstance = $this->fieldDirectiveInstanceCache[$fieldDirective];
 
                 // Validate if the directive can be executed multiple times
-                $directiveCount[$fieldDirective] = isset($directiveCount[$fieldDirective]) ? $directiveCount[$fieldDirective] + 1 : 1;
-                if ($directiveCount[$fieldDirective] > 1 && !$directiveResolverInstance->canExecuteMultipleTimesInField()) {
+                $directiveCount[$directiveName] = isset($directiveCount[$directiveName]) ? $directiveCount[$directiveName] + 1 : 1;
+                if ($directiveCount[$directiveName] > 1 && !$directiveResolverInstance->canExecuteMultipleTimesInField()) {
                     $schemaErrors[$fieldDirective][] = sprintf(
                         $translationAPI->__('Directive \'%s\' can be executed only once within a field, so the current execution (number %s) has been ignored', 'pop-component-model'),
                         $fieldDirective,
-                        $directiveCount[$fieldDirective]
+                        $directiveCount[$directiveName]
                     );
                     continue;
                 }
