@@ -447,7 +447,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                 if (\PoP\ComponentModel\GeneralUtils::isError($directiveArgValue)) {
                     $error = $directiveArgValue;
                     if ($errorData = $error->getErrorData()) {
-                        $errorOutputKey = $errorData[ErrorUtils::ERRORPROPERTY_FIELD_NAME];
+                        $errorOutputKey = $errorData[ErrorUtils::ERRORDATA_FIELD_NAME];
                     }
                     $errorOutputKey = $errorOutputKey ?? $fieldOrDirectiveOutputKey;
                     $dbErrors[(string)$id][$errorOutputKey][] = $error->getErrorMessage();
