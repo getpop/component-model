@@ -60,6 +60,11 @@ class TypeCastingExecuter implements TypeCastingExecuterInterface
             case SchemaDefinition::TYPE_FLOAT:
                 return CastToType::_float($value);
             case SchemaDefinition::TYPE_BOOL:
+                // Watch out! In Library CastToType, an empty string is not false, but it's NULL
+                // But for us it must be false, since calling query ?query=and([true,false]) gets transformed to the $field string "[1,]"
+                if ($value == '') {
+                    return false;
+                }
                 return CastToType::_bool($value);
             case SchemaDefinition::TYPE_TIME:
                 $converted = strtotime($value);
