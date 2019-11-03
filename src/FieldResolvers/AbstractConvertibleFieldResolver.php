@@ -157,7 +157,7 @@ abstract class AbstractConvertibleFieldResolver extends AbstractFieldResolver
         return $fieldResolver->resolveValue($resultItem, $field);
     }
 
-    protected function addSchemaDocumentation(array $fieldArgs = [], array $options = [])
+    protected function addSchemaDefinition(array $fieldArgs = [], array $options = [])
     {
         $instanceManager = InstanceManagerFacade::getInstance();
 
@@ -167,7 +167,7 @@ abstract class AbstractConvertibleFieldResolver extends AbstractFieldResolver
         $baseFields = [];
         if ($baseFieldResolverClass = $this->getBaseFieldResolverClass()) {
             $fieldResolver = $instanceManager->getInstance($baseFieldResolverClass);
-            $this->schemaDefinition[SchemaDefinition::ARGNAME_BASERESOLVER] = $fieldResolver->getSchemaDocumentation($fieldArgs, $options);
+            $this->schemaDefinition[SchemaDefinition::ARGNAME_BASERESOLVER] = $fieldResolver->getSchemaDefinition($fieldArgs, $options);
             $baseFields = array_map(function($fieldProps) {
                 return $fieldProps[SchemaDefinition::ARGNAME_NAME];
             }, (array)$this->schemaDefinition[SchemaDefinition::ARGNAME_BASERESOLVER][SchemaDefinition::ARGNAME_FIELDS]);
@@ -177,7 +177,7 @@ abstract class AbstractConvertibleFieldResolver extends AbstractFieldResolver
         foreach ($this->getFieldResolverPickers() as $picker) {
             $fieldResolver = $instanceManager->getInstance($picker->getFieldResolverClass());
             // Do not repeat those fields already present on the base fieldResolver
-            $deltaFields = $fieldResolver->getSchemaDocumentation($fieldArgs, $options);
+            $deltaFields = $fieldResolver->getSchemaDefinition($fieldArgs, $options);
             $deltaFields[SchemaDefinition::ARGNAME_FIELDS] = array_values(array_filter(
                 $deltaFields[SchemaDefinition::ARGNAME_FIELDS],
                 function($fieldProps) use($baseFields) {

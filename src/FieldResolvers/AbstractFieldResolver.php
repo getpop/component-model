@@ -507,7 +507,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         return hash('md5', $class);
     }
 
-    public function getSchemaDocumentation(array $fieldArgs = [], array $options = []): array
+    public function getSchemaDefinition(array $fieldArgs = [], array $options = []): array
     {
         // Stop recursion
         $class = get_called_class();
@@ -523,13 +523,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $this->schemaDefinition = [
                 SchemaDefinition::ARGNAME_RESOLVERID => $this->getFieldResolverSchemaId($class),
             ];
-            $this->addSchemaDocumentation($fieldArgs, $options);
+            $this->addSchemaDefinition($fieldArgs, $options);
         }
 
         return $this->schemaDefinition;
     }
 
-    protected function addSchemaDocumentation(array $schemaFieldArgs = [], array $options = [])
+    protected function addSchemaDefinition(array $schemaFieldArgs = [], array $options = [])
     {
         $instanceManager = InstanceManagerFacade::getInstance();
         // if ($options['is-root']) {
@@ -577,7 +577,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                         $fieldDataloader = $instanceManager->getInstance($fieldDataloaderClass);
                         if ($fieldResolverClass = $fieldDataloader->getFieldResolverClass()) {
                             $fieldResolver = $instanceManager->getInstance($fieldResolverClass);
-                            $fieldSchemaDefinition[SchemaDefinition::ARGNAME_RESOLVER] = $fieldResolver->getSchemaDocumentation($fieldArgs, $options);
+                            $fieldSchemaDefinition[SchemaDefinition::ARGNAME_RESOLVER] = $fieldResolver->getSchemaDefinition($fieldArgs, $options);
                         }
                     }
                 }
