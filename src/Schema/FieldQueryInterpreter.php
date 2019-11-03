@@ -266,46 +266,19 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         $validAndResolvedField = $field;
         $fieldName = $this->getFieldName($field);
         $extractedFieldArgs = $fieldArgs = $this->extractFieldArguments($fieldResolver, $field, $variables, $schemaWarnings);
+        $fieldArgs = $this->validateExtractedFieldOrDirectiveArgumentsForSchema($fieldResolver, $fieldArgs, $variables, $schemaErrors, $schemaWarnings, $schemaDeprecations);
         if ($fieldArgs) {
-            foreach ($fieldArgs as $fieldArgName => $fieldArgValue) {
-                $fieldArgs[$fieldArgName] = $fieldArgValue;
-                // Validate it
-                if ($maybeErrors = $this->resolveFieldArgumentValueErrorDescriptionsForSchema($fieldResolver, $fieldArgValue, $variables)) {
-                    $schemaErrors = array_merge(
-                        $schemaErrors,
-                        $maybeErrors
-                    );
-                    // Because it's an error, set the value to null, so it will be filtered out
-                    $fieldArgs[$fieldArgName] = null;
-                }
-                // Find warnings and deprecations
-                if ($maybeWarnings = $this->resolveFieldArgumentValueWarningsForSchema($fieldResolver, $fieldArgValue, $variables)) {
-                    $schemaWarnings = array_merge(
-                        $schemaWarnings,
-                        $maybeWarnings
-                    );
-                }
-                if ($maybeDeprecations = $this->resolveFieldArgumentValueDeprecationsForSchema($fieldResolver, $fieldArgValue, $variables)) {
-                    $schemaDeprecations = array_merge(
-                        $schemaDeprecations,
-                        $maybeDeprecations
-                    );
-                }
-            }
-            $fieldArgs = $this->filterFieldArgs($fieldArgs);
             // Cast the values to their appropriate type. If casting fails, the value returns as null
             $fieldArgs = $this->castAndValidateFieldArgumentsForSchema($fieldResolver, $field, $fieldArgs, $schemaWarnings);
         }
         // If there's an error, those args will be removed. Then, re-create the fieldDirective to pass it to the function below
         if ($schemaErrors) {
             $validAndResolvedField = null;
-        } else {
+        } elseif ($extractedFieldArgs != $fieldArgs) {
             // There are 2 reasons why the field might have changed:
             // 1. validField: There are $schemaWarnings: remove the fieldArgs that failed
             // 2. resolvedField: Some fieldArg was a variable: replace it with its value
-            if ($extractedFieldArgs != $fieldArgs) {
-                $validAndResolvedField = $this->replaceFieldArgs($field, $fieldArgs);
-            }
+            $validAndResolvedField = $this->replaceFieldArgs($field, $fieldArgs);
         }
         return [
             $validAndResolvedField,
@@ -325,46 +298,19 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         $validAndResolvedDirective = $fieldDirective;
         $directiveName = $this->getFieldDirectiveName($fieldDirective);
         $extractedDirectiveArgs = $directiveArgs = $this->extractDirectiveArguments($directiveResolver, $fieldResolver, $fieldDirective, $variables, $schemaWarnings);
+        $directiveArgs = $this->validateExtractedFieldOrDirectiveArgumentsForSchema($fieldResolver, $directiveArgs, $variables, $schemaErrors, $schemaWarnings, $schemaDeprecations);
         if ($directiveArgs) {
-            foreach ($directiveArgs as $directiveArgName => $directiveArgValue) {
-                $directiveArgs[$directiveArgName] = $directiveArgValue;
-                // Validate it
-                if ($maybeErrors = $this->resolveFieldArgumentValueErrorDescriptionsForSchema($fieldResolver, $directiveArgValue, $variables)) {
-                    $schemaErrors = array_merge(
-                        $schemaErrors,
-                        $maybeErrors
-                    );
-                    // Because it's an error, set the value to null, so it will be filtered out
-                    $directiveArgs[$directiveArgName] = null;
-                }
-                // Find warnings and deprecations
-                if ($maybeWarnings = $this->resolveFieldArgumentValueWarningsForSchema($fieldResolver, $directiveArgValue, $variables)) {
-                    $schemaWarnings = array_merge(
-                        $schemaWarnings,
-                        $maybeWarnings
-                    );
-                }
-                if ($maybeDeprecations = $this->resolveFieldArgumentValueDeprecationsForSchema($fieldResolver, $directiveArgValue, $variables)) {
-                    $schemaDeprecations = array_merge(
-                        $schemaDeprecations,
-                        $maybeDeprecations
-                    );
-                }
-            }
-            $directiveArgs = $this->filterFieldArgs($directiveArgs);
             // Cast the values to their appropriate type. If casting fails, the value returns as null
             $directiveArgs = $this->castAndValidateDirectiveArgumentsForSchema($directiveResolver, $fieldResolver, $fieldDirective, $directiveArgs, $schemaWarnings);
         }
         // If there's an error, those args will be removed. Then, re-create the fieldDirective to pass it to the function below
         if ($schemaErrors) {
             $validAndResolvedDirective = null;
-        } else {
+        } elseif ($extractedDirectiveArgs != $directiveArgs) {
             // There are 2 reasons why the fieldDirective might have changed:
             // 1. validField: There are $schemaWarnings: remove the directiveArgs that failed
             // 2. resolvedField: Some directiveArg was a variable: replace it with its value
-            if ($extractedDirectiveArgs != $directiveArgs) {
-                $validAndResolvedDirective = $this->replaceFieldArgs($fieldDirective, $directiveArgs);
-            }
+            $validAndResolvedDirective = $this->replaceFieldArgs($fieldDirective, $directiveArgs);
         }
         return [
             $validAndResolvedDirective,
@@ -374,6 +320,39 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             $schemaWarnings,
             $schemaDeprecations,
         ];
+    }
+
+    protected function validateExtractedFieldOrDirectiveArgumentsForSchema(FieldResolverInterface $fieldResolver, array $fieldOrDirectiveArgs, ?array $variables = null, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    {
+        if ($fieldOrDirectiveArgs) {
+            foreach ($fieldOrDirectiveArgs as $argName => $argValue) {
+                // Validate it
+                if ($maybeErrors = $this->resolveFieldArgumentValueErrorDescriptionsForSchema($fieldResolver, $argValue, $variables)) {
+                    $schemaErrors = array_merge(
+                        $schemaErrors,
+                        $maybeErrors
+                    );
+                    // Because it's an error, set the value to null, so it will be filtered out
+                    $fieldOrDirectiveArgs[$argName] = null;
+                }
+                // Find warnings and deprecations
+                if ($maybeWarnings = $this->resolveFieldArgumentValueWarningsForSchema($fieldResolver, $argValue, $variables)) {
+                    $schemaWarnings = array_merge(
+                        $schemaWarnings,
+                        $maybeWarnings
+                    );
+                }
+                if ($maybeDeprecations = $this->resolveFieldArgumentValueDeprecationsForSchema($fieldResolver, $argValue, $variables)) {
+                    $schemaDeprecations = array_merge(
+                        $schemaDeprecations,
+                        $maybeDeprecations
+                    );
+                }
+            }
+            // If there was an error, remove those entries
+            $fieldOrDirectiveArgs = $this->filterFieldArgs($fieldOrDirectiveArgs);
+        }
+        return $fieldOrDirectiveArgs;
     }
 
     // public function extractDirectiveArgumentsForSchema(FieldResolverInterface $fieldResolver, string $field, ?array $variables = null): array
