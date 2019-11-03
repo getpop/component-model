@@ -616,9 +616,9 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     {
         // Get the fieldDirective argument types, to know to what type it will cast the value
         $directiveArgNameTypes = [];
-        if ($directiveDocumentationArgs = $directiveResolver->getSchemaDirectiveArgs($fieldResolver)) {
-            foreach ($directiveDocumentationArgs as $directiveDocumentationArg) {
-                $directiveArgNameTypes[$directiveDocumentationArg['name']] = $directiveDocumentationArg['type'];
+        if ($directiveSchemaDefinitionArgs = $directiveResolver->getSchemaDirectiveArgs($fieldResolver)) {
+            foreach ($directiveSchemaDefinitionArgs as $directiveSchemaDefinitionArg) {
+                $directiveArgNameTypes[$directiveSchemaDefinitionArg['name']] = $directiveSchemaDefinitionArg['type'];
             }
         }
         return $directiveArgNameTypes;
@@ -636,9 +636,9 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     {
         // Get the field argument types, to know to what type it will cast the value
         $fieldArgNameTypes = [];
-        if ($fieldDocumentationArgs = $fieldResolver->getSchemaFieldArgs($field)) {
-            foreach ($fieldDocumentationArgs as $fieldDocumentationArg) {
-                $fieldArgNameTypes[$fieldDocumentationArg['name']] = $fieldDocumentationArg['type'];
+        if ($fieldSchemaDefinitionArgs = $fieldResolver->getSchemaFieldArgs($field)) {
+            foreach ($fieldSchemaDefinitionArgs as $fieldSchemaDefinitionArg) {
+                $fieldArgNameTypes[$fieldSchemaDefinitionArg['name']] = $fieldSchemaDefinitionArg['type'];
             }
         }
         return $fieldArgNameTypes;
