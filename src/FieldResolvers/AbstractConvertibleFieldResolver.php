@@ -184,7 +184,7 @@ abstract class AbstractConvertibleFieldResolver extends AbstractFieldResolver
                     return !in_array($fieldProps[SchemaDefinition::ARGNAME_NAME], $baseFields);
                 }
             ));
-            $this->schemaDefinition[SchemaDefinition::ARGNAME_RESOLVERSBYOBJECTNATURE][$picker->getSchemaDocumentationObjectNature()] = $deltaFields;
+            $this->schemaDefinition[SchemaDefinition::ARGNAME_RESOLVERSBYOBJECTNATURE][$picker->getSchemaDefinitionObjectNature()] = $deltaFields;
         }
     }
 

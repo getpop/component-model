@@ -8,7 +8,7 @@ abstract class AbstractConvertibleFieldResolverPicker
 
     abstract public function getFieldResolverClass(): string;
 
-    abstract public function getSchemaDocumentationObjectNature(): string;
+    abstract public function getSchemaDefinitionObjectNature(): string;
 
     public function process($resultItem): bool
     {
