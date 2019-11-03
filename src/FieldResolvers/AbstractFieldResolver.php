@@ -161,6 +161,11 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     continue;
                 }
 
+                // Check for deprecations
+                if ($deprecationDescription = $directiveResolverInstance->getSchemaDirectiveDeprecationDescription($this)) {
+                    $schemaDeprecations[$fieldDirective][] = $deprecationDescription;
+                }
+
                 // Directive is valid. Add it as a pipeline stage, in its required position
                 $directivesByPosition[$directiveResolverInstance->getPipelinePosition()][] = $directiveResolverInstance;
             }

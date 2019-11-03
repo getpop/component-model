@@ -11,7 +11,7 @@ use PoP\ComponentModel\DirectivePipeline\DirectivePipelineUtils;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 
-abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, StageInterface
+abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, SchemaDirectiveResolverInterface, StageInterface
 {
     use AttachableExtensionTrait, DirectiveValidatorTrait;
 
@@ -171,6 +171,22 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             return $schemaDefinitionResolver->getSchemaDirectiveArgs($fieldResolver);
         }
         return [];
+    }
+
+    public function getSchemaDirectiveDeprecationDescription(FieldResolverInterface $fieldResolver): ?string
+    {
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
+            return $schemaDefinitionResolver->getSchemaDirectiveDeprecationDescription($fieldResolver);
+        }
+        return null;
+    }
+
+    public function getSchemaDirectiveDescription(FieldResolverInterface $fieldResolver): ?string
+    {
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
+            return $schemaDefinitionResolver->getSchemaDirectiveDescription($fieldResolver);
+        }
+        return null;
     }
 
     public function __invoke($payload)

@@ -5,9 +5,13 @@ use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 
 interface SchemaDirectiveResolverInterface
 {
+    /**
+     * Description of the directive, to be output as documentation in the schema
+     *
+     * @param FieldResolverInterface $fieldResolver
+     * @return string|null
+     */
     public function getSchemaDirectiveDescription(FieldResolverInterface $fieldResolver): ?string;
-    public function getSchemaDirectiveDeprecationDescription(FieldResolverInterface $fieldResolver): ?string;
-    public function getSchemaDirectiveArgs(FieldResolverInterface $fieldResolver): array;
     /**
      * Indicates if the directive argument names can be omitted from the query, deducing them from the order in which they were defined in the schema
      *
@@ -16,5 +20,19 @@ interface SchemaDirectiveResolverInterface
      * @return boolean
      */
     public function enableOrderedSchemaDirectiveArgs(FieldResolverInterface $fieldResolver): bool;
+    /**
+     * Schema Directive Arguments
+     *
+     * @param FieldResolverInterface $fieldResolver
+     * @return array
+     */
+    public function getSchemaDirectiveArgs(FieldResolverInterface $fieldResolver): array;
+    /**
+     * Indicate if the directive has been deprecated, why, when, and/or how it must be replaced
+     *
+     * @param FieldResolverInterface $fieldResolver
+     * @return string|null
+     */
+    public function getSchemaDirectiveDeprecationDescription(FieldResolverInterface $fieldResolver): ?string;
 
 }
