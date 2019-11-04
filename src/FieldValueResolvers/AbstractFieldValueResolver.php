@@ -107,6 +107,14 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         return null;
     }
 
+    public function isOperatorOrHelper(FieldResolverInterface $fieldResolver, string $fieldName): bool
+    {
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
+            return $schemaDefinitionResolver->isOperatorOrHelper($fieldResolver, $fieldName);
+        }
+        return false;
+    }
+
     /**
      * Get the "schema" properties as for the fieldName
      *

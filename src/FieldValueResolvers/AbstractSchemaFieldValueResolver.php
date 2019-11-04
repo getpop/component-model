@@ -36,4 +36,9 @@ abstract class AbstractSchemaFieldValueResolver extends AbstractFieldValueResolv
     {
         return null;
     }
+
+    public function isOperatorOrHelper(FieldResolverInterface $fieldResolver, string $fieldName): bool
+    {
+        return false;
+    }
 }

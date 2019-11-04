@@ -1,6 +1,7 @@
 <?php
 namespace PoP\ComponentModel\FieldValueResolvers;
 use PoP\ComponentModel\FieldResolvers\AbstractFieldResolver;
+use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 
 abstract class AbstractOperatorFieldValueResolver extends AbstractDBDataFieldValueResolver
 {
@@ -9,5 +10,10 @@ abstract class AbstractOperatorFieldValueResolver extends AbstractDBDataFieldVal
         return [
         	AbstractFieldResolver::class,
         ];
+    }
+
+    public function isOperatorOrHelper(FieldResolverInterface $fieldResolver, string $fieldName): bool
+    {
+        return true;
     }
 }

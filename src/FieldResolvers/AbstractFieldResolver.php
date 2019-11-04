@@ -532,10 +532,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     protected function addSchemaDefinition(array $schemaFieldArgs = [], array $options = [])
     {
         $instanceManager = InstanceManagerFacade::getInstance();
-        // if ($options['is-root']) {
-        //     $this->schemaDefinition['global-fields'] = $this->getGlobalFieldSchemaDocumentation();
-        //     unset($options['is-root']);
-        // }
+
+        // Only in the root we output the operators and helpers
+        $isRoot = $options['is-root'];
+        unset($options['is-root']);
 
         // Add the directives
         $this->schemaDefinition[SchemaDefinition::ARGNAME_DIRECTIVES] = [];
@@ -567,22 +567,28 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
                 // Get the documentation from the first element
                 $fieldValueResolver = $fieldValueResolvers[0];
-                $fieldSchemaDefinition = $fieldValueResolver->getSchemaDefinitionForField($this, $fieldName, $fieldArgs);
-
-                // Add subfield schema if it is deep, and this fieldResolver has not been processed yet
-                if ($fieldArgs['deep']) {
-                    // If this field is relational, then add its own schema
-                    if ($fieldDataloaderClass = $this->resolveFieldDefaultDataloaderClass($field)) {
-                        // Append subfields' schema
-                        $fieldDataloader = $instanceManager->getInstance($fieldDataloaderClass);
-                        if ($fieldResolverClass = $fieldDataloader->getFieldResolverClass()) {
-                            $fieldResolver = $instanceManager->getInstance($fieldResolverClass);
-                            $fieldSchemaDefinition[SchemaDefinition::ARGNAME_RESOLVER] = $fieldResolver->getSchemaDefinition($fieldArgs, $options);
+                $isOperatorOrHelper = $fieldValueResolver->isOperatorOrHelper($this, $fieldName);
+                if (!$isOperatorOrHelper || ($isOperatorOrHelper && $isRoot)) {
+                    $fieldSchemaDefinition = $fieldValueResolver->getSchemaDefinitionForField($this, $fieldName, $fieldArgs);
+                    // Add subfield schema if it is deep, and this fieldResolver has not been processed yet
+                    if ($fieldArgs['deep']) {
+                        // If this field is relational, then add its own schema
+                        if ($fieldDataloaderClass = $this->resolveFieldDefaultDataloaderClass($field)) {
+                            // Append subfields' schema
+                            $fieldDataloader = $instanceManager->getInstance($fieldDataloaderClass);
+                            if ($fieldResolverClass = $fieldDataloader->getFieldResolverClass()) {
+                                $fieldResolver = $instanceManager->getInstance($fieldResolverClass);
+                                $fieldSchemaDefinition[SchemaDefinition::ARGNAME_RESOLVER] = $fieldResolver->getSchemaDefinition($fieldArgs, $options);
+                            }
                         }
                     }
-                }
 
-                $this->schemaDefinition[SchemaDefinition::ARGNAME_FIELDS][] = $fieldSchemaDefinition;
+                    if ($isOperatorOrHelper) {
+                        $this->schemaDefinition[SchemaDefinition::ARGNAME_OPERATORS_AND_HELPERS][] = $fieldSchemaDefinition;
+                    } else {
+                        $this->schemaDefinition[SchemaDefinition::ARGNAME_FIELDS][] = $fieldSchemaDefinition;
+                    }
+                }
             }
         }
     }
