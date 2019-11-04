@@ -25,4 +25,8 @@ abstract class AbstractSchemaDirectiveResolver extends AbstractDirectiveResolver
     {
         return true;
     }
+    public function isGlobal(FieldResolverInterface $fieldResolver): bool
+    {
+        return false;
+    }
 }

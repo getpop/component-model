@@ -21,6 +21,7 @@ class SchemaDefinition {
     const ARGNAME_CONVERTIBLE = 'convertible';
     const ARGNAME_RESOLVERSBYOBJECTNATURE = 'resolversByObjectNature';
     const ARGNAME_DIRECTIVES = 'directives';
+    const ARGNAME_GLOBAL_DIRECTIVES = 'globalDirectives';
     const ARGNAME_DIRECTIVE_CAN_EXECUTE_MULTIPLE_TIMES = 'canExecuteMultipleTimes';
     const ARGNAME_DIRECTIVE_NEEDS_DATA_TO_EXECUTE = 'needsDataToExecute';
     const ARGNAME_DIRECTIVE_LIMITED_TO_FIELDS = 'limitedToFields';

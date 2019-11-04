@@ -6,7 +6,6 @@ use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\FieldResolvers\PipelinePositions;
-use PoP\ComponentModel\FieldResolvers\AbstractFieldResolver;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineUtils;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
@@ -21,14 +20,6 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         // If the directive is not provided, then it directly the directive name
         // This allows to instantiate the directive through the DependencyInjection component
         $this->directive = $directive ?? $this->getDirectiveName();
-    }
-
-    public static function getClassesToAttachTo(): array
-    {
-        // By default, be attached to all fieldResolvers
-        return [
-            AbstractFieldResolver::class,
-        ];
     }
 
     /**
@@ -172,6 +163,14 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             return $schemaDefinitionResolver->getSchemaDirectiveDescription($fieldResolver);
         }
         return null;
+    }
+
+    public function isGlobal(FieldResolverInterface $fieldResolver): bool
+    {
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
+            return $schemaDefinitionResolver->isGlobal($fieldResolver);
+        }
+        return false;
     }
 
     public function __invoke($payload)

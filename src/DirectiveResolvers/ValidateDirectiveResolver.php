@@ -5,7 +5,7 @@ use PoP\ComponentModel\FieldResolvers\PipelinePositions;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 
-class ValidateDirectiveResolver extends AbstractSchemaDirectiveResolver
+class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
 {
     const DIRECTIVE_NAME = 'validate';
     public static function getDirectiveName(): string {

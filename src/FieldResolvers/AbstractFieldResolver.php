@@ -544,8 +544,15 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             foreach ($directiveClasses as $directiveClass) {
                 $directiveResolverInstance = $instanceManager->getInstance($directiveClass);
                 // $directiveResolverInstance = new $directiveClass($directiveName);
-                $directiveSchemaDefinition = $directiveResolverInstance->getSchemaDefinitionForDirective($this);
-                $this->schemaDefinition[SchemaDefinition::ARGNAME_DIRECTIVES][] = $directiveSchemaDefinition;
+                $isGlobal = $directiveResolverInstance->isGlobal($this);
+                if (!$isGlobal || ($isGlobal && $isRoot)) {
+                    $directiveSchemaDefinition = $directiveResolverInstance->getSchemaDefinitionForDirective($this);
+                    if ($isGlobal) {
+                        $this->schemaDefinition[SchemaDefinition::ARGNAME_GLOBAL_DIRECTIVES][] = $directiveSchemaDefinition;
+                    } else {
+                        $this->schemaDefinition[SchemaDefinition::ARGNAME_DIRECTIVES][] = $directiveSchemaDefinition;
+                    }
+                }
             }
         }
 
@@ -560,15 +567,14 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $fieldArgs,
             ) = $this->dissectFieldForSchema($field);
             if (!is_null($field)) {
-                $fieldArgs = array_merge(
-                    $schemaFieldArgs,
-                    $fieldArgs
-                );
-
                 // Get the documentation from the first element
                 $fieldValueResolver = $fieldValueResolvers[0];
                 $isOperatorOrHelper = $fieldValueResolver->isOperatorOrHelper($this, $fieldName);
                 if (!$isOperatorOrHelper || ($isOperatorOrHelper && $isRoot)) {
+                    $fieldArgs = array_merge(
+                        $schemaFieldArgs,
+                        $fieldArgs
+                    );
                     $fieldSchemaDefinition = $fieldValueResolver->getSchemaDefinitionForField($this, $fieldName, $fieldArgs);
                     // Add subfield schema if it is deep, and this fieldResolver has not been processed yet
                     if ($fieldArgs['deep']) {

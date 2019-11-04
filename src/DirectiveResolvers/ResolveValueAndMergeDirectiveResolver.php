@@ -7,7 +7,7 @@ use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 
-class ResolveValueAndMergeDirectiveResolver extends AbstractSchemaDirectiveResolver
+class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResolver
 {
     const DIRECTIVE_NAME = 'resolve-value-and-merge';
     public static function getDirectiveName(): string {

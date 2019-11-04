@@ -34,5 +34,12 @@ interface SchemaDirectiveResolverInterface
      * @return string|null
      */
     public function getSchemaDirectiveDeprecationDescription(FieldResolverInterface $fieldResolver): ?string;
+    /**
+     * Indicate if the directive is global (i.e. it can be applied to all fields, for all fieldResolvers)
+     *
+     * @param FieldResolverInterface $fieldResolver
+     * @return bool
+     */
+    public function isGlobal(FieldResolverInterface $fieldResolver): bool;
 
 }
