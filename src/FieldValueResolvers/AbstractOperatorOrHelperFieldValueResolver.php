@@ -3,7 +3,7 @@ namespace PoP\ComponentModel\FieldValueResolvers;
 use PoP\ComponentModel\FieldResolvers\AbstractFieldResolver;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 
-abstract class AbstractOperatorFieldValueResolver extends AbstractDBDataFieldValueResolver
+abstract class AbstractOperatorOrHelperFieldValueResolver extends AbstractDBDataFieldValueResolver
 {
     public static function getClassesToAttachTo(): array
     {
