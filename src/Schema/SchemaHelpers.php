@@ -4,12 +4,12 @@ namespace PoP\ComponentModel\Schema;
 class SchemaHelpers
 {
     public static function getMissingFieldArgs(array $fieldArgProps, array $fieldArgs): array {
-        return array_filter(
+        return array_values(array_filter(
             $fieldArgProps,
             function($fieldArgProp) use($fieldArgs) {
                 return !array_key_exists($fieldArgProp, $fieldArgs);
             }
-        );
+        ));
     }
 
     public static function getSchemaMandatoryFieldArgs(array $schemaFieldArgs)
