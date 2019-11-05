@@ -249,7 +249,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
             // From the fieldDirectiveName get the class that processes it. If null, the users passed a wrong name through the API, so show an error
             $directivePipeline = $this->getFieldDirectivePipeline($fieldDirectives, $schemaErrors, $schemaWarnings, $schemaDeprecations);
-            $directivePipeline->resolvePipeline(
+            $directivePipeline->resolveDirectivePipeline(
                 $this,
                 $directiveResultSet,
                 $idsDataFields,
