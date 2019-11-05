@@ -66,6 +66,21 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         ];
     }
 
+    /**
+     * By default, do nothing
+     *
+     * @param FieldResolverInterface $fieldResolver
+     * @param array $directiveArgs
+     * @param array $schemaErrors
+     * @param array $schemaWarnings
+     * @param array $schemaDeprecations
+     * @return array
+     */
+    public function validateDirectiveArgumentsForSchema(FieldResolverInterface $fieldResolver, array $directiveArgs, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    {
+        return $directiveArgs;
+    }
+
     public function dissectAndValidateDirectiveForResultItem(FieldResolverInterface $fieldResolver, $resultItem, array &$dbErrors, array &$dbWarnings): array
     {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();

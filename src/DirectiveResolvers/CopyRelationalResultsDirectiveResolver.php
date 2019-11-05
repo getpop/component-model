@@ -64,6 +64,44 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
     }
 
     /**
+     * Validate that the number of elements in the fields `copyToFields` and `copyFromFields` match one another
+     *
+     * @param FieldResolverInterface $fieldResolver
+     * @param array $directiveArgs
+     * @param array $schemaErrors
+     * @param array $schemaWarnings
+     * @param array $schemaDeprecations
+     * @return array
+     */
+    public function validateDirectiveArgumentsForSchema(FieldResolverInterface $fieldResolver, array $directiveArgs, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    {
+        $directiveArgs = parent::validateDirectiveArgumentsForSchema($fieldResolver, $directiveArgs, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+
+        if (isset($directiveArgs['copyToFields'])) {
+            $translationAPI = TranslationAPIFacade::getInstance();
+            $copyToFields = $directiveArgs['copyToFields'];
+            $copyFromFields = $directiveArgs['copyFromFields'];
+            $copyToFieldsCount = count($copyToFields);
+            $copyFromFieldsCount = count($copyFromFields);
+
+            // Validate that both arrays have the same number of elements
+            if ($copyToFieldsCount > $copyFromFieldsCount) {
+                $schemaWarnings[$this->directive][] = sprintf(
+                    $translationAPI->__('Argument \'copyToFields\' has more elements than argument \'copyFromFields\', so the following fields have been ignored: \'%s\'', 'component-model'),
+                    implode($translationAPI->__('\', \''), array_slice($copyToFields, $copyFromFieldsCount))
+                );
+            } elseif ($copyToFieldsCount < $copyFromFieldsCount) {
+                $schemaWarnings[$this->directive][] = sprintf(
+                    $translationAPI->__('Argument \'copyFromFields\' has more elements than argument \'copyToFields\', so the following fields will be copied to the destination object under their same field name: \'%s\'', 'component-model'),
+                    implode($translationAPI->__('\', \''), array_slice($copyFromFields, $copyToFieldsCount))
+                );
+            }
+        }
+
+        return $directiveArgs;
+    }
+
+    /**
      * Copy the data under the relational object into the current object
      *
      * @param FieldResolverInterface $fieldResolver
@@ -90,32 +128,14 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
 // var_dump('$idsDataFields', $idsDataFields);
         $relationalFieldOutputKey = $this->directiveArgsForSchema['relationalFieldOutputKey'];
         $copyFromFields = $this->directiveArgsForSchema['copyFromFields'];
-        $copyFromFieldsCount = count($copyFromFields);
-        if (isset($this->directiveArgsForSchema['copyToFields'])) {
-            $copyToFields = $this->directiveArgsForSchema['copyToFields'];
-            // Validate that both arrays have the same number of elements
-            $copyToFieldsCount = count($copyToFields);
-            if ($copyToFieldsCount > $copyFromFieldsCount) {
-                $schemaWarnings[$this->directive][] = sprintf(
-                    $translationAPI->__('Argument \'copyToFields\' has more elements than argument \'copyFromFields\'. The following fields from \'copyToFields\' have been ignored: \'%s\'', 'component-model'),
-                    implode($translationAPI->__('\', \''), array_slice($copyToFields, $copyFromFieldsCount))
-                );
-            } elseif ($copyToFieldsCount < $copyFromFieldsCount) {
-                $schemaWarnings[$this->directive][] = sprintf(
-                    $translationAPI->__('Argument \'copyToFields\' has fewer elements than argument \'copyFromFields\'. The following fields from \'copyFromFields\' will be copied to the destination object under their same field name: \'%s\'', 'component-model'),
-                    implode($translationAPI->__('\', \''), array_slice($copyFromFields, $copyToFieldsCount))
-                );
-            }
-        } else {
-            $copyToFields = $copyFromFields;
-        }
+        $copyToFields = $this->directiveArgsForSchema['copyToFields'] ?? $copyFromFields;
 
         // Obtain the DBKey under which the relationalField is stored in the database
         // $relationalFieldDBKey = ...;
         // THIS IS TESTING CODE!!!!! MUST FIX HERE!!!
         $relationalFieldDBKey = 'posts';
         // Copy the data from each of the relational object fields to the current object
-        for ($i=0; $i<$copyFromFieldsCount; $i++) {
+        for ($i=0; $i<count($copyFromFields); $i++) {
             $copyFromField = $copyFromFields[$i];
             $copyToField = $copyToFields[$i] ?? $copyFromFields[$i];
             foreach (array_keys($idsDataFields) as $id) {

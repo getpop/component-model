@@ -23,6 +23,18 @@ interface DirectiveResolverInterface
      * @return array
      */
     public function dissectAndValidateDirectiveForSchema(FieldResolverInterface $fieldResolver, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array;
+
+    /**
+     * Enable the directiveResolver to validate the directive arguments in a custom way
+     *
+     * @param FieldResolverInterface $fieldResolver
+     * @param array $directiveArgs
+     * @param array $schemaErrors
+     * @param array $schemaWarnings
+     * @param array $schemaDeprecations
+     * @return array
+     */
+    public function validateDirectiveArgumentsForSchema(FieldResolverInterface $fieldResolver, array $directiveArgs, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array;
     /**
      * Define where to place the directive in the directive execution pipeline
      * 2 directives are mandatory: Validate and ResolveAndMerge, which are executed in this order.
