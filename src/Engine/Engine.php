@@ -1203,10 +1203,10 @@ class Engine implements EngineInterface
             $database_key = $dataloader->getDatabaseKey();
 
             // Execute the dataloader for all combined ids
-            $resolvedDBItems = $resolvedDBErrors = $resolvedDBWarnings = $resolvedSchemaErrors = $resolvedSchemaWarnings = $resolvedSchemaDeprecations = array();
+            $iterationDBItems = $iterationDBErrors = $iterationDBWarnings = $iterationSchemaErrors = $iterationSchemaWarnings = $iterationSchemaDeprecations = array();
             if ($fieldResolverClass = $dataloader->getFieldResolverClass()) {
                 $fieldResolver = $instanceManager->getInstance($fieldResolverClass);
-                $fieldResolver->fillResultItems($dataloader, $ids_data_fields, $resolvedDBItems, $resolvedDBErrors, $resolvedDBWarnings, $resolvedSchemaErrors, $resolvedSchemaWarnings, $resolvedSchemaDeprecations);
+                $fieldResolver->fillResultItems($dataloader, $ids_data_fields, $iterationDBItems, $iterationDBErrors, $iterationDBWarnings, $iterationSchemaErrors, $iterationSchemaWarnings, $iterationSchemaDeprecations);
             }
 
             // Save in the database under the corresponding database-key (this way, different dataloaders, like 'list-users' and 'author',
@@ -1216,7 +1216,7 @@ class Engine implements EngineInterface
             // 2: These results make the page state-full, so this page is not cacheable
             // By splitting the results into state-full and state-less, we can split all functionality into cacheable and non-cacheable,
             // thus caching most of the website even for logged-in users
-            if ($resolvedDBItems) {
+            if ($iterationDBItems) {
                 // Conditional data fields: Store the loaded IDs/fields in an object, to avoid fetching them again in later iterations on the same dataloader
                 // To find out if they were loaded, validate against the DBObject, to see if it has those properties
                 foreach ($ids_data_fields as $id => $data_fields) {
@@ -1225,12 +1225,12 @@ class Engine implements EngineInterface
                             $already_loaded_ids_data_fields[$dataloader_class][(string)$id] ?? [],
                             array_intersect(
                                 $conditionalDataFields,
-                                array_keys($resolvedDBItems[(string)$id])
+                                array_keys($iterationDBItems[(string)$id])
                             )
                         );
                     }
                 }
-                $dbItems = $this->moveEntriesUnderDBName($resolvedDBItems, true, $dataloader);
+                $dbItems = $this->moveEntriesUnderDBName($iterationDBItems, true, $dataloader);
                 foreach ($dbItems as $dbname => $entries) {
                     $this->addDatasetToDatabase($databases[$dbname], $database_key, $entries);
 
@@ -1245,20 +1245,20 @@ class Engine implements EngineInterface
                     }
                 }
             }
-            if ($resolvedDBErrors) {
-                $dbNameErrorEntries = $this->moveEntriesUnderDBName($resolvedDBErrors, true, $dataloader);
+            if ($iterationDBErrors) {
+                $dbNameErrorEntries = $this->moveEntriesUnderDBName($iterationDBErrors, true, $dataloader);
                 foreach ($dbNameErrorEntries as $dbname => $entries) {
                     $this->addDatasetToDatabase($dbErrors[$dbname], $database_key, $entries);
                 }
             }
-            if ($resolvedDBWarnings) {
-                $dbNameWarningEntries = $this->moveEntriesUnderDBName($resolvedDBWarnings, true, $dataloader);
+            if ($iterationDBWarnings) {
+                $dbNameWarningEntries = $this->moveEntriesUnderDBName($iterationDBWarnings, true, $dataloader);
                 foreach ($dbNameWarningEntries as $dbname => $entries) {
                     $this->addDatasetToDatabase($dbWarnings[$dbname], $database_key, $entries);
                 }
             }
-            if ($resolvedSchemaErrors) {
-                $dbNameSchemaErrorEntries = $this->moveEntriesUnderDBName($resolvedSchemaErrors, false, $dataloader);
+            if ($iterationSchemaErrors) {
+                $dbNameSchemaErrorEntries = $this->moveEntriesUnderDBName($iterationSchemaErrors, false, $dataloader);
                 foreach ($dbNameSchemaErrorEntries as $dbname => $entries) {
                     $schemaErrors[$dbname][$database_key] = array_merge(
                         $schemaErrors[$dbname][$database_key] ?? [],
@@ -1266,8 +1266,8 @@ class Engine implements EngineInterface
                     );
                 }
             }
-            if ($resolvedSchemaWarnings) {
-                $dbNameSchemaWarningEntries = $this->moveEntriesUnderDBName($resolvedSchemaWarnings, false, $dataloader);
+            if ($iterationSchemaWarnings) {
+                $dbNameSchemaWarningEntries = $this->moveEntriesUnderDBName($iterationSchemaWarnings, false, $dataloader);
                 foreach ($dbNameSchemaWarningEntries as $dbname => $entries) {
                     $schemaWarnings[$dbname][$database_key] = array_merge(
                         $schemaWarnings[$dbname][$database_key] ?? [],
@@ -1275,8 +1275,8 @@ class Engine implements EngineInterface
                     );
                 }
             }
-            if ($resolvedSchemaDeprecations) {
-                $dbNameSchemaDeprecationEntries = $this->moveEntriesUnderDBName($resolvedSchemaDeprecations, false, $dataloader);
+            if ($iterationSchemaDeprecations) {
+                $dbNameSchemaDeprecationEntries = $this->moveEntriesUnderDBName($iterationSchemaDeprecations, false, $dataloader);
                 foreach ($dbNameSchemaDeprecationEntries as $dbname => $entries) {
                     $schemaDeprecations[$dbname][$database_key] = array_merge(
                         $schemaDeprecations[$dbname][$database_key] ?? [],
@@ -1315,7 +1315,7 @@ class Engine implements EngineInterface
                 foreach ($ids as $dataitem_id) {
                     // Get the fields requested to that dataitem, for both the database and user database
                     $dataitem_fields = [];
-                    foreach ($resolvedDBItems as $dbname => $dbItems) {
+                    foreach ($iterationDBItems as $dbname => $dbItems) {
                         $dataitem_fields = array_merge(
                             $dataitem_fields,
                             array_keys($dbItems[$dataitem_id] ?? array())
