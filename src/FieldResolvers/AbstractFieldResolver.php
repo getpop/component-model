@@ -10,7 +10,6 @@ use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
 use PoP\ComponentModel\DirectiveResolvers\ValidateDirectiveResolver;
-use PoP\ComponentModel\DirectiveResolvers\DirectiveResolverInterface;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups;
 use PoP\ComponentModel\DirectiveResolvers\ResolveValueAndMergeDirectiveResolver;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
@@ -180,6 +179,21 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $this->fieldDirectivePipelineInstanceCache[$fieldDirectives] = new DirectivePipelineDecorator($pipelineBuilder->build());
         }
         return $this->fieldDirectivePipelineInstanceCache[$fieldDirectives];
+    }
+
+    /**
+     * By default, do nothing
+     *
+     * @param string $field
+     * @param array $fieldArgs
+     * @param array $schemaErrors
+     * @param array $schemaWarnings
+     * @param array $schemaDeprecations
+     * @return array
+     */
+    public function validateFieldArgumentsForSchema(string $field, array $fieldArgs, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    {
+        return $fieldArgs;
     }
 
     public function fillResultItemsFromIDs(array $ids_data_fields, array &$resultIDItems, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
