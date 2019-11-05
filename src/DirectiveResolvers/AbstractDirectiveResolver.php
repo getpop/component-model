@@ -281,7 +281,8 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $dbWarnings,
             $schemaErrors,
             $schemaWarnings,
-            $schemaDeprecations
+            $schemaDeprecations,
+            $previousDBItems
         ) = DirectivePipelineUtils::extractArgumentsFromPayload($payload);
 
         // 2. Validate operation
@@ -295,7 +296,8 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $dbWarnings,
             $schemaErrors,
             $schemaWarnings,
-            $schemaDeprecations
+            $schemaDeprecations,
+            $previousDBItems
         );
 
         // 3. Execute operation. First check that if the validation took away the elements, and so the directive can't execute anymore
@@ -311,7 +313,8 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 $dbWarnings,
                 $schemaErrors,
                 $schemaWarnings,
-                $schemaDeprecations
+                $schemaDeprecations,
+                $previousDBItems
             );
         }
 
@@ -326,11 +329,12 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $dbWarnings,
             $schemaErrors,
             $schemaWarnings,
-            $schemaDeprecations
+            $schemaDeprecations,
+            $previousDBItems
         );
     }
 
-    public function validateDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    public function validateDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$previousDBItems)
     {
         // Check that the directive can be applied to all provided fields
         $this->validateAndFilterFieldsForDirective($idsDataFields, $schemaErrors, $schemaWarnings);

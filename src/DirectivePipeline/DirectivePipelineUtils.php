@@ -5,7 +5,7 @@ use PoP\ComponentModel\DataloaderInterface;
 
 class DirectivePipelineUtils
 {
-    public static function convertArgumentsToPayload(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    public static function convertArgumentsToPayload(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$previousDBItems): array
     {
         return [
             'dataloader' => &$dataloader,
@@ -17,7 +17,8 @@ class DirectivePipelineUtils
             'dbWarnings' => &$dbWarnings,
             'schemaErrors' => &$schemaErrors,
             'schemaWarnings' => &$schemaWarnings,
-            'schemaDeprecations' => &$schemaDeprecations
+            'schemaDeprecations' => &$schemaDeprecations,
+            'previousDBItems' => &$previousDBItems
         ];
     }
 
@@ -34,6 +35,7 @@ class DirectivePipelineUtils
             &$payload['schemaErrors'],
             &$payload['schemaWarnings'],
             &$payload['schemaDeprecations'],
+            &$payload['previousDBItems'],
         ];
     }
 }
