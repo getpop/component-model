@@ -8,6 +8,7 @@ use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\FieldResolvers\PipelinePositions;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
+use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 
 class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveResolver
 {
@@ -103,7 +104,9 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
 
         // Validate that the relationalField exists and has a dataloader associated to it
         if ($relationalField = $directiveArgs['relationalField']) {
-            if (!in_array($relationalField, $fieldResolver->getFieldNamesToResolve())) {
+            $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+            $relationalFieldName = $fieldQueryInterpreter->getFieldName($relationalField);
+            if (!in_array($relationalFieldName, $fieldResolver->getFieldNamesToResolve())) {
                 $schemaErrors[$this->directive][] = sprintf(
                     $translationAPI->__('Relational field \'%s\' is not processed by the current fieldResolver', 'component-model'),
                     $relationalField
@@ -140,17 +143,13 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         $instanceManager = InstanceManagerFacade::getInstance();
-        // $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
-        // // foreach ($idsDataFields as $id => $dataFields) {
-        // //     foreach ($dataFields['direct'] as $field) {
-        // //         $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
-        // //         $dbItems[(string)$id][$fieldOutputKey] = $dbItems[(string)$id][$fieldOutputKey];
-        // //     }
-        // // }
-// var_dump('$idsDataFields', $idsDataFields);
+
         $relationalField = $this->directiveArgsForSchema['relationalField'];
         $copyFromFields = $this->directiveArgsForSchema['copyFromFields'];
         $copyToFields = $this->directiveArgsForSchema['copyToFields'] ?? $copyFromFields;
+
+        // From the dataloader, obtain under what dbKey the data for the current object is stored
+        $dbKey = $dataloader->getDatabaseKey();
 
         // Obtain the DBKey under which the relationalField is stored in the database
         // For that, from the fieldResolver we obtain the dataloader for the `relationalField`
@@ -171,9 +170,21 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
                         $dbItems[(string)$id][$copyToField]
                     );
                 }
-                // THIS IS TESTING CODE!!!!! MUST FIX HERE!!!
-                $dbItems[(string)$id][$copyToField] = $relationalDBKey;
-                // $dbItems[(string)$id][$copyToField] = $database[$relationalFieldDBKey][(string)$id][$copyFromField];
+                // Validate that the current object has `relationalField` property set
+                if (!array_key_exists($relationalField, $previousDBItems[$dbKey][(string)$id] ?? [])) {
+                    $dbWarnings[$this->directive][] = sprintf(
+                        $translationAPI->__('Field \'%s\' for object with ID \'%s\' had not been set, so no data can be copied', 'component-model'),
+                        $relationalField,
+                        $id
+                    );
+                    continue;
+                }
+                // Copy the properties into the array
+                $dbItems[(string)$id][$copyToField] = [];
+                $relationalIDs = $previousDBItems[$dbKey][(string)$id][$relationalField];
+                foreach ($relationalIDs as $relationalID) {
+                    $dbItems[(string)$id][$copyToField][] = $previousDBItems[$relationalDBKey][(string)$relationalID][$copyFromField];
+                }
             }
         }
     }
