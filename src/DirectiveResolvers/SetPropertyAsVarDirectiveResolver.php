@@ -79,14 +79,13 @@ class SetPropertyAsVarDirectiveResolver extends AbstractGlobalDirectiveResolver
         // This way, when encountering $propName in a fieldArg in a fieldValueResolver, it can resolve that value
         // Otherwise it can't, since the fieldValueResolver doesn't have access to $dbItems
         // Send a message to the resolveAndMerge directive, indicating which properties to retrieve
-        $dbKey = $dataloader->getDatabaseKey();
         $messageDirectiveName = ResolveValueAndMergeDirectiveResolver::getDirectiveName();
         $messageName = ResolveValueAndMergeDirectiveResolver::MESSAGE_RESULT_ITEM_VARIABLES;
         $properties = $this->directiveArgsForSchema['properties'];
         $variables = $this->directiveArgsForSchema['variables'] ?? $properties;
         foreach (array_keys($idsDataFields) as $id) {
             for ($i=0; $i<count($properties); $i++) {
-                $messages[$messageDirectiveName][$messageName][$id][$variables[$i]] = $dbItems[$dbKey][(string)$id];
+                $messages[$messageDirectiveName][$messageName][$id][$variables[$i]] = $dbItems[(string)$id][$properties[$i]];
             }
         }
     }
