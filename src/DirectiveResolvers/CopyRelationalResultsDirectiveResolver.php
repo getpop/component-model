@@ -47,12 +47,6 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         return [
-            // [
-            //     SchemaDefinition::ARGNAME_NAME => 'relationalField',
-            //     SchemaDefinition::ARGNAME_TYPE => SchemaDefinition::TYPE_STRING,
-            //     SchemaDefinition::ARGNAME_DESCRIPTION => $translationAPI->__('The field that loads the relational object', 'component-model'),
-            //     SchemaDefinition::ARGNAME_MANDATORY => true,
-            // ],
             [
                 SchemaDefinition::ARGNAME_NAME => 'copyFromFields',
                 SchemaDefinition::ARGNAME_TYPE => TypeCastingHelpers::combineTypes(SchemaDefinition::TYPE_ARRAY, SchemaDefinition::TYPE_STRING),
@@ -102,26 +96,6 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
             }
         }
 
-        // // Validate that the relationalField exists and has a dataloader associated to it
-        // if ($relationalField = $directiveArgs['relationalField']) {
-        //     $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
-        //     $relationalFieldName = $fieldQueryInterpreter->getFieldName($relationalField);
-        //     if (!in_array($relationalFieldName, $fieldResolver->getFieldNamesToResolve())) {
-        //         $schemaErrors[$this->directive][] = sprintf(
-        //             $translationAPI->__('Relational field \'%s\' is not processed by the current fieldResolver', 'component-model'),
-        //             $relationalField
-        //         );
-        //     } else {
-        //         $relationalDataloaderClass = $fieldResolver->resolveFieldDefaultDataloaderClass($relationalField);
-        //         if (!$relationalDataloaderClass) {
-        //             $schemaErrors[$this->directive][] = sprintf(
-        //                 $translationAPI->__('There is no “dataloader” defined for relational field \'%s\'', 'component-model'),
-        //                 $relationalField
-        //             );
-        //         }
-        //     }
-        // }
-
         return $directiveArgs;
     }
 
@@ -145,7 +119,6 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
         $instanceManager = InstanceManagerFacade::getInstance();
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
 
-        // $relationalField = $this->directiveArgsForSchema['relationalField'];
         $copyFromFields = $this->directiveArgsForSchema['copyFromFields'];
         $copyToFields = $this->directiveArgsForSchema['copyToFields'] ?? $copyFromFields;
 
