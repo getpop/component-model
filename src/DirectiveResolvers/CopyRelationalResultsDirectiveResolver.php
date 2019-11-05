@@ -46,7 +46,7 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
         $translationAPI = TranslationAPIFacade::getInstance();
         return [
             [
-                SchemaDefinition::ARGNAME_NAME => 'relationalFieldOutputKey',
+                SchemaDefinition::ARGNAME_NAME => 'relationalField',
                 SchemaDefinition::ARGNAME_TYPE => SchemaDefinition::TYPE_STRING,
                 SchemaDefinition::ARGNAME_DESCRIPTION => $translationAPI->__('The field that loads the relational object', 'component-model'),
                 SchemaDefinition::ARGNAME_MANDATORY => true,
@@ -78,9 +78,9 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
     public function validateDirectiveArgumentsForSchema(FieldResolverInterface $fieldResolver, array $directiveArgs, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         $directiveArgs = parent::validateDirectiveArgumentsForSchema($fieldResolver, $directiveArgs, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+        $translationAPI = TranslationAPIFacade::getInstance();
 
         if (isset($directiveArgs['copyToFields'])) {
-            $translationAPI = TranslationAPIFacade::getInstance();
             $copyToFields = $directiveArgs['copyToFields'];
             $copyFromFields = $directiveArgs['copyFromFields'];
             $copyToFieldsCount = count($copyToFields);
@@ -97,6 +97,24 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
                     $translationAPI->__('Argument \'copyFromFields\' has more elements than argument \'copyToFields\', so the following fields will be copied to the destination object under their same field name: \'%s\'', 'component-model'),
                     implode($translationAPI->__('\', \''), array_slice($copyFromFields, $copyToFieldsCount))
                 );
+            }
+        }
+
+        // Validate that the relationalField exists and has a dataloader associated to it
+        if ($relationalField = $directiveArgs['relationalField']) {
+            if (!in_array($relationalField, $fieldResolver->getFieldNamesToResolve())) {
+                $schemaErrors[$this->directive][] = sprintf(
+                    $translationAPI->__('Relational field \'%s\' is not processed by the current fieldResolver', 'component-model'),
+                    $relationalField
+                );
+            } else {
+                $relationalDataloaderClass = $fieldResolver->resolveFieldDefaultDataloaderClass($relationalField);
+                if (!$relationalDataloaderClass) {
+                    $schemaErrors[$this->directive][] = sprintf(
+                        $translationAPI->__('There is no “dataloader” defined for relational field \'%s\'', 'component-model'),
+                        $relationalField
+                    );
+                }
             }
         }
 
@@ -128,14 +146,15 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
         // //     }
         // // }
 // var_dump('$idsDataFields', $idsDataFields);
-        $relationalFieldOutputKey = $this->directiveArgsForSchema['relationalFieldOutputKey'];
+        $relationalField = $this->directiveArgsForSchema['relationalField'];
         $copyFromFields = $this->directiveArgsForSchema['copyFromFields'];
         $copyToFields = $this->directiveArgsForSchema['copyToFields'] ?? $copyFromFields;
 
         // Obtain the DBKey under which the relationalField is stored in the database
+        // For that, from the fieldResolver we obtain the dataloader for the `copyFromField`
+        $relationalDataloaderClass = $fieldResolver->resolveFieldDefaultDataloaderClass($relationalField);
+        if (!$relationalDataloaderClass)
         // $relationalFieldDBKey = ...;
-        // THIS IS TESTING CODE!!!!! MUST FIX HERE!!!
-        $relationalFieldDBKey = 'posts';
         // Copy the data from each of the relational object fields to the current object
         for ($i=0; $i<count($copyFromFields); $i++) {
             $copyFromField = $copyFromFields[$i];
