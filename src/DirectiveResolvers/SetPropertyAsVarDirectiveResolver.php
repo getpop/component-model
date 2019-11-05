@@ -25,15 +25,15 @@ class SetPropertyAsVarDirectiveResolver extends AbstractGlobalDirectiveResolver
         return PipelinePositions::BACK;
     }
 
-    // /**
-    //  * Can set several properties
-    //  *
-    //  * @return boolean
-    //  */
-    // public function canExecuteMultipleTimesInField(): bool
-    // {
-    //     return true;
-    // }
+    /**
+     * Can set several properties
+     *
+     * @return boolean
+     */
+    public function canExecuteMultipleTimesInField(): bool
+    {
+        return true;
+    }
 
     public function getSchemaDirectiveDescription(FieldResolverInterface $fieldResolver): ?string
     {
