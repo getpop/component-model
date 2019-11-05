@@ -213,14 +213,14 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
 
     public function extractFieldArguments(FieldResolverInterface $fieldResolver, string $field, ?array $variables = null, ?array &$schemaWarnings = null): array
     {
-        if (!isset($this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field])) {
+        // if (!isset($this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field])) {
             $fieldSchemaWarnings = [];
             $this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field] = $this->doExtractFieldArguments($fieldResolver, $field, $variables, $fieldSchemaWarnings);
             // Also cache the schemaWarnings
             if (!is_null($schemaWarnings)) {
                 $this->extractedFieldArgumentWarningsCache[get_class($fieldResolver)][$field] = $fieldSchemaWarnings;
             }
-        }
+        // }
         // Integrate the schemaWarnings too
         if (!is_null($schemaWarnings)) {
             $schemaWarnings = array_merge(
@@ -777,9 +777,11 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         return $fieldArgValue;
     }
 
-    protected function maybeConvertFieldArgumentArrayValue(string $fieldArgValue, ?array $variables)
+    protected function maybeConvertFieldArgumentArrayValue($fieldArgValue, ?array $variables)
     {
-        $fieldArgValue = $this->maybeConvertFieldArgumentArrayValueFromStringToArray($fieldArgValue);
+        if (is_string($fieldArgValue)) {
+            $fieldArgValue = $this->maybeConvertFieldArgumentArrayValueFromStringToArray($fieldArgValue);
+        }
         if (is_array($fieldArgValue)) {
             // Resolve each element the same way
             return $this->filterFieldArgs(array_map(function($arrayValueElem) use($variables) {
@@ -885,7 +887,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             }
 
             // If it reached here, it's a field! Validate it, or show an error
-            return $fieldResolver->resolveSchemaValidationErrorDescriptions($fieldArgValue);
+            return $fieldResolver->resolveSchemaValidationErrorDescriptions($fieldArgValue, $variables);
         }
 
         return null;
@@ -902,7 +904,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
 
         // If the result fieldArgValue is a field, then validate it and resolve it
         if ($this->isFieldArgumentValueAField($fieldArgValue)) {
-            return $fieldResolver->resolveSchemaValidationWarningDescriptions($fieldArgValue);
+            return $fieldResolver->resolveSchemaValidationWarningDescriptions($fieldArgValue, $variables);
         }
 
         return null;
@@ -919,7 +921,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
 
         // If the result fieldArgValue is a field, then validate it and resolve it
         if ($this->isFieldArgumentValueAField($fieldArgValue)) {
-            return $fieldResolver->getSchemaDeprecationDescriptions($fieldArgValue);
+            return $fieldResolver->getSchemaDeprecationDescriptions($fieldArgValue, $variables);
         }
 
         return null;

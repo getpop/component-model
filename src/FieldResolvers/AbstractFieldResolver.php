@@ -285,7 +285,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         return $fieldQueryInterpreter->extractFieldArgumentsForSchema($this, $field);
     }
 
-    public function resolveSchemaValidationErrorDescriptions(string $field): ?array
+    public function resolveSchemaValidationErrorDescriptions(string $field, array &$variables = null): ?array
     {
         // Get the value from a fieldValueResolver, from the first one that resolves it
         if ($fieldValueResolvers = $this->getFieldValueResolversForField($field)) {
@@ -313,7 +313,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         ];
     }
 
-    public function resolveSchemaValidationWarningDescriptions(string $field): ?array
+    public function resolveSchemaValidationWarningDescriptions(string $field, array &$variables = null): ?array
     {
         // Get the value from a fieldValueResolver, from the first one that resolves it
         if ($fieldValueResolvers = $this->getFieldValueResolversForField($field)) {
@@ -333,7 +333,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         return null;
     }
 
-    public function getSchemaDeprecationDescriptions(string $field): ?array
+    public function getSchemaDeprecationDescriptions(string $field, array &$variables = null): ?array
     {
         // Get the value from a fieldValueResolver, from the first one that resolves it
         if ($fieldValueResolvers = $this->getFieldValueResolversForField($field)) {
@@ -414,6 +414,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $dbErrors,
                 $dbWarnings
             ) = $fieldQueryInterpreter->extractFieldArgumentsForResultItem($this, $resultItem, $field, $variables);
+
             // Store the warnings to be read if needed
             if ($dbWarnings) {
                 $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();
