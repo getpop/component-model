@@ -11,7 +11,7 @@ class DirectivePipelineDecorator
     {
         $this->pipeline = $pipeline;
     }
-    public function resolveDirectivePipeline(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$previousDBItems, array &$variables)
+    public function resolveDirectivePipeline(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$previousDBItems, array &$variables, array &$messages)
     {
         $payload = $this->pipeline->process(
             DirectivePipelineUtils::convertArgumentsToPayload(
@@ -26,7 +26,8 @@ class DirectivePipelineDecorator
                 $schemaWarnings,
                 $schemaDeprecations,
                 $previousDBItems,
-                $variables
+                $variables,
+                $messages
             )
         );
         list(
@@ -41,7 +42,8 @@ class DirectivePipelineDecorator
             $schemaWarnings,
             $schemaDeprecations,
             $previousDBItems,
-            $variables
+            $variables,
+            $messages
         ) = DirectivePipelineUtils::extractArgumentsFromPayload($payload);
     }
 }

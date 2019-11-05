@@ -1181,7 +1181,10 @@ class Engine implements EngineInterface
         $already_loaded_ids_data_fields = array();
         $subcomponent_data_fields = array();
 
+        // The variables come from the request
         $variables = $this->getVariablesFromRequest();
+        // Initiate a new $messages interchange across directives
+        $messages = [];
 
         // Iterate while there are dataloaders with data to be processed
         while (!empty($this->dataloader_ids_data_fields)) {
@@ -1216,7 +1219,7 @@ class Engine implements EngineInterface
             $iterationDBItems = $iterationDBErrors = $iterationDBWarnings = $iterationSchemaErrors = $iterationSchemaWarnings = $iterationSchemaDeprecations = array();
             if ($fieldResolverClass = $dataloader->getFieldResolverClass()) {
                 $fieldResolver = $instanceManager->getInstance($fieldResolverClass);
-                $fieldResolver->fillResultItems($dataloader, $ids_data_fields, $iterationDBItems, $iterationDBErrors, $iterationDBWarnings, $iterationSchemaErrors, $iterationSchemaWarnings, $iterationSchemaDeprecations, $previousDBItems, $variables);
+                $fieldResolver->fillResultItems($dataloader, $ids_data_fields, $iterationDBItems, $iterationDBErrors, $iterationDBWarnings, $iterationSchemaErrors, $iterationSchemaWarnings, $iterationSchemaDeprecations, $previousDBItems, $variables, $messages);
             }
 
             // Save in the database under the corresponding database-key (this way, different dataloaders, like 'list-users' and 'author',

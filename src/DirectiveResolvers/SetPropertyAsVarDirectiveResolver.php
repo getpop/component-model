@@ -82,10 +82,10 @@ class SetPropertyAsVarDirectiveResolver extends AbstractGlobalDirectiveResolver
         $messageDirectiveName = ResolveValueAndMergeDirectiveResolver::getDirectiveName();
         $messageName = ResolveValueAndMergeDirectiveResolver::MESSAGE_RESULT_ITEM_VARIABLES;
         $properties = $this->directiveArgsForSchema['properties'];
-        $variables = $this->directiveArgsForSchema['variables'] ?? $properties;
+        $variableNames = $this->directiveArgsForSchema['variables'] ?? $properties;
         foreach (array_keys($idsDataFields) as $id) {
             for ($i=0; $i<count($properties); $i++) {
-                $messages[$messageDirectiveName][$messageName][$id][$variables[$i]] = $dbItems[(string)$id][$properties[$i]];
+                $messages[$messageDirectiveName][$messageName][$id][$variableNames[$i]] = $dbItems[(string)$id][$properties[$i]];
             }
         }
     }
