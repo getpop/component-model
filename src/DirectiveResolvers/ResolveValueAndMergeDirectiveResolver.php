@@ -11,7 +11,6 @@ use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResolver
 {
     const DIRECTIVE_NAME = 'resolveValueAndMerge';
-    const MESSAGE_RESULT_ITEM_VARIABLES = 'resultItemVariables';
     public static function getDirectiveName(): string {
         return self::DIRECTIVE_NAME;
     }
@@ -50,15 +49,8 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
                 );
                 continue;
             }
-            // Create a custom $variables containing all the properties from $previousDBItems for this resultItem
-            // This way, when encountering $propName in a fieldArg in a fieldValueResolver, it can resolve that value
-            // Otherwise it can't, since the fieldValueResolver doesn't have access to either $dbItems or $previousDBItems
-            $resultItemVariables = array_merge(
-                $variables,
-                $messages[$this->getDirectiveName()][self::MESSAGE_RESULT_ITEM_VARIABLES][(string)$id] ?? []
-            );
 
-            // $conditionalResultIDItems = [$id => $resultItem];
+            $resultItemVariables = $this->getVariablesForResultItem($id, $variables, $messages);
             $this->resolveValuesForResultItem($dataloader, $fieldResolver, $id, $resultItem, $idsDataFields[(string)$id]['direct'], $dbItems, $dbErrors, $dbWarnings, $previousDBItems, $resultItemVariables);
 
             // Add the conditional data fields
@@ -76,6 +68,7 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
                     $conditionSatisfied = $conditionFieldValue && !GeneralUtils::isError($conditionFieldValue);
                 }
                 if ($conditionSatisfied) {
+                    // $conditionalResultIDItems = [$id => $resultItem];
                     $fieldResolver->enqueueFillingResultItemsFromIDs(
                         [
                             (string)$id => [

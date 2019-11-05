@@ -16,6 +16,8 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
 {
     use AttachableExtensionTrait;
 
+    const MESSAGE_RESULT_ITEM_VARIABLES = 'resultItemVariables';
+
     protected $directive;
     protected $directiveArgsForSchema = [];
     protected $directiveArgsForResultItems = [];
@@ -177,6 +179,22 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 );
         }
         return null;
+    }
+
+    protected function getVariablesForResultItem($id, array &$variables, array &$messages)
+    {
+        // Create a custom $variables containing all the properties from $dbItems for this resultItem
+        // This way, when encountering $propName in a fieldArg in a fieldValueResolver, it can resolve that value
+        // Otherwise it can't, since the fieldValueResolver doesn't have access to either $dbItems
+        return array_merge(
+            $variables,
+            $messages[self::MESSAGE_RESULT_ITEM_VARIABLES][(string)$id] ?? []
+        );
+    }
+
+    protected function addVariableValueForResultItem($id, $key, $value, array &$messages)
+    {
+        return $messages[self::MESSAGE_RESULT_ITEM_VARIABLES][(string)$id][$key] = $value;
     }
 
     /**

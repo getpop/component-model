@@ -75,17 +75,12 @@ class SetPropertyAsVarDirectiveResolver extends AbstractGlobalDirectiveResolver
      */
     public function resolveDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$previousDBItems, array &$variables, array &$messages)
     {
-        // Create a custom $variables containing all the properties from $dbItems for this resultItem
-        // This way, when encountering $propName in a fieldArg in a fieldValueResolver, it can resolve that value
-        // Otherwise it can't, since the fieldValueResolver doesn't have access to $dbItems
         // Send a message to the resolveAndMerge directive, indicating which properties to retrieve
-        $messageDirectiveName = ResolveValueAndMergeDirectiveResolver::getDirectiveName();
-        $messageName = ResolveValueAndMergeDirectiveResolver::MESSAGE_RESULT_ITEM_VARIABLES;
         $properties = $this->directiveArgsForSchema['properties'];
         $variableNames = $this->directiveArgsForSchema['variables'] ?? $properties;
         foreach (array_keys($idsDataFields) as $id) {
             for ($i=0; $i<count($properties); $i++) {
-                $messages[$messageDirectiveName][$messageName][$id][$variableNames[$i]] = $dbItems[(string)$id][$properties[$i]];
+                $this->addVariableValueForResultItem($id, $variableNames[$i], $dbItems[(string)$id][$properties[$i]], $messages);
             }
         }
     }
