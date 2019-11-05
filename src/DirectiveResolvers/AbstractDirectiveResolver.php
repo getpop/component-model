@@ -1,6 +1,7 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
 use League\Pipeline\StageInterface;
+use PoP\ComponentModel\DataloaderInterface;
 use PoP\ComponentModel\Environment;
 use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
@@ -271,6 +272,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     {
         // 1. Extract the arguments from the payload
         list(
+            $dataloader,
             $fieldResolver,
             $resultIDItems,
             $idsDataFields,
@@ -284,6 +286,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
 
         // 2. Validate operation
         $this->validateDirective(
+            $dataloader,
             $fieldResolver,
             $resultIDItems,
             $idsDataFields,
@@ -299,6 +302,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         // For instance, executing ?query=posts.id|title<default,translate(from:en,to:es)> will fail after directive "default", so directive "translate" must not even execute
         if (!$this->needsIDsDataFieldsToExecute() || $this->hasIDsDataFields($idsDataFields)) {
             $this->resolveDirective(
+                $dataloader,
                 $fieldResolver,
                 $resultIDItems,
                 $idsDataFields,
@@ -313,6 +317,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
 
         // 4. Re-create the payload from the modified variables
         return DirectivePipelineUtils::convertArgumentsToPayload(
+            $dataloader,
             $fieldResolver,
             $resultIDItems,
             $idsDataFields,
@@ -325,7 +330,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         );
     }
 
-    public function validateDirective(FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    public function validateDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Check that the directive can be applied to all provided fields
         $this->validateAndFilterFieldsForDirective($idsDataFields, $schemaErrors, $schemaWarnings);

@@ -206,7 +206,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         $this->enqueueFillingResultItemsFromIDs($ids_data_fields, $resultIDItems);
 
         // Process them
-        $this->processFillingResultItemsFromIDs($dbItems, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+        $this->processFillingResultItemsFromIDs($dataloader, $dbItems, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations);
     }
 
     public function enqueueFillingResultItemsFromIDs(array $ids_data_fields, array &$resultIDItems)
@@ -232,7 +232,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         }
     }
 
-    protected function processFillingResultItemsFromIDs(array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    protected function processFillingResultItemsFromIDs(DataloaderInterface $dataloader, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Iterate while there are directives with data to be processed
         while (!empty($this->fieldDirectiveIDsFields)) {
@@ -254,6 +254,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             // From the fieldDirectiveName get the class that processes it. If null, the users passed a wrong name through the API, so show an error
             $directivePipeline = $this->getFieldDirectivePipeline($fieldDirectives, $schemaErrors, $schemaWarnings, $schemaDeprecations);
             $directivePipeline->resolveDirectivePipeline(
+                $dataloader,
                 $this,
                 $directiveResultSet,
                 $idsDataFields,

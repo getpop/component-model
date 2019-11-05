@@ -1,5 +1,7 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
+
+use PoP\ComponentModel\DataloaderInterface;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\ComponentModel\Schema\TypeCastingHelpers;
 use PoP\Translation\Facades\TranslationAPIFacade;
@@ -115,7 +117,7 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
      * @param array $schemaDeprecations
      * @return void
      */
-    public function resolveDirective(FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    public function resolveDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         // $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();

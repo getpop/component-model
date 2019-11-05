@@ -4,6 +4,7 @@ use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\FieldResolvers\PipelinePositions;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
+use PoP\ComponentModel\DataloaderInterface;
 
 class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
 {
@@ -22,7 +23,7 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
         return PipelinePositions::MIDDLE;
     }
 
-    public function resolveDirective(FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    public function resolveDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         $this->validateAndFilterFields($fieldResolver, $idsDataFields, $schemaErrors, $schemaWarnings, $schemaDeprecations);
     }
