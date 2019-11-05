@@ -11,6 +11,7 @@ use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResolver
 {
     const DIRECTIVE_NAME = 'resolveValueAndMerge';
+    const MESSAGE_RESULT_ITEM_VARIABLES = 'resultItemVariables';
     public static function getDirectiveName(): string {
         return self::DIRECTIVE_NAME;
     }
@@ -25,15 +26,15 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
         return PipelinePositions::BACK;
     }
 
-    public function resolveDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$previousDBItems)
+    public function resolveDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$previousDBItems, array &$variables, array &$messages)
     {
         // Iterate data, extract into final results
         if ($resultIDItems) {
-            $this->resolveValueForResultItems($dataloader, $fieldResolver, $resultIDItems, $idsDataFields, $dbItems, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+            $this->resolveValueForResultItems($dataloader, $fieldResolver, $resultIDItems, $idsDataFields, $dbItems, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations, $previousDBItems, $variables, $messages);
         }
     }
 
-    protected function resolveValueForResultItems(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    protected function resolveValueForResultItems(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$previousDBItems, array &$variables, array &$messages)
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
@@ -50,7 +51,7 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
                 continue;
             }
             // $conditionalResultIDItems = [$id => $resultItem];
-            $this->resolveValuesForResultItem($fieldResolver, $id, $resultItem, $idsDataFields[(string)$id]['direct'], $dbItems, $dbErrors, $dbWarnings);
+            $this->resolveValuesForResultItem($dataloader, $fieldResolver, $id, $resultItem, $idsDataFields[(string)$id]['direct'], $dbItems, $dbErrors, $dbWarnings, $previousDBItems, $variables, $messages);
 
             // Add the conditional data fields
             // If the conditionalDataFields are empty, we already reached the end of the tree. Nothing else to do
@@ -63,7 +64,7 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
                 if (isset($dbItems[$id]) && array_key_exists($conditionFieldOutputKey, $dbItems[$id])) {
                     $conditionSatisfied = (bool)$dbItems[$id][$conditionFieldOutputKey];
                 } else {
-                    $conditionFieldValue = $this->resolveFieldValue($fieldResolver, $id, $resultItem, $conditionDataField, $dbWarnings);
+                    $conditionFieldValue = $this->resolveFieldValue($fieldResolver, $id, $resultItem, $conditionDataField, $dbWarnings, $variables);
                     $conditionSatisfied = $conditionFieldValue && !GeneralUtils::isError($conditionFieldValue);
                 }
                 if ($conditionSatisfied) {
@@ -81,23 +82,30 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
         }
     }
 
-    protected function resolveValuesForResultItem(FieldResolverInterface $fieldResolver, $id, $resultItem, array $dataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings)
+    protected function resolveValuesForResultItem(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, $id, $resultItem, array $dataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$previousDBItems, array &$variables, array &$messages)
     {
         foreach ($dataFields as $field) {
-            $this->resolveValueForResultItem($fieldResolver, $id, $resultItem, $field, $dbItems, $dbErrors, $dbWarnings);
+            $this->resolveValueForResultItem($dataloader, $fieldResolver, $id, $resultItem, $field, $dbItems, $dbErrors, $dbWarnings, $previousDBItems, $variables, $messages);
         }
     }
 
-    protected function resolveValueForResultItem(FieldResolverInterface $fieldResolver, $id, $resultItem, string $field, array &$dbItems, array &$dbErrors, array &$dbWarnings)
+    protected function resolveValueForResultItem(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, $id, $resultItem, string $field, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$previousDBItems, array &$variables, array &$messages)
     {
         // Get the value, and add it to the database
-        $value = $this->resolveFieldValue($fieldResolver, $id, $resultItem, $field, $dbWarnings);
+        $value = $this->resolveFieldValue($dataloader, $fieldResolver, $id, $resultItem, $field, $dbWarnings, $previousDBItems, $variables, $messages);
         $this->addValueForResultItem($fieldResolver, $id, $field, $value, $dbItems, $dbErrors);
     }
 
-    protected function resolveFieldValue(FieldResolverInterface $fieldResolver, $id, $resultItem, string $field, array &$dbWarnings)
+    protected function resolveFieldValue(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, $id, $resultItem, string $field, array &$dbWarnings, array &$previousDBItems, array &$variables, array &$messages)
     {
-        $value = $fieldResolver->resolveValue($resultItem, $field);
+        // Create a custom $variables containing all the properties from $previousDBItems for this resultItem
+        // This way, when encountering $propName in a fieldArg in a fieldValueResolver, it can resolve that value
+        // Otherwise it can't, since the fieldValueResolver doesn't have access to either $dbItems or $previousDBItems
+        $resultItemVariables = array_merge(
+            $variables,
+            $messages[$this->getDirectiveName()][self::MESSAGE_RESULT_ITEM_VARIABLES][(string)$id] ?? []
+        );
+        $value = $fieldResolver->resolveValue($resultItem, $field, $resultItemVariables);
         // Merge the dbWarnings, if any
         $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();
         if ($resultItemDBWarnings = $feedbackMessageStore->retrieveAndClearResultItemDBWarnings($id)) {

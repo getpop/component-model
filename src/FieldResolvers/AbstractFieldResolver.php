@@ -197,7 +197,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         return $fieldArgs;
     }
 
-    public function fillResultItems(DataloaderInterface $dataloader, array $ids_data_fields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$previousDBItems)
+    public function fillResultItems(DataloaderInterface $dataloader, array $ids_data_fields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$previousDBItems, array &$variables)
     {
         // Obtain the data for the required object IDs
         $resultIDItems = $dataloader->getData(array_keys($ids_data_fields));
@@ -206,7 +206,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         $this->enqueueFillingResultItemsFromIDs($ids_data_fields, $resultIDItems);
 
         // Process them
-        $this->processFillingResultItemsFromIDs($dataloader, $dbItems, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations, $previousDBItems);
+        $this->processFillingResultItemsFromIDs($dataloader, $dbItems, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations, $previousDBItems, $variables);
     }
 
     public function enqueueFillingResultItemsFromIDs(array $ids_data_fields, array &$resultIDItems)
@@ -232,7 +232,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         }
     }
 
-    protected function processFillingResultItemsFromIDs(DataloaderInterface $dataloader, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$previousDBItems)
+    protected function processFillingResultItemsFromIDs(DataloaderInterface $dataloader, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$previousDBItems, array &$variables)
     {
         // Iterate while there are directives with data to be processed
         while (!empty($this->fieldDirectiveIDsFields)) {
@@ -264,7 +264,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $schemaErrors,
                 $schemaWarnings,
                 $schemaDeprecations,
-                $previousDBItems
+                $previousDBItems,
+                $variables
             );
         }
     }
@@ -391,7 +392,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         return null;
     }
 
-    public function resolveValue($resultItem, string $field)
+    public function resolveValue($resultItem, string $field, ?array $variables = null)
     {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         // Get the value from a fieldValueResolver, from the first one who can deliver the value
@@ -411,7 +412,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $fieldArgs,
                 $dbErrors,
                 $dbWarnings
-            ) = $fieldQueryInterpreter->extractFieldArgumentsForResultItem($this, $resultItem, $field);
+            ) = $fieldQueryInterpreter->extractFieldArgumentsForResultItem($this, $resultItem, $field, $variables);
             // Store the warnings to be read if needed
             if ($dbWarnings) {
                 $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();

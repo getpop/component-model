@@ -1155,6 +1155,14 @@ class Engine implements EngineInterface
         return $dbname_entries;
     }
 
+    protected function getVariablesFromRequest(): array
+    {
+        return array_merge(
+            $_REQUEST,
+            $_REQUEST['variables'] ?? []
+        );
+    }
+
     public function getDatabases()
     {
         $instanceManager = InstanceManagerFacade::getInstance();
@@ -1172,6 +1180,8 @@ class Engine implements EngineInterface
         // but we need to avoid fetching those DB objects that were already fetched in a previous iteration
         $already_loaded_ids_data_fields = array();
         $subcomponent_data_fields = array();
+
+        $variables = $this->getVariablesFromRequest();
 
         // Iterate while there are dataloaders with data to be processed
         while (!empty($this->dataloader_ids_data_fields)) {
@@ -1206,7 +1216,7 @@ class Engine implements EngineInterface
             $iterationDBItems = $iterationDBErrors = $iterationDBWarnings = $iterationSchemaErrors = $iterationSchemaWarnings = $iterationSchemaDeprecations = array();
             if ($fieldResolverClass = $dataloader->getFieldResolverClass()) {
                 $fieldResolver = $instanceManager->getInstance($fieldResolverClass);
-                $fieldResolver->fillResultItems($dataloader, $ids_data_fields, $iterationDBItems, $iterationDBErrors, $iterationDBWarnings, $iterationSchemaErrors, $iterationSchemaWarnings, $iterationSchemaDeprecations, $previousDBItems);
+                $fieldResolver->fillResultItems($dataloader, $ids_data_fields, $iterationDBItems, $iterationDBErrors, $iterationDBWarnings, $iterationSchemaErrors, $iterationSchemaWarnings, $iterationSchemaDeprecations, $previousDBItems, $variables);
             }
 
             // Save in the database under the corresponding database-key (this way, different dataloaders, like 'list-users' and 'author',

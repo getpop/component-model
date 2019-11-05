@@ -822,7 +822,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                 // Then it's ok asking for strpos: either `false` or `0` must both fail
                 strpos($fieldArgValue, QuerySyntax::SYMBOL_FIELDARGS_OPENING)
             ) {
-                return $fieldResolver->resolveValue($resultItem, (string)$fieldArgValue);
+                return $fieldResolver->resolveValue($resultItem, (string)$fieldArgValue, $variables);
             }
         }
 
