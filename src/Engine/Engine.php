@@ -1163,7 +1163,7 @@ class Engine implements EngineInterface
         $vars = Engine_Vars::getVars();
 
         // Save all database elements here, under dataloader
-        $databases = $dbErrors = $dbWarnings = $schemaErrors = $schemaWarnings = $schemaDeprecations = array();
+        $databases = $previousDBItems = $dbErrors = $dbWarnings = $schemaErrors = $schemaWarnings = $schemaDeprecations = array();
         $this->nocache_fields = array();
         $format = $vars['format'];
         $route = $vars['route'];
@@ -1233,6 +1233,16 @@ class Engine implements EngineInterface
                 $dbItems = $this->moveEntriesUnderDBName($resolvedDBItems, true, $dataloader);
                 foreach ($dbItems as $dbname => $entries) {
                     $this->addDatasetToDatabase($databases[$dbname], $database_key, $entries);
+
+                    // Populate the $previousDBItems, pointing to the newly fetched dbItems (but without the dbname!)
+                    // Save the reference to the values, instead of the values, to save memory
+                    // Passing $previousDBItems instead of $databases makes it read-only: Directives can only read the values... if they want to modify them,
+                    // the modification is done on $previousDBItems, so it carries no risks
+                    foreach ($entries as $id => $fieldValues) {
+                        foreach (array_keys($fieldValues) as $field) {
+                            $previousDBItems[$database_key][$id][$field] = &$databases[$dbname][$database_key][$id][$field];
+                        }
+                    }
                 }
             }
             if ($resolvedDBErrors) {
