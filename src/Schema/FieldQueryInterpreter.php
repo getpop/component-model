@@ -268,10 +268,9 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         $fieldName = $this->getFieldName($field);
         $extractedFieldArgs = $fieldArgs = $this->extractFieldArguments($fieldResolver, $field, $variables, $schemaWarnings);
         $fieldArgs = $this->validateExtractedFieldOrDirectiveArgumentsForSchema($fieldResolver, $fieldArgs, $variables, $schemaErrors, $schemaWarnings, $schemaDeprecations);
-        if ($fieldArgs) {
-            // Cast the values to their appropriate type. If casting fails, the value returns as null
-            $fieldArgs = $this->castAndValidateFieldArgumentsForSchema($fieldResolver, $field, $fieldArgs, $schemaWarnings);
-        }
+        // Cast the values to their appropriate type. If casting fails, the value returns as null
+        $fieldArgs = $this->castAndValidateFieldArgumentsForSchema($fieldResolver, $field, $fieldArgs, $schemaWarnings);
+
         // If there's an error, those args will be removed. Then, re-create the fieldDirective to pass it to the function below
         if ($schemaErrors) {
             $validAndResolvedField = null;
@@ -300,10 +299,9 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         $directiveName = $this->getFieldDirectiveName($fieldDirective);
         $extractedDirectiveArgs = $directiveArgs = $this->extractDirectiveArguments($directiveResolver, $fieldResolver, $fieldDirective, $variables, $schemaWarnings);
         $directiveArgs = $this->validateExtractedFieldOrDirectiveArgumentsForSchema($fieldResolver, $directiveArgs, $variables, $schemaErrors, $schemaWarnings, $schemaDeprecations);
-        if ($directiveArgs) {
-            // Cast the values to their appropriate type. If casting fails, the value returns as null
-            $directiveArgs = $this->castAndValidateDirectiveArgumentsForSchema($directiveResolver, $fieldResolver, $fieldDirective, $directiveArgs, $schemaWarnings);
-        }
+        // Cast the values to their appropriate type. If casting fails, the value returns as null
+        $directiveArgs = $this->castAndValidateDirectiveArgumentsForSchema($directiveResolver, $fieldResolver, $fieldDirective, $directiveArgs, $schemaWarnings);
+
         // If there's an error, those args will be removed. Then, re-create the fieldDirective to pass it to the function below
         if ($schemaErrors) {
             $validAndResolvedDirective = null;
@@ -587,16 +585,22 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
 
     protected function castAndValidateDirectiveArgumentsForSchema(DirectiveResolverInterface $directiveResolver, FieldResolverInterface $fieldResolver, string $fieldDirective, array $directiveArgs, array &$schemaWarnings): array
     {
-        $failedCastingDirectiveArgErrorMessages = [];
-        $castedDirectiveArgs = $this->castDirectiveArgumentsForSchema($directiveResolver, $fieldResolver, $fieldDirective, $directiveArgs, $failedCastingDirectiveArgErrorMessages);
-        return $this->castAndValidateDirectiveArguments($directiveResolver, $fieldResolver, $castedDirectiveArgs, $failedCastingDirectiveArgErrorMessages, $fieldDirective, $directiveArgs, $schemaWarnings);
+        if ($directiveArgs) {
+            $failedCastingDirectiveArgErrorMessages = [];
+            $castedDirectiveArgs = $this->castDirectiveArgumentsForSchema($directiveResolver, $fieldResolver, $fieldDirective, $directiveArgs, $failedCastingDirectiveArgErrorMessages);
+            return $this->castAndValidateDirectiveArguments($directiveResolver, $fieldResolver, $castedDirectiveArgs, $failedCastingDirectiveArgErrorMessages, $fieldDirective, $directiveArgs, $schemaWarnings);
+        }
+        return $directiveArgs;
     }
 
     protected function castAndValidateFieldArgumentsForSchema(FieldResolverInterface $fieldResolver, string $field, array $fieldArgs, array &$schemaWarnings): array
     {
-        $failedCastingFieldArgErrorMessages = [];
-        $castedFieldArgs = $this->castFieldArgumentsForSchema($fieldResolver, $field, $fieldArgs, $failedCastingFieldArgErrorMessages);
-        return $this->castAndValidateFieldArguments($fieldResolver, $castedFieldArgs, $failedCastingFieldArgErrorMessages, $field, $fieldArgs, $schemaWarnings);
+        if ($fieldArgs) {
+            $failedCastingFieldArgErrorMessages = [];
+            $castedFieldArgs = $this->castFieldArgumentsForSchema($fieldResolver, $field, $fieldArgs, $failedCastingFieldArgErrorMessages);
+            return $this->castAndValidateFieldArguments($fieldResolver, $castedFieldArgs, $failedCastingFieldArgErrorMessages, $field, $fieldArgs, $schemaWarnings);
+        }
+        return $fieldArgs;
     }
 
     protected function castAndValidateDirectiveArgumentsForResultItem(DirectiveResolverInterface $directiveResolver, FieldResolverInterface $fieldResolver, string $fieldDirective, array $directiveArgs, array &$dbWarnings): array
