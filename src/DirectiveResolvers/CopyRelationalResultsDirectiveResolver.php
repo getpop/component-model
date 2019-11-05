@@ -7,6 +7,7 @@ use PoP\ComponentModel\Schema\TypeCastingHelpers;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\FieldResolvers\PipelinePositions;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
+use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 
 class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveResolver
 {
@@ -138,6 +139,7 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
     public function resolveDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         $translationAPI = TranslationAPIFacade::getInstance();
+        $instanceManager = InstanceManagerFacade::getInstance();
         // $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         // // foreach ($idsDataFields as $id => $dataFields) {
         // //     foreach ($dataFields['direct'] as $field) {
@@ -151,10 +153,10 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
         $copyToFields = $this->directiveArgsForSchema['copyToFields'] ?? $copyFromFields;
 
         // Obtain the DBKey under which the relationalField is stored in the database
-        // For that, from the fieldResolver we obtain the dataloader for the `copyFromField`
+        // For that, from the fieldResolver we obtain the dataloader for the `relationalField`
         $relationalDataloaderClass = $fieldResolver->resolveFieldDefaultDataloaderClass($relationalField);
-        if (!$relationalDataloaderClass)
-        // $relationalFieldDBKey = ...;
+        $relationalDataloader = $instanceManager->getInstance($relationalDataloaderClass);
+        $relationalDBKey = $relationalDataloader->getDatabaseKey();
         // Copy the data from each of the relational object fields to the current object
         for ($i=0; $i<count($copyFromFields); $i++) {
             $copyFromField = $copyFromFields[$i];
@@ -170,7 +172,7 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
                     );
                 }
                 // THIS IS TESTING CODE!!!!! MUST FIX HERE!!!
-                $dbItems[(string)$id][$copyToField] = 'sarola';
+                $dbItems[(string)$id][$copyToField] = $relationalDBKey;
                 // $dbItems[(string)$id][$copyToField] = $database[$relationalFieldDBKey][(string)$id][$copyFromField];
             }
         }
