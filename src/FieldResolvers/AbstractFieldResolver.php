@@ -132,7 +132,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                         $validFieldDirective,
                         $directiveName,
                         $directiveArgs,
-                    ) = $this->dissectAndValidateDirectiveForSchema($directiveResolverInstance, $fieldDirective, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+                    ) = $directiveResolverInstance->dissectAndValidateDirectiveForSchema($this, $schemaErrors, $schemaWarnings, $schemaDeprecations);
                     // Check that the directive is a valid one (eg: no schema errors)
                     if (is_null($validFieldDirective)) {
                         $schemaErrors[$fieldDirective][] = $translationAPI->__('This directive can\'t be processed due to previous errors', 'pop-component-model');
@@ -180,56 +180,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $this->fieldDirectivePipelineInstanceCache[$fieldDirectives] = new DirectivePipelineDecorator($pipelineBuilder->build());
         }
         return $this->fieldDirectivePipelineInstanceCache[$fieldDirectives];
-    }
-    protected function dissectAndValidateDirectiveForSchema(DirectiveResolverInterface $directiveResolver, string $directive, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
-    {
-        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
-        // First validate schema (eg of error in schema: ?query=posts<include(if:this-field-doesnt-exist())>)
-        list(
-            $validDirective,
-            $directiveName,
-            $directiveArgs,
-            $directiveSchemaErrors,
-            $directiveSchemaWarnings,
-            $directiveSchemaDeprecations
-        ) = $fieldQueryInterpreter->extractDirectiveArgumentsForSchema($directiveResolver, $this, $directive);
-
-        // If there were errors, warning or deprecations, integrate them into the feedback objects
-        if ($directiveSchemaErrors) {
-            $schemaErrors[$directive] = array_merge(
-                $schemaErrors[$directive] ?? [],
-                $directiveSchemaErrors
-            );
-        }
-        if ($directiveSchemaWarnings) {
-            $schemaWarnings[$directive] = array_merge(
-                $schemaWarnings[$directive] ?? [],
-                $directiveSchemaWarnings
-            );
-        }
-        if ($directiveSchemaDeprecations) {
-            $schemaDeprecations[$directive] = array_merge(
-                $schemaDeprecations[$directive] ?? [],
-                $directiveSchemaDeprecations
-            );
-        }
-        // if ($directiveSchemaErrors || $directiveSchemaWarnings || $directiveSchemaDeprecations) {
-        //     $directiveOutputKey = $fieldQueryInterpreter->getFieldOutputKey($directive);
-        //     foreach ($directiveSchemaErrors as $error) {
-        //         $schemaErrors[$directiveOutputKey][] = $error;
-        //     }
-        //     foreach ($directiveSchemaWarnings as $warning) {
-        //         $schemaWarnings[$directiveOutputKey][] = $warning;
-        //     }
-        //     foreach ($directiveSchemaDeprecations as $deprecation) {
-        //         $schemaDeprecations[$directiveOutputKey][] = $deprecation;
-        //     }
-        // }
-        return [
-            $validDirective,
-            $directiveName,
-            $directiveArgs,
-        ];
     }
 
     public function fillResultItemsFromIDs(array $ids_data_fields, array &$resultIDItems, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)

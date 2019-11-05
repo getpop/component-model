@@ -13,13 +13,92 @@ use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 
 abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, SchemaDirectiveResolverInterface, StageInterface
 {
-    use AttachableExtensionTrait, DirectiveValidatorTrait;
+    use AttachableExtensionTrait;
 
     protected $directive;
+    protected $directiveArgsForSchema = [];
+    protected $directiveArgsForResultItems = [];
     function __construct($directive = null) {
         // If the directive is not provided, then it directly the directive name
         // This allows to instantiate the directive through the DependencyInjection component
         $this->directive = $directive ?? $this->getDirectiveName();
+    }
+
+    public function dissectAndValidateDirectiveForSchema(FieldResolverInterface $fieldResolver, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    {
+        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+        // First validate schema (eg of error in schema: ?query=posts<include(if:this-field-doesnt-exist())>)
+        list(
+            $validDirective,
+            $directiveName,
+            $directiveArgs,
+            $directiveSchemaErrors,
+            $directiveSchemaWarnings,
+            $directiveSchemaDeprecations
+        ) = $fieldQueryInterpreter->extractDirectiveArgumentsForSchema($this, $fieldResolver, $this->directive);
+
+        // Store the args, they may be used in `resolveDirective`
+        $this->directiveArgsForSchema = $directiveArgs;
+
+        // If there were errors, warning or deprecations, integrate them into the feedback objects
+        if ($directiveSchemaErrors) {
+            $schemaErrors[$this->directive] = array_merge(
+                $schemaErrors[$this->directive] ?? [],
+                $directiveSchemaErrors
+            );
+        }
+        if ($directiveSchemaWarnings) {
+            $schemaWarnings[$this->directive] = array_merge(
+                $schemaWarnings[$this->directive] ?? [],
+                $directiveSchemaWarnings
+            );
+        }
+        if ($directiveSchemaDeprecations) {
+            $schemaDeprecations[$this->directive] = array_merge(
+                $schemaDeprecations[$this->directive] ?? [],
+                $directiveSchemaDeprecations
+            );
+        }
+        return [
+            $validDirective,
+            $directiveName,
+            $directiveArgs,
+        ];
+    }
+
+    public function dissectAndValidateDirectiveForResultItem(FieldResolverInterface $fieldResolver, $resultItem, array &$dbErrors, array &$dbWarnings): array
+    {
+        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+        list(
+            $validDirective,
+            $directiveName,
+            $directiveArgs,
+            $nestedDBErrors,
+            $nestedDBWarnings
+        ) = $fieldQueryInterpreter->extractDirectiveArgumentsForResultItem($this, $fieldResolver, $resultItem, $this->directive);
+
+        // Store the args, they may be used in `resolveDirective`
+        $this->directiveArgsForResultItems[$fieldResolver->getId($resultItem)] = $directiveArgs;
+
+        if ($nestedDBWarnings || $nestedDBErrors) {
+            foreach ($nestedDBErrors as $id => $fieldOutputKeyErrorMessages) {
+                $dbErrors[$id] = array_merge(
+                    $dbErrors[$id] ?? [],
+                    $fieldOutputKeyErrorMessages
+                );
+            }
+            foreach ($nestedDBWarnings as $id => $fieldOutputKeyWarningMessages) {
+                $dbWarnings[$id] = array_merge(
+                    $dbWarnings[$id] ?? [],
+                    $fieldOutputKeyWarningMessages
+                );
+            }
+        }
+        return [
+            $validDirective,
+            $directiveName,
+            $directiveArgs,
+        ];
     }
 
     /**

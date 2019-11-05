@@ -9,7 +9,7 @@ use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 
 class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResolver
 {
-    const DIRECTIVE_NAME = 'resolve-value-and-merge';
+    const DIRECTIVE_NAME = 'resolveValueAndMerge';
     public static function getDirectiveName(): string {
         return self::DIRECTIVE_NAME;
     }

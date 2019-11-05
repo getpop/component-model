@@ -14,6 +14,16 @@ interface DirectiveResolverInterface
      */
     public static function getFieldNamesToApplyTo(): array;
     /**
+     * Extract and validate the directive arguments
+     *
+     * @param FieldResolverInterface $fieldResolver
+     * @param array $schemaErrors
+     * @param array $schemaWarnings
+     * @param array $schemaDeprecations
+     * @return array
+     */
+    public function dissectAndValidateDirectiveForSchema(FieldResolverInterface $fieldResolver, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array;
+    /**
      * Define where to place the directive in the directive execution pipeline
      * 2 directives are mandatory: Validate and ResolveAndMerge, which are executed in this order.
      * All other directives must indicate where to position themselves, using these 2 directives as anchors.
