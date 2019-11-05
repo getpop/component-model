@@ -1,6 +1,8 @@
 <?php
 namespace PoP\ComponentModel\FieldResolvers;
 
+use PoP\ComponentModel\DataloaderInterface;
+
 interface FieldResolverInterface
 {
     public function getId($resultItem);
@@ -9,7 +11,7 @@ interface FieldResolverInterface
     public function getDirectiveNameClasses(): array;
     public function validateFieldArgumentsForSchema(string $field, array $fieldArgs, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array;
     public function enqueueFillingResultItemsFromIDs(array $ids_data_fields, array &$resultIDItems);
-    public function fillResultItemsFromIDs(array $ids_data_fields, array &$resultIDItems, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations);
+    public function fillResultItems(DataloaderInterface $dataloader, array $ids_data_fields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations);
     public function resolveSchemaValidationErrorDescriptions(string $field): ?array;
     public function resolveSchemaValidationWarningDescriptions(string $field): ?array;
     public function getSchemaDeprecationDescriptions(string $field): ?array;

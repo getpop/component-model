@@ -1204,11 +1204,9 @@ class Engine implements EngineInterface
 
             // Execute the dataloader for all combined ids
             $resolvedDBItems = $resolvedDBErrors = $resolvedDBWarnings = $resolvedSchemaErrors = $resolvedSchemaWarnings = $resolvedSchemaDeprecations = array();
-            $ids = array_keys($ids_data_fields);
             if ($fieldResolverClass = $dataloader->getFieldResolverClass()) {
                 $fieldResolver = $instanceManager->getInstance($fieldResolverClass);
-                $resultIDItems = $dataloader->getData($ids);
-                $fieldResolver->fillResultItemsFromIDs($ids_data_fields, $resultIDItems, $resolvedDBItems, $resolvedDBErrors, $resolvedDBWarnings, $resolvedSchemaErrors, $resolvedSchemaWarnings, $resolvedSchemaDeprecations);
+                $fieldResolver->fillResultItems($dataloader, $ids_data_fields, $resolvedDBItems, $resolvedDBErrors, $resolvedDBWarnings, $resolvedSchemaErrors, $resolvedSchemaWarnings, $resolvedSchemaDeprecations);
             }
 
             // Save in the database under the corresponding database-key (this way, different dataloaders, like 'list-users' and 'author',

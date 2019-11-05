@@ -1,6 +1,7 @@
 <?php
 namespace PoP\ComponentModel\FieldResolvers;
 use PoP\ComponentModel\ErrorUtils;
+use PoP\ComponentModel\DataloaderInterface;
 use PoP\FieldQuery\FieldQueryUtils;
 use League\Pipeline\PipelineBuilder;
 use PoP\ComponentModel\Schema\SchemaDefinition;
@@ -196,8 +197,11 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         return $fieldArgs;
     }
 
-    public function fillResultItemsFromIDs(array $ids_data_fields, array &$resultIDItems, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    public function fillResultItems(DataloaderInterface $dataloader, array $ids_data_fields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
+        // Obtain the data for the required object IDs
+        $resultIDItems = $dataloader->getData(array_keys($ids_data_fields));
+
         // Enqueue the items
         $this->enqueueFillingResultItemsFromIDs($ids_data_fields, $resultIDItems);
 
