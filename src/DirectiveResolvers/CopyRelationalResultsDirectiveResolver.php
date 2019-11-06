@@ -179,7 +179,14 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
                     }
                     // Copy the properties into the array
                     $dbItems[(string)$id][$copyToField] = [];
+                    // It can be an array of IDs, or a single item. In the latter case, copy the property directly. In the former one, copy it under an array,
+                    // either with the ID of relational object as key, or as a normal one-dimension array using no particular keys
                     $relationalIDs = $previousDBItems[$dbKey][(string)$id][$relationalFieldOutputKey];
+                    $copyStraight = false;
+                    if (!is_array($relationalIDs)) {
+                        $relationalIDs = [$relationalIDs];
+                        $copyStraight = true;
+                    }
                     foreach ($relationalIDs as $relationalID) {
                         // Validate that the source field has been set.
                         if (!array_key_exists($copyFromField, $previousDBItems[$relationalDBKey][(string)$relationalID] ?? [])) {
@@ -191,7 +198,9 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
                             );
                             continue;
                         }
-                        if ($keepRelationalIDs) {
+                        if ($copyStraight) {
+                            $dbItems[(string)$id][$copyToField] = $previousDBItems[$relationalDBKey][(string)$relationalID][$copyFromField];
+                        } elseif ($keepRelationalIDs) {
                             $dbItems[(string)$id][$copyToField][(string)$relationalID] = $previousDBItems[$relationalDBKey][(string)$relationalID][$copyFromField];
                         } else {
                             $dbItems[(string)$id][$copyToField][] = $previousDBItems[$relationalDBKey][(string)$relationalID][$copyFromField];
