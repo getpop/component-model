@@ -139,6 +139,8 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
                     $relationalDataloader = $instanceManager->getInstance($relationalDataloaderClass);
                     $relationalDBKey = $relationalDataloader->getDatabaseKey();
                     // Validate that the current object has `relationalField` property set
+                    // Since we are fetching from a relational object (placed one level below in the iteration stack), the value could've been set only in a previous iteration
+                    // Then it must be in $previousDBItems (it can't be in $dbItems unless set by chance, because the same IDs were involved for a possibly different query)
                     if (!array_key_exists($relationalFieldOutputKey, $previousDBItems[$dbKey][(string)$id] ?? [])) {
                         if ($relationalFieldOutputKey != $relationalField) {
                             $dbErrors[(string)$id][$this->directive][] = sprintf(
@@ -158,19 +160,22 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
                     }
 
                     // If the destination field already exists, warn that it will be overriden
-                    if (array_key_exists($copyToField, $dbItems[(string)$id] ?? [])) {
+                    $isTargetValueInDBItems = array_key_exists($copyToField, $dbItems[(string)$id] ?? []);
+                    if ($isTargetValueInDBItems || array_key_exists($copyToField, $previousDBItems[$dbKey][(string)$id] ?? [])) {
                         $dbWarnings[(string)$id][$this->directive][] = sprintf(
                             $translationAPI->__('The existing value for field \'%s\' from object with ID \'%s\' has been overriden: \'%s\'', 'component-model'),
                             $copyToField,
                             $id,
-                            $dbItems[(string)$id][$copyToField]
+                            $isTargetValueInDBItems ?
+                                $dbItems[(string)$id][$copyToField] :
+                                $previousDBItems[$dbKey][(string)$id][$copyToField]
                         );
                     }
                     // Copy the properties into the array
                     $dbItems[(string)$id][$copyToField] = [];
                     $relationalIDs = $previousDBItems[$dbKey][(string)$id][$relationalFieldOutputKey];
                     foreach ($relationalIDs as $relationalID) {
-                        // Validate that the source field has been set
+                        // Validate that the source field has been set.
                         if (!array_key_exists($copyFromField, $previousDBItems[$relationalDBKey][(string)$relationalID] ?? [])) {
                             $dbErrors[(string)$id][$this->directive][] = sprintf(
                                 $translationAPI->__('Field \'%s\' hadn\'t been set for object of entity \'%s\' and ID \'%s\', so no data can be copied', 'component-model'),
