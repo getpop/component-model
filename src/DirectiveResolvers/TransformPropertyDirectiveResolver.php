@@ -138,18 +138,25 @@ class TransformPropertyDirectiveResolver extends AbstractGlobalDirectiveResolver
                 $schemaDBErrors,
                 $schemaDBWarnings
             ) = $fieldQueryInterpreter->extractFieldArgumentsForSchema($fieldResolver, $resultItemFunction, $resultItemVariables);
+            // Place the errors not under schema but under DB, since they may change on a resultItem by resultItem basis
             if ($schemaDBWarnings) {
-                $schemaWarnings[$this->directive] = array_merge(
-                    $schemaWarnings[$this->directive] ?? [],
-                    $schemaDBWarnings
-                );
+                foreach ($schemaDBWarnings as $warningMessage) {
+                    $dbWarnings[(string)$id][$this->directive][] = sprintf(
+                        $translationAPI->__('%s (Generated function: \'%s\')', 'component-model'),
+                        $warningMessage,
+                        $resultItemFunction
+                    );
+                }
             }
             if ($schemaDBErrors) {
-                $schemaErrors[$this->directive] = array_merge(
-                    $schemaWarnings[$this->directive] ?? [],
-                    $schemaDBErrors
-                );
-                $schemaErrors[$this->directive][] = sprintf(
+                foreach ($schemaDBErrors as $errorMessage) {
+                    $dbWarnings[(string)$id][$this->directive][] = sprintf(
+                        $translationAPI->__('%s (Generated function: \'%s\')', 'component-model'),
+                        $errorMessage,
+                        $resultItemFunction
+                    );
+                }
+                $dbErrors[(string)$id][$this->directive][] = sprintf(
                     $translationAPI->__('Transformation of property \'%s\' on object with ID \'%s\' can\'t be executed due to previous errors', 'component-model'),
                     $property,
                     $id
