@@ -197,6 +197,11 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         return $messages[self::MESSAGE_RESULT_ITEM_VARIABLES][(string)$id][$key] = $value;
     }
 
+    protected function getVariableValueForResultItem($id, $key, array &$messages)
+    {
+        return $messages[self::MESSAGE_RESULT_ITEM_VARIABLES][(string)$id][$key];
+    }
+
     /**
      * By default, place the directive between Validate and ResolveAndMerge directives
      *

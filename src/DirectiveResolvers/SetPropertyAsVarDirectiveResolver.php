@@ -113,12 +113,33 @@ class SetPropertyAsVarDirectiveResolver extends AbstractGlobalDirectiveResolver
      */
     public function resolveDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$previousDBItems, array &$variables, array &$messages)
     {
+        $translationAPI = TranslationAPIFacade::getInstance();
         // Send a message to the resolveAndMerge directive, indicating which properties to retrieve
         $properties = $this->directiveArgsForSchema['properties'];
         $variableNames = $this->directiveArgsForSchema['variables'] ?? $properties;
         foreach (array_keys($idsDataFields) as $id) {
             for ($i=0; $i<count($properties); $i++) {
-                $this->addVariableValueForResultItem($id, $variableNames[$i], $dbItems[(string)$id][$properties[$i]], $messages);
+                // Validate that the property exists in the source object
+                $property = $properties[$i];
+                if (!array_key_exists($property, $dbItems[(string)$id] ?? [])) {
+                    $dbErrors[(string)$id][$this->directive][] = sprintf(
+                        $translationAPI->__('Property \'%s\' hadn\'t been set for object with ID \'%s\', so no variable has been defined', 'component-model'),
+                        $property,
+                        $id
+                    );
+                    continue;
+                }
+                // Check if the value already exists
+                $variableName = $variableNames[$i];
+                $existingValue = $this->getVariableValueForResultItem($id, $variableName, $messages);
+                if (!is_null($existingValue)) {
+                    $dbWarnings[(string)$id][$this->directive][] = sprintf(
+                        $translationAPI->__('Variable \'%s\' had already been set for object with ID \'%s\', with value \'%s\'. It has been overriden', 'component-model'),
+                        $variableName,
+                        $id
+                    );
+                }
+                $this->addVariableValueForResultItem($id, $variableName, $dbItems[(string)$id][$property], $messages);
             }
         }
     }

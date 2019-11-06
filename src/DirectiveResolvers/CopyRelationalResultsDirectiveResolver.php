@@ -141,15 +141,15 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
                     // Validate that the current object has `relationalField` property set
                     if (!array_key_exists($relationalFieldOutputKey, $previousDBItems[$dbKey][(string)$id] ?? [])) {
                         if ($relationalFieldOutputKey != $relationalField) {
-                            $dbWarnings[$this->directive][] = sprintf(
-                                $translationAPI->__('Field \'%s\' (with output key \'%s\') for object with ID \'%s\' had not been set, so no data can be copied', 'component-model'),
+                            $dbErrors[(string)$id][$this->directive][] = sprintf(
+                                $translationAPI->__('Field \'%s\' (with output key \'%s\') hadn\'t been set for object with ID \'%s\', so no data can be copied', 'component-model'),
                                 $relationalField,
                                 $relationalFieldOutputKey,
                                 $id
                             );
                         } else {
-                            $dbWarnings[$this->directive][] = sprintf(
-                                $translationAPI->__('Field \'%s\' for object with ID \'%s\' had not been set, so no data can be copied', 'component-model'),
+                            $dbErrors[(string)$id][$this->directive][] = sprintf(
+                                $translationAPI->__('Field \'%s\' hadn\'t been set for object with ID \'%s\', so no data can be copied', 'component-model'),
                                 $relationalField,
                                 $id
                             );
@@ -159,8 +159,8 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
 
                     // If the destination field already exists, warn that it will be overriden
                     if (array_key_exists($copyToField, $dbItems[(string)$id] ?? [])) {
-                        $dbWarnings[$this->directive][] = sprintf(
-                            $translationAPI->__('Field \'%s\' for object with ID \'%s\' had already been set (with value \'%s\'), so it has been overriden', 'component-model'),
+                        $dbWarnings[(string)$id][$this->directive][] = sprintf(
+                            $translationAPI->__('The existing value for field \'%s\' from object with ID \'%s\' has been overriden: \'%s\'', 'component-model'),
                             $copyToField,
                             $id,
                             $dbItems[(string)$id][$copyToField]
@@ -170,6 +170,16 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
                     $dbItems[(string)$id][$copyToField] = [];
                     $relationalIDs = $previousDBItems[$dbKey][(string)$id][$relationalFieldOutputKey];
                     foreach ($relationalIDs as $relationalID) {
+                        // Validate that the source field has been set
+                        if (!array_key_exists($copyFromField, $previousDBItems[$relationalDBKey][(string)$relationalID] ?? [])) {
+                            $dbErrors[(string)$id][$this->directive][] = sprintf(
+                                $translationAPI->__('Field \'%s\' hadn\'t been set for object of entity \'%s\' and ID \'%s\', so no data can be copied', 'component-model'),
+                                $copyFromField,
+                                $relationalDBKey,
+                                $id
+                            );
+                            continue;
+                        }
                         $dbItems[(string)$id][$copyToField][] = $previousDBItems[$relationalDBKey][(string)$relationalID][$copyFromField];
                     }
                 }
