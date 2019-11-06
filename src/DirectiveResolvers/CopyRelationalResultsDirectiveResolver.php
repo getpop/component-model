@@ -185,7 +185,7 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
                             );
                             continue;
                         }
-                        $dbItems[(string)$id][$copyToField][] = $previousDBItems[$relationalDBKey][(string)$relationalID][$copyFromField];
+                        $dbItems[(string)$id][$copyToField][(string)$relationalID] = $previousDBItems[$relationalDBKey][(string)$relationalID][$copyFromField];
                     }
                 }
             }
