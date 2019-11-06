@@ -129,8 +129,6 @@ class TransformPropertyDirectiveResolver extends AbstractGlobalDirectiveResolver
 
             // Validate the new fieldArgs once again, to make sure the addition of the new parameter is right (eg: maybe the param name where to pass the function is wrong)
             $resultItemVariables = $this->getVariablesForResultItem($id, $variables, $messages);
-            $resultItem = $resultIDItems[$id];
-            // First for the Schema
             list(
                 $schemaValidField,
                 $schemaFieldName,
