@@ -143,7 +143,7 @@ abstract class AbstractConvertibleFieldResolver extends AbstractFieldResolver
         return array($fieldResolver, $fieldResolverPicker);
     }
 
-    public function resolveValue($resultItem, string $field, ?array $variables = null)
+    public function resolveValue($resultItem, string $field, ?array $variables = null, array $options = [])
     {
         // Delegate to the FieldResolver corresponding to this object
         list($fieldResolver, $fieldvalueresolverpicker) = $this->getFieldResolverAndPicker($resultItem);
@@ -154,7 +154,7 @@ abstract class AbstractConvertibleFieldResolver extends AbstractFieldResolver
         }
 
         // Delegate to that fieldResolver to obtain the value
-        return $fieldResolver->resolveValue($resultItem, $field, $variables);
+        return $fieldResolver->resolveValue($resultItem, $field, $variables, $options);
     }
 
     protected function addSchemaDefinition(array $fieldArgs = [], array $options = [])

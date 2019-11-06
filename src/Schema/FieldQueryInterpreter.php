@@ -366,11 +366,6 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         return $fieldOrDirectiveArgs;
     }
 
-    // public function extractDirectiveArgumentsForSchema(FieldResolverInterface $fieldResolver, string $field, ?array $variables = null): array
-    // {
-    //     return $this->extractFieldArgumentsForSchema($fieldResolver, $field, $variables);
-    // }
-
     public function extractFieldArgumentsForResultItem(FieldResolverInterface $fieldResolver, $resultItem, string $field, ?array $variables = null): array
     {
         $dbErrors = $dbWarnings = [];

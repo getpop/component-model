@@ -17,6 +17,7 @@ use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFa
 
 abstract class AbstractFieldResolver implements FieldResolverInterface
 {
+    public const OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM = 'validateSchemaOnResultItem';
     /**
      * Cache of which fieldValueResolvers will process the given field
      *
@@ -393,7 +394,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         return null;
     }
 
-    public function resolveValue($resultItem, string $field, ?array $variables = null)
+    public function resolveValue($resultItem, string $field, ?array $variables = null, array $options = [])
     {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         // Get the value from a fieldValueResolver, from the first one who can deliver the value
@@ -428,11 +429,15 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             // For instance: After resolving a field and being casted it may be incorrect, so the value is invalidated, and after the schemaValidation the proper error is shown
             // Also need to check for variables, since these must be resolved too
             // For instance: ?query=posts(limit:3),post(id:$id).id|title&id=112
-            $validateSchemaOnResultItem = FieldQueryUtils::isAnyFieldArgumentValueAFieldOrVariable(
-                array_values(
-                    $fieldQueryInterpreter->extractFieldArguments($this, $field)
-                )
-            );
+            // We can also force it through an option. This is needed when the field is created on runtime.
+            // Eg: through the <transform> directive, in which case no parameter is dynamic anymore by the time it reaches here, yet it was not validated statically either
+            $validateSchemaOnResultItem =
+                $options[self::OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM] ||
+                FieldQueryUtils::isAnyFieldArgumentValueAFieldOrVariable(
+                    array_values(
+                        $fieldQueryInterpreter->extractFieldArguments($this, $field)
+                    )
+                );
             foreach ($fieldValueResolvers as $fieldValueResolver) {
                 // Also send the fieldResolver along, as to get the id of the $resultItem being passed
                 if ($fieldValueResolver->resolveCanProcessResultItem($this, $resultItem, $fieldName, $fieldArgs)) {

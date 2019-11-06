@@ -1,10 +1,12 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
 
+use PoP\ComponentModel\GeneralUtils;
 use PoP\ComponentModel\DataloaderInterface;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\FieldResolvers\PipelinePositions;
+use PoP\ComponentModel\FieldResolvers\AbstractFieldResolver;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 
@@ -121,10 +123,86 @@ class TransformPropertyDirectiveResolver extends AbstractGlobalDirectiveResolver
             } else {
                 array_unshift($resultItemFunctionArgElems, $value);
             }
+            unset($resultItemFunctionArgElems['array']);
 
-            // Regenerate the function, execute it, and replace the value in the DB
+            // Regenerate the function
             $resultItemFunction = $fieldQueryInterpreter->getField($functionName, $resultItemFunctionArgElems);
-            $dbItems[(string)$id][$target] = $fieldResolver->resolveValue($resultIDItems[(string)$id], $resultItemFunction);
+
+            // Validate the new fieldArgs once again, to make sure the addition of the new parameter is right (eg: maybe the param name where to pass the function is wrong)
+            $resultItemVariables = $this->getVariablesForResultItem($id, $variables, $messages);
+            $resultItem = $resultIDItems[$id];
+            // First for the Schema
+            list(
+                $schemaValidField,
+                $schemaFieldName,
+                $schemaFieldArgs,
+                $schemaDBErrors,
+                $schemaDBWarnings
+            ) = $fieldQueryInterpreter->extractFieldArgumentsForSchema($fieldResolver, $resultItemFunction, $resultItemVariables);
+            if ($schemaDBWarnings) {
+                $schemaWarnings[$this->directive] = array_merge(
+                    $schemaWarnings[$this->directive] ?? [],
+                    $schemaDBWarnings
+                );
+            }
+            if ($schemaDBErrors) {
+                $schemaErrors[$this->directive] = array_merge(
+                    $schemaWarnings[$this->directive] ?? [],
+                    $schemaDBErrors
+                );
+                $schemaErrors[$this->directive][] = sprintf(
+                    $translationAPI->__('Transformation of property \'%s\' on object with ID \'%s\' can\'t be executed due to previous errors', 'component-model'),
+                    $property,
+                    $id
+                );
+                continue;
+            }
+
+            // Then for the ResultItem
+            list(
+                $resultItemValidField,
+                $resultItemFieldName,
+                $resultItemFieldArgs,
+                $resultItemDBErrors,
+                $resultItemDBWarnings
+            ) = $fieldQueryInterpreter->extractFieldArgumentsForResultItem($fieldResolver, $resultItem, $resultItemFunction, $resultItemVariables);
+
+            if ($resultItemDBWarnings) {
+                $dbWarnings = array_merge_recursive(
+                    $dbWarnings ?? [],
+                    $resultItemDBWarnings
+                );
+            }
+            if ($resultItemDBErrors) {
+                $dbErrors = array_merge_recursive(
+                    $dbWarnings ?? [],
+                    $resultItemDBErrors
+                );
+                $dbErrors[(string)$id][$this->directive][] = sprintf(
+                    $translationAPI->__('Transformation of property \'%s\' on object with ID \'%s\' can\'t be executed due to previous errors', 'component-model'),
+                    $property,
+                    $id
+                );
+                continue;
+            }
+
+            // Execute the function, and replace the value in the DB
+            // We must indicate to validate the schema
+            $options = [
+                AbstractFieldResolver::OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM => true,
+            ];
+            $functionValue = $fieldResolver->resolveValue($resultIDItems[(string)$id], $resultItemFunction, $resultItemVariables, $options);
+            if (GeneralUtils::isError($functionValue)) {
+                $error = $functionValue;
+                $dbErrors[(string)$id][$this->directive][] = sprintf(
+                    $translationAPI->__('Transformation of property \'%s\' on object with ID \'%s\' failed due to error: %s', 'component-model'),
+                    $property,
+                    $id,
+                    $error->getErrorMessage()
+                );
+                continue;
+            }
+            $dbItems[(string)$id][$target] = $functionValue;
         }
     }
 }

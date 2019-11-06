@@ -18,7 +18,7 @@ interface FieldResolverInterface
     public function getSchemaFieldArgs(string $field): array;
     public function enableOrderedSchemaFieldArgs(string $field): bool;
     public function resolveFieldDefaultDataloaderClass(string $field): ?string;
-    public function resolveValue($resultItem, string $field, ?array $variables = null);
+    public function resolveValue($resultItem, string $field, ?array $variables = null, array $options = []);
     public function getSchemaDefinition(array $fieldArgs = [], array $options = []): array;
     public function hasFieldValueResolversForField(string $field): bool;
 }
