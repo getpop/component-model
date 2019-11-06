@@ -94,13 +94,27 @@ class TransformPropertyDirectiveResolver extends AbstractGlobalDirectiveResolver
         $target = $this->directiveArgsForSchema['target'] ?? $property;
 
         // Insert the value under the property name, or in first position
+        $translationAPI = TranslationAPIFacade::getInstance();
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         $functionName = $fieldQueryInterpreter->getFieldName($function);
         $functionArgElems = $fieldQueryInterpreter->extractFieldArguments($fieldResolver, $function);
+        $dbKey = $dataloader->getDatabaseKey();
 
         // Get the value from the object
         foreach (array_keys($idsDataFields) as $id) {
-            $value = $dbItems[(string)$id][$property];
+            // Validate that the property exists
+            $isValueInDBItems = array_key_exists($property, $dbItems[(string)$id] ?? []);
+            if (!$isValueInDBItems && !array_key_exists($property, $previousDBItems[$dbKey][(string)$id] ?? [])) {
+                $dbErrors[(string)$id][$this->directive][] = sprintf(
+                    $translationAPI->__('Property \'%s\' hadn\'t been set for object with ID \'%s\', so it can\'t be transformed', 'component-model'),
+                    $property,
+                    $id
+                );
+                continue;
+            }
+            $value = $isValueInDBItems ?
+                $dbItems[(string)$id][$property] :
+                $previousDBItems[$dbKey][(string)$id][$property];
             $resultItemFunctionArgElems = $functionArgElems;
             if ($parameter) {
                 $resultItemFunctionArgElems[$parameter] = $value;
