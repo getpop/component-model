@@ -58,6 +58,11 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
                 SchemaDefinition::ARGNAME_TYPE => TypeCastingHelpers::combineTypes(SchemaDefinition::TYPE_ARRAY, SchemaDefinition::TYPE_STRING),
                 SchemaDefinition::ARGNAME_DESCRIPTION => $translationAPI->__('The fields in the current object to which copy the data. If not provided, the same fields from the \'copyFromFields\' argument are used', 'component-model'),
             ],
+            [
+                SchemaDefinition::ARGNAME_NAME => 'keepRelationalIDs',
+                SchemaDefinition::ARGNAME_TYPE => SchemaDefinition::TYPE_BOOL,
+                SchemaDefinition::ARGNAME_DESCRIPTION => $translationAPI->__('Indicate if the properties are placed under the relational ID as keys (`true`) or as a one-dimensional array (`false`). If not provided, it is `true`', 'component-model'),
+            ],
         ];
     }
 
@@ -121,6 +126,7 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
 
         $copyFromFields = $this->directiveArgsForSchema['copyFromFields'];
         $copyToFields = $this->directiveArgsForSchema['copyToFields'] ?? $copyFromFields;
+        $keepRelationalIDs = $this->directiveArgsForSchema['keepRelationalIDs'] ?? true;
 
         // From the dataloader, obtain under what dbKey the data for the current object is stored
         $dbKey = $dataloader->getDatabaseKey();
@@ -185,7 +191,11 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
                             );
                             continue;
                         }
-                        $dbItems[(string)$id][$copyToField][(string)$relationalID] = $previousDBItems[$relationalDBKey][(string)$relationalID][$copyFromField];
+                        if ($keepRelationalIDs) {
+                            $dbItems[(string)$id][$copyToField][(string)$relationalID] = $previousDBItems[$relationalDBKey][(string)$relationalID][$copyFromField];
+                        } else {
+                            $dbItems[(string)$id][$copyToField][] = $previousDBItems[$relationalDBKey][(string)$relationalID][$copyFromField];
+                        }
                     }
                 }
             }
