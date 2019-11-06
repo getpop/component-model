@@ -163,11 +163,12 @@ class TransformPropertyDirectiveResolver extends AbstractGlobalDirectiveResolver
             }
 
             // Execute the function, and replace the value in the DB
-            // We must indicate to validate the schema
+            // Because the function was dynamically created, we must indicate to validate the schema when doing ->resolveValue
             $options = [
                 AbstractFieldResolver::OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM => true,
             ];
             $functionValue = $fieldResolver->resolveValue($resultIDItems[(string)$id], $resultItemFunction, $resultItemVariables, $options);
+            // If there was an error (eg: a missing mandatory argument), then the function will be of type Error
             if (GeneralUtils::isError($functionValue)) {
                 $error = $functionValue;
                 $dbErrors[(string)$id][$this->directive][] = sprintf(
