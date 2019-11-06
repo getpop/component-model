@@ -1155,18 +1155,11 @@ class Engine implements EngineInterface
         return $dbname_entries;
     }
 
-    protected function getVariablesFromRequest(): array
-    {
-        return array_merge(
-            $_REQUEST,
-            $_REQUEST['variables'] ?? []
-        );
-    }
-
     public function getDatabases()
     {
         $instanceManager = InstanceManagerFacade::getInstance();
         $dataquery_manager = DataQueryManagerFactory::getInstance();
+        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
 
         $vars = Engine_Vars::getVars();
 
@@ -1182,7 +1175,7 @@ class Engine implements EngineInterface
         $subcomponent_data_fields = array();
 
         // The variables come from the request
-        $variables = $this->getVariablesFromRequest();
+        $variables = $fieldQueryInterpreter->getVariablesFromRequest();
         // Initiate a new $messages interchange across directives
         $messages = [];
 
