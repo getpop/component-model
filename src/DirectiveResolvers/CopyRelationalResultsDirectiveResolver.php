@@ -194,7 +194,7 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
                                 $translationAPI->__('Field \'%s\' hadn\'t been set for object of entity \'%s\' and ID \'%s\', so no data can be copied', 'component-model'),
                                 $copyFromField,
                                 $relationalDBKey,
-                                $id
+                                $relationalID
                             );
                             continue;
                         }
