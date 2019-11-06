@@ -1158,7 +1158,7 @@ class Engine implements EngineInterface
     public function getDatabases()
     {
         $instanceManager = InstanceManagerFacade::getInstance();
-        $dataquery_manager = DataQueryManagerFactory::getInstance();
+        // $dataquery_manager = DataQueryManagerFactory::getInstance();
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
 
         $vars = Engine_Vars::getVars();
@@ -1166,8 +1166,8 @@ class Engine implements EngineInterface
         // Save all database elements here, under dataloader
         $databases = $previousDBItems = $dbErrors = $dbWarnings = $schemaErrors = $schemaWarnings = $schemaDeprecations = array();
         $this->nocache_fields = array();
-        $format = $vars['format'];
-        $route = $vars['route'];
+        // $format = $vars['format'];
+        // $route = $vars['route'];
 
         // Keep an object with all fetched IDs/fields for each dataloader. Then, we can keep using the same dataloader as subcomponent,
         // but we need to avoid fetching those DB objects that were already fetched in a previous iteration
