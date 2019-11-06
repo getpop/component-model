@@ -725,14 +725,14 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                 ) {
                     $fieldArgValue = substr($fieldArgValue, strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING), strlen($fieldArgValue)-strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING)-strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING));
                 }
-            }
-        }
 
-        // Chain functions. At any moment, if any of them throws an error, the result will be null so don't process anymore
-        // First replace all variables
-        if ($fieldArgValue = $this->maybeConvertFieldArgumentVariableValue($fieldArgValue, $variables)) {
-            // Then convert to arrays
-            $fieldArgValue = $this->maybeConvertFieldArgumentArrayValue($fieldArgValue, $variables);
+                // Chain functions. At any moment, if any of them throws an error, the result will be null so don't process anymore
+                // First replace all variables
+                if ($fieldArgValue = $this->maybeConvertFieldArgumentVariableValue($fieldArgValue, $variables)) {
+                    // Then convert to arrays
+                    $fieldArgValue = $this->maybeConvertFieldArgumentArrayValue($fieldArgValue, $variables);
+                }
+            }
         }
 
         return $fieldArgValue;
