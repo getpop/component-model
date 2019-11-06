@@ -123,7 +123,6 @@ class TransformPropertyDirectiveResolver extends AbstractGlobalDirectiveResolver
             } else {
                 array_unshift($resultItemFunctionArgElems, $value);
             }
-            unset($resultItemFunctionArgElems['array']);
 
             // Regenerate the function
             $resultItemFunction = $fieldQueryInterpreter->getField($functionName, $resultItemFunctionArgElems);
