@@ -8,9 +8,9 @@ use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\FieldResolvers\PipelinePositions;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 
-class SetPropertyAsVarDirectiveResolver extends AbstractGlobalDirectiveResolver
+class setPropertiesAsVarDirectiveResolver extends AbstractGlobalDirectiveResolver
 {
-    const DIRECTIVE_NAME = 'setPropertyAsVar';
+    const DIRECTIVE_NAME = 'setPropertiesAsVar';
     public static function getDirectiveName(): string {
         return self::DIRECTIVE_NAME;
     }
