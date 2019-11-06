@@ -707,30 +707,32 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
      */
     protected function maybeConvertFieldArgumentValue($fieldArgValue, ?array $variables)
     {
-        // Remove the white spaces before and after
-        if ($fieldArgValue = trim($fieldArgValue)) {
-            // Special case: when wrapping a string between quotes (eg: to avoid it being treated as a field, such as: posts(searchfor:"image(vertical)")),
-            // the quotes are converted, from:
-            // "value"
-            // to:
-            // "\"value\""
-            // Transform back. Keep the quotes so that the string is still not converted to a field
-            $fieldArgValue = stripcslashes($fieldArgValue);
+        if (is_string($fieldArgValue)) {
+            // Remove the white spaces before and after
+            if ($fieldArgValue = trim($fieldArgValue)) {
+                // Special case: when wrapping a string between quotes (eg: to avoid it being treated as a field, such as: posts(searchfor:"image(vertical)")),
+                // the quotes are converted, from:
+                // "value"
+                // to:
+                // "\"value\""
+                // Transform back. Keep the quotes so that the string is still not converted to a field
+                $fieldArgValue = stripcslashes($fieldArgValue);
 
-            // If it has quotes at the beginning and end, it's a string. Remove them
-            if (
-                substr($fieldArgValue, 0, strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING)) == QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING &&
-                substr($fieldArgValue, -1*strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING)) == QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING
-            ) {
-                $fieldArgValue = substr($fieldArgValue, strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING), strlen($fieldArgValue)-strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING)-strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING));
+                // If it has quotes at the beginning and end, it's a string. Remove them
+                if (
+                    substr($fieldArgValue, 0, strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING)) == QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING &&
+                    substr($fieldArgValue, -1*strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING)) == QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING
+                ) {
+                    $fieldArgValue = substr($fieldArgValue, strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING), strlen($fieldArgValue)-strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING)-strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING));
+                }
             }
+        }
 
-            // Chain functions. At any moment, if any of them throws an error, the result will be null so don't process anymore
-            // First replace all variables
-            if ($fieldArgValue = $this->maybeConvertFieldArgumentVariableValue($fieldArgValue, $variables)) {
-                // Then convert to arrays
-                return $this->maybeConvertFieldArgumentArrayValue($fieldArgValue, $variables);
-            }
+        // Chain functions. At any moment, if any of them throws an error, the result will be null so don't process anymore
+        // First replace all variables
+        if ($fieldArgValue = $this->maybeConvertFieldArgumentVariableValue($fieldArgValue, $variables)) {
+            // Then convert to arrays
+            $fieldArgValue = $this->maybeConvertFieldArgumentArrayValue($fieldArgValue, $variables);
         }
 
         return $fieldArgValue;
