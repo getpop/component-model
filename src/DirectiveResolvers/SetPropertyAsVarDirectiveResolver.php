@@ -60,6 +60,44 @@ class SetPropertyAsVarDirectiveResolver extends AbstractGlobalDirectiveResolver
     }
 
     /**
+     * Validate that the number of elements in the fields `properties` and `variables` match one another
+     *
+     * @param FieldResolverInterface $fieldResolver
+     * @param array $directiveArgs
+     * @param array $schemaErrors
+     * @param array $schemaWarnings
+     * @param array $schemaDeprecations
+     * @return array
+     */
+    public function validateDirectiveArgumentsForSchema(FieldResolverInterface $fieldResolver, array $directiveArgs, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    {
+        $directiveArgs = parent::validateDirectiveArgumentsForSchema($fieldResolver, $directiveArgs, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+        $translationAPI = TranslationAPIFacade::getInstance();
+
+        if (isset($directiveArgs['variables'])) {
+            $variablesName = $directiveArgs['variables'];
+            $properties = $directiveArgs['properties'];
+            $variablesNameCount = count($variablesName);
+            $propertiesCount = count($properties);
+
+            // Validate that both arrays have the same number of elements
+            if ($variablesNameCount > $propertiesCount) {
+                $schemaWarnings[$this->directive][] = sprintf(
+                    $translationAPI->__('Argument \'variables\' has more elements than argument \'properties\', so the following variables have been ignored: \'%s\'', 'component-model'),
+                    implode($translationAPI->__('\', \''), array_slice($variablesName, $propertiesCount))
+                );
+            } elseif ($variablesNameCount < $propertiesCount) {
+                $schemaWarnings[$this->directive][] = sprintf(
+                    $translationAPI->__('Argument \'properties\' has more elements than argument \'variables\', so the following properties will be assigned to the destination object under their same name: \'%s\'', 'component-model'),
+                    implode($translationAPI->__('\', \''), array_slice($properties, $variablesNameCount))
+                );
+            }
+        }
+
+        return $directiveArgs;
+    }
+
+    /**
      * Copy the data under the relational object into the current object
      *
      * @param FieldResolverInterface $fieldResolver
