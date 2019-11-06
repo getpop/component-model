@@ -117,11 +117,13 @@ class SetPropertyAsVarDirectiveResolver extends AbstractGlobalDirectiveResolver
         // Send a message to the resolveAndMerge directive, indicating which properties to retrieve
         $properties = $this->directiveArgsForSchema['properties'];
         $variableNames = $this->directiveArgsForSchema['variables'] ?? $properties;
+        $dbKey = $dataloader->getDatabaseKey();
         foreach (array_keys($idsDataFields) as $id) {
             for ($i=0; $i<count($properties); $i++) {
-                // Validate that the property exists in the source object
+                // Validate that the property exists in the source object, either on this iteration or any previous one
                 $property = $properties[$i];
-                if (!array_key_exists($property, $dbItems[(string)$id] ?? [])) {
+                $isValueInDBItems = array_key_exists($property, $dbItems[(string)$id] ?? []);
+                if (!$isValueInDBItems && !array_key_exists($property, $previousDBItems[$dbKey][(string)$id] ?? [])) {
                     $dbErrors[(string)$id][$this->directive][] = sprintf(
                         $translationAPI->__('Property \'%s\' hadn\'t been set for object with ID \'%s\', so no variable has been defined', 'component-model'),
                         $property,
@@ -134,12 +136,13 @@ class SetPropertyAsVarDirectiveResolver extends AbstractGlobalDirectiveResolver
                 $existingValue = $this->getVariableValueForResultItem($id, $variableName, $messages);
                 if (!is_null($existingValue)) {
                     $dbWarnings[(string)$id][$this->directive][] = sprintf(
-                        $translationAPI->__('Variable \'%s\' had already been set for object with ID \'%s\', with value \'%s\'. It has been overriden', 'component-model'),
+                        $translationAPI->__('The existing value for variable \'%s\' for object with ID \'%s\' has been overriden: \'%s\'', 'component-model'),
                         $variableName,
                         $id
                     );
                 }
-                $this->addVariableValueForResultItem($id, $variableName, $dbItems[(string)$id][$property], $messages);
+                $value = $isValueInDBItems ? $dbItems[(string)$id][$property] : $previousDBItems[$dbKey][(string)$id][$property];
+                $this->addVariableValueForResultItem($id, $variableName, $value, $messages);
             }
         }
     }
