@@ -164,34 +164,6 @@ class TransformPropertyDirectiveResolver extends AbstractGlobalDirectiveResolver
                 continue;
             }
 
-            // Then for the ResultItem
-            list(
-                $resultItemValidField,
-                $resultItemFieldName,
-                $resultItemFieldArgs,
-                $resultItemDBErrors,
-                $resultItemDBWarnings
-            ) = $fieldQueryInterpreter->extractFieldArgumentsForResultItem($fieldResolver, $resultItem, $resultItemFunction, $resultItemVariables);
-
-            if ($resultItemDBWarnings) {
-                $dbWarnings = array_merge_recursive(
-                    $dbWarnings ?? [],
-                    $resultItemDBWarnings
-                );
-            }
-            if ($resultItemDBErrors) {
-                $dbErrors = array_merge_recursive(
-                    $dbWarnings ?? [],
-                    $resultItemDBErrors
-                );
-                $dbErrors[(string)$id][$this->directive][] = sprintf(
-                    $translationAPI->__('Transformation of property \'%s\' on object with ID \'%s\' can\'t be executed due to previous errors', 'component-model'),
-                    $property,
-                    $id
-                );
-                continue;
-            }
-
             // Execute the function, and replace the value in the DB
             // We must indicate to validate the schema
             $options = [
