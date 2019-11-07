@@ -61,7 +61,7 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
             [
                 SchemaDefinition::ARGNAME_NAME => 'keepRelationalIDs',
                 SchemaDefinition::ARGNAME_TYPE => SchemaDefinition::TYPE_BOOL,
-                SchemaDefinition::ARGNAME_DESCRIPTION => $translationAPI->__('Indicate if the properties are placed under the relational ID as keys (`true`) or as a one-dimensional array (`false`). If not provided, it is `true`', 'component-model'),
+                SchemaDefinition::ARGNAME_DESCRIPTION => $translationAPI->__('Indicate if the properties are placed under the relational ID as keys (`true`) or as a one-dimensional array (`false`). If not provided, it is `false`', 'component-model'),
             ],
         ];
     }
@@ -126,7 +126,7 @@ class CopyRelationalResultsDirectiveResolver extends AbstractGlobalDirectiveReso
 
         $copyFromFields = $this->directiveArgsForSchema['copyFromFields'];
         $copyToFields = $this->directiveArgsForSchema['copyToFields'] ?? $copyFromFields;
-        $keepRelationalIDs = $this->directiveArgsForSchema['keepRelationalIDs'] ?? true;
+        $keepRelationalIDs = $this->directiveArgsForSchema['keepRelationalIDs'] ?? false;
 
         // From the dataloader, obtain under what dbKey the data for the current object is stored
         $dbKey = $dataloader->getDatabaseKey();
