@@ -59,9 +59,9 @@ class ForEachDirectiveResolver extends AbstractGlobalDirectiveResolver
                 SchemaDefinition::ARGNAME_DESCRIPTION => $translationAPI->__('The parameter under which to pass the array object to the function. If not provided, the value is added as the first field argument, without a name (expecting it can be deduced from the schema)', 'component-model'),
             ],
             [
-                SchemaDefinition::ARGNAME_NAME => 'byReference',
-                SchemaDefinition::ARGNAME_TYPE => SchemaDefinition::TYPE_BOOL,
-                SchemaDefinition::ARGNAME_DESCRIPTION => $translationAPI->__('Indicate if to pass the element by reference to the function (so it can be modified). By default it is `false`', 'component-model'),
+                SchemaDefinition::ARGNAME_NAME => 'addParams',
+                SchemaDefinition::ARGNAME_TYPE => SchemaDefinition::TYPE_ARRAY,
+                SchemaDefinition::ARGNAME_DESCRIPTION => $translationAPI->__('Provide extra parameters to the function', 'component-model'),
             ],
         ];
     }
@@ -86,7 +86,6 @@ class ForEachDirectiveResolver extends AbstractGlobalDirectiveResolver
 
         $function = $this->directiveArgsForSchema['function'];
         $parameter = $this->directiveArgsForSchema['parameter'];
-        $byReference = $this->directiveArgsForSchema['byReference'] ?? false;
         $addParams = $this->directiveArgsForSchema['addParams'] ?? [];
 
         // Insert the value under the property name, or in first position
@@ -94,7 +93,6 @@ class ForEachDirectiveResolver extends AbstractGlobalDirectiveResolver
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         $functionName = $fieldQueryInterpreter->getFieldName($function);
         $functionArgElems = $fieldQueryInterpreter->extractFieldArguments($fieldResolver, $function);
-        $dbKey = $dataloader->getDatabaseKey();
 
         $functionArgElems = array_merge(
             $functionArgElems,
