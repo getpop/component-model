@@ -13,6 +13,7 @@ use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
 use PoP\ComponentModel\DirectiveResolvers\ValidateDirectiveResolver;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups;
 use PoP\ComponentModel\DirectiveResolvers\ResolveValueAndMergeDirectiveResolver;
+use PoP\ComponentModel\DirectiveResolvers\setSelfAsVarDirectiveResolver;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
 
 abstract class AbstractFieldResolver implements FieldResolverInterface
@@ -84,6 +85,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             // Place the 2 mandatory directives at the beginning of the list, then they will be added to their needed position in the pipeline
             array_unshift(
                 $directiveSet,
+                $fieldQueryInterpreter->listFieldDirective(setSelfAsVarDirectiveResolver::getDirectiveName()),
                 $fieldQueryInterpreter->listFieldDirective(ValidateDirectiveResolver::getDirectiveName()),
                 $fieldQueryInterpreter->listFieldDirective(ResolveValueAndMergeDirectiveResolver::getDirectiveName())
             );
