@@ -696,8 +696,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     {
         $attachableExtensionManager = AttachableExtensionManagerFacade::getInstance();
 
-        // The ID is mandatory, since under this key is the data stored in the database object
-        $ret = ['id'];
+        $ret = [];
 
         // Iterate classes from the current class towards the parent classes until finding fieldResolver that satisfies processing this field
         $class = get_called_class();
