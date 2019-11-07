@@ -69,11 +69,12 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
             /**
             * The pipeline must always have directives:
-            * 1. Validate: to validate that the schema, fieldNames, etc are supported, and filter them out if not
-            * 2. ResolveAndMerge: to resolve the field and place the data into the DB object
-            * All other directives are placed somewhere in the pipeline, using these 2 directives as anchors.
+            * 1. SetSelfAsVar: to enable to access the current object's properties under variable `$self`
+            * 2. Validate: to validate that the schema, fieldNames, etc are supported, and filter them out if not
+            * 3. ResolveAndMerge: to resolve the field and place the data into the DB object
+            * All other directives are placed somewhere in the pipeline, using these 3 directives as anchors.
             * There are 3 positions:
-            * 1. At the beginning, before the Validate pipeline
+            * 1. At the beginning, between the SetSelfAsVar and Validate directives
             * 2. In the middle, between the Validate and Resolve directives
             * 3. At the end, after the ResolveAndMerge directive
             */
@@ -82,7 +83,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 PipelinePositions::MIDDLE => [],
                 PipelinePositions::BACK => [],
             ];
-            // Place the 2 mandatory directives at the beginning of the list, then they will be added to their needed position in the pipeline
+            // Place the 3 mandatory directives at the beginning of the list, then they will be added to their needed position in the pipeline
             array_unshift(
                 $directiveSet,
                 $fieldQueryInterpreter->listFieldDirective(setSelfAsVarDirectiveResolver::getDirectiveName()),
