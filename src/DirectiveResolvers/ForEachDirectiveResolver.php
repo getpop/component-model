@@ -87,6 +87,7 @@ class ForEachDirectiveResolver extends AbstractGlobalDirectiveResolver
         $function = $this->directiveArgsForSchema['function'];
         $parameter = $this->directiveArgsForSchema['parameter'];
         $byReference = $this->directiveArgsForSchema['byReference'] ?? false;
+        $addParams = $this->directiveArgsForSchema['addParams'] ?? [];
 
         // Insert the value under the property name, or in first position
         $translationAPI = TranslationAPIFacade::getInstance();
@@ -94,6 +95,11 @@ class ForEachDirectiveResolver extends AbstractGlobalDirectiveResolver
         $functionName = $fieldQueryInterpreter->getFieldName($function);
         $functionArgElems = $fieldQueryInterpreter->extractFieldArguments($fieldResolver, $function);
         $dbKey = $dataloader->getDatabaseKey();
+
+        $functionArgElems = array_merge(
+            $functionArgElems,
+            $addParams
+        );
 
         // Get the value from the object
         foreach ($idsDataFields as $id => $dataFields) {
@@ -113,6 +119,9 @@ class ForEachDirectiveResolver extends AbstractGlobalDirectiveResolver
                     $resultItemFunction = $fieldQueryInterpreter->getField($functionName, $resultItemFunctionArgElems);
 
                     // Validate the new fieldArgs once again, to make sure the addition of the new parameter is right (eg: maybe the param name where to pass the function is wrong)
+                    // Add the special variables `$key` and `$value` from the iteration
+                    $this->addVariableValueForResultItem($id, 'key', $key, $messages);
+                    $this->addVariableValueForResultItem($id, 'value', $value, $messages);
                     $resultItemVariables = $this->getVariablesForResultItem($id, $variables, $messages);
                     list(
                         $schemaValidField,
@@ -157,7 +166,7 @@ class ForEachDirectiveResolver extends AbstractGlobalDirectiveResolver
                     if (GeneralUtils::isError($functionValue)) {
                         $error = $functionValue;
                         $dbErrors[(string)$id][$this->directive][] = sprintf(
-                            $translationAPI->__('Transformation of fieldOutputKey \'%s\' on object with ID \'%s\' failed due to error: %s', 'component-model'),
+                            $translationAPI->__('Transformation of property \'%s\' on object with ID \'%s\' failed due to error: %s', 'component-model'),
                             $fieldOutputKey,
                             $id,
                             $error->getErrorMessage()
