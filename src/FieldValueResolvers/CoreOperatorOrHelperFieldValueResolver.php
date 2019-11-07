@@ -11,14 +11,14 @@ class CoreOperatorOrHelperFieldValueResolver extends AbstractOperatorOrHelperFie
     public static function getFieldNamesToResolve(): array
     {
         return [
-            'getPropertyFromSelf',
+            'getSelfProp',
         ];
     }
 
     public function getSchemaFieldType(FieldResolverInterface $fieldResolver, string $fieldName): ?string
     {
         $types = [
-            'getPropertyFromSelf' => SchemaDefinition::TYPE_MIXED,
+            'getSelfProp' => SchemaDefinition::TYPE_MIXED,
         ];
         return $types[$fieldName] ?? parent::getSchemaFieldType($fieldResolver, $fieldName);
     }
@@ -27,7 +27,7 @@ class CoreOperatorOrHelperFieldValueResolver extends AbstractOperatorOrHelperFie
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         $descriptions = [
-            'getPropertyFromSelf' => sprintf(
+            'getSelfProp' => sprintf(
                 $translationAPI->__('Get a property from the current object, as stored under variable `$%s`', 'pop-component-model'),
                 setSelfAsVarDirectiveResolver::VARIABLE_SELF
             ),
@@ -39,7 +39,7 @@ class CoreOperatorOrHelperFieldValueResolver extends AbstractOperatorOrHelperFie
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         switch ($fieldName) {
-            case 'getPropertyFromSelf':
+            case 'getSelfProp':
                 return [
                     [
                         SchemaDefinition::ARGNAME_NAME => 'self',
@@ -62,7 +62,7 @@ class CoreOperatorOrHelperFieldValueResolver extends AbstractOperatorOrHelperFie
     public function resolveValue(FieldResolverInterface $fieldResolver, $resultItem, string $fieldName, array $fieldArgs = [])
     {
         switch ($fieldName) {
-            case 'getPropertyFromSelf':
+            case 'getSelfProp':
                 // Retrieve the property from either 'dbItems' (i.e. it was loaded during the current iteration) or 'previousDBItems' (loaded during a previous iteration)
                 $self = $fieldArgs['self'];
                 $property = $fieldArgs['property'];
