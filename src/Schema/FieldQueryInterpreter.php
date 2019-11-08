@@ -719,10 +719,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                 $fieldArgValue = stripcslashes($fieldArgValue);
 
                 // If it has quotes at the beginning and end, it's a string. Remove them
-                if (
-                    substr($fieldArgValue, 0, strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING)) == QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING &&
-                    substr($fieldArgValue, -1*strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING)) == QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING
-                ) {
+                if ($this->isFieldArgumentValueWrappedWithStringSymbols($fieldArgValue)) {
                     $fieldArgValue = substr($fieldArgValue, strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING), strlen($fieldArgValue)-strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING)-strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING));
                 }
 
@@ -736,6 +733,13 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         }
 
         return $fieldArgValue;
+    }
+
+    protected function isFieldArgumentValueWrappedWithStringSymbols($fieldArgValue): bool
+    {
+        return
+            substr($fieldArgValue, 0, strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING)) == QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING &&
+            substr($fieldArgValue, -1*strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING)) == QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING;
     }
 
     protected function maybeConvertFieldArgumentVariableValue($fieldArgValue, ?array $variables)
@@ -861,50 +865,50 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         }
 
         // If the result fieldArgValue is a string (i.e. not numeric), and it has brackets (...),
-        // then it is a field. Validate it and resolve it
-        if (!empty($fieldArgValue) && is_string($fieldArgValue) && !is_numeric($fieldArgValue)) {
+        // and is not wrapped with quotes, then it is a field. Validate it and resolve it
+        if (!empty($fieldArgValue) && is_string($fieldArgValue) && !is_numeric($fieldArgValue) && !$this->isFieldArgumentValueWrappedWithStringSymbols($fieldArgValue)) {
 
-            // If it has the fieldArg brackets, then it's a field!
+            $fieldArgValue = (string)$fieldArgValue;
+            // If it has the fieldArg brackets, and the last bracket is at the end, then it's a field!
             list(
                 $fieldArgsOpeningSymbolPos,
                 $fieldArgsClosingSymbolPos
-            ) = QueryHelpers::listFieldArgsSymbolPositions((string)$fieldArgValue);
+            ) = QueryHelpers::listFieldArgsSymbolPositions($fieldArgValue);
 
-            // If there are no "(" and ")" then it's simply a string
-            if ($fieldArgsClosingSymbolPos === false && $fieldArgsOpeningSymbolPos === false) {
+            // If there is no "(" or ")", or if the ")" is not at the end, of if the "(" is at the beginning, then it's simply a string
+            if ($fieldArgsClosingSymbolPos !== (strlen($fieldArgValue)-strlen(QuerySyntax::SYMBOL_FIELDARGS_CLOSING)) || $fieldArgsOpeningSymbolPos === false || $fieldArgsOpeningSymbolPos === 0) {
                 return null;
             }
-            // If there is only one of them, it's a query error, so discard the query bit
-            $fieldArgValue = (string)$fieldArgValue;
-            if (($fieldArgsClosingSymbolPos === false && $fieldArgsOpeningSymbolPos !== false) || ($fieldArgsClosingSymbolPos !== false && $fieldArgsOpeningSymbolPos === false)) {
-                return [
-                    sprintf(
-                        $this->translationAPI->__('Arguments in field \'%s\' must start with symbol \'%s\' and end with symbol \'%s\', so they have been ignored', 'pop-component-model'),
-                        $fieldArgValue,
-                        QuerySyntax::SYMBOL_FIELDARGS_OPENING,
-                        QuerySyntax::SYMBOL_FIELDARGS_CLOSING
-                    ),
-                ];
-            }
+            // // If there is only one of them, it's a query error, so discard the query bit
+            // if (($fieldArgsClosingSymbolPos === false && $fieldArgsOpeningSymbolPos !== false) || ($fieldArgsClosingSymbolPos !== false && $fieldArgsOpeningSymbolPos === false)) {
+            //     return [
+            //         sprintf(
+            //             $this->translationAPI->__('Arguments in field \'%s\' must start with symbol \'%s\' and end with symbol \'%s\', so they have been ignored', 'pop-component-model'),
+            //             $fieldArgValue,
+            //             QuerySyntax::SYMBOL_FIELDARGS_OPENING,
+            //             QuerySyntax::SYMBOL_FIELDARGS_CLOSING
+            //         ),
+            //     ];
+            // }
 
-            // If the opening bracket is at the beginning, or the closing one is not at the end, it's an error
-            if ($fieldArgsOpeningSymbolPos === 0) {
-                return [
-                    sprintf(
-                        $this->translationAPI->__('Field name is missing in \'%s\', so it has been ignored', 'pop-component-model'),
-                        $fieldArgValue
-                    ),
-                ];
-            }
-            if ($fieldArgsClosingSymbolPos !== strlen($fieldArgValue)-1) {
-                return [
-                    sprintf(
-                        $this->translationAPI->__('Field \'%s\' has arguments, but because the closing argument symbol \'%s\' is not at the end, it has been ignored', 'pop-component-model'),
-                        $fieldArgValue,
-                        QuerySyntax::SYMBOL_FIELDARGS_CLOSING
-                    ),
-                ];
-            }
+            // // If the opening bracket is at the beginning, or the closing one is not at the end, it's an error
+            // if ($fieldArgsOpeningSymbolPos === 0) {
+            //     return [
+            //         sprintf(
+            //             $this->translationAPI->__('Field name is missing in \'%s\', so it has been ignored', 'pop-component-model'),
+            //             $fieldArgValue
+            //         ),
+            //     ];
+            // }
+            // if ($fieldArgsClosingSymbolPos !== strlen($fieldArgValue)-1) {
+            //     return [
+            //         sprintf(
+            //             $this->translationAPI->__('Field \'%s\' has arguments, but because the closing argument symbol \'%s\' is not at the end, it has been ignored', 'pop-component-model'),
+            //             $fieldArgValue,
+            //             QuerySyntax::SYMBOL_FIELDARGS_CLOSING
+            //         ),
+            //     ];
+            // }
 
             // If it reached here, it's a field! Validate it, or show an error
             return $fieldResolver->resolveSchemaValidationErrorDescriptions($fieldArgValue, $variables);
