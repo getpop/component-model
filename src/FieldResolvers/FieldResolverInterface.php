@@ -2,6 +2,7 @@
 namespace PoP\ComponentModel\FieldResolvers;
 
 use PoP\ComponentModel\DataloaderInterface;
+use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
 
 interface FieldResolverInterface
 {
@@ -21,4 +22,5 @@ interface FieldResolverInterface
     public function resolveValue($resultItem, string $field, ?array $variables = null, array $options = []);
     public function getSchemaDefinition(array $fieldArgs = [], array $options = []): array;
     public function hasFieldValueResolversForField(string $field): bool;
+    public function getFieldDirectivePipeline(string $fieldDirectives, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): DirectivePipelineDecorator;
 }

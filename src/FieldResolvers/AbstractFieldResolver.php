@@ -56,7 +56,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         return $this->directiveNameClasses;
     }
 
-    protected function getFieldDirectivePipeline(string $fieldDirectives, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): DirectivePipelineDecorator
+    public function getFieldDirectivePipeline(string $fieldDirectives, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): DirectivePipelineDecorator
     {
         // Pipeline cache
         if (is_null($this->fieldDirectivePipelineInstanceCache[$fieldDirectives])) {
@@ -309,6 +309,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         $translationAPI = TranslationAPIFacade::getInstance();
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         $fieldName = $fieldQueryInterpreter->getFieldName($field);
+        // debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);die;
         return [
             sprintf(
                 $translationAPI->__('No FieldValueResolver resolves field \'%s\'', 'pop-component-model'),
