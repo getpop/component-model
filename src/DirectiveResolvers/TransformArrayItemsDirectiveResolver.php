@@ -1,6 +1,7 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
 
+use PoP\FieldQuery\QuerySyntax;
 use PoP\ComponentModel\GeneralUtils;
 use PoP\ComponentModel\DataloaderInterface;
 use PoP\Translation\Facades\TranslationAPIFacade;
@@ -115,15 +116,16 @@ class TransformArrayItemsDirectiveResolver extends TransformPropertyDirectiveRes
                 foreach ($array as $key => $value) {
                     // Add into the $idsDataFields object for the array items
                     // Watch out: function `regenerateAndExecuteFunction` receives `$idsDataFields` and not `$idsDataFieldOutputKeys`, so then re-create the "field" assigning a new alias
+                    // If it has an alias, use it. If not, use the fieldName
+                    $arrayItemAlias = $this->createPropertyForArrayItem($fieldAlias ? $fieldAlias : QuerySyntax::SYMBOL_FIELDALIAS_PREFIX.$fieldName, $key);
                     $arrayItemProperty = $fieldQueryInterpreter->composeField(
                         $fieldName,
                         $fieldArgs,
-                        // If it has an alias, use it. If not, use the fieldName
-                        $this->createPropertyForArrayItem($fieldAlias ? $fieldAlias : $fieldName, $key),
+                        $arrayItemAlias,
                         $fieldSkipOutputIfNull,
                         $fieldDirectives
                     );
-                    // var_dump('$arrayItemProperty', $fieldAlias, $fieldName, $key, $this->createPropertyForArrayItem($fieldAlias ? $fieldAlias : $fieldName, $key), $arrayItemProperty);die;
+                    // var_dump('$arrayItemProperty', $field, $key, $value, $arrayItemProperty);die;
                     // Place into the current object
                     $dbItems[(string)$id][$arrayItemProperty] = $value;
                     // Place it into list of fields to process
