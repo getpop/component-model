@@ -160,11 +160,20 @@ class TransformPropertyDirectiveResolver extends AbstractGlobalDirectiveResolver
                             $function
                         );
                     }
-                    $dbErrors[(string)$id][$this->directive][] = sprintf(
-                        $translationAPI->__('Transformation of fieldOutputKey \'%s\' on object with ID \'%s\' can\'t be executed due to previous errors', 'component-model'),
-                        $fieldOutputKey,
-                        $id
-                    );
+                    if ($fieldOutputKey != $field) {
+                        $dbErrors[(string)$id][$this->directive][] = sprintf(
+                            $translationAPI->__('Transformation of field \'%s\' (with output key \'%s\') on object with ID \'%s\' can\'t be executed due to previous errors', 'component-model'),
+                            $field,
+                            $fieldOutputKey,
+                            $id
+                        );
+                    } else {
+                        $dbErrors[(string)$id][$this->directive][] = sprintf(
+                            $translationAPI->__('Transformation of field \'%s\' on object with ID \'%s\' can\'t be executed due to previous errors', 'component-model'),
+                            $fieldOutputKey,
+                            $id
+                        );
+                    }
                     continue;
                 }
 
