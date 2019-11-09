@@ -129,18 +129,10 @@ class TransformPropertyDirectiveResolver extends AbstractGlobalDirectiveResolver
                     continue;
                 }
 
-                // Place the value (and maybe the key, if it comes from unpacking an array) into the $variables context
-                $value = $isValueInDBItems ?
-                    $dbItems[(string)$id][$fieldOutputKey] :
-                    $previousDBItems[$dbKey][(string)$id][$fieldOutputKey];
-                // $this->addVariableValueForResultItem($id, 'fieldOutputKey', $fieldOutputKey, $messages);
-                if ($key = '') {
-                    $this->addVariableValueForResultItem($id, 'key', $key, $messages);
-                }
-                $this->addVariableValueForResultItem($id, 'value', $value, $messages);
+                // Place all the reserved variables into the `$variables` context: $value (here), $key (when overriding this function in <transformArrayItems>)
+                $this->addVariableValuesForResultItemInContext($dataloader, $fieldResolver, $id, $field, $resultIDItems, $dbItems, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations, $previousDBItems, $variables, $messages);
 
-                // Finally execute the function on this field
-                // $this->executeFunction($dataloader, $fieldResolver, $id, $field, $function, $resultIDItems, $dbItems, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations, $previousDBItems, $variables, $messages);
+                // Generate the fieldArgs from combining the query with the values in the context, through $variables
                 $resultItemVariables = $this->getVariablesForResultItem($id, $variables, $messages);
                 list(
                     $schemaValidField,
@@ -149,6 +141,7 @@ class TransformPropertyDirectiveResolver extends AbstractGlobalDirectiveResolver
                     $schemaDBErrors,
                     $schemaDBWarnings
                 ) = $fieldQueryInterpreter->extractFieldArgumentsForSchema($fieldResolver, $function, $resultItemVariables);
+
                 // Place the errors not under schema but under DB, since they may change on a resultItem by resultItem basis
                 if ($schemaDBWarnings) {
                     foreach ($schemaDBWarnings as $warningMessage) {
@@ -175,12 +168,13 @@ class TransformPropertyDirectiveResolver extends AbstractGlobalDirectiveResolver
                     continue;
                 }
 
-                // Execute the function, and replace the value in the DB
+                // Execute the function
                 // Because the function was dynamically created, we must indicate to validate the schema when doing ->resolveValue
                 $options = [
                     AbstractFieldResolver::OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM => true,
                 ];
                 $functionValue = $fieldResolver->resolveValue($resultIDItems[(string)$id], $function, $resultItemVariables, $options);
+
                 // If there was an error (eg: a missing mandatory argument), then the function will be of type Error
                 if (GeneralUtils::isError($functionValue)) {
                     $error = $functionValue;
@@ -192,6 +186,7 @@ class TransformPropertyDirectiveResolver extends AbstractGlobalDirectiveResolver
                     );
                     continue;
                 }
+
                 // Store the results:
                 // If there is a target specified, use it
                 // If the specified target is empty, then do not store the results
@@ -204,63 +199,34 @@ class TransformPropertyDirectiveResolver extends AbstractGlobalDirectiveResolver
         }
     }
 
-    // protected function executeFunction(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, $id, string $field, string $resultItemFunction, array &$resultIDItems, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$previousDBItems, array &$variables, array &$messages)
-    // {
-    //     $translationAPI = TranslationAPIFacade::getInstance();
-    //     $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
-    //     $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
-
-    //     $resultItemVariables = $this->getVariablesForResultItem($id, $variables, $messages);
-    //     list(
-    //         $schemaValidField,
-    //         $schemaFieldName,
-    //         $schemaFieldArgs,
-    //         $schemaDBErrors,
-    //         $schemaDBWarnings
-    //     ) = $fieldQueryInterpreter->extractFieldArgumentsForSchema($fieldResolver, $resultItemFunction, $resultItemVariables);
-    //     // Place the errors not under schema but under DB, since they may change on a resultItem by resultItem basis
-    //     if ($schemaDBWarnings) {
-    //         foreach ($schemaDBWarnings as $warningMessage) {
-    //             $dbWarnings[(string)$id][$this->directive][] = sprintf(
-    //                 $translationAPI->__('%s (Generated function: \'%s\')', 'component-model'),
-    //                 $warningMessage,
-    //                 $resultItemFunction
-    //             );
-    //         }
-    //     }
-    //     if ($schemaDBErrors) {
-    //         foreach ($schemaDBErrors as $errorMessage) {
-    //             $dbWarnings[(string)$id][$this->directive][] = sprintf(
-    //                 $translationAPI->__('%s (Generated function: \'%s\')', 'component-model'),
-    //                 $errorMessage,
-    //                 $resultItemFunction
-    //             );
-    //         }
-    //         $dbErrors[(string)$id][$this->directive][] = sprintf(
-    //             $translationAPI->__('Transformation of fieldOutputKey \'%s\' on object with ID \'%s\' can\'t be executed due to previous errors', 'component-model'),
-    //             $fieldOutputKey,
-    //             $id
-    //         );
-    //         return;
-    //     }
-
-    //     // Execute the function, and replace the value in the DB
-    //     // Because the function was dynamically created, we must indicate to validate the schema when doing ->resolveValue
-    //     $options = [
-    //         AbstractFieldResolver::OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM => true,
-    //     ];
-    //     $functionValue = $fieldResolver->resolveValue($resultIDItems[(string)$id], $resultItemFunction, $resultItemVariables, $options);
-    //     // If there was an error (eg: a missing mandatory argument), then the function will be of type Error
-    //     if (GeneralUtils::isError($functionValue)) {
-    //         $error = $functionValue;
-    //         $dbErrors[(string)$id][$this->directive][] = sprintf(
-    //             $translationAPI->__('Transformation of property \'%s\' on object with ID \'%s\' failed due to error: %s', 'component-model'),
-    //             $fieldOutputKey,
-    //             $id,
-    //             $error->getErrorMessage()
-    //         );
-    //         return;
-    //     }
-    //     $dbItems[(string)$id][$fieldOutputKey] = $functionValue;
-    // }
+    /**
+     * Place all the reserved variables into the `$variables` context
+     *
+     * @param DataloaderInterface $dataloader
+     * @param FieldResolverInterface $fieldResolver
+     * @param [type] $id
+     * @param string $field
+     * @param array $resultIDItems
+     * @param array $dbItems
+     * @param array $dbErrors
+     * @param array $dbWarnings
+     * @param array $schemaErrors
+     * @param array $schemaWarnings
+     * @param array $schemaDeprecations
+     * @param array $previousDBItems
+     * @param array $variables
+     * @param array $messages
+     * @return void
+     */
+    protected function addVariableValuesForResultItemInContext(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, $id, string $field, array &$resultIDItems, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$previousDBItems, array &$variables, array &$messages)
+    {
+        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+        $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
+        $isValueInDBItems = array_key_exists($fieldOutputKey, $dbItems[(string)$id] ?? []);
+        $dbKey = $dataloader->getDatabaseKey();
+        $value = $isValueInDBItems ?
+            $dbItems[(string)$id][$fieldOutputKey] :
+            $previousDBItems[$dbKey][(string)$id][$fieldOutputKey];
+        $this->addVariableValueForResultItem($id, 'value', $value, $messages);
+    }
 }
