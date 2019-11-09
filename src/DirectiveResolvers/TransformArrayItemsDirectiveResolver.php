@@ -134,7 +134,7 @@ class TransformArrayItemsDirectiveResolver extends TransformPropertyDirectiveRes
             }
         }
         // 2. Execute the function for all arrayItems
-        $this->regenerateAndExecuteFunction($dataloader, $fieldResolver, $resultIDItems, $idsDataFields, $dbItems, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations, $previousDBItems, $variables, $messages);
+        $this->regenerateAndExecuteFunction($dataloader, $fieldResolver, $resultIDItems, $arrayItemIdsProperties, $dbItems, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations, $previousDBItems, $variables, $messages);
         // 3. Composer the array from the results for each array item
         foreach ($idsDataFields as $id => $dataFields) {
             foreach ($dataFields['direct'] as $field) {
@@ -164,14 +164,11 @@ class TransformArrayItemsDirectiveResolver extends TransformPropertyDirectiveRes
                 $arrayValue = [];
                 $array = $value;
                 foreach ($array as $key => $value) {
-                    // Add into the $idsDataFields object for the array items
-                    // Watch out: function `regenerateAndExecuteFunction` receives `$idsDataFields` and not `$idsDataFieldOutputKeys`, so then re-create the "field" assigning a new alias
+                    $arrayItemAlias = $this->createPropertyForArrayItem($fieldAlias ? $fieldAlias : QuerySyntax::SYMBOL_FIELDALIAS_PREFIX.$fieldName, $key);
                     $arrayItemProperty = $fieldQueryInterpreter->composeField(
                         $fieldName,
                         $fieldArgs,
-                        // If it has an alias, use it. If not, use the fieldName
-                        $this->createPropertyForArrayItem($fieldAlias ? $fieldAlias : $fieldName, $key),
-                        $fieldAlias,
+                        $arrayItemAlias,
                         $fieldSkipOutputIfNull,
                         $fieldDirectives
                     );
