@@ -40,19 +40,13 @@ class TransformPropertyDirectiveResolver extends AbstractGlobalDirectiveResolver
     public function getSchemaDirectiveDescription(FieldResolverInterface $fieldResolver): ?string
     {
         $translationAPI = TranslationAPIFacade::getInstance();
-        return $translationAPI->__('Transform the value of a property in the current object, optionally storing the transformation under a different property', 'component-model');
+        return $translationAPI->__('Transform the value of a property in the current object', 'component-model');
     }
 
     public function getSchemaDirectiveArgs(FieldResolverInterface $fieldResolver): array
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         return [
-            [
-                SchemaDefinition::ARGNAME_NAME => 'property',
-                SchemaDefinition::ARGNAME_TYPE => SchemaDefinition::TYPE_STRING,
-                SchemaDefinition::ARGNAME_DESCRIPTION => $translationAPI->__('The property in the relational object to transform', 'component-model'),
-                SchemaDefinition::ARGNAME_MANDATORY => true,
-            ],
             [
                 SchemaDefinition::ARGNAME_NAME => 'function',
                 SchemaDefinition::ARGNAME_TYPE => SchemaDefinition::TYPE_STRING,
@@ -63,11 +57,6 @@ class TransformPropertyDirectiveResolver extends AbstractGlobalDirectiveResolver
                 SchemaDefinition::ARGNAME_NAME => 'parameter',
                 SchemaDefinition::ARGNAME_TYPE => SchemaDefinition::TYPE_STRING,
                 SchemaDefinition::ARGNAME_DESCRIPTION => $translationAPI->__('The parameter under which to pass the object\'s property value to the transformation function. If not provided, the value is added as the first field argument, without a name (expecting it can be deduced from the schema)', 'component-model'),
-            ],
-            [
-                SchemaDefinition::ARGNAME_NAME => 'target',
-                SchemaDefinition::ARGNAME_TYPE => SchemaDefinition::TYPE_STRING,
-                SchemaDefinition::ARGNAME_DESCRIPTION => $translationAPI->__('The property under which to store the transformation. If not provided, the \'property\' field is overriden with the new value', 'component-model'),
             ],
         ];
     }
@@ -90,10 +79,8 @@ class TransformPropertyDirectiveResolver extends AbstractGlobalDirectiveResolver
     {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
 
-        $property = $this->directiveArgsForSchema['property'];
         $function = $this->directiveArgsForSchema['function'];
         $parameter = $this->directiveArgsForSchema['parameter'];
-        $target = $this->directiveArgsForSchema['target'] ?? $property;
 
         // Insert the value under the property name, or in first position
         $translationAPI = TranslationAPIFacade::getInstance();
@@ -103,83 +90,95 @@ class TransformPropertyDirectiveResolver extends AbstractGlobalDirectiveResolver
         $dbKey = $dataloader->getDatabaseKey();
 
         // Get the value from the object
-        foreach (array_keys($idsDataFields) as $id) {
-            // Validate that the property exists
-            $isValueInDBItems = array_key_exists($property, $dbItems[(string)$id] ?? []);
-            if (!$isValueInDBItems && !array_key_exists($property, $previousDBItems[$dbKey][(string)$id] ?? [])) {
-                $dbErrors[(string)$id][$this->directive][] = sprintf(
-                    $translationAPI->__('Property \'%s\' hadn\'t been set for object with ID \'%s\', so it can\'t be transformed', 'component-model'),
-                    $property,
-                    $id
-                );
-                continue;
-            }
-            $value = $isValueInDBItems ?
-                $dbItems[(string)$id][$property] :
-                $previousDBItems[$dbKey][(string)$id][$property];
-            $resultItemFunctionArgElems = $functionArgElems;
-            if ($parameter) {
-                $resultItemFunctionArgElems[$parameter] = $value;
-            } else {
-                array_unshift($resultItemFunctionArgElems, $value);
-            }
-
-            // Regenerate the function
-            $resultItemFunction = $fieldQueryInterpreter->getField($functionName, $resultItemFunctionArgElems);
-
-            // Validate the new fieldArgs once again, to make sure the addition of the new parameter is right (eg: maybe the param name where to pass the function is wrong)
-            $resultItemVariables = $this->getVariablesForResultItem($id, $variables, $messages);
-            list(
-                $schemaValidField,
-                $schemaFieldName,
-                $schemaFieldArgs,
-                $schemaDBErrors,
-                $schemaDBWarnings
-            ) = $fieldQueryInterpreter->extractFieldArgumentsForSchema($fieldResolver, $resultItemFunction, $resultItemVariables);
-            // Place the errors not under schema but under DB, since they may change on a resultItem by resultItem basis
-            if ($schemaDBWarnings) {
-                foreach ($schemaDBWarnings as $warningMessage) {
-                    $dbWarnings[(string)$id][$this->directive][] = sprintf(
-                        $translationAPI->__('%s (Generated function: \'%s\')', 'component-model'),
-                        $warningMessage,
-                        $resultItemFunction
-                    );
+        foreach ($idsDataFields as $id => $dataFields) {
+            foreach ($dataFields['direct'] as $field) {
+                $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
+                // Validate that the property exists
+                $isValueInDBItems = array_key_exists($fieldOutputKey, $dbItems[(string)$id] ?? []);
+                if (!$isValueInDBItems && !array_key_exists($fieldOutputKey, $previousDBItems[$dbKey][(string)$id] ?? [])) {
+                    if ($fieldOutputKey != $field) {
+                        $dbErrors[(string)$id][$this->directive][] = sprintf(
+                            $translationAPI->__('Field \'%s\' (with output key \'%s\') hadn\'t been set for object with ID \'%s\', so it can\'t be transformed', 'component-model'),
+                            $field,
+                            $fieldOutputKey,
+                            $id
+                        );
+                    } else {
+                        $dbErrors[(string)$id][$this->directive][] = sprintf(
+                            $translationAPI->__('Field \'%s\' hadn\'t been set for object with ID \'%s\', so it can\'t be transformed', 'component-model'),
+                            $fieldOutputKey,
+                            $id
+                        );
+                    }
+                    continue;
                 }
-            }
-            if ($schemaDBErrors) {
-                foreach ($schemaDBErrors as $errorMessage) {
-                    $dbWarnings[(string)$id][$this->directive][] = sprintf(
-                        $translationAPI->__('%s (Generated function: \'%s\')', 'component-model'),
-                        $errorMessage,
-                        $resultItemFunction
-                    );
+                $value = $isValueInDBItems ?
+                    $dbItems[(string)$id][$fieldOutputKey] :
+                    $previousDBItems[$dbKey][(string)$id][$fieldOutputKey];
+                $resultItemFunctionArgElems = $functionArgElems;
+                if ($parameter) {
+                    $resultItemFunctionArgElems[$parameter] = $value;
+                } else {
+                    array_unshift($resultItemFunctionArgElems, $value);
                 }
-                $dbErrors[(string)$id][$this->directive][] = sprintf(
-                    $translationAPI->__('Transformation of property \'%s\' on object with ID \'%s\' can\'t be executed due to previous errors', 'component-model'),
-                    $property,
-                    $id
-                );
-                continue;
-            }
 
-            // Execute the function, and replace the value in the DB
-            // Because the function was dynamically created, we must indicate to validate the schema when doing ->resolveValue
-            $options = [
-                AbstractFieldResolver::OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM => true,
-            ];
-            $functionValue = $fieldResolver->resolveValue($resultIDItems[(string)$id], $resultItemFunction, $resultItemVariables, $options);
-            // If there was an error (eg: a missing mandatory argument), then the function will be of type Error
-            if (GeneralUtils::isError($functionValue)) {
-                $error = $functionValue;
-                $dbErrors[(string)$id][$this->directive][] = sprintf(
-                    $translationAPI->__('Transformation of property \'%s\' on object with ID \'%s\' failed due to error: %s', 'component-model'),
-                    $property,
-                    $id,
-                    $error->getErrorMessage()
-                );
-                continue;
+                // Regenerate the function
+                $resultItemFunction = $fieldQueryInterpreter->getField($functionName, $resultItemFunctionArgElems);
+
+                // Validate the new fieldArgs once again, to make sure the addition of the new parameter is right (eg: maybe the param name where to pass the function is wrong)
+                $resultItemVariables = $this->getVariablesForResultItem($id, $variables, $messages);
+                list(
+                    $schemaValidField,
+                    $schemaFieldName,
+                    $schemaFieldArgs,
+                    $schemaDBErrors,
+                    $schemaDBWarnings
+                ) = $fieldQueryInterpreter->extractFieldArgumentsForSchema($fieldResolver, $resultItemFunction, $resultItemVariables);
+                // Place the errors not under schema but under DB, since they may change on a resultItem by resultItem basis
+                if ($schemaDBWarnings) {
+                    foreach ($schemaDBWarnings as $warningMessage) {
+                        $dbWarnings[(string)$id][$this->directive][] = sprintf(
+                            $translationAPI->__('%s (Generated function: \'%s\')', 'component-model'),
+                            $warningMessage,
+                            $resultItemFunction
+                        );
+                    }
+                }
+                if ($schemaDBErrors) {
+                    foreach ($schemaDBErrors as $errorMessage) {
+                        $dbWarnings[(string)$id][$this->directive][] = sprintf(
+                            $translationAPI->__('%s (Generated function: \'%s\')', 'component-model'),
+                            $errorMessage,
+                            $resultItemFunction
+                        );
+                    }
+                    $dbErrors[(string)$id][$this->directive][] = sprintf(
+                        $translationAPI->__('Transformation of field \'%s\' on object with ID \'%s\' can\'t be executed due to previous errors', 'component-model'),
+                        $fieldOutputKey,
+                        $id
+                    );
+                    continue;
+                }
+
+                // Execute the function, and replace the value in the DB
+                // Because the function was dynamically created, we must indicate to validate the schema when doing ->resolveValue
+                $options = [
+                    AbstractFieldResolver::OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM => true,
+                ];
+                $functionValue = $fieldResolver->resolveValue($resultIDItems[(string)$id], $resultItemFunction, $resultItemVariables, $options);
+                // If there was an error (eg: a missing mandatory argument), then the function will be of type Error
+                if (GeneralUtils::isError($functionValue)) {
+                    $error = $functionValue;
+                    $dbErrors[(string)$id][$this->directive][] = sprintf(
+                        $translationAPI->__('Transformation of field \'%s\' on object with ID \'%s\' failed due to error: %s', 'component-model'),
+                        $fieldOutputKey,
+                        $id,
+                        $error->getErrorMessage()
+                    );
+                    continue;
+                }
+                $dbItems[(string)$id][$fieldOutputKey] = $functionValue;
             }
-            $dbItems[(string)$id][$target] = $functionValue;
         }
     }
 }
