@@ -103,7 +103,7 @@ class TransformArrayItemsDirectiveResolver extends TransformPropertyDirectiveRes
                 }
 
                 // Obtain the elements composing the field, to re-create a new field for each arrayItem
-                $fieldParts = $fieldQueryInterpreter->listFieldAsStringElements($field);
+                $fieldParts = $fieldQueryInterpreter->listField($field);
                 $fieldName = $fieldParts[0];
                 $fieldArgs = $fieldParts[1];
                 $fieldAlias = $fieldParts[2];
@@ -151,7 +151,7 @@ class TransformArrayItemsDirectiveResolver extends TransformPropertyDirectiveRes
                 }
 
                 // Obtain the elements composing the field, to re-create a new field for each arrayItem
-                $fieldParts = $fieldQueryInterpreter->listFieldAsStringElements($field);
+                $fieldParts = $fieldQueryInterpreter->listField($field);
                 $fieldName = $fieldParts[0];
                 $fieldArgs = $fieldParts[1];
                 $fieldAlias = $fieldParts[2];
