@@ -126,7 +126,6 @@ class TransformArrayItemsDirectiveResolver extends TransformPropertyDirectiveRes
                         $fieldDirectives
                     );
                     $arrayItemPropertyOutputKey = $fieldQueryInterpreter->getFieldOutputKey($arrayItemProperty);
-                    // var_dump('$arrayItemProperty', $field, $key, $value, $arrayItemProperty);die;
                     // Place into the current object
                     $dbItems[(string)$id][$arrayItemPropertyOutputKey] = $value;
                     // Place it into list of fields to process
