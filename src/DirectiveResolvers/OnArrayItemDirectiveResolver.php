@@ -43,7 +43,7 @@ class OnArrayItemDirectiveResolver extends AbstractApplyNestedDirectivesOnArrayI
      * @param array $array
      * @return void
      */
-    protected function &getArrayItems(array &$array, $id, string $field, DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$dbErrors, array &$dbWarnings): ?array
+    protected function getArrayItems(array &$array, $id, string $field, DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$previousDBItems, array &$variables, array &$messages): ?array
     {
         $path = $this->directiveArgsForSchema['path'];
 
@@ -59,9 +59,8 @@ class OnArrayItemDirectiveResolver extends AbstractApplyNestedDirectivesOnArrayI
         }
 
         // Success accessing the element under that path
-        $arrayItems = [
+        return [
             $path => &$arrayItemPointer,
         ];
-        return $arrayItems;
     }
 }

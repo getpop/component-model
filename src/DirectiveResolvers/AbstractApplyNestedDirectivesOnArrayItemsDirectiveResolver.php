@@ -172,7 +172,7 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
 
                 // The value is an array. Unpack all the elements into their own property
                 $array = $value;
-                if ($arrayItems = $this->getArrayItems($array, $id, $field, $dataloader, $fieldResolver, $resultIDItems, $dbErrors, $dbWarnings)) {
+                if ($arrayItems = $this->getArrayItems($array, $id, $field, $dataloader, $fieldResolver, $resultIDItems, $dbItems, $dbErrors, $dbWarnings, $previousDBItems, $variables, $messages)) {
                     $execute = true;
                     foreach ($arrayItems as $key => &$value) {
                         // Add into the $idsDataFields object for the array items
@@ -246,7 +246,7 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
                     // If there are errors, it will return null. Don't add the errors again
                     $arrayItemDBErrors = $arrayItemDBWarnings = [];
                     $array = $value;
-                    $arrayItems = $this->getArrayItems($array, $id, $field, $dataloader, $fieldResolver, $resultIDItems, $arrayItemDBErrors, $arrayItemDBWarnings);
+                    $arrayItems = $this->getArrayItems($array, $id, $field, $dataloader, $fieldResolver, $resultIDItems, $dbItems, $arrayItemDBErrors, $arrayItemDBWarnings, $previousDBItems, $variables, $messages);
                     // The value is an array. Unpack all the elements into their own property
                     foreach ($arrayItems as $key => &$value) {
                         $arrayItemAlias = $this->createPropertyForArrayItem($fieldAlias ? $fieldAlias : QuerySyntax::SYMBOL_FIELDALIAS_PREFIX.$fieldName, $key);
@@ -288,7 +288,7 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
      * @param array $value
      * @return void
      */
-    abstract protected function &getArrayItems(array &$array, $id, string $field, DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$dbErrors, array &$dbWarnings): ?array;
+    abstract protected function getArrayItems(array &$array, $id, string $field, DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$previousDBItems, array &$variables, array &$messages): ?array;
 
     /**
      * Create a property for storing the array item in the current object
