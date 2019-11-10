@@ -17,6 +17,32 @@ class TransformArrayItemsDirectiveResolver extends TransformPropertyDirectiveRes
     }
 
     /**
+     * No need to use this function anymore
+     *
+     * @param FieldResolverInterface $fieldResolver
+     * @return string|null
+     */
+    public function getSchemaDirectiveDeprecationDescription(FieldResolverInterface $fieldResolver): ?string
+    {
+        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+        $translationAPI = TranslationAPIFacade::getInstance();
+        return sprintf(
+            $translationAPI->__('Use %s instead', 'component-model'),
+            $fieldQueryInterpreter->getFieldDirectivesAsString([
+                [
+                    ForEachDirectiveResolver::getDirectiveName(),
+                    '',
+                    $fieldQueryInterpreter->getFieldDirectivesAsString([
+                        [
+                            TransformPropertyDirectiveResolver::getDirectiveName(),
+                        ],
+                    ]),
+                ],
+            ])
+        );
+    }
+
+    /**
      * Execute directive <transformProperty> to each of the elements on the affected field, which must be an array
      * This is achieved by executing the following logic:
      * 1. Unpack the elements of the array into a temporary property for each, in the current object
