@@ -9,6 +9,7 @@ use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\ComponentModel\Schema\TypeCastingHelpers;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\FieldResolvers\PipelinePositions;
+use PoP\ComponentModel\FieldResolvers\AbstractFieldResolver;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 
@@ -320,7 +321,25 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
     {
         // Enable the query to provide variables to pass down
         if ($addVariables = $this->directiveArgsForSchema['addVariables']) {
+            // The variables may need `$value`, so add it
+            $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+            $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
+            $isValueInDBItems = array_key_exists($fieldOutputKey, $dbItems[(string)$id] ?? []);
+            $dbKey = $dataloader->getDatabaseKey();
+            $value = $isValueInDBItems ?
+                $dbItems[(string)$id][$fieldOutputKey] :
+                $previousDBItems[$dbKey][(string)$id][$fieldOutputKey];
+            $this->addVariableValueForResultItem($id, 'value', $value, $messages);
+            $resultItemVariables = $this->getVariablesForResultItem($id, $variables, $messages);
+
+            $options = [
+                AbstractFieldResolver::OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM => true,
+            ];
             foreach ($addVariables as $key => $value) {
+                // Evaluate the $value, since it may be a function
+                if ($fieldQueryInterpreter->isFieldArgumentValueAField($value)) {
+                    $value = $fieldResolver->resolveValue($resultIDItems[(string)$id], $value, $resultItemVariables, $options);
+                }
                 $this->addVariableValueForResultItem($id, $key, $value, $messages);
             }
         }
