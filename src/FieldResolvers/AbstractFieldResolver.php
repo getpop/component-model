@@ -112,6 +112,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             foreach ($directiveSet as $directive) {
                 $directiveName = $fieldQueryInterpreter->getDirectiveName($directive);
                 $fieldDirective = $fieldQueryInterpreter->convertDirectiveToFieldDirective($directive);
+                // var_dump($directive, $fieldDirective);
                 if (is_null($this->fieldDirectiveInstanceCache[$fieldDirective])) {
                     $directiveArgs = $fieldQueryInterpreter->extractStaticDirectiveArguments($fieldDirective);
                     $directiveClasses = $directiveNameClasses[$directiveName];
