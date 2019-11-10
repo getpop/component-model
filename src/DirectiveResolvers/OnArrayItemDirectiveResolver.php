@@ -40,16 +40,16 @@ class OnArrayItemDirectiveResolver extends AbstractApplyNestedDirectivesOnArrayI
     /**
      * Directly point to the element under the specified path
      *
-     * @param array $value
+     * @param array $array
      * @return void
      */
-    protected function getArrayItems(array $value, $id, string $field, DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$dbErrors, array &$dbWarnings): ?array
+    protected function &getArrayItems(array &$array, $id, string $field, DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$dbErrors, array &$dbWarnings): ?array
     {
         $path = $this->directiveArgsForSchema['path'];
 
         // If the path doesn't exist, add the error and return
         try {
-            $arrayItemValue = OperatorHelpers::getArrayItemUnderPath($value, $path);
+            $arrayItemPointer = OperatorHelpers::getPointerToArrayItemUnderPath($array, $path);
         } catch (Exception $e) {
             // Add an error and return null
             if (!is_null($dbErrors)) {
@@ -59,8 +59,9 @@ class OnArrayItemDirectiveResolver extends AbstractApplyNestedDirectivesOnArrayI
         }
 
         // Success accessing the element under that path
-        return [
-            $path => $arrayItemValue,
+        $arrayItems = [
+            $path => &$arrayItemPointer,
         ];
+        return $arrayItems;
     }
 }

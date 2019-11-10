@@ -16,7 +16,11 @@ use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extends AbstractGlobalDirectiveResolver
 {
     public const VARIABLE_VALUE = 'value';
-    protected const PROPERTY_SEPARATOR = ':';
+
+    /**
+     * Use a value that can't be part of a fieldName, that's legible, and that conveys the meaning of sublevel. The value "." is adequate
+     */
+    public const PROPERTY_SEPARATOR = '.';
 
     /**
      * By default, this directive goes after ResolveValueAndMerge
@@ -167,9 +171,10 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
                 $fieldDirectives = $fieldParts[4];
 
                 // The value is an array. Unpack all the elements into their own property
-                if ($arrayItems = $this->getArrayItems($value, $id, $field, $dataloader, $fieldResolver, $resultIDItems, $dbErrors, $dbWarnings)) {
+                $array = $value;
+                if ($arrayItems = $this->getArrayItems($array, $id, $field, $dataloader, $fieldResolver, $resultIDItems, $dbErrors, $dbWarnings)) {
                     $execute = true;
-                    foreach ($arrayItems as $key => $value) {
+                    foreach ($arrayItems as $key => &$value) {
                         // Add into the $idsDataFields object for the array items
                         // Watch out: function `regenerateAndExecuteFunction` receives `$idsDataFields` and not `$idsDataFieldOutputKeys`, so then re-create the "field" assigning a new alias
                         // If it has an alias, use it. If not, use the fieldName
@@ -196,7 +201,6 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
         }
 
         if ($execute) {
-
             // 2. Execute the nested directive pipeline on all arrayItems
             $this->nestedDirectivePipeline->resolveDirectivePipeline(
                 $dataloader,
@@ -241,10 +245,10 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
 
                     // If there are errors, it will return null. Don't add the errors again
                     $arrayItemDBErrors = $arrayItemDBWarnings = [];
-                    $arrayItems = $this->getArrayItems($value, $id, $field, $dataloader, $fieldResolver, $resultIDItems, $arrayItemDBErrors, $arrayItemDBWarnings);
+                    $array = $value;
+                    $arrayItems = $this->getArrayItems($array, $id, $field, $dataloader, $fieldResolver, $resultIDItems, $arrayItemDBErrors, $arrayItemDBWarnings);
                     // The value is an array. Unpack all the elements into their own property
-                    $arrayValue = [];
-                    foreach ($arrayItems as $key => $value) {
+                    foreach ($arrayItems as $key => &$value) {
                         $arrayItemAlias = $this->createPropertyForArrayItem($fieldAlias ? $fieldAlias : QuerySyntax::SYMBOL_FIELDALIAS_PREFIX.$fieldName, $key);
                         $arrayItemProperty = $fieldQueryInterpreter->composeField(
                             $fieldName,
@@ -270,12 +274,9 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
                             );
                             continue;
                         }
-
-                        $arrayValue[$key] = $arrayItemValue;
+                        // Place the result for the array in the original property
+                        $dbItems[(string)$id][$fieldOutputKey][$key] = $arrayItemValue;
                     }
-
-                    // Finally, place the results for all items in the array in the original property
-                    $dbItems[(string)$id][$fieldOutputKey] = $arrayValue;
                 }
             }
         }
@@ -287,7 +288,7 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
      * @param array $value
      * @return void
      */
-    abstract protected function getArrayItems(array $value, $id, string $field, DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$dbErrors, array &$dbWarnings): ?array;
+    abstract protected function &getArrayItems(array &$array, $id, string $field, DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$dbErrors, array &$dbWarnings): ?array;
 
     /**
      * Create a property for storing the array item in the current object
@@ -301,10 +302,14 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
         return implode(self::PROPERTY_SEPARATOR, [$fieldAliasOrName, $key]);
     }
 
-    protected function extractElementsFromArrayItemProperty(string $arrayItemProperty): array
-    {
-        return explode(self::PROPERTY_SEPARATOR, $arrayItemProperty);
-    }
+    // protected function extractElementsFromArrayItemProperty(string $arrayItemProperty): array
+    // {
+    //     // Notice that we may be nesting several directives, such as <forEach<forEach<transform>>
+    //     // Then, the property will contain several instances of unpacking arrayItems
+    //     // For this reason, when extracting the property, obtain the right-side value from the last instance of the separator
+    //     // $pos = QueryUtils::findLastSymbolPosition($arrayItemProperty, self::PROPERTY_SEPARATOR);
+    //     return explode(self::PROPERTY_SEPARATOR, $arrayItemProperty);
+    // }
 
     /**
      * Add the $key in addition to the $value
@@ -350,7 +355,6 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
                 if ($fieldQueryInterpreter->isFieldArgumentValueAField($value)) {
                     $value = $fieldResolver->resolveValue($resultIDItems[(string)$id], $value, $resultItemVariables, $options);
                 }
-                // var_dump('evaluated', $id, $key, $value);
                 $this->addVariableValueForResultItem($id, $key, $value, $messages);
             }
             foreach ($appendVariables as $key => $value) {
@@ -359,7 +363,6 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
                 if ($fieldQueryInterpreter->isFieldArgumentValueAField($value)) {
                     $existingValue[] = $fieldResolver->resolveValue($resultIDItems[(string)$id], $value, $resultItemVariables, $options);
                 }
-                // var_dump('evaluated', $id, $key, $existingValue);
                 $this->addVariableValueForResultItem($id, $key, $existingValue, $messages);
             }
         }

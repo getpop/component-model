@@ -24,8 +24,8 @@ class ForEachDirectiveResolver extends AbstractApplyNestedDirectivesOnArrayItems
      * @param array $value
      * @return void
      */
-    protected function getArrayItems(array $value, $id, string $field, DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$dbErrors, array &$dbWarnings): ?array
+    protected function &getArrayItems(array &$array, $id, string $field, DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$dbErrors, array &$dbWarnings): ?array
     {
-        return $value;
+        return $array;
     }
 }
