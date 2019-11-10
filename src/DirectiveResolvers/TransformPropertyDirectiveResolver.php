@@ -146,18 +146,22 @@ class TransformPropertyDirectiveResolver extends AbstractGlobalDirectiveResolver
                 if ($schemaDBWarnings) {
                     foreach ($schemaDBWarnings as $warningMessage) {
                         $dbWarnings[(string)$id][$this->directive][] = sprintf(
-                            $translationAPI->__('%s (Generated function: \'%s\')', 'component-model'),
-                            $warningMessage,
-                            $function
+                            $translationAPI->__('Warning validating function \'%s\' on object with ID \'%s\' and field with output key \'%s\': %s)', 'component-model'),
+                            $function,
+                            $id,
+                            $fieldOutputKey,
+                            $warningMessage
                         );
                     }
                 }
                 if ($schemaDBErrors) {
                     foreach ($schemaDBErrors as $errorMessage) {
-                        $dbWarnings[(string)$id][$this->directive][] = sprintf(
-                            $translationAPI->__('%s (Generated function: \'%s\')', 'component-model'),
-                            $errorMessage,
-                            $function
+                        $dbErrors[(string)$id][$this->directive][] = sprintf(
+                            $translationAPI->__('Error validating function \'%s\' on object with ID \'%s\' and field with output key \'%s\': %s)', 'component-model'),
+                            $function,
+                            $id,
+                            $fieldOutputKey,
+                            $errorMessage
                         );
                     }
                     if ($fieldOutputKey != $field) {
