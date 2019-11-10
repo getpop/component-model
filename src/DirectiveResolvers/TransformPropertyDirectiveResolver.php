@@ -5,6 +5,7 @@ use PoP\FieldQuery\QueryHelpers;
 use PoP\ComponentModel\GeneralUtils;
 use PoP\ComponentModel\DataloaderInterface;
 use PoP\ComponentModel\Schema\SchemaDefinition;
+use PoP\ComponentModel\Schema\TypeCastingHelpers;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\FieldResolvers\PipelinePositions;
 use PoP\ComponentModel\FieldResolvers\AbstractFieldResolver;
@@ -51,7 +52,7 @@ class TransformPropertyDirectiveResolver extends AbstractGlobalDirectiveResolver
             ],
             [
                 SchemaDefinition::ARGNAME_NAME => 'addParams',
-                SchemaDefinition::ARGNAME_TYPE => SchemaDefinition::TYPE_ARRAY,
+                SchemaDefinition::ARGNAME_TYPE => TypeCastingHelpers::combineTypes(SchemaDefinition::TYPE_ARRAY, SchemaDefinition::TYPE_MIXED),
                 SchemaDefinition::ARGNAME_DESCRIPTION => sprintf(
                     $translationAPI->__('Parameters to inject to the function. The value of the affected field can be provided under special variable `%s`', 'component-model'),
                     QueryHelpers::getVariableQuery(self::VARIABLE_VALUE)
@@ -129,7 +130,7 @@ class TransformPropertyDirectiveResolver extends AbstractGlobalDirectiveResolver
                     continue;
                 }
 
-                // Place all the reserved variables into the `$variables` context: $value (here), $key (when overriding this function in <transformArrayItems>)
+                // Place all the reserved variables into the `$variables` context: $value
                 $this->addVariableValuesForResultItemInContext($dataloader, $fieldResolver, $id, $field, $resultIDItems, $dbItems, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations, $previousDBItems, $variables, $messages);
 
                 // Generate the fieldArgs from combining the query with the values in the context, through $variables

@@ -2,8 +2,11 @@
 namespace PoP\ComponentModel\DirectiveResolvers;
 
 use PoP\FieldQuery\QuerySyntax;
+use PoP\FieldQuery\QueryHelpers;
 use PoP\ComponentModel\GeneralUtils;
 use PoP\ComponentModel\DataloaderInterface;
+use PoP\ComponentModel\Schema\SchemaDefinition;
+use PoP\ComponentModel\Schema\TypeCastingHelpers;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\FieldResolvers\PipelinePositions;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
@@ -32,6 +35,21 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
     public function canExecuteMultipleTimesInField(): bool
     {
         return true;
+    }
+
+    public function getSchemaDirectiveArgs(FieldResolverInterface $fieldResolver): array
+    {
+        $translationAPI = TranslationAPIFacade::getInstance();
+        return [
+            [
+                SchemaDefinition::ARGNAME_NAME => 'addVariables',
+                SchemaDefinition::ARGNAME_TYPE => TypeCastingHelpers::combineTypes(SchemaDefinition::TYPE_ARRAY, SchemaDefinition::TYPE_MIXED),
+                SchemaDefinition::ARGNAME_DESCRIPTION => sprintf(
+                    $translationAPI->__('Variables to inject to the nested directive. The value of the affected field can be provided under special variable `%s`', 'component-model'),
+                    QueryHelpers::getVariableQuery(self::VARIABLE_VALUE)
+                ),
+            ],
+        ];
     }
 
     /**
@@ -161,6 +179,9 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
                         $arrayItemIdsProperties[(string)$id]['direct'][] = $arrayItemProperty;
                     }
                     $arrayItemIdsProperties[(string)$id]['conditional'] = [];
+
+                    // Place the reserved variables, such as `$value`, into the `$variables` context
+                    $this->addVariableValuesForResultItemInContext($dataloader, $fieldResolver, $id, $field, $resultIDItems, $dbItems, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations, $previousDBItems, $variables, $messages);
                 }
             }
         }
@@ -297,13 +318,11 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
      */
     protected function addVariableValuesForResultItemInContext(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, $id, string $field, array &$resultIDItems, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$previousDBItems, array &$variables, array &$messages)
     {
-        // First let the parent add $value, then also add $key, which can be deduced from the fieldOutputKey
-        parent::addVariableValuesForResultItemInContext($dataloader, $fieldResolver, $id, $field, $resultIDItems, $dbItems, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations, $previousDBItems, $variables, $messages);
-
-        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
-        $arrayItemPropertyOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
-        $arrayItemPropertyElems = $this->extractElementsFromArrayItemProperty($arrayItemPropertyOutputKey);
-        $key = $arrayItemPropertyElems[1];
-        $this->addVariableValueForResultItem($id, 'key', $key, $messages);
+        // Enable the query to provide variables to pass down
+        if ($addVariables = $this->directiveArgsForSchema['addVariables']) {
+            foreach ($addVariables as $key => $value) {
+                $this->addVariableValueForResultItem($id, $key, $value, $messages);
+            }
+        }
     }
 }

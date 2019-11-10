@@ -24,14 +24,17 @@ class OnArrayItemDirectiveResolver extends AbstractApplyNestedDirectivesOnArrayI
     public function getSchemaDirectiveArgs(FieldResolverInterface $fieldResolver): array
     {
         $translationAPI = TranslationAPIFacade::getInstance();
-        return [
+        return array_merge(
+            parent::getSchemaDirectiveArgs($fieldResolver),
             [
-                SchemaDefinition::ARGNAME_NAME => 'path',
-                SchemaDefinition::ARGNAME_TYPE => SchemaDefinition::TYPE_STRING,
-                SchemaDefinition::ARGNAME_DESCRIPTION => $translationAPI->__('Path to the element in the array', 'component-model'),
-                SchemaDefinition::ARGNAME_MANDATORY => true,
-            ],
-        ];
+                [
+                    SchemaDefinition::ARGNAME_NAME => 'path',
+                    SchemaDefinition::ARGNAME_TYPE => SchemaDefinition::TYPE_STRING,
+                    SchemaDefinition::ARGNAME_DESCRIPTION => $translationAPI->__('Path to the element in the array', 'component-model'),
+                    SchemaDefinition::ARGNAME_MANDATORY => true,
+                ],
+            ]
+        );
     }
 
     /**
