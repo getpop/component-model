@@ -336,7 +336,6 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     protected function validateExtractedFieldOrDirectiveArgumentsForSchema(FieldResolverInterface $fieldResolver, array $fieldOrDirectiveArgs, ?array $variables = null, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         if ($fieldOrDirectiveArgs) {
-            // var_dump('$fieldOrDirectiveArgs', $fieldOrDirectiveArgs);
             foreach ($fieldOrDirectiveArgs as $argName => $argValue) {
                 // Validate it
                 if ($maybeErrors = $this->resolveFieldArgumentValueErrorDescriptionsForSchema($fieldResolver, $argValue, $variables)) {

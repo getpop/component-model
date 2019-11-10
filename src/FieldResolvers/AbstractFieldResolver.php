@@ -96,7 +96,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $directiveNameClasses = $this->getDirectiveNameClasses();
             // Initialize with the default values, adding "validate" and "merge" if not there yet
             $directiveSet = $fieldQueryInterpreter->extractFieldDirectives($fieldDirectives);
-            // var_dump('aaa', $fieldDirectives, $directiveSet);
 
             /**
             * All directives are placed somewhere in the pipeline, using the 3 mandatory directives as anchors.
@@ -122,7 +121,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             foreach ($directiveSet as $directive) {
                 $directiveName = $fieldQueryInterpreter->getDirectiveName($directive);
                 $fieldDirective = $fieldQueryInterpreter->convertDirectiveToFieldDirective($directive);
-                // var_dump($directive, $fieldDirective);
                 if (is_null($this->fieldDirectiveInstanceCache[$fieldDirective])) {
                     $directiveArgs = $fieldQueryInterpreter->extractStaticDirectiveArguments($fieldDirective);
                     $directiveClasses = $directiveNameClasses[$directiveName];
@@ -337,7 +335,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         $translationAPI = TranslationAPIFacade::getInstance();
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         $fieldName = $fieldQueryInterpreter->getFieldName($field);
-        // debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);die;
         return [
             sprintf(
                 $translationAPI->__('No FieldValueResolver resolves field \'%s\'', 'pop-component-model'),

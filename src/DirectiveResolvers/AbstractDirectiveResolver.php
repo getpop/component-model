@@ -35,7 +35,6 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
 
         // If it has nestedDirectives, extract them and validate them
         $nestedFieldDirectives = $fieldQueryInterpreter->getFieldDirectives($this->directive, false);
-        // var_dump($this->directive, $nestedFieldDirectives);
         if ($nestedFieldDirectives) {
             $nestedDirectiveSchemaErrors = [];
             $this->nestedDirectivePipeline = $fieldResolver->getDirectiveNestedDirectivePipeline($nestedFieldDirectives, $nestedDirectiveSchemaErrors, $schemaWarnings, $schemaDeprecations);
