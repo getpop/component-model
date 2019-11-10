@@ -21,10 +21,13 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     protected $directive;
     protected $directiveArgsForSchema = [];
     protected $directiveArgsForResultItems = [];
+    protected $nestedDirectivePipeline;
     function __construct($directive = null) {
         // If the directive is not provided, then it directly the directive name
         // This allows to instantiate the directive through the DependencyInjection component
         $this->directive = $directive ?? $this->getDirectiveName();
+        // If it has nestedDirectives, extract them now
+
     }
 
     public function dissectAndValidateDirectiveForSchema(FieldResolverInterface $fieldResolver, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
