@@ -26,13 +26,34 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         // If the directive is not provided, then it directly the directive name
         // This allows to instantiate the directive through the DependencyInjection component
         $this->directive = $directive ?? $this->getDirectiveName();
-        // If it has nestedDirectives, extract them now
-
     }
 
     public function dissectAndValidateDirectiveForSchema(FieldResolverInterface $fieldResolver, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
+        $translationAPI = TranslationAPIFacade::getInstance();
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+
+        // If it has nestedDirectives, extract them and validate them
+        $nestedFieldDirectives = $fieldQueryInterpreter->getFieldDirectives($this->directive, false);
+        // var_dump($this->directive, $nestedFieldDirectives);
+        if ($nestedFieldDirectives) {
+            $nestedDirectiveSchemaErrors = [];
+            $this->nestedDirectivePipeline = $fieldResolver->getFieldDirectivePipeline($nestedFieldDirectives, false, $nestedDirectiveSchemaErrors, $schemaWarnings, $schemaDeprecations);
+            // If there is any error, then we also can't proceed with the current directive
+            if ($nestedDirectiveSchemaErrors) {
+                $schemaErrors = array_merge(
+                    $schemaErrors,
+                    $nestedDirectiveSchemaErrors
+                );
+                $schemaErrors[$this->directive][] = $translationAPI->__('This directive can\'t be executed due to errors from its nested directives', 'component-model');
+                return [
+                    null, // $validDirective
+                    // null, // $directiveName <= null because no need to find out which one it is
+                    // null, // $directiveArgs <= null because no need to find out which one it is
+                ];
+            }
+        }
+
         // First validate schema (eg of error in schema: ?query=posts<include(if:this-field-doesnt-exist())>)
         list(
             $validDirective,

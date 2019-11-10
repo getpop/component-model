@@ -86,6 +86,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $directiveNameClasses = $this->getDirectiveNameClasses();
             // Initialize with the default values, adding "validate" and "merge" if not there yet
             $directiveSet = $fieldQueryInterpreter->extractFieldDirectives($fieldDirectives);
+            // var_dump('aaa', $fieldDirectives, $directiveSet);
 
             /**
             * All directives are placed somewhere in the pipeline, using the 3 mandatory directives as anchors.
@@ -236,7 +237,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         foreach ($ids_data_fields as $id => $data_fields) {
             foreach ($data_fields['direct'] as $field) {
                 if (is_null($this->fieldDirectivesFromFieldCache[$field])) {
-                    $this->fieldDirectivesFromFieldCache[$field] = $fieldQueryInterpreter->getFieldDirectives($field) ?? '';
+                    $this->fieldDirectivesFromFieldCache[$field] = $fieldQueryInterpreter->getFieldDirectives($field, false) ?? '';
                 }
                 $fieldDirectives = $this->fieldDirectivesFromFieldCache[$field];
                 $this->directiveResultSet[$fieldDirectives][$id] = $resultIDItems[$id];
