@@ -72,6 +72,10 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
         $arrayItemIdsProperties = [];
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         $dbKey = $dataloader->getDatabaseKey();
+        /**
+         * Execute nested directive only if the validations do not fail
+         */
+        $execute = false;
 
         // 1. Unpack all elements of the array into a property for each
         // By making the property "propertyName:key", the "key" can be extracted and passed under variable `$key` to the function
@@ -136,106 +140,113 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
                 $fieldDirectives = $fieldParts[4];
 
                 // The value is an array. Unpack all the elements into their own property
-                $arrayItems = $this->getArrayItems($value);
-                foreach ($arrayItems as $key => $value) {
-                    // Add into the $idsDataFields object for the array items
-                    // Watch out: function `regenerateAndExecuteFunction` receives `$idsDataFields` and not `$idsDataFieldOutputKeys`, so then re-create the "field" assigning a new alias
-                    // If it has an alias, use it. If not, use the fieldName
-                    $arrayItemAlias = $this->createPropertyForArrayItem($fieldAlias ? $fieldAlias : QuerySyntax::SYMBOL_FIELDALIAS_PREFIX.$fieldName, $key);
-                    $arrayItemProperty = $fieldQueryInterpreter->composeField(
-                        $fieldName,
-                        $fieldArgs,
-                        $arrayItemAlias,
-                        $fieldSkipOutputIfNull,
-                        $fieldDirectives
-                    );
-                    $arrayItemPropertyOutputKey = $fieldQueryInterpreter->getFieldOutputKey($arrayItemProperty);
-                    // Place into the current object
-                    $dbItems[(string)$id][$arrayItemPropertyOutputKey] = $value;
-                    // Place it into list of fields to process
-                    $arrayItemIdsProperties[(string)$id]['direct'][] = $arrayItemProperty;
+                if ($arrayItems = $this->getArrayItems($value, $id, $field, $dataloader, $fieldResolver, $resultIDItems, $dbErrors, $dbWarnings)) {
+                    $execute = true;
+                    foreach ($arrayItems as $key => $value) {
+                        // Add into the $idsDataFields object for the array items
+                        // Watch out: function `regenerateAndExecuteFunction` receives `$idsDataFields` and not `$idsDataFieldOutputKeys`, so then re-create the "field" assigning a new alias
+                        // If it has an alias, use it. If not, use the fieldName
+                        $arrayItemAlias = $this->createPropertyForArrayItem($fieldAlias ? $fieldAlias : QuerySyntax::SYMBOL_FIELDALIAS_PREFIX.$fieldName, $key);
+                        $arrayItemProperty = $fieldQueryInterpreter->composeField(
+                            $fieldName,
+                            $fieldArgs,
+                            $arrayItemAlias,
+                            $fieldSkipOutputIfNull,
+                            $fieldDirectives
+                        );
+                        $arrayItemPropertyOutputKey = $fieldQueryInterpreter->getFieldOutputKey($arrayItemProperty);
+                        // Place into the current object
+                        $dbItems[(string)$id][$arrayItemPropertyOutputKey] = $value;
+                        // Place it into list of fields to process
+                        $arrayItemIdsProperties[(string)$id]['direct'][] = $arrayItemProperty;
+                    }
+                    $arrayItemIdsProperties[(string)$id]['conditional'] = [];
                 }
-                $arrayItemIdsProperties[(string)$id]['conditional'] = [];
             }
         }
 
-        // 2. Execute the nested directive pipeline on all arrayItems
-        $this->nestedDirectivePipeline->resolveDirectivePipeline(
-            $dataloader,
-            $fieldResolver,
-            $resultIDItems,
-            $arrayItemIdsProperties, // Here we pass the properties to the array elements!
-            $dbItems,
-            $dbErrors,
-            $dbWarnings,
-            $schemaErrors,
-            $schemaWarnings,
-            $schemaDeprecations,
-            $previousDBItems,
-            $variables,
-            $messages
-        );
+        if ($execute) {
 
-        // 3. Compose the array from the results for each array item
-        foreach ($idsDataFields as $id => $dataFields) {
-            foreach ($dataFields['direct'] as $field) {
-                $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
-                $isValueInDBItems = array_key_exists($fieldOutputKey, $dbItems[(string)$id] ?? []);
-                $value = $isValueInDBItems ?
-                    $dbItems[(string)$id][$fieldOutputKey] :
-                    $previousDBItems[$dbKey][(string)$id][$fieldOutputKey];
+            // 2. Execute the nested directive pipeline on all arrayItems
+            $this->nestedDirectivePipeline->resolveDirectivePipeline(
+                $dataloader,
+                $fieldResolver,
+                $resultIDItems,
+                $arrayItemIdsProperties, // Here we pass the properties to the array elements!
+                $dbItems,
+                $dbErrors,
+                $dbWarnings,
+                $schemaErrors,
+                $schemaWarnings,
+                $schemaDeprecations,
+                $previousDBItems,
+                $variables,
+                $messages
+            );
 
-                // If the array is null or empty, nothing to do
-                if (!$value) {
-                    continue;
-                }
-                if (!is_array($value)) {
-                    continue;
-                }
+            // 3. Compose the array from the results for each array item
+            foreach ($idsDataFields as $id => $dataFields) {
+                foreach ($dataFields['direct'] as $field) {
+                    $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
+                    $isValueInDBItems = array_key_exists($fieldOutputKey, $dbItems[(string)$id] ?? []);
+                    $value = $isValueInDBItems ?
+                        $dbItems[(string)$id][$fieldOutputKey] :
+                        $previousDBItems[$dbKey][(string)$id][$fieldOutputKey];
 
-                // Obtain the elements composing the field, to re-create a new field for each arrayItem
-                $fieldParts = $fieldQueryInterpreter->listField($field);
-                $fieldName = $fieldParts[0];
-                $fieldArgs = $fieldParts[1];
-                $fieldAlias = $fieldParts[2];
-                $fieldSkipOutputIfNull = $fieldParts[3];
-                $fieldDirectives = $fieldParts[4];
-
-                // The value is an array. Unpack all the elements into their own property
-                $arrayValue = [];
-                $arrayItems = $this->getArrayItems($value);
-                foreach ($arrayItems as $key => $value) {
-                    $arrayItemAlias = $this->createPropertyForArrayItem($fieldAlias ? $fieldAlias : QuerySyntax::SYMBOL_FIELDALIAS_PREFIX.$fieldName, $key);
-                    $arrayItemProperty = $fieldQueryInterpreter->composeField(
-                        $fieldName,
-                        $fieldArgs,
-                        $arrayItemAlias,
-                        $fieldSkipOutputIfNull,
-                        $fieldDirectives
-                    );
-                    // Place the result of executing the function on the array item
-                    $arrayItemPropertyOutputKey = $fieldQueryInterpreter->getFieldOutputKey($arrayItemProperty);
-                    $arrayItemValue = $dbItems[(string)$id][$arrayItemPropertyOutputKey];
-                    // Remove this temporary property from $dbItems
-                    unset($dbItems[(string)$id][$arrayItemPropertyOutputKey]);
-                    // Validate it's not an error
-                    if (GeneralUtils::isError($arrayItemValue)) {
-                        $error = $arrayItemValue;
-                        $dbErrors[(string)$id][$this->directive][] = sprintf(
-                            $translationAPI->__('Transformation of element with key \'%s\' on array from property \'%s\' on object with ID \'%s\' failed due to error: %s', 'component-model'),
-                            $key,
-                            $fieldOutputKey,
-                            $id,
-                            $error->getErrorMessage()
-                        );
+                    // If the array is null or empty, nothing to do
+                    if (!$value) {
+                        continue;
+                    }
+                    if (!is_array($value)) {
                         continue;
                     }
 
-                    $arrayValue[$key] = $arrayItemValue;
-                }
+                    // Obtain the elements composing the field, to re-create a new field for each arrayItem
+                    $fieldParts = $fieldQueryInterpreter->listField($field);
+                    $fieldName = $fieldParts[0];
+                    $fieldArgs = $fieldParts[1];
+                    $fieldAlias = $fieldParts[2];
+                    $fieldSkipOutputIfNull = $fieldParts[3];
+                    $fieldDirectives = $fieldParts[4];
 
-                // Finally, place the results for all items in the array in the original property
-                $dbItems[(string)$id][$fieldOutputKey] = $arrayValue;
+                    // If there are errors, it will return null. Don't add the errors again
+                    $arrayItemDBErrors = $arrayItemDBWarnings = [];
+                    $arrayItems = $this->getArrayItems($value, $id, $field, $dataloader, $fieldResolver, $resultIDItems, $arrayItemDBErrors, $arrayItemDBWarnings);
+                    // The value is an array. Unpack all the elements into their own property
+                    $arrayValue = [];
+                    foreach ($arrayItems as $key => $value) {
+                        $arrayItemAlias = $this->createPropertyForArrayItem($fieldAlias ? $fieldAlias : QuerySyntax::SYMBOL_FIELDALIAS_PREFIX.$fieldName, $key);
+                        $arrayItemProperty = $fieldQueryInterpreter->composeField(
+                            $fieldName,
+                            $fieldArgs,
+                            $arrayItemAlias,
+                            $fieldSkipOutputIfNull,
+                            $fieldDirectives
+                        );
+                        // Place the result of executing the function on the array item
+                        $arrayItemPropertyOutputKey = $fieldQueryInterpreter->getFieldOutputKey($arrayItemProperty);
+                        $arrayItemValue = $dbItems[(string)$id][$arrayItemPropertyOutputKey];
+                        // Remove this temporary property from $dbItems
+                        unset($dbItems[(string)$id][$arrayItemPropertyOutputKey]);
+                        // Validate it's not an error
+                        if (GeneralUtils::isError($arrayItemValue)) {
+                            $error = $arrayItemValue;
+                            $dbErrors[(string)$id][$this->directive][] = sprintf(
+                                $translationAPI->__('Transformation of element with key \'%s\' on array from property \'%s\' on object with ID \'%s\' failed due to error: %s', 'component-model'),
+                                $key,
+                                $fieldOutputKey,
+                                $id,
+                                $error->getErrorMessage()
+                            );
+                            continue;
+                        }
+
+                        $arrayValue[$key] = $arrayItemValue;
+                    }
+
+                    // Finally, place the results for all items in the array in the original property
+                    $dbItems[(string)$id][$fieldOutputKey] = $arrayValue;
+                }
             }
         }
     }
@@ -246,7 +257,7 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
      * @param array $value
      * @return void
      */
-    abstract protected function getArrayItems(array $value): array;
+    abstract protected function getArrayItems(array $value, $id, string $field, DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$dbErrors, array &$dbWarnings): ?array;
 
     /**
      * Create a property for storing the array item in the current object
