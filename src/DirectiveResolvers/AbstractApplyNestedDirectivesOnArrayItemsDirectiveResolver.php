@@ -50,6 +50,14 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
                     QueryHelpers::getVariableQuery(self::VARIABLE_VALUE)
                 ),
             ],
+            [
+                SchemaDefinition::ARGNAME_NAME => 'appendVariables',
+                SchemaDefinition::ARGNAME_TYPE => TypeCastingHelpers::combineTypes(SchemaDefinition::TYPE_ARRAY, SchemaDefinition::TYPE_MIXED),
+                SchemaDefinition::ARGNAME_DESCRIPTION => sprintf(
+                    $translationAPI->__('Append a value to an array variable, to inject to the nested directive. The value of the affected field can be provided under special variable `%s`', 'component-model'),
+                    QueryHelpers::getVariableQuery(self::VARIABLE_VALUE)
+                ),
+            ],
         ];
     }
 
@@ -320,7 +328,9 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
     protected function addVariableValuesForResultItemInContext(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, $id, string $field, array &$resultIDItems, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$previousDBItems, array &$variables, array &$messages)
     {
         // Enable the query to provide variables to pass down
-        if ($addVariables = $this->directiveArgsForSchema['addVariables']) {
+        $addVariables = $this->directiveArgsForSchema['addVariables'] ?? [];
+        $appendVariables = $this->directiveArgsForSchema['appendVariables'] ?? [];
+        if ($addVariables || $appendVariables) {
             // The variables may need `$value`, so add it
             $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
             $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
@@ -340,7 +350,17 @@ abstract class AbstractApplyNestedDirectivesOnArrayItemsDirectiveResolver extend
                 if ($fieldQueryInterpreter->isFieldArgumentValueAField($value)) {
                     $value = $fieldResolver->resolveValue($resultIDItems[(string)$id], $value, $resultItemVariables, $options);
                 }
+                // var_dump('evaluated', $id, $key, $value);
                 $this->addVariableValueForResultItem($id, $key, $value, $messages);
+            }
+            foreach ($appendVariables as $key => $value) {
+                $existingValue = $this->getVariableValueForResultItem($id, $key, $messages) ?? [];
+                // Evaluate the $value, since it may be a function
+                if ($fieldQueryInterpreter->isFieldArgumentValueAField($value)) {
+                    $existingValue[] = $fieldResolver->resolveValue($resultIDItems[(string)$id], $value, $resultItemVariables, $options);
+                }
+                // var_dump('evaluated', $id, $key, $existingValue);
+                $this->addVariableValueForResultItem($id, $key, $existingValue, $messages);
             }
         }
     }
