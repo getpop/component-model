@@ -76,7 +76,17 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         ];
     }
 
-    protected function getFieldDirectivePipeline(string $fieldDirectives, bool $isRoot, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): DirectivePipelineDecorator
+    public function getFieldDirectivePipeline(string $fieldDirectives, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): DirectivePipelineDecorator
+    {
+        return $this->getDirectivePipeline($fieldDirectives, true, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+    }
+
+    public function getDirectiveNestedDirectivePipeline(string $fieldDirectives, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): DirectivePipelineDecorator
+    {
+        return $this->getDirectivePipeline($fieldDirectives, false, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+    }
+
+    protected function getDirectivePipeline(string $fieldDirectives, bool $isRootDirective, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): DirectivePipelineDecorator
     {
         // Pipeline cache
         if (is_null($this->fieldDirectivePipelineInstanceCache[$fieldDirectives])) {
@@ -101,7 +111,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 PipelinePositions::BACK => [],
             ];
             // For the root directiveSet (e.g. non-nested ones), place the mandatory directives at the beginning of the list, then they will be added to their needed position in the pipeline
-            if ($isRoot) {
+            if ($isRootDirective) {
                 $directiveSet = array_merge(
                     $this->getMandatoryRootDirectives(),
                     $directiveSet
@@ -274,7 +284,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             }
 
             // From the fieldDirectiveName get the class that processes it. If null, the users passed a wrong name through the API, so show an error
-            $directivePipeline = $this->getFieldDirectivePipeline($fieldDirectives, true, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+            $directivePipeline = $this->getFieldDirectivePipeline($fieldDirectives, $schemaErrors, $schemaWarnings, $schemaDeprecations);
             $directivePipeline->resolveDirectivePipeline(
                 $dataloader,
                 $this,
