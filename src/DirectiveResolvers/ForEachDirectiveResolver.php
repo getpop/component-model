@@ -41,27 +41,6 @@ class ForEachDirectiveResolver extends AbstractGlobalDirectiveResolver
         return true;
     }
 
-    public function getSchemaDirectiveArgs(FieldResolverInterface $fieldResolver): array
-    {
-        $translationAPI = TranslationAPIFacade::getInstance();
-        return [
-            [
-                SchemaDefinition::ARGNAME_NAME => 'directives',
-                SchemaDefinition::ARGNAME_TYPE => TypeCastingHelpers::combineTypes(SchemaDefinition::TYPE_ARRAY, SchemaDefinition::TYPE_STRING),
-                SchemaDefinition::ARGNAME_DESCRIPTION => $translationAPI->__('Directives to execute on the affected fields', 'component-model'),
-                SchemaDefinition::ARGNAME_MANDATORY => true,
-            ],
-            [
-                SchemaDefinition::ARGNAME_NAME => 'addParams',
-                SchemaDefinition::ARGNAME_TYPE => TypeCastingHelpers::combineTypes(SchemaDefinition::TYPE_ARRAY, SchemaDefinition::TYPE_MIXED),
-                SchemaDefinition::ARGNAME_DESCRIPTION => sprintf(
-                    $translationAPI->__('Parameters to inject to the function. The value of the affected field can be provided under special variable `%s`', 'component-model'),
-                    QueryHelpers::getVariableQuery(self::VARIABLE_VALUE)
-                ),
-            ],
-        ];
-    }
-
     /**
      * Execute directive <transformProperty> to each of the elements on the affected field, which must be an array
      * This is achieved by executing the following logic:
@@ -87,13 +66,19 @@ class ForEachDirectiveResolver extends AbstractGlobalDirectiveResolver
     public function resolveDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$previousDBItems, array &$variables, array &$messages)
     {
         $translationAPI = TranslationAPIFacade::getInstance();
-        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
-        $dbKey = $dataloader->getDatabaseKey();
+
+        // If there is no nested directive pipeline, then nothing to do
+        if (!$this->nestedDirectivePipeline) {
+            $schemaWarnings[$this->directive][] = $translationAPI->__('No nested directives were provided, so nothing to do for this directive', 'component-model');
+            return;
+        }
 
         /**
          * Collect all ID => dataFields for the arrayItems
          */
         $arrayItemIdsProperties = [];
+        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+        $dbKey = $dataloader->getDatabaseKey();
 
         // 1. Unpack all elements of the array into a property for each
         // By making the property "propertyName:key", the "key" can be extracted and passed under variable `$key` to the function
@@ -181,21 +166,8 @@ class ForEachDirectiveResolver extends AbstractGlobalDirectiveResolver
             }
         }
 
-        // 2. Obtain the directive from the params, resolv and execute on all arrayItems
-        $nestedDirectives = $this->directiveArgsForSchema['directives'];
-        // var_dump('nestedDirectives', $nestedDirectives, $fieldQueryInterpreter->getFieldDirectivesAsString($nestedDirectives));die;
-        $nestedDirectivesAsString =
-            QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING.
-            implode(QuerySyntax::SYMBOL_FIELDDIRECTIVE_SEPARATOR, $nestedDirectives).
-            QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING;
-        // var_dump('$nestedDirectivesAsString', $nestedDirectivesAsString);
-        $nestedDirectivePipeline = $fieldResolver->getFieldDirectivePipeline(
-            $nestedDirectivesAsString,
-            $schemaErrors,
-            $schemaWarnings,
-            $schemaDeprecations
-        );
-        $nestedDirectivePipeline->resolveDirectivePipeline(
+        // 2. Execute the nested directive pipeline on all arrayItems
+        $this->nestedDirectivePipeline->resolveDirectivePipeline(
             $dataloader,
             $fieldResolver,
             $resultIDItems,
