@@ -501,11 +501,10 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                     !$forSchema
                 ) {
                     // If the value is an array, and the type is a combination of types, then cast each element to the item type
-                    $isArray = false;
                     $fieldArgCurrentType = TypeCastingHelpers::getTypeCombinationCurrentElement($fieldArgType);
                     $fieldArgOtherTypes = TypeCastingHelpers::getTypeCombinationNestedElements($fieldArgType);
-                    $isArray = $fieldArgCurrentType == SchemaDefinition::TYPE_ARRAY && !is_null($fieldArgOtherTypes) && is_array($argValue);
-                    if ($isArray) {
+                    // If it's an array, combine its elements recursively
+                    if ($fieldArgCurrentType == SchemaDefinition::TYPE_ARRAY && !is_null($fieldArgOtherTypes) && is_array($argValue)) {
                         // We can make combinations of combinations: array:array:string. So when iterating down, pass all other types after the current one
                         $argValue = array_map(
                             function($arrayArgValueElem) use($fieldArgOtherTypes) {
