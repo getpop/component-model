@@ -5,7 +5,7 @@ use PoP\ComponentModel\DataloaderInterface;
 
 class DirectivePipelineUtils
 {
-    public static function convertArgumentsToPayload(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$previousDBItems, array &$variables, array &$messages): array
+    public static function convertArgumentsToPayload(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         return [
             'dataloader' => &$dataloader,
@@ -13,14 +13,14 @@ class DirectivePipelineUtils
             'directiveResultSet' => &$resultIDItems,
             'idsDataFields' => &$idsDataFields,
             'dbItems' => &$dbItems,
+            'previousDBItems' => &$previousDBItems,
+            'variables' => &$variables,
+            'messages' => &$messages,
             'dbErrors' => &$dbErrors,
             'dbWarnings' => &$dbWarnings,
             'schemaErrors' => &$schemaErrors,
             'schemaWarnings' => &$schemaWarnings,
             'schemaDeprecations' => &$schemaDeprecations,
-            'previousDBItems' => &$previousDBItems,
-            'variables' => &$variables,
-            'messages' => &$messages,
         ];
     }
 
@@ -32,14 +32,14 @@ class DirectivePipelineUtils
             &$payload['directiveResultSet'],
             &$payload['idsDataFields'],
             &$payload['dbItems'],
+            &$payload['previousDBItems'],
+            &$payload['variables'],
+            &$payload['messages'],
             &$payload['dbErrors'],
             &$payload['dbWarnings'],
             &$payload['schemaErrors'],
             &$payload['schemaWarnings'],
             &$payload['schemaDeprecations'],
-            &$payload['previousDBItems'],
-            &$payload['variables'],
-            &$payload['messages'],
         ];
     }
 }

@@ -20,14 +20,14 @@ class DirectivePipelineDecorator
                 $resultIDItems,
                 $idsDataFields,
                 $dbItems,
+                $previousDBItems,
+                $variables,
+                $messages,
                 $dbErrors,
                 $dbWarnings,
                 $schemaErrors,
                 $schemaWarnings,
-                $schemaDeprecations,
-                $previousDBItems,
-                $variables,
-                $messages
+                $schemaDeprecations
             )
         );
         list(
@@ -36,14 +36,14 @@ class DirectivePipelineDecorator
             $resultIDItems,
             $idsDataFields,
             $dbItems,
+            $previousDBItems,
+            $variables,
+            $messages,
             $dbErrors,
             $dbWarnings,
             $schemaErrors,
             $schemaWarnings,
-            $schemaDeprecations,
-            $previousDBItems,
-            $variables,
-            $messages
+            $schemaDeprecations
         ) = DirectivePipelineUtils::extractArgumentsFromPayload($payload);
     }
 }
