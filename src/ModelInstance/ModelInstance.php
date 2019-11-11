@@ -109,7 +109,7 @@ class ModelInstance implements ModelInstanceInterface
         }
 
         // Allow for plug-ins to add their own vars. Eg: URE source parameter
-        return $this->hooksAPI->applyFilters(
+        return (array)$this->hooksAPI->applyFilters(
             self::HOOK_COMPONENTSFROMVARS_RESULT,
             $components
         );
