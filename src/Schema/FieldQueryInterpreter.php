@@ -854,6 +854,8 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             return null;
         } elseif ($this->isFieldArgumentValueAField($fieldArgValue)) {
             // Execute as field
+            // It is important to force the validation, because if a needed argument is provided with an error, it needs to be validated, casted and filtered out,
+            // and if this wrong param is not "dynamic", then the validation would not take place
             $options = [
                 AbstractFieldResolver::OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM => true,
             ];
