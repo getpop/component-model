@@ -689,7 +689,6 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                     );
                 }
                 $schemaWarnings[] = $errorMessage;
-                var_dump('$schemaWarnings', $schemaWarnings, $errorMessage);
             }
             return $this->filterFieldArgs($castedFieldArgs);
         }
