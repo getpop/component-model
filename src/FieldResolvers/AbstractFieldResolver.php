@@ -1,19 +1,19 @@
 <?php
 namespace PoP\ComponentModel\FieldResolvers;
 use PoP\ComponentModel\ErrorUtils;
-use PoP\ComponentModel\DataloaderInterface;
 use PoP\FieldQuery\FieldQueryUtils;
 use League\Pipeline\PipelineBuilder;
+use PoP\ComponentModel\DataloaderInterface;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
+use PoP\Engine\DirectiveResolvers\SetSelfAsVarDirectiveResolver;
 use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
 use PoP\ComponentModel\DirectiveResolvers\ValidateDirectiveResolver;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups;
 use PoP\ComponentModel\DirectiveResolvers\ResolveValueAndMergeDirectiveResolver;
-use PoP\ComponentModel\DirectiveResolvers\setSelfAsVarDirectiveResolver;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
 
 abstract class AbstractFieldResolver implements FieldResolverInterface
@@ -70,7 +70,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     protected function getMandatoryRootDirectives() {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         return [
-            $fieldQueryInterpreter->listFieldDirective(setSelfAsVarDirectiveResolver::getDirectiveName()),
+            $fieldQueryInterpreter->listFieldDirective(SetSelfAsVarDirectiveResolver::getDirectiveName()),
             $fieldQueryInterpreter->listFieldDirective(ValidateDirectiveResolver::getDirectiveName()),
             $fieldQueryInterpreter->listFieldDirective(ResolveValueAndMergeDirectiveResolver::getDirectiveName()),
         ];

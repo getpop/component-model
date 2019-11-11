@@ -1,5 +1,6 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
+
 use PoP\ComponentModel\GeneralUtils;
 use PoP\ComponentModel\DataloaderInterface;
 use PoP\Translation\Facades\TranslationAPIFacade;

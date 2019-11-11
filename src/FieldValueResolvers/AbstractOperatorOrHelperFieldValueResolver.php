@@ -1,5 +1,6 @@
 <?php
 namespace PoP\ComponentModel\FieldValueResolvers;
+
 use PoP\ComponentModel\FieldResolvers\AbstractFieldResolver;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 
