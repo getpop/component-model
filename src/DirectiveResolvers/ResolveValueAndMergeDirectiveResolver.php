@@ -87,11 +87,11 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
     protected function resolveValuesForResultItem(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, $id, $resultItem, array $dataFields, array &$dbItems, array &$previousDBItems, array &$resultItemVariables, array &$dbErrors, array &$dbWarnings)
     {
         foreach ($dataFields as $field) {
-            $this->resolveValueForResultItem($dataloader, $fieldResolver, $id, $resultItem, $field, $dbItems, $dbErrors, $dbWarnings, $previousDBItems, $resultItemVariables);
+            $this->resolveValueForResultItem($dataloader, $fieldResolver, $id, $resultItem, $field, $dbItems, $previousDBItems, $resultItemVariables, $dbErrors, $dbWarnings);
         }
     }
 
-    protected function resolveValueForResultItem(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, $id, $resultItem, string $field, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$previousDBItems, array &$resultItemVariables)
+    protected function resolveValueForResultItem(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, $id, $resultItem, string $field, array &$dbItems, array &$previousDBItems, array &$resultItemVariables, array &$dbErrors, array &$dbWarnings)
     {
         // Get the value, and add it to the database
         $value = $this->resolveFieldValue($dataloader, $fieldResolver, $id, $resultItem, $field, $dbWarnings, $previousDBItems, $resultItemVariables);
