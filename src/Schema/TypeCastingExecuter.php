@@ -4,6 +4,7 @@ namespace PoP\ComponentModel\Schema;
 use PoP\ComponentModel\Error;
 use PoP\Translation\TranslationAPIInterface;
 use CastToType;
+use DateTime;
 
 class TypeCastingExecuter implements TypeCastingExecuterInterface
 {
@@ -27,14 +28,22 @@ class TypeCastingExecuter implements TypeCastingExecuterInterface
         switch ($type) {
             // case SchemaDefinition::TYPE_MIXED:
             // case SchemaDefinition::TYPE_ID:
-            // case SchemaDefinition::TYPE_ARRAY:
-            // case SchemaDefinition::TYPE_OBJECT:
             // case SchemaDefinition::TYPE_URL:
             // case SchemaDefinition::TYPE_EMAIL:
             // case SchemaDefinition::TYPE_IP:
             // case SchemaDefinition::TYPE_ENUM:
             // case SchemaDefinition::TYPE_STRING:
             //     return $value;
+            case SchemaDefinition::TYPE_ARRAY:
+                if (!is_array($value)) {
+                    return null;
+                }
+                return $value;
+            case SchemaDefinition::TYPE_OBJECT:
+                if (!is_array($value) && !is_object($value)) {
+                    return null;
+                }
+                return $value;
             case SchemaDefinition::TYPE_DATE:
                 if (!is_string($value)) {
                     return new Error(
@@ -44,7 +53,7 @@ class TypeCastingExecuter implements TypeCastingExecuterInterface
                 }
                 // Validate that the format is 'Y-m-d'
                 // Taken from https://stackoverflow.com/a/13194398
-                $dt = \DateTime::createFromFormat("Y-m-d", $value);
+                $dt = DateTime::createFromFormat("Y-m-d", $value);
                 if ($dt === false || array_sum($dt::getLastErrors())) {
                     return new Error(
                         'date-cast',
