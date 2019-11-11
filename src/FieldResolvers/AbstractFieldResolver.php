@@ -292,14 +292,14 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $directiveResultSet,
                 $idsDataFields,
                 $dbItems,
+                $previousDBItems,
+                $variables,
+                $messages,
                 $dbErrors,
                 $dbWarnings,
                 $schemaErrors,
                 $schemaWarnings,
-                $schemaDeprecations,
-                $previousDBItems,
-                $variables,
-                $messages
+                $schemaDeprecations
             );
         }
     }
