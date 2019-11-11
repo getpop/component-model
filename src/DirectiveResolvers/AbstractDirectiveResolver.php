@@ -359,14 +359,14 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 $resultIDItems,
                 $idsDataFields,
                 $dbItems,
+                $previousDBItems,
+                $variables,
+                $messages,
                 $dbErrors,
                 $dbWarnings,
                 $schemaErrors,
                 $schemaWarnings,
-                $schemaDeprecations,
-                $previousDBItems,
-                $variables,
-                $messages
+                $schemaDeprecations
             );
         }
 
