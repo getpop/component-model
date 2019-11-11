@@ -65,7 +65,7 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
                 if (isset($dbItems[$id]) && array_key_exists($conditionFieldOutputKey, $dbItems[$id])) {
                     $conditionSatisfied = (bool)$dbItems[$id][$conditionFieldOutputKey];
                 } else {
-                    $conditionFieldValue = $this->resolveFieldValue($dataloader, $fieldResolver, $id, $resultItem, $conditionDataField, $dbWarnings, $previousDBItems, $resultItemVariables);
+                    $conditionFieldValue = $this->resolveFieldValue($dataloader, $fieldResolver, $id, $resultItem, $conditionDataField, $previousDBItems, $resultItemVariables, $dbWarnings);
                     $conditionSatisfied = $conditionFieldValue && !GeneralUtils::isError($conditionFieldValue);
                 }
                 if ($conditionSatisfied) {
@@ -94,11 +94,11 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
     protected function resolveValueForResultItem(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, $id, $resultItem, string $field, array &$dbItems, array &$previousDBItems, array &$resultItemVariables, array &$dbErrors, array &$dbWarnings)
     {
         // Get the value, and add it to the database
-        $value = $this->resolveFieldValue($dataloader, $fieldResolver, $id, $resultItem, $field, $dbWarnings, $previousDBItems, $resultItemVariables);
+        $value = $this->resolveFieldValue($dataloader, $fieldResolver, $id, $resultItem, $field, $previousDBItems, $resultItemVariables, $dbWarnings);
         $this->addValueForResultItem($fieldResolver, $id, $field, $value, $dbItems, $dbErrors);
     }
 
-    protected function resolveFieldValue(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, $id, $resultItem, string $field, array &$dbWarnings, array &$previousDBItems, array &$resultItemVariables)
+    protected function resolveFieldValue(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, $id, $resultItem, string $field, array &$previousDBItems, array &$resultItemVariables, array &$dbWarnings)
     {
         $value = $fieldResolver->resolveValue($resultItem, $field, $resultItemVariables);
         // Merge the dbWarnings, if any
