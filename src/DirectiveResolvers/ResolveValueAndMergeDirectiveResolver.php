@@ -52,7 +52,7 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
             }
 
             $resultItemVariables = $this->getVariablesForResultItem($id, $variables, $messages);
-            $this->resolveValuesForResultItem($dataloader, $fieldResolver, $id, $resultItem, $idsDataFields[(string)$id]['direct'], $dbItems, $dbErrors, $dbWarnings, $previousDBItems, $resultItemVariables);
+            $this->resolveValuesForResultItem($dataloader, $fieldResolver, $id, $resultItem, $idsDataFields[(string)$id]['direct'], $dbItems, $previousDBItems, $resultItemVariables, $dbErrors, $dbWarnings);
 
             // Add the conditional data fields
             // If the conditionalDataFields are empty, we already reached the end of the tree. Nothing else to do
@@ -84,7 +84,7 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
         }
     }
 
-    protected function resolveValuesForResultItem(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, $id, $resultItem, array $dataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$previousDBItems, array &$resultItemVariables)
+    protected function resolveValuesForResultItem(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, $id, $resultItem, array $dataFields, array &$dbItems, array &$previousDBItems, array &$resultItemVariables, array &$dbErrors, array &$dbWarnings)
     {
         foreach ($dataFields as $field) {
             $this->resolveValueForResultItem($dataloader, $fieldResolver, $id, $resultItem, $field, $dbItems, $dbErrors, $dbWarnings, $previousDBItems, $resultItemVariables);
