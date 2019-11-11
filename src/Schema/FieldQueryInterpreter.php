@@ -839,7 +839,6 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         }
 
         // Execute as expression
-        // var_dump($fieldArgValue, $this->isFieldArgumentValueAnExpression($fieldArgValue), substr($fieldArgValue, strlen(QuerySyntax::SYMBOL_EXPRESSION_OPENING), strlen($fieldArgValue)-strlen(QuerySyntax::SYMBOL_EXPRESSION_OPENING)-strlen(QuerySyntax::SYMBOL_EXPRESSION_CLOSING)));
         if ($this->isFieldArgumentValueAnExpression($fieldArgValue)) {
             // Expressions: allow to pass a field argument "key:%input", which is passed when executing the directive through $expressions
             $expressions = $variables ?? $this->getVariablesFromRequest();
