@@ -402,7 +402,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         ];
     }
 
-    public function extractDirectiveArgumentsForResultItem(DirectiveResolverInterface $directiveResolver, FieldResolverInterface $fieldResolver, $resultItem, string $fieldDirective, ?array $variables = null, array $expressions): array
+    public function extractDirectiveArgumentsForResultItem(DirectiveResolverInterface $directiveResolver, FieldResolverInterface $fieldResolver, $resultItem, string $fieldDirective, array $variables, array $expressions): array
     {
         $dbErrors = $dbWarnings = [];
         $validAndResolvedDirective = $fieldDirective;
