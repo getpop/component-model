@@ -298,6 +298,14 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         return null;
     }
 
+    public function getSchemaDirectiveExpressions(FieldResolverInterface $fieldResolver): array
+    {
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
+            return $schemaDefinitionResolver->getSchemaDirectiveExpressions($fieldResolver);
+        }
+        return [];
+    }
+
     public function getSchemaDirectiveDescription(FieldResolverInterface $fieldResolver): ?string
     {
         if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
@@ -546,6 +554,9 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
             if ($description = $schemaDefinitionResolver->getSchemaDirectiveDescription($fieldResolver)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
+            }
+            if ($expressions = $schemaDefinitionResolver->getSchemaDirectiveExpressions($fieldResolver)) {
+                $schemaDefinition[SchemaDefinition::ARGNAME_DIRECTIVE_EXPRESSIONS] = $expressions;
             }
             if ($deprecationDescription = $schemaDefinitionResolver->getSchemaDirectiveDeprecationDescription($fieldResolver)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATED] = true;

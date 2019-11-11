@@ -7,7 +7,7 @@ use PoP\ComponentModel\DataloaderInterface;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
-use PoP\Engine\DirectiveResolvers\SetSelfAsVarDirectiveResolver;
+use PoP\Engine\DirectiveResolvers\SetSelfAsExpressionDirectiveResolver;
 use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;

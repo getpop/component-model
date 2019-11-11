@@ -17,6 +17,10 @@ abstract class AbstractSchemaDirectiveResolver extends AbstractDirectiveResolver
     {
         return null;
     }
+    public function getSchemaDirectiveExpressions(FieldResolverInterface $fieldResolver): array
+    {
+        return [];
+    }
     public function getSchemaDirectiveArgs(FieldResolverInterface $fieldResolver): array
     {
         return [];

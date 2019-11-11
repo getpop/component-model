@@ -28,6 +28,13 @@ interface SchemaDirectiveResolverInterface
      */
     public function getSchemaDirectiveArgs(FieldResolverInterface $fieldResolver): array;
     /**
+     * Expressions set by the directive
+     *
+     * @param FieldResolverInterface $fieldResolver
+     * @return string|null
+     */
+    public function getSchemaDirectiveExpressions(FieldResolverInterface $fieldResolver): array;
+    /**
      * Indicate if the directive has been deprecated, why, when, and/or how it must be replaced
      *
      * @param FieldResolverInterface $fieldResolver
