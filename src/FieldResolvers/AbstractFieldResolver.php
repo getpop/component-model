@@ -59,7 +59,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
     /**
     * The pipeline must always have directives:
-    * 1. SetSelfAsVar: to enable to access the current object's properties under variable `$self`
+    * 1. SetSelfAsVar: to enable to access the current object's properties under expression `%self%`
     * 2. Validate: to validate that the schema, fieldNames, etc are supported, and filter them out if not
     * 3. ResolveAndMerge: to resolve the field and place the data into the DB object
     * All other directives are placed somewhere in the pipeline, using these 3 directives as anchors.
