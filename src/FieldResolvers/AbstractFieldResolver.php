@@ -15,6 +15,7 @@ use PoP\ComponentModel\DirectiveResolvers\ValidateDirectiveResolver;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups;
 use PoP\ComponentModel\DirectiveResolvers\ResolveValueAndMergeDirectiveResolver;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
+use PoP\ComponentModel\Facades\Engine\DataloadingEngineFacade;
 
 abstract class AbstractFieldResolver implements FieldResolverInterface
 {
@@ -69,11 +70,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     */
     protected function getMandatoryRootDirectives() {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
-        return [
-            $fieldQueryInterpreter->listFieldDirective(SetSelfAsVarDirectiveResolver::getDirectiveName()),
-            $fieldQueryInterpreter->listFieldDirective(ValidateDirectiveResolver::getDirectiveName()),
-            $fieldQueryInterpreter->listFieldDirective(ResolveValueAndMergeDirectiveResolver::getDirectiveName()),
-        ];
+        $dataloadingEngine = DataloadingEngineFacade::getInstance();
+        return array_map(
+            function($directiveClass) use($fieldQueryInterpreter) {
+                return $fieldQueryInterpreter->listFieldDirective($directiveClass::getDirectiveName());
+            },
+            $dataloadingEngine->getMandatoryRootDirectiveClasses()
+        );
     }
 
     public function getFieldDirectivePipeline(string $fieldDirectives, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): DirectivePipelineDecorator

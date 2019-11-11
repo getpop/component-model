@@ -4,6 +4,8 @@ namespace PoP\ComponentModel\Config;
 use PoP\ComponentModel\Container\ContainerBuilderUtils;
 use PoP\Root\Component\PHPServiceConfigurationTrait;
 use PoP\ComponentModel\Configuration\Request;
+use PoP\ComponentModel\DirectiveResolvers\ValidateDirectiveResolver;
+use PoP\ComponentModel\DirectiveResolvers\ResolveValueAndMergeDirectiveResolver;
 
 class ServiceConfiguration
 {
@@ -19,5 +21,15 @@ class ServiceConfiguration
                 false
             );
         }
+
+        // Inject the mandatory root directives
+        ContainerBuilderUtils::injectValuesIntoService(
+            'dataloading_engine',
+            'addMandatoryRootDirectiveClasses',
+            [
+                ValidateDirectiveResolver::class,
+                ResolveValueAndMergeDirectiveResolver::class,
+            ]
+        );
     }
 }

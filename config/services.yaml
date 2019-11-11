@@ -25,6 +25,10 @@ services:
         class: \PoP\ComponentModel\Engine\Engine
         public: true
 
+    dataloading_engine:
+        class: \PoP\ComponentModel\Engine\DataloadingEngine
+        public: true
+
     memory_cache:
         class: \PoP\ComponentModel\Cache\Cache
         public: true
