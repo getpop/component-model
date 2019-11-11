@@ -340,14 +340,14 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $resultIDItems,
             $idsDataFields,
             $dbItems,
+            $previousDBItems,
+            $variables,
+            $messages,
             $dbErrors,
             $dbWarnings,
             $schemaErrors,
             $schemaWarnings,
-            $schemaDeprecations,
-            $previousDBItems,
-            $variables,
-            $messages
+            $schemaDeprecations
         );
 
         // 3. Execute operation. First check that if the validation took away the elements, and so the directive can't execute anymore
@@ -388,7 +388,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         );
     }
 
-    public function validateDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$previousDBItems, array &$variables, array &$messages)
+    public function validateDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Check that the directive can be applied to all provided fields
         $this->validateAndFilterFieldsForDirective($idsDataFields, $schemaErrors, $schemaWarnings);
