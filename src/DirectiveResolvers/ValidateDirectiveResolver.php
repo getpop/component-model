@@ -25,10 +25,10 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
 
     public function resolveDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
-        $this->validateAndFilterFields($fieldResolver, $idsDataFields, $schemaErrors, $schemaWarnings, $schemaDeprecations, $variables);
+        $this->validateAndFilterFields($fieldResolver, $idsDataFields, $variables, $schemaErrors, $schemaWarnings, $schemaDeprecations);
     }
 
-    protected function validateAndFilterFields(FieldResolverInterface $fieldResolver, array &$idsDataFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$variables)
+    protected function validateAndFilterFields(FieldResolverInterface $fieldResolver, array &$idsDataFields, array &$variables, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Validate that the schema and the provided data match, eg: passing mandatory values
         // (Such as fieldArg "status" for field "is-status")
