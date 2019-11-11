@@ -16,7 +16,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
 {
     use AttachableExtensionTrait;
 
-    const MESSAGE_RESULT_ITEM_VARIABLES = 'resultItemVariables';
+    const MESSAGE_EXPRESSIONS = 'expressions';
 
     protected $directive;
     protected $directiveArgsForSchema = [];
@@ -204,25 +204,25 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         return null;
     }
 
-    protected function getVariablesForResultItem($id, array &$variables, array &$messages)
+    protected function getExpressionsForResultItem($id, array &$variables, array &$messages)
     {
         // Create a custom $variables containing all the properties from $dbItems for this resultItem
         // This way, when encountering $propName in a fieldArg in a fieldValueResolver, it can resolve that value
         // Otherwise it can't, since the fieldValueResolver doesn't have access to either $dbItems
         return array_merge(
             $variables,
-            $messages[self::MESSAGE_RESULT_ITEM_VARIABLES][(string)$id] ?? []
+            $messages[self::MESSAGE_EXPRESSIONS][(string)$id] ?? []
         );
     }
 
-    protected function addVariableValueForResultItem($id, $key, $value, array &$messages)
+    protected function addExpressionForResultItem($id, $key, $value, array &$messages)
     {
-        return $messages[self::MESSAGE_RESULT_ITEM_VARIABLES][(string)$id][$key] = $value;
+        return $messages[self::MESSAGE_EXPRESSIONS][(string)$id][$key] = $value;
     }
 
-    protected function getVariableValueForResultItem($id, $key, array &$messages)
+    protected function getExpressionForResultItem($id, $key, array &$messages)
     {
-        return $messages[self::MESSAGE_RESULT_ITEM_VARIABLES][(string)$id][$key];
+        return $messages[self::MESSAGE_EXPRESSIONS][(string)$id][$key];
     }
 
     /**

@@ -51,7 +51,7 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
                 continue;
             }
 
-            $expressions = $this->getVariablesForResultItem($id, $variables, $messages);
+            $expressions = $this->getExpressionsForResultItem($id, $variables, $messages);
             $this->resolveValuesForResultItem($dataloader, $fieldResolver, $id, $resultItem, $idsDataFields[(string)$id]['direct'], $dbItems, $previousDBItems, $variables, $expressions, $dbErrors, $dbWarnings);
 
             // Add the conditional data fields
