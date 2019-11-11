@@ -438,7 +438,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         ];
     }
 
-    protected function extractFieldOrDirectiveArgumentsForResultItem(FieldResolverInterface $fieldResolver, $resultItem, array $fieldOrDirectiveArgs, string $fieldOrDirectiveOutputKey, ?array $variables, array $expressions, array &$dbErrors): array
+    protected function extractFieldOrDirectiveArgumentsForResultItem(FieldResolverInterface $fieldResolver, $resultItem, array $fieldOrDirectiveArgs, string $fieldOrDirectiveOutputKey, ?array $variables, ?array $expressions, array &$dbErrors): array
     {
         // Only need to extract arguments if they have fields or arrays
         if (FieldQueryUtils::isAnyFieldArgumentValueDynamic(
@@ -829,7 +829,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
      * @param [type] $variables
      * @return mixed
      */
-    protected function maybeResolveFieldArgumentValueForResultItem(FieldResolverInterface $fieldResolver, $resultItem, $fieldArgValue, ?array $variables, array $expressions)
+    protected function maybeResolveFieldArgumentValueForResultItem(FieldResolverInterface $fieldResolver, $resultItem, $fieldArgValue, ?array $variables, ?array $expressions)
     {
         // If it is an array, apply this function on all elements
         if (is_array($fieldArgValue)) {
