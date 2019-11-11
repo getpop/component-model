@@ -1212,7 +1212,7 @@ class Engine implements EngineInterface
             $iterationDBItems = $iterationDBErrors = $iterationDBWarnings = $iterationSchemaErrors = $iterationSchemaWarnings = $iterationSchemaDeprecations = array();
             if ($fieldResolverClass = $dataloader->getFieldResolverClass()) {
                 $fieldResolver = $instanceManager->getInstance($fieldResolverClass);
-                $fieldResolver->fillResultItems($dataloader, $ids_data_fields, $iterationDBItems, $iterationDBErrors, $iterationDBWarnings, $iterationSchemaErrors, $iterationSchemaWarnings, $iterationSchemaDeprecations, $previousDBItems, $variables, $messages);
+                $fieldResolver->fillResultItems($dataloader, $ids_data_fields, $iterationDBItems, $previousDBItems, $variables, $messages, $iterationDBErrors, $iterationDBWarnings, $iterationSchemaErrors, $iterationSchemaWarnings, $iterationSchemaDeprecations);
             }
 
             // Save in the database under the corresponding database-key (this way, different dataloaders, like 'list-users' and 'author',

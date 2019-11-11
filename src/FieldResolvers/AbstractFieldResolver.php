@@ -230,7 +230,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         return $fieldArgs;
     }
 
-    public function fillResultItems(DataloaderInterface $dataloader, array $ids_data_fields, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$previousDBItems, array &$variables, array &$messages)
+    public function fillResultItems(DataloaderInterface $dataloader, array $ids_data_fields, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Obtain the data for the required object IDs
         $resultIDItems = $dataloader->getData(array_keys($ids_data_fields));
