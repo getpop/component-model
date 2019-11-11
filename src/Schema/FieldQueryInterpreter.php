@@ -9,6 +9,7 @@ use PoP\ComponentModel\GeneralUtils;
 use PoP\QueryParsing\QueryParserInterface;
 use PoP\Translation\TranslationAPIInterface;
 use PoP\ComponentModel\Schema\SchemaDefinition;
+use PoP\ComponentModel\Schema\TypeCastingHelpers;
 use PoP\ComponentModel\FieldResolvers\AbstractFieldResolver;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\DirectiveResolvers\DirectiveResolverInterface;
@@ -640,7 +641,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                         $directiveName,
                         $directiveArgs[$failedCastingDirectiveArgName],
                         $failedCastingDirectiveArgName,
-                        $directiveArgNameTypes[$failedCastingDirectiveArgName],
+                        TypeCastingHelpers::getTypeCombinationCurrentElement($directiveArgNameTypes[$failedCastingDirectiveArgName]),
                         $directiveArgErrorMessage
                     );
                 } else {
@@ -649,7 +650,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                         $directiveName,
                         $directiveArgs[$failedCastingDirectiveArgName],
                         $failedCastingDirectiveArgName,
-                        $directiveArgNameTypes[$failedCastingDirectiveArgName]
+                        TypeCastingHelpers::getTypeCombinationCurrentElement($directiveArgNameTypes[$failedCastingDirectiveArgName])
                     );
                 }
                 $schemaWarnings[] = $errorMessage;
@@ -675,7 +676,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                         $fieldName,
                         $fieldArgs[$failedCastingFieldArgName],
                         $failedCastingFieldArgName,
-                        $fieldArgNameTypes[$failedCastingFieldArgName],
+                        TypeCastingHelpers::getTypeCombinationCurrentElement($fieldArgNameTypes[$failedCastingFieldArgName]),
                         $fieldArgErrorMessage
                     );
                 } else {
@@ -684,10 +685,11 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                         $fieldName,
                         $fieldArgs[$failedCastingFieldArgName],
                         $failedCastingFieldArgName,
-                        $fieldArgNameTypes[$failedCastingFieldArgName]
+                        TypeCastingHelpers::getTypeCombinationCurrentElement($fieldArgNameTypes[$failedCastingFieldArgName])
                     );
                 }
                 $schemaWarnings[] = $errorMessage;
+                var_dump('$schemaWarnings', $schemaWarnings, $errorMessage);
             }
             return $this->filterFieldArgs($castedFieldArgs);
         }
