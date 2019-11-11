@@ -239,7 +239,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         $this->enqueueFillingResultItemsFromIDs($ids_data_fields, $resultIDItems);
 
         // Process them
-        $this->processFillingResultItemsFromIDs($dataloader, $dbItems, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations, $previousDBItems, $variables, $messages);
+        $this->processFillingResultItemsFromIDs($dataloader, $dbItems, $previousDBItems, $variables, $messages, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations);
     }
 
     public function enqueueFillingResultItemsFromIDs(array $ids_data_fields, array &$resultIDItems)
@@ -265,7 +265,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         }
     }
 
-    protected function processFillingResultItemsFromIDs(DataloaderInterface $dataloader, array &$dbItems, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$previousDBItems, array &$variables, array &$messages)
+    protected function processFillingResultItemsFromIDs(DataloaderInterface $dataloader, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Iterate while there are directives with data to be processed
         while (!empty($this->fieldDirectiveIDsFields)) {
