@@ -426,7 +426,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         return null;
     }
 
-    public function resolveValue($resultItem, string $field, ?array $variables = null, array $expressions = null, array $options = [])
+    public function resolveValue($resultItem, string $field, ?array $variables = null, ?array $expressions = null, array $options = [])
     {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         // Get the value from a fieldValueResolver, from the first one who can deliver the value
