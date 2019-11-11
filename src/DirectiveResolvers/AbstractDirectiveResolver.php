@@ -107,7 +107,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         return $directiveArgs;
     }
 
-    public function dissectAndValidateDirectiveForResultItem(FieldResolverInterface $fieldResolver, $resultItem, array &$variables, array &$dbErrors, array &$dbWarnings): array
+    public function dissectAndValidateDirectiveForResultItem(FieldResolverInterface $fieldResolver, $resultItem, array &$variables, array &$expressions, array &$dbErrors, array &$dbWarnings): array
     {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         list(
@@ -116,7 +116,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $directiveArgs,
             $nestedDBErrors,
             $nestedDBWarnings
-        ) = $fieldQueryInterpreter->extractDirectiveArgumentsForResultItem($this, $fieldResolver, $resultItem, $this->directive, $variables);
+        ) = $fieldQueryInterpreter->extractDirectiveArgumentsForResultItem($this, $fieldResolver, $resultItem, $this->directive, $variables, $expressions);
 
         // Store the args, they may be used in `resolveDirective`
         $this->directiveArgsForResultItems[$fieldResolver->getId($resultItem)] = $directiveArgs;

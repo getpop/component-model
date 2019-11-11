@@ -366,7 +366,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         return $fieldOrDirectiveArgs;
     }
 
-    public function extractFieldArgumentsForResultItem(FieldResolverInterface $fieldResolver, $resultItem, string $field, ?array $variables = null): array
+    public function extractFieldArgumentsForResultItem(FieldResolverInterface $fieldResolver, $resultItem, string $field, ?array $variables = null, array $expressions): array
     {
         $dbErrors = $dbWarnings = [];
         $validAndResolvedField = $field;
@@ -374,7 +374,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         $extractedFieldArgs = $fieldArgs = $this->extractFieldArguments($fieldResolver, $field, $variables);
         // Only need to extract arguments if they have fields or arrays
         $fieldOutputKey = $this->getFieldOutputKey($field);
-        $fieldArgs = $this->extractFieldOrDirectiveArgumentsForResultItem($fieldResolver, $resultItem, $fieldArgs, $fieldOutputKey, $variables, $dbErrors);
+        $fieldArgs = $this->extractFieldOrDirectiveArgumentsForResultItem($fieldResolver, $resultItem, $fieldArgs, $fieldOutputKey, $variables, $expressions, $dbErrors);
         // Cast the values to their appropriate type. If casting fails, the value returns as null
         $resultItemDBWarnings = [];
         $fieldArgs = $this->castAndValidateFieldArgumentsForResultItem($fieldResolver, $field, $fieldArgs, $resultItemDBWarnings);
@@ -402,7 +402,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         ];
     }
 
-    public function extractDirectiveArgumentsForResultItem(DirectiveResolverInterface $directiveResolver, FieldResolverInterface $fieldResolver, $resultItem, string $fieldDirective, ?array $variables = null): array
+    public function extractDirectiveArgumentsForResultItem(DirectiveResolverInterface $directiveResolver, FieldResolverInterface $fieldResolver, $resultItem, string $fieldDirective, ?array $variables = null, array $expressions): array
     {
         $dbErrors = $dbWarnings = [];
         $validAndResolvedDirective = $fieldDirective;
@@ -410,7 +410,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         $extractedDirectiveArgs = $directiveArgs = $this->extractDirectiveArguments($directiveResolver, $fieldResolver, $fieldDirective, $variables);
         // Only need to extract arguments if they have fields or arrays
         $directiveOutputKey = $this->getDirectiveOutputKey($fieldDirective);
-        $directiveArgs = $this->extractFieldOrDirectiveArgumentsForResultItem($fieldResolver, $resultItem, $directiveArgs, $directiveOutputKey, $variables, $dbErrors);
+        $directiveArgs = $this->extractFieldOrDirectiveArgumentsForResultItem($fieldResolver, $resultItem, $directiveArgs, $directiveOutputKey, $variables, $expressions, $dbErrors);
         // Cast the values to their appropriate type. If casting fails, the value returns as null
         $resultItemDBWarnings = [];
         $directiveArgs = $this->castAndValidateDirectiveArgumentsForResultItem($directiveResolver, $fieldResolver, $fieldDirective, $directiveArgs, $resultItemDBWarnings);
@@ -438,7 +438,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         ];
     }
 
-    protected function extractFieldOrDirectiveArgumentsForResultItem(FieldResolverInterface $fieldResolver, $resultItem, array $fieldOrDirectiveArgs, string $fieldOrDirectiveOutputKey, ?array $variables, array &$dbErrors): array
+    protected function extractFieldOrDirectiveArgumentsForResultItem(FieldResolverInterface $fieldResolver, $resultItem, array $fieldOrDirectiveArgs, string $fieldOrDirectiveOutputKey, ?array $variables, array $expressions, array &$dbErrors): array
     {
         // Only need to extract arguments if they have fields or arrays
         if (FieldQueryUtils::isAnyFieldArgumentValueDynamic(
@@ -448,7 +448,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         )) {
             $id = $fieldResolver->getId($resultItem);
             foreach ($fieldOrDirectiveArgs as $directiveArgName => $directiveArgValue) {
-                $directiveArgValue = $this->maybeResolveFieldArgumentValueForResultItem($fieldResolver, $resultItem, $directiveArgValue, $variables);
+                $directiveArgValue = $this->maybeResolveFieldArgumentValueForResultItem($fieldResolver, $resultItem, $directiveArgValue, $variables, $expressions);
                 // Validate it
                 if (\PoP\ComponentModel\GeneralUtils::isError($directiveArgValue)) {
                     $error = $directiveArgValue;
@@ -829,19 +829,18 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
      * @param [type] $variables
      * @return mixed
      */
-    protected function maybeResolveFieldArgumentValueForResultItem(FieldResolverInterface $fieldResolver, $resultItem, $fieldArgValue, ?array $variables)
+    protected function maybeResolveFieldArgumentValueForResultItem(FieldResolverInterface $fieldResolver, $resultItem, $fieldArgValue, ?array $variables, array $expressions)
     {
         // If it is an array, apply this function on all elements
         if (is_array($fieldArgValue)) {
-            return array_map(function($fieldArgValueElem) use($fieldResolver, $resultItem, $variables) {
-                return $this->maybeResolveFieldArgumentValueForResultItem($fieldResolver, $resultItem, $fieldArgValueElem, $variables);
+            return array_map(function($fieldArgValueElem) use($fieldResolver, $resultItem, $variables, $expressions) {
+                return $this->maybeResolveFieldArgumentValueForResultItem($fieldResolver, $resultItem, $fieldArgValueElem, $variables, $expressions);
             }, (array)$fieldArgValue);
         }
 
         // Execute as expression
         if ($this->isFieldArgumentValueAnExpression($fieldArgValue)) {
             // Expressions: allow to pass a field argument "key:%input", which is passed when executing the directive through $expressions
-            $expressions = $variables ?? $this->getVariablesFromRequest();
             $expressionName = substr($fieldArgValue, strlen(QuerySyntax::SYMBOL_EXPRESSION_OPENING), strlen($fieldArgValue)-strlen(QuerySyntax::SYMBOL_EXPRESSION_OPENING)-strlen(QuerySyntax::SYMBOL_EXPRESSION_CLOSING));
             if (isset($expressions[$expressionName])) {
                 return $expressions[$expressionName];
@@ -854,7 +853,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             return null;
         } elseif ($this->isFieldArgumentValueAField($fieldArgValue)) {
             // Execute as field
-            return $fieldResolver->resolveValue($resultItem, (string)$fieldArgValue, $variables);
+            return $fieldResolver->resolveValue($resultItem, (string)$fieldArgValue, $variables, $expressions);
         }
 
         return $fieldArgValue;
