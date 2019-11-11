@@ -441,7 +441,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     protected function extractFieldOrDirectiveArgumentsForResultItem(FieldResolverInterface $fieldResolver, $resultItem, array $fieldOrDirectiveArgs, string $fieldOrDirectiveOutputKey, ?array $variables, array &$dbErrors): array
     {
         // Only need to extract arguments if they have fields or arrays
-        if (FieldQueryUtils::isAnyFieldArgumentValueAField(
+        if (FieldQueryUtils::isAnyFieldArgumentValueDynamic(
             array_values(
                 $fieldOrDirectiveArgs
             )
@@ -496,7 +496,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                 // 2. $forSchema = false: Should be cast only fields, however by now we can't tell which are fields and which are not, since fields have already been resolved to their value. Hence, cast everything (fieldArgValues that failed at the schema level will not be provided in the input array, so won't be validated twice)
                 // Otherwise, simply add the argValue directly, it will be eventually casted by the other function
                 if (
-                    ($forSchema && !$this->isFieldArgumentValueAField($argValue)) ||
+                    ($forSchema && !$this->isFieldArgumentValueDynamic($argValue)) ||
                     !$forSchema
                 ) {
                     // If the value is an array, and the type is a combination of types, then cast each element to the item type
@@ -838,8 +838,23 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             }, (array)$fieldArgValue);
         }
 
-        // Execute as field
-        if ($this->isFieldArgumentValueAField($fieldArgValue)) {
+        // Execute as expression
+        // var_dump($fieldArgValue, $this->isFieldArgumentValueAnExpression($fieldArgValue), substr($fieldArgValue, strlen(QuerySyntax::SYMBOL_EXPRESSION_OPENING), strlen($fieldArgValue)-strlen(QuerySyntax::SYMBOL_EXPRESSION_OPENING)-strlen(QuerySyntax::SYMBOL_EXPRESSION_CLOSING)));
+        if ($this->isFieldArgumentValueAnExpression($fieldArgValue)) {
+            // Expressions: allow to pass a field argument "key:%input", which is passed when executing the directive through $expressions
+            $expressions = $variables ?? $this->getVariablesFromRequest();
+            $expressionName = substr($fieldArgValue, strlen(QuerySyntax::SYMBOL_EXPRESSION_OPENING), strlen($fieldArgValue)-strlen(QuerySyntax::SYMBOL_EXPRESSION_OPENING)-strlen(QuerySyntax::SYMBOL_EXPRESSION_CLOSING));
+            if (isset($expressions[$expressionName])) {
+                return $expressions[$expressionName];
+            }
+            // If the expression is not set, then show the error under entry "expressionErrors"
+            $this->feedbackMessageStore->addQueryError(sprintf(
+                $this->translationAPI->__('Expression \'%s\' is undefined', 'pop-component-model'),
+                $expressionName
+            ));
+            return null;
+        } elseif ($this->isFieldArgumentValueAField($fieldArgValue)) {
+            // Execute as field
             return $fieldResolver->resolveValue($resultItem, (string)$fieldArgValue, $variables);
         }
 

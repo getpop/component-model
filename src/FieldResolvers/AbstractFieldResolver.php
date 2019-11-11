@@ -465,7 +465,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             // Eg: through the <transform> directive, in which case no parameter is dynamic anymore by the time it reaches here, yet it was not validated statically either
             $validateSchemaOnResultItem =
                 $options[self::OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM] ||
-                FieldQueryUtils::isAnyFieldArgumentValueAFieldOrVariable(
+                FieldQueryUtils::isAnyFieldArgumentValueDynamic(
                     array_values(
                         $fieldQueryInterpreter->extractFieldArguments($this, $field)
                     )
