@@ -9,6 +9,7 @@ use PoP\ComponentModel\GeneralUtils;
 use PoP\QueryParsing\QueryParserInterface;
 use PoP\Translation\TranslationAPIInterface;
 use PoP\ComponentModel\Schema\SchemaDefinition;
+use PoP\ComponentModel\FieldResolvers\AbstractFieldResolver;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\DirectiveResolvers\DirectiveResolverInterface;
 
@@ -501,20 +502,20 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                 ) {
                     // If the value is an array, and the type is a combination of types, then cast each element to the item type
                     $isArray = false;
-                    if ($maybeFieldArgTypeCombiningElems = TypeCastingHelpers::maybeGetTypeCombinationElements($fieldArgType)) {
-                        $isArray = $maybeFieldArgTypeCombiningElems[0] == SchemaDefinition::TYPE_ARRAY && is_array($argValue);
-                    }
+                    $fieldArgCurrentType = TypeCastingHelpers::getTypeCombinationCurrentElement($fieldArgType);
+                    $fieldArgOtherTypes = TypeCastingHelpers::getTypeCombinationNestedElements($fieldArgType);
+                    $isArray = $fieldArgCurrentType == SchemaDefinition::TYPE_ARRAY && !is_null($fieldArgOtherTypes) && is_array($argValue);
                     if ($isArray) {
-                        $arrayFieldArgType = $maybeFieldArgTypeCombiningElems[1];
+                        // We can make combinations of combinations: array:array:string. So when iterating down, pass all other types after the current one
                         $argValue = array_map(
-                            function($arrayArgValueElem) use($arrayFieldArgType) {
-                                return $this->typeCastingExecuter->cast($arrayFieldArgType, $arrayArgValueElem);
+                            function($arrayArgValueElem) use($fieldArgOtherTypes) {
+                                return $this->typeCastingExecuter->cast($fieldArgOtherTypes, $arrayArgValueElem);
                             },
                             $argValue
                         );
                     } else {
                         // Otherwise, simply cast the given value directly
-                        $argValue = $this->typeCastingExecuter->cast($fieldArgType, $argValue);
+                        $argValue = $this->typeCastingExecuter->cast($fieldArgCurrentType, $argValue);
                     }
                     // If the response is an error, extract the error message and set value to null
                     if (GeneralUtils::isError($argValue)) {
@@ -853,7 +854,10 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             return null;
         } elseif ($this->isFieldArgumentValueAField($fieldArgValue)) {
             // Execute as field
-            $resolvedValue = $fieldResolver->resolveValue($resultItem, (string)$fieldArgValue, $variables, $expressions);
+            $options = [
+                AbstractFieldResolver::OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM => true,
+            ];
+            $resolvedValue = $fieldResolver->resolveValue($resultItem, (string)$fieldArgValue, $variables, $expressions, $options);
             if (GeneralUtils::isError($resolvedValue)) {
                 // Show the error message, and return nothing
                 $error = $resolvedValue;
