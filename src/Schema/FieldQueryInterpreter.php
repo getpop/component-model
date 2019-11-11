@@ -333,7 +333,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         ];
     }
 
-    protected function validateExtractedFieldOrDirectiveArgumentsForSchema(FieldResolverInterface $fieldResolver, array $fieldOrDirectiveArgs, ?array $variables = null, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    protected function validateExtractedFieldOrDirectiveArgumentsForSchema(FieldResolverInterface $fieldResolver, array $fieldOrDirectiveArgs, ?array $variables, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         if ($fieldOrDirectiveArgs) {
             foreach ($fieldOrDirectiveArgs as $argName => $argValue) {
@@ -438,7 +438,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         ];
     }
 
-    protected function extractFieldOrDirectiveArgumentsForResultItem(FieldResolverInterface $fieldResolver, $resultItem, array $fieldOrDirectiveArgs, string $fieldOrDirectiveOutputKey, ?array $variables = null, array &$dbErrors): array
+    protected function extractFieldOrDirectiveArgumentsForResultItem(FieldResolverInterface $fieldResolver, $resultItem, array $fieldOrDirectiveArgs, string $fieldOrDirectiveOutputKey, ?array $variables, array &$dbErrors): array
     {
         // Only need to extract arguments if they have fields or arrays
         if (FieldQueryUtils::isAnyFieldArgumentValueAField(
@@ -838,18 +838,9 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             }, (array)$fieldArgValue);
         }
 
-        // Convert field, remove quotes from strings
-        if (!empty($fieldArgValue) && is_string($fieldArgValue)) {
-            // If the result fieldArgValue is a string (i.e. not numeric), and it has brackets (...),
-            // then it is a field. Validate it and resolve it
-            if (
-                substr($fieldArgValue, -1*strlen(QuerySyntax::SYMBOL_FIELDARGS_CLOSING)) == QuerySyntax::SYMBOL_FIELDARGS_CLOSING &&
-                // Please notice: if position is 0 (i.e. for a string "(something)") then it's not a field, since the fieldName is missing
-                // Then it's ok asking for strpos: either `false` or `0` must both fail
-                strpos($fieldArgValue, QuerySyntax::SYMBOL_FIELDARGS_OPENING)
-            ) {
-                return $fieldResolver->resolveValue($resultItem, (string)$fieldArgValue, $variables);
-            }
+        // Execute as field
+        if ($this->isFieldArgumentValueAField($fieldArgValue)) {
+            return $fieldResolver->resolveValue($resultItem, (string)$fieldArgValue, $variables);
         }
 
         return $fieldArgValue;
