@@ -853,7 +853,18 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             return null;
         } elseif ($this->isFieldArgumentValueAField($fieldArgValue)) {
             // Execute as field
-            return $fieldResolver->resolveValue($resultItem, (string)$fieldArgValue, $variables, $expressions);
+            $resolvedValue = $fieldResolver->resolveValue($resultItem, (string)$fieldArgValue, $variables, $expressions);
+            if (GeneralUtils::isError($resolvedValue)) {
+                // Show the error message, and return nothing
+                $error = $resolvedValue;
+                $this->feedbackMessageStore->addQueryError(sprintf(
+                    $this->translationAPI->__('Executing field \'%s\' produced error: %s', 'pop-component-model'),
+                    $fieldArgValue,
+                    $error->getErrorMessage()
+                ));
+                return null;
+            }
+            return $resolvedValue;
         }
 
         return $fieldArgValue;
