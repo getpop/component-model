@@ -26,14 +26,29 @@ class TypeCastingExecuter implements TypeCastingExecuterInterface
     public function cast(string $type, $value)
     {
         switch ($type) {
-            // case SchemaDefinition::TYPE_MIXED:
-            // case SchemaDefinition::TYPE_ID:
-            // case SchemaDefinition::TYPE_URL:
-            // case SchemaDefinition::TYPE_EMAIL:
-            // case SchemaDefinition::TYPE_IP:
-            // case SchemaDefinition::TYPE_ENUM:
-            // case SchemaDefinition::TYPE_STRING:
-            //     return $value;
+            case SchemaDefinition::TYPE_MIXED:
+            case SchemaDefinition::TYPE_ID:
+                // Accept anything and everything
+                return $value;
+            case SchemaDefinition::TYPE_STRING:
+                return (string)$value;
+            case SchemaDefinition::TYPE_URL:
+            case SchemaDefinition::TYPE_EMAIL:
+            case SchemaDefinition::TYPE_IP:
+                // Validate they are right
+                $filters = [
+                    SchemaDefinition::TYPE_URL => FILTER_VALIDATE_URL,
+                    SchemaDefinition::TYPE_EMAIL => FILTER_VALIDATE_EMAIL,
+                    SchemaDefinition::TYPE_IP => FILTER_VALIDATE_IP,
+                ];
+                $valid = filter_var($value, $filters[$type]);
+                if ($valid === false) {
+                    return null;
+                }
+                return $value;
+            case SchemaDefinition::TYPE_ENUM:
+                // It is not possible to validate this, so just return whatever it gets
+                return $value;
             case SchemaDefinition::TYPE_ARRAY:
                 if (!is_array($value)) {
                     return null;
