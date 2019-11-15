@@ -498,7 +498,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             // Log how the hash and the class are related
             $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();
             $translationAPI = TranslationAPIFacade::getInstance();
-            $feedbackMessageStore->addLogEntry(
+            $feedbackMessageStore->maybeAddLogEntry(
                 sprintf(
                     $translationAPI->__('Field resolver with ID \'%s\' corresponds to class \'%s\'', 'pop-component-model'),
                     $this->fieldResolverSchemaIdsCache[$class],

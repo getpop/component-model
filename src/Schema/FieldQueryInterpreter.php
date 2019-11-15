@@ -190,7 +190,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                 }
                 $fieldOrDirectiveArgName = $orderedFieldOrDirectiveArgNames[$i];
                 // Log the found fieldOrDirectiveArgName
-                $this->feedbackMessageStore->addLogEntry(
+                $this->feedbackMessageStore->maybeAddLogEntry(
                     sprintf(
                         $this->translationAPI->__('In field or directive \'%s\', the argument on position number %s (with value \'%s\') is resolved as argument \'%s\'', 'pop-component-model'),
                         $fieldOrDirective,

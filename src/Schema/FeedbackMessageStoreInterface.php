@@ -8,6 +8,6 @@ interface FeedbackMessageStoreInterface extends \PoP\FieldQuery\FeedbackMessageS
     function maybeAddSchemaError(string $dbKey, string $field, string $error);
     function getSchemaErrors(): array;
     function getSchemaErrorsForField(string $dbKey, string $field): ?array;
-    function addLogEntry(string $entry): void;
+    function maybeAddLogEntry(string $entry): void;
     function getLogEntries(): array;
 }
