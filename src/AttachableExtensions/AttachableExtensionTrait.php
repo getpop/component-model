@@ -18,7 +18,7 @@ trait AttachableExtensionTrait
         $attachableExtensionManager = AttachableExtensionManagerFacade::getInstance();
         $extensionClass = get_called_class();
         foreach ($extensionClass::getClassesToAttachTo() as $attachableClass) {
-            $attachableExtensionManager->addExtensionClass(
+            $attachableExtensionManager->setExtensionClass(
                 $attachableClass,
                 $group,
                 $extensionClass,

@@ -5,7 +5,7 @@ class AttachableExtensionManager implements AttachableExtensionManagerInterface
 {
     protected $extensionClasses = [];
 
-    public function addExtensionClass(string $attachableClass, string $group, string $extensionClass, int $priority = 10): void {
+    public function setExtensionClass(string $attachableClass, string $group, string $extensionClass, int $priority = 10): void {
         $this->extensionClasses[$attachableClass][$group][$extensionClass] = $priority;
     }
 
