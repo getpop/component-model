@@ -8,6 +8,7 @@ use League\Pipeline\PipelineBuilder;
 use PoP\ComponentModel\DataloaderInterface;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
+use PoP\ComponentModel\FieldResolvers\FieldHelpers;
 use PoP\ComponentModel\Facades\Engine\DataloadingEngineFacade;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
@@ -310,7 +311,15 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         // Collect all directives for all fields
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         foreach ($ids_data_fields as $id => $data_fields) {
-            foreach ($data_fields['direct'] as $field) {
+            $fields = $data_fields['direct'];
+            // Watch out: If there are conditional fields, these will be processed by this directive too
+            // Hence, collect all these fields, and add them as if they were direct
+            $conditionalFields = FieldHelpers::extractConditionalFields($data_fields);
+            $fields = array_unique(array_merge(
+                $fields,
+                $conditionalFields
+            ));
+            foreach ($fields as $field) {
                 $cacheKey = $field.($isRootDirective ? ':root' : '');
                 if (is_null($this->fieldDirectivesFromFieldCache[$cacheKey])) {
                     $fieldDirectives = $fieldQueryInterpreter->getFieldDirectives($field, false) ?? '';
