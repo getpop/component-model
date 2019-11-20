@@ -407,9 +407,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $directivePipeline = $this->getDirectivePipeline($directiveResolverInstances);
 
             // From the fields, reconstitute the $idsDataFields
-            $orderedDirectiveIDFields = /*$orderedDirectiveResultItems =*/[];
+            $orderedDirectiveIDFields = [];
             for ($i=0; $i<count($directiveResolverInstances); $i++) {
-                // $orderedDirectiveResultItems[] = $resultIDItems;//$this->directiveResultSet[$fieldDirective];
                 $fieldDirective = $directiveResolverFieldDirectives[$i];
                 $fieldDirectiveIDFields = $this->fieldDirectiveIDsFields[$fieldDirective];
                 $directiveIDFields = [];
@@ -435,7 +434,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $dataloader,
                 $this,
                 $orderedDirectiveIDFields,
-                $resultIDItems,//$orderedDirectiveResultItems,
+                $resultIDItems,
                 $dbItems,
                 $previousDBItems,
                 $variables,
