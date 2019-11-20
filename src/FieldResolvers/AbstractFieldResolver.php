@@ -300,13 +300,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             foreach ($data_fields['direct'] as $field) {
                 $cacheKey = $field.($isRootDirective ? ':root' : '');
                 if (is_null($this->fieldDirectivesFromFieldCache[$cacheKey])) {
-                    $fieldDirectives = $fieldQueryInterpreter->getFieldDirectives($field, false) ?? '';
                     // For the root directiveSet (e.g. non-nested ones), place the mandatory directives at the beginning of the list, then they will be added to their needed position in the pipeline
-                    if ($isRootDirective) {
-                        $directives = $this->getMandatoryRootDirectives();
-                    } else {
-                        $directives = [];
-                    }
+                    $directives = $isRootDirective ? $this->getMandatoryRootDirectives() : [];
+                    $fieldDirectives = $fieldQueryInterpreter->getFieldDirectives($field, false) ?? '';
                     $this->fieldDirectivesFromFieldCache[$cacheKey] = array_merge(
                         $directives,
                         $fieldQueryInterpreter->extractFieldDirectives($fieldDirectives)
