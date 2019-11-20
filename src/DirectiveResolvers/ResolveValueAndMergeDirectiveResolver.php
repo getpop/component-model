@@ -26,7 +26,7 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
         return PipelinePositions::BACK;
     }
 
-    public function resolveDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    public function resolveDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Iterate data, extract into final results
         if ($resultIDItems) {
@@ -118,7 +118,6 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
     {
         // If there is an alias, store the results under this. Otherwise, on the fieldName+fieldArgs
         $fieldOutputKey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($field);
-
         // The dataitem can contain both rightful values and also errors (eg: when the field doesn't exist, or the field validation fails)
         // Extract the errors and add them on the other array
         if (GeneralUtils::isError($value)) {

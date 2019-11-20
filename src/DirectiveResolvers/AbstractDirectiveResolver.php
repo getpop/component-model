@@ -358,8 +358,9 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         $this->validateDirective(
             $dataloader,
             $fieldResolver,
-            $resultIDItems,
             $idsDataFields,
+            $pipelineIDsDataFields,
+            $resultIDItems,
             $dbItems,
             $previousDBItems,
             $variables,
@@ -377,8 +378,9 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $this->resolveDirective(
                 $dataloader,
                 $fieldResolver,
-                $resultIDItems,
                 $idsDataFields,
+                $pipelineIDsDataFields,
+                $resultIDItems,
                 $dbItems,
                 $previousDBItems,
                 $variables,
@@ -409,7 +411,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         );
     }
 
-    public function validateDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    public function validateDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Check that the directive can be applied to all provided fields
         $this->validateAndFilterFieldsForDirective($idsDataFields, $schemaErrors, $schemaWarnings);
