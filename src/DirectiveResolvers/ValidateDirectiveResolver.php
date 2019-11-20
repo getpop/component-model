@@ -1,13 +1,16 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
+use PoP\ComponentModel\DataloaderInterface;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\FieldResolvers\PipelinePositions;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
-use PoP\ComponentModel\DataloaderInterface;
+use PoP\ComponentModel\DirectiveResolvers\RemoveIDsDataFieldsDirectiveResolverTrait;
 
 class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
 {
+    use RemoveIDsDataFieldsDirectiveResolverTrait;
+
     const DIRECTIVE_NAME = 'validate';
     public static function getDirectiveName(): string {
         return self::DIRECTIVE_NAME;
@@ -25,10 +28,10 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
 
     public function resolveDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
-        $this->validateAndFilterFields($fieldResolver, $idsDataFields, $variables, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+        $this->validateAndFilterFields($fieldResolver, $idsDataFields, $succeedingPipelineIDsDataFields, $variables, $schemaErrors, $schemaWarnings, $schemaDeprecations);
     }
 
-    protected function validateAndFilterFields(FieldResolverInterface $fieldResolver, array &$idsDataFields, array &$variables, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    protected function validateAndFilterFields(FieldResolverInterface $fieldResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$variables, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Validate that the schema and the provided data match, eg: passing mandatory values
         // (Such as fieldArg "status" for field "is-status")
@@ -43,14 +46,13 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
         foreach ($dataFields as $field) {
             $this->validateField($fieldResolver, $field, $schemaErrors, $schemaWarnings, $schemaDeprecations, $variables, $failedDataFields);
         }
-        // Remove from the data_fields list to execute on the resultItem
+        // Remove from the data_fields list to execute on the resultItem for the next stages of the pipeline
         if ($failedDataFields) {
-            foreach ($idsDataFields as $id => $data_fields) {
-                $idsDataFields[(string)$id]['direct'] = array_diff(
-                    $data_fields['direct'],
-                    $failedDataFields
-                );
+            $idsDataFieldsToRemove = [];
+            foreach (array_keys($idsDataFields) as $id) {
+                $idsDataFieldsToRemove[(string)$id]['direct'] = $failedDataFields;
             }
+            $this->removeIDsDataFields($idsDataFieldsToRemove, $succeedingPipelineIDsDataFields);
         }
         // Since adding the Validate directive also when processing the conditional fields, there is no need to validate them now
         // They will be validated when it's their turn to be processed
