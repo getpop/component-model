@@ -312,6 +312,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         foreach ($ids_data_fields as $id => $data_fields) {
             $fields = $data_fields['direct'];
+            // Also keep the root conditionFields which are not direct fields:
+            // If any field belongs there, then copy the 'conditional' branch directly
+            $conditionFields = array_keys($data_fields['conditional']);
+            $onlyConditionFields = array_diff(
+                $conditionFields,
+                $fields
+            );
             // Watch out: If there are conditional fields, these will be processed by this directive too
             // Hence, collect all these fields, and add them as if they were direct
             $conditionalFields = FieldHelpers::extractConditionalFields($data_fields);
@@ -341,11 +348,15 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 // Extract all the directives, and store which fields they process
                 foreach (QueryHelpers::splitFieldDirectives($this->fieldDirectivesFromFieldCache[$cacheKey]) as $fieldDirective) {
                     // Store which ID/field this directive must process
-                    $this->fieldDirectiveIDsFields[$fieldDirective][$id]['direct'][] = $field;
-                    $this->fieldDirectiveIDsFields[$fieldDirective][$id]['conditional'] = array_merge_recursive(
-                        $this->fieldDirectiveIDsFields[$fieldDirective][$id]['conditional'] ?? [],
-                        $data_fields['conditional'][$field] ?? []
-                    );
+                    if (in_array($field, $data_fields['direct'])) {
+                        $this->fieldDirectiveIDsFields[$fieldDirective][$id]['direct'][] = $field;
+                        $this->fieldDirectiveIDsFields[$fieldDirective][$id]['conditional'] = array_merge_recursive(
+                            $this->fieldDirectiveIDsFields[$fieldDirective][$id]['conditional'] ?? [],
+                            $data_fields['conditional'][$field] ?? []
+                        );
+                    } elseif (in_array($field, $onlyConditionFields)) {
+                        $this->fieldDirectiveIDsFields[$fieldDirective][$id]['conditional'] = $data_fields['conditional'];
+                    }
                 }
             }
         }
@@ -358,16 +369,21 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $fieldDirectives = array_keys($this->fieldDirectiveIDsFields);
 
             // Calculate all the fields on which the directive will be applied.
-            // Also transpose the array to match field to IDs later on
             $fieldDirectiveFields = $fieldDirectiveFieldIDs = [];
             foreach ($fieldDirectives as $fieldDirective) {
                 $fieldDirectiveIDsFields = $this->fieldDirectiveIDsFields[$fieldDirective];
                 foreach ($fieldDirectiveIDsFields as $id => $dataFields) {
+                    $conditionalFields = FieldHelpers::extractConditionalFields($dataFields);
+                    $fieldDirectiveIDFields = array_unique(array_merge(
+                        $dataFields['direct'],
+                        $conditionalFields
+                    ));
                     $fieldDirectiveFields[$fieldDirective] = array_unique(array_merge(
                         $fieldDirectiveFields[$fieldDirective] ?? [],
-                        $dataFields['direct']
+                        $fieldDirectiveIDFields
                     ));
-                    foreach ($dataFields['direct'] as $field) {
+                    // Also transpose the array to match field to IDs later on
+                    foreach ($fieldDirectiveIDFields as $field) {
                         $fieldDirectiveFieldIDs[$fieldDirective][$field][] = $id;
                     }
                 }
