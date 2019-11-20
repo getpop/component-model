@@ -118,11 +118,11 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         ];
     }
 
-    public function getDirectivePipeline(array $orderedDirectiveInstances): DirectivePipelineDecorator
+    public function getDirectivePipeline(array $directiveResolverInstances): DirectivePipelineDecorator
     {
         // From the ordered directives, create the pipeline
         $pipelineBuilder = new PipelineBuilder();
-        foreach ($orderedDirectiveInstances as $directiveResolverInstance) {
+        foreach ($directiveResolverInstances as $directiveResolverInstance) {
             $pipelineBuilder->add($directiveResolverInstance);
         }
         $directivePipeline = new DirectivePipelineDecorator($pipelineBuilder->build());
