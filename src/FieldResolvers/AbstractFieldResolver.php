@@ -298,7 +298,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         foreach ($ids_data_fields as $id => $data_fields) {
             foreach ($data_fields['direct'] as $field) {
-                if (is_null($this->fieldDirectivesFromFieldCache[$field])) {
+                $cacheKey = $field.($isRootDirective ? ':root' : '');
+                if (is_null($this->fieldDirectivesFromFieldCache[$cacheKey])) {
                     $fieldDirectives = $fieldQueryInterpreter->getFieldDirectives($field, false) ?? '';
                     // For the root directiveSet (e.g. non-nested ones), place the mandatory directives at the beginning of the list, then they will be added to their needed position in the pipeline
                     if ($isRootDirective) {
@@ -306,13 +307,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     } else {
                         $directives = [];
                     }
-                    $this->fieldDirectivesFromFieldCache[$field] = array_merge(
+                    $this->fieldDirectivesFromFieldCache[$cacheKey] = array_merge(
                         $directives,
                         $fieldQueryInterpreter->extractFieldDirectives($fieldDirectives)
                     );
                 }
                 // Extract all the directives, and store which fields they process
-                foreach ($this->fieldDirectivesFromFieldCache[$field] as $directive) {
+                foreach ($this->fieldDirectivesFromFieldCache[$cacheKey] as $directive) {
                     // Store which ID/field this directive must process
                     $fieldDirective = $fieldQueryInterpreter->convertDirectiveToFieldDirective($directive);
                     $this->fieldDirectiveIDsFields[$fieldDirective][$id]['direct'][] = $field;
