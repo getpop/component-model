@@ -317,14 +317,14 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     // For the root directiveSet (e.g. non-nested ones), place the mandatory directives at the beginning of the list, then they will be added to their needed position in the pipeline
                     if ($isRootDirective) {
                         $mandatoryRootFieldDirectives = implode(
-                            QuerySyntax::SYMBOL_QUERYFIELDS_SEPARATOR,
+                            QuerySyntax::SYMBOL_FIELDDIRECTIVE_SEPARATOR,
                             array_map(
                                 [$fieldQueryInterpreter, 'convertDirectiveToFieldDirective'],
                                 $this->getMandatoryRootDirectives()
                             )
                         );
                         $fieldDirectives = $fieldDirectives ?
-                            $mandatoryRootFieldDirectives.QuerySyntax::SYMBOL_QUERYFIELDS_SEPARATOR.$fieldDirectives :
+                            $mandatoryRootFieldDirectives.QuerySyntax::SYMBOL_FIELDDIRECTIVE_SEPARATOR.$fieldDirectives :
                             $mandatoryRootFieldDirectives;
                     }
                     $this->fieldDirectivesFromFieldCache[$cacheKey] = $fieldDirectives;
