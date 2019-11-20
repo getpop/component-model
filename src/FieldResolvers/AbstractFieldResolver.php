@@ -349,13 +349,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 foreach (QueryHelpers::splitFieldDirectives($this->fieldDirectivesFromFieldCache[$cacheKey]) as $fieldDirective) {
                     // Store which ID/field this directive must process
                     if (in_array($field, $data_fields['direct'])) {
-                        $this->fieldDirectiveIDsFields[$fieldDirective][$id]['direct'][] = $field;
-                        $this->fieldDirectiveIDsFields[$fieldDirective][$id]['conditional'] = array_merge_recursive(
-                            $this->fieldDirectiveIDsFields[$fieldDirective][$id]['conditional'] ?? [],
+                        $this->fieldDirectiveIDFields[$fieldDirective][$id]['direct'][] = $field;
+                        $this->fieldDirectiveIDFields[$fieldDirective][$id]['conditional'] = array_merge_recursive(
+                            $this->fieldDirectiveIDFields[$fieldDirective][$id]['conditional'] ?? [],
                             $data_fields['conditional'][$field] ?? []
                         );
                     } elseif (in_array($field, $onlyConditionFields)) {
-                        $this->fieldDirectiveIDsFields[$fieldDirective][$id]['conditional'] = $data_fields['conditional'];
+                        $this->fieldDirectiveIDFields[$fieldDirective][$id]['conditional'] = $data_fields['conditional'];
                     }
                 }
             }
@@ -365,13 +365,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     protected function processFillingResultItemsFromIDs(DataloaderInterface $dataloader, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Iterate while there are directives with data to be processed
-        while (!empty($this->fieldDirectiveIDsFields)) {
-            $fieldDirectives = array_keys($this->fieldDirectiveIDsFields);
+        while (!empty($this->fieldDirectiveIDFields)) {
+            $fieldDirectives = array_keys($this->fieldDirectiveIDFields);
 
             // Calculate all the fields on which the directive will be applied.
             $fieldDirectiveFields = $fieldDirectiveFieldIDs = [];
             foreach ($fieldDirectives as $fieldDirective) {
-                $fieldDirectiveIDsFields = $this->fieldDirectiveIDsFields[$fieldDirective];
+                $fieldDirectiveIDsFields = $this->fieldDirectiveIDFields[$fieldDirective];
                 foreach ($fieldDirectiveIDsFields as $id => $dataFields) {
                     $conditionalFields = FieldHelpers::extractConditionalFields($dataFields);
                     $fieldDirectiveIDFields = array_unique(array_merge(
@@ -399,7 +399,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $fieldDirective = $pipelineStageData['fieldDirective'];
                 $directiveFields = $pipelineStageData['fields'];
                 // From the fields, reconstitute the $idsDataFields for each directive, and build the array to pass to the pipeline, for each directive (stage)
-                $fieldDirectiveIDFields = $this->fieldDirectiveIDsFields[$fieldDirective];
+                $fieldDirectiveIDFields = $this->fieldDirectiveIDFields[$fieldDirective];
                 $directiveIDFields = [];
                 foreach ($directiveFields as $field) {
                     $ids = $fieldDirectiveFieldIDs[$fieldDirective][$field];
@@ -420,7 +420,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
             // Now that we have all data, remove all entries from the inner stack.
             // It may be filled again with nested directives, when resolving the pipeline
-            $this->fieldDirectiveIDsFields = [];
+            $this->fieldDirectiveIDFields = [];
 
             // We can finally resolve the pipeline, passing along an array with the ID and fields for each directive
             $directivePipeline = $this->getDirectivePipeline($directiveResolverInstances);
