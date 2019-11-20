@@ -45,7 +45,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             foreach ($nestedFieldDirectives as $nestedFieldDirective) {
                 $fieldDirectiveFields[$nestedFieldDirective] = $fieldDirectiveFields[$this->directive];
             }
-            $this->nestedDirectivePipelineData = $fieldResolver->getDirectivePipelineData($nestedFieldDirectives, $fieldDirectiveFields, $nestedDirectiveSchemaErrors, $schemaWarnings, $schemaDeprecations);
+            $this->nestedDirectivePipelineData = $fieldResolver->resolveDirectivesIntoPipelineData($nestedFieldDirectives, $fieldDirectiveFields, $nestedDirectiveSchemaErrors, $schemaWarnings, $schemaDeprecations);
             // If there is any error, then we also can't proceed with the current directive
             if ($nestedDirectiveSchemaErrors) {
                 $schemaErrors = array_merge(

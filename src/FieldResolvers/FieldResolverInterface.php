@@ -22,6 +22,6 @@ interface FieldResolverInterface
     public function resolveValue($resultItem, string $field, ?array $variables = null, ?array $expressions = null, array $options = []);
     public function getSchemaDefinition(array $fieldArgs = [], array $options = []): array;
     public function hasFieldValueResolversForField(string $field): bool;
-    public function getDirectivePipelineData(array $fieldDirectives, array &$fieldDirectiveFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array;
+    public function resolveDirectivesIntoPipelineData(array $fieldDirectives, array &$fieldDirectiveFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array;
     public function getDirectivePipeline(array $directiveResolverInstances): DirectivePipelineDecorator;
 }

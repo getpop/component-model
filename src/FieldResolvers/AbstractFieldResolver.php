@@ -75,7 +75,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         );
     }
 
-    public function getDirectivePipelineData(array $fieldDirectives, array &$fieldDirectiveFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    public function resolveDirectivesIntoPipelineData(array $fieldDirectives, array &$fieldDirectiveFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         /**
         * All directives are placed somewhere in the pipeline. There are 3 positions:
@@ -83,17 +83,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         * 2. In the middle, between the Validate and Resolve directives
         * 3. At the end, after the ResolveAndMerge directive
         */
-        $directiveInstancesByPosition = [
-            PipelinePositions::FRONT => [],
-            PipelinePositions::MIDDLE => [],
-            PipelinePositions::BACK => [],
-        ];
-        $directiveIDFieldsByPosition = [
-            PipelinePositions::FRONT => [],
-            PipelinePositions::MIDDLE => [],
-            PipelinePositions::BACK => [],
-        ];
-        $fieldDirectivesByPosition = [
+        $directiveInstancesByPosition = $directiveIDFieldsByPosition = $fieldDirectivesByPosition = [
             PipelinePositions::FRONT => [],
             PipelinePositions::MIDDLE => [],
             PipelinePositions::BACK => [],
@@ -343,7 +333,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     }
                 }
             }
-            $directivePipelineData = $this->getDirectivePipelineData($fieldDirectives, $fieldDirectiveFields, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+
+            // Validate and resolve the directives into instances
+            $directivePipelineData = $this->resolveDirectivesIntoPipelineData($fieldDirectives, $fieldDirectiveFields, $schemaErrors, $schemaWarnings, $schemaDeprecations);
             $directiveResolverInstances = $directivePipelineData['instances'];
             $directiveResolverFields = $directivePipelineData['fields'];
             $directiveResolverFieldDirectives = $directivePipelineData['fieldDirective'];
