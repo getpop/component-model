@@ -78,7 +78,7 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
                             ],
                         ],
                         // $resultIDItems,
-                        false
+                        true
                     );
                 }
             }

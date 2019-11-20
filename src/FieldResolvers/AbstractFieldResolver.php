@@ -31,7 +31,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     protected $directiveNameClasses;
     protected $safeVars;
 
-    private $fieldDirectiveIDsFields = [];
     private $fieldDirectivePipelineInstanceCache = [];
     private $fieldDirectiveInstanceCache = [];
     private $fieldDirectivesFromFieldCache = [];
@@ -366,14 +365,20 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     {
         // Iterate while there are directives with data to be processed
         while (!empty($this->fieldDirectiveIDFields)) {
-            $fieldDirectives = array_keys($this->fieldDirectiveIDFields);
+
+            $fieldDirectiveIDFields = $this->fieldDirectiveIDFields;
+
+            // Now that we have all data, remove all entries from the inner stack.
+            // It may be filled again with nested directives, when resolving the pipeline
+            $this->fieldDirectiveIDFields = [];
+
+            $fieldDirectives = array_keys($fieldDirectiveIDFields);
 
             // Calculate all the fields on which the directive will be applied.
             $fieldDirectiveFields = $fieldDirectiveFieldIDs = [];
             $fieldDirectiveDirectFields = $fieldDirectiveOnlyConditionFields = [];
             foreach ($fieldDirectives as $fieldDirective) {
-                $fieldDirectiveIDsFields = $this->fieldDirectiveIDFields[$fieldDirective];
-                foreach ($fieldDirectiveIDsFields as $id => $dataFields) {
+                foreach ($fieldDirectiveIDFields[$fieldDirective] as $id => $dataFields) {
                     $fieldDirectiveDirectFields = array_unique(array_merge(
                         $fieldDirectiveDirectFields,
                         $dataFields['direct']
@@ -386,16 +391,16 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                         )
                     ));
                     $conditionalFields = FieldHelpers::extractConditionalFields($dataFields);
-                    $fieldDirectiveIDFields = array_unique(array_merge(
+                    $idFieldDirectiveIDFields = array_unique(array_merge(
                         $dataFields['direct'],
                         $conditionalFields
                     ));
                     $fieldDirectiveFields[$fieldDirective] = array_unique(array_merge(
                         $fieldDirectiveFields[$fieldDirective] ?? [],
-                        $fieldDirectiveIDFields
+                        $idFieldDirectiveIDFields
                     ));
                     // Also transpose the array to match field to IDs later on
-                    foreach ($fieldDirectiveIDFields as $field) {
+                    foreach ($idFieldDirectiveIDFields as $field) {
                         $fieldDirectiveFieldIDs[$fieldDirective][$field][] = $id;
                     }
                 }
@@ -420,14 +425,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     $fieldDirectiveOnlyConditionFields
                 );
                 // From the fields, reconstitute the $idsDataFields for each directive, and build the array to pass to the pipeline, for each directive (stage)
-                $fieldDirectiveIDFields = $this->fieldDirectiveIDFields[$fieldDirective];
                 $directiveIDFields = [];
                 foreach ($directiveDirectFields as $field) {
                     $ids = $fieldDirectiveFieldIDs[$fieldDirective][$field];
                     foreach ($ids as $id) {
                         $directiveIDFields[$id]['direct'][] = $field;
                         $directiveIDFields[$id]['conditional'] = $directiveIDFields[$id]['conditional'] ?? [];
-                        if ($conditionalFields = $fieldDirectiveIDFields[$id]['conditional'][$field]) {
+                        if ($conditionalFields = $fieldDirectiveIDFields[$fieldDirective][$id]['conditional'][$field]) {
                             $directiveIDFields[$id]['conditional'][$field] = array_merge(
                                 $directiveIDFields[$id]['conditional'][$field] ?? [],
                                 $conditionalFields
@@ -438,16 +442,14 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 foreach ($directiveOnlyConditionFields as $field) {
                     $ids = $fieldDirectiveFieldIDs[$fieldDirective][$field];
                     foreach ($ids as $id) {
-                        $directiveIDFields[$id]['conditional'][$field] = $fieldDirectiveIDFields[$id]['conditional'][$field];
+                        $directiveIDFields[$id]['conditional'][$field] = $fieldDirectiveIDFields[$fieldDirective][$id]['conditional'][$field];
                     }
                 }
+                // var_dump('$directiveIDFields', $fieldDirective, $directiveIDFields);
                 $pipelineIDsDataFields[] = $directiveIDFields;
                 $directiveResolverInstances[] = $directiveResolverInstance;
             }
-
-            // Now that we have all data, remove all entries from the inner stack.
-            // It may be filled again with nested directives, when resolving the pipeline
-            $this->fieldDirectiveIDFields = [];
+            // var_dump('$pipelineIDsDataFields', $pipelineIDsDataFields);
 
             // We can finally resolve the pipeline, passing along an array with the ID and fields for each directive
             $directivePipeline = $this->getDirectivePipeline($directiveResolverInstances);
