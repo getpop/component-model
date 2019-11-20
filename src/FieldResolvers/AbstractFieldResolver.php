@@ -603,6 +603,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $fieldName,
                 $fieldArgs,
             ) = $this->dissectFieldForSchema($field);
+            if (is_null($field)) {
+                return ErrorUtils::getPreviousErrorsError($fieldName);
+            }
 
             // Once again, the $validField becomes the $field
             list(
