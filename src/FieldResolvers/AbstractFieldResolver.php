@@ -75,6 +75,19 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         );
     }
 
+    /**
+     * Validate and resolve the fieldDirectives into an array, each item containing:
+     * 1. the directiveResolverInstance
+     * 2. its fieldDirective
+     * 3. the fields it affects
+     *
+     * @param array $fieldDirectives
+     * @param array $fieldDirectiveFields
+     * @param array $schemaErrors
+     * @param array $schemaWarnings
+     * @param array $schemaDeprecations
+     * @return array
+     */
     public function resolveDirectivesIntoPipelineData(array $fieldDirectives, array &$fieldDirectiveFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         /**
@@ -83,7 +96,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         * 2. In the middle, between the Validate and Resolve directives
         * 3. At the end, after the ResolveAndMerge directive
         */
-        $directiveInstancesByPosition = $directiveIDFieldsByPosition = $fieldDirectivesByPosition = [
+        $directiveInstancesByPosition = $fieldDirectivesByPosition = $directiveFieldsByPosition = [
             PipelinePositions::FRONT => [],
             PipelinePositions::MIDDLE => [],
             PipelinePositions::BACK => [],
@@ -97,15 +110,22 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $directiveResolverInstance = $directiveResolverInstanceData['instance'];
             $pipelinePosition = $directiveResolverInstance->getPipelinePosition();
             $directiveInstancesByPosition[$pipelinePosition][] = $directiveResolverInstance;
-            $directiveIDFieldsByPosition[$pipelinePosition][] = $directiveResolverInstanceData['fields'];
             $fieldDirectivesByPosition[$pipelinePosition][] = $directiveResolverInstanceData['fieldDirective'];
+            $directiveFieldsByPosition[$pipelinePosition][] = $directiveResolverInstanceData['fields'];
         }
         // Once we have them ordered, we can simply discard the positions, keep only the values
-        return [
-            'instances' => GeneralUtils::arrayFlatten(array_values($directiveInstancesByPosition)),
-            'fields' => GeneralUtils::arrayFlatten(array_values($directiveIDFieldsByPosition)),
-            'fieldDirective' => GeneralUtils::arrayFlatten(array_values($fieldDirectivesByPosition)),
-        ];
+        // Each item has 3 elements: the directiveResolverInstance, its fieldDirective, and the fields it affects
+        $pipelineData = [];
+        foreach ($directiveInstancesByPosition as $position => $directiveResolverInstances) {
+            for ($i=0; $i<count($directiveResolverInstances); $i++) {
+                $pipelineData[] = [
+                    'instance' => $directiveResolverInstances[$i],
+                    'fieldDirective' => $fieldDirectivesByPosition[$position][$i],
+                    'fields' => $directiveFieldsByPosition[$position][$i],
+                ];
+            }
+        }
+        return $pipelineData;
     }
 
     public function getDirectivePipeline(array $directiveResolverInstances): DirectivePipelineDecorator
@@ -236,8 +256,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 // Directive is valid. Add it as a pipeline stage, in its required position
                 // The instanceID enables to add fields under the same directiveResolverInstance
                 $instanceID = get_class($directiveResolverInstance).$fieldDirective;
-                $instances[$instanceID]['fieldDirective'] = $fieldDirective;
-                $instances[$instanceID]['instance'] = $directiveResolverInstance;
+                if (!isset($instances[$instanceID])) {
+                    $instances[$instanceID]['instance'] = $directiveResolverInstance;
+                    $instances[$instanceID]['fieldDirective'] = $fieldDirective;
+                }
                 $instances[$instanceID]['fields'][] = $field;
             }
         }
@@ -334,30 +356,33 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 }
             }
 
-            // Validate and resolve the directives into instances
+            // Validate and resolve the directives into instances and fields they operate on
             $directivePipelineData = $this->resolveDirectivesIntoPipelineData($fieldDirectives, $fieldDirectiveFields, $schemaErrors, $schemaWarnings, $schemaDeprecations);
-            $directiveResolverInstances = $directivePipelineData['instances'];
-            $directiveResolverFields = $directivePipelineData['fields'];
-            $directiveResolverFieldDirectives = $directivePipelineData['fieldDirective'];
-            $directivePipeline = $this->getDirectivePipeline($directiveResolverInstances);
 
             // From the fields, reconstitute the $idsDataFields for each directive, and build the array to pass to the pipeline, for each directive (stage)
-            $pipelineIDsDataFields = [];
-            for ($i=0; $i<count($directiveResolverInstances); $i++) {
-                $fieldDirective = $directiveResolverFieldDirectives[$i];
+            $directiveResolverInstances = $pipelineIDsDataFields = [];
+            foreach ($directivePipelineData as $pipelineStageData) {
+                $directiveResolverInstance = $pipelineStageData['instance'];
+                $fieldDirective = $pipelineStageData['fieldDirective'];
+                $directiveFields = $pipelineStageData['fields'];
+                // From the fields, reconstitute the $idsDataFields for each directive, and build the array to pass to the pipeline, for each directive (stage)
                 $fieldDirectiveIDFields = $this->fieldDirectiveIDsFields[$fieldDirective];
                 $directiveIDFields = [];
-                foreach ($directiveResolverFields[$i] as $field) {
+                foreach ($directiveFields as $field) {
                     $ids = $fieldDirectiveFieldIDs[$fieldDirective][$field];
                     foreach ($ids as $id) {
                         $directiveIDFields[$id]['direct'][] = $field;
                         $directiveIDFields[$id]['conditional'] = $directiveIDFields[$id]['conditional'] ?? [];
                         if ($conditionalFields = $fieldDirectiveIDFields[$id]['conditional'][$field]) {
-                            $directiveIDFields[$id]['conditional'][$field] = $conditionalFields;
+                            $directiveIDFields[$id]['conditional'][$field] = array_merge(
+                                $directiveIDFields[$id]['conditional'][$field] ?? [],
+                                $conditionalFields
+                            );
                         }
                     }
                 }
                 $pipelineIDsDataFields[] = $directiveIDFields;
+                $directiveResolverInstances[] = $directiveResolverInstance;
             }
 
             // Now that we have all data, remove all entries from the inner stack.
@@ -365,6 +390,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $this->fieldDirectiveIDsFields = [];
 
             // We can finally resolve the pipeline, passing along an array with the ID and fields for each directive
+            $directivePipeline = $this->getDirectivePipeline($directiveResolverInstances);
             $directivePipeline->resolveDirectivePipeline(
                 $dataloader,
                 $this,
