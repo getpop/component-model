@@ -40,10 +40,11 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $nestedDirectiveSchemaErrors = [];
             $nestedFieldDirectives = QueryHelpers::splitFieldDirectives($nestedFieldDirectives);
             // Each nested directive will deal with the same fields as the current directive
+            $nestedFieldDirectiveFields = $fieldDirectiveFields;
             foreach ($nestedFieldDirectives as $nestedFieldDirective) {
-                $fieldDirectiveFields[$nestedFieldDirective] = $fieldDirectiveFields[$this->directive];
+                $nestedFieldDirectiveFields[$nestedFieldDirective] = $fieldDirectiveFields[$this->directive];
             }
-            $this->nestedDirectivePipelineData = $fieldResolver->resolveDirectivesIntoPipelineData($nestedFieldDirectives, $fieldDirectiveFields, $nestedDirectiveSchemaErrors, $schemaWarnings, $schemaDeprecations);
+            $this->nestedDirectivePipelineData = $fieldResolver->resolveDirectivesIntoPipelineData($nestedFieldDirectives, $nestedFieldDirectiveFields, $nestedDirectiveSchemaErrors, $schemaWarnings, $schemaDeprecations);
             // If there is any error, then we also can't proceed with the current directive
             if ($nestedDirectiveSchemaErrors) {
                 $schemaErrors = array_merge(
