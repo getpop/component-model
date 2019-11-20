@@ -68,7 +68,10 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
                     $conditionFieldValue = $this->resolveFieldValue($dataloader, $fieldResolver, $id, $resultItem, $conditionDataField, $previousDBItems, $variables, $expressions, $dbWarnings);
                     if (GeneralUtils::isError($conditionFieldValue)) {
                         $error = $conditionFieldValue;
-                        $dbErrors[(string)$id][$conditionDataField][] = $error->getErrorMessage();
+                        $dbErrors[(string)$id][$conditionDataField] = array_merge(
+                            $dbErrors[(string)$id][$conditionDataField] ?? [],
+                            $error->getErrorMessages()
+                        );
                         continue;
                     }
                     $conditionSatisfied = $conditionFieldValue;
