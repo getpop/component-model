@@ -597,14 +597,21 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         // Get the value from a fieldValueResolver, from the first one who can deliver the value
         // (The fact that they resolve the fieldName doesn't mean that they will always resolve it for that specific $resultItem)
         if ($fieldValueResolvers = $this->getFieldValueResolversForField($field)) {
+            $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();
             // Important: $validField becomes $field: remove all invalid fieldArgs before executing `resolveValue` on the fieldValueResolver
             list(
                 $field,
                 $fieldName,
                 $fieldArgs,
+                $schemaErrors,
+                $schemaWarnings,
             ) = $this->dissectFieldForSchema($field);
-            if (is_null($field)) {
-                return ErrorUtils::getPreviousErrorsError($fieldName);
+            // Store the warnings to be read if needed
+            if ($schemaWarnings) {
+                $feedbackMessageStore->addSchemaWarnings($schemaWarnings);
+            }
+            if ($schemaErrors) {
+                return ErrorUtils::getNestedSchemaErrorsFieldError($schemaErrors, $fieldName);
             }
 
             // Once again, the $validField becomes the $field
@@ -618,7 +625,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
             // Store the warnings to be read if needed
             if ($dbWarnings) {
-                $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();
                 $feedbackMessageStore->addDBWarnings($dbWarnings);
             }
             if ($dbErrors) {

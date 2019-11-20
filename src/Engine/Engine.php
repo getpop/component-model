@@ -1503,6 +1503,12 @@ class Engine implements EngineInterface
             );
         }
         $this->maybeCombineAndAddSchemaEntries($ret, 'schemaWarnings', $schemaWarnings);
+        if ($schemaErrors = $feedbackMessageStore->getSchemaWarnings()) {
+            $ret['schemaWarnings'] = array_merge(
+                $ret['schemaWarnings'] ?? [],
+                $schemaErrors
+            );
+        }
         $this->maybeCombineAndAddSchemaEntries($ret, 'schemaDeprecations', $schemaDeprecations);
         if (ServerUtils::enableShowLogs()) {
             if (in_array(POP_ACTION_SHOW_LOGS, $vars['actions'])) {

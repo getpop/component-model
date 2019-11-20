@@ -3,6 +3,7 @@ namespace PoP\ComponentModel\Schema;
 
 class FeedbackMessageStore extends \PoP\FieldQuery\FeedbackMessageStore implements FeedbackMessageStoreInterface
 {
+    protected $schemaWarnings = [];
     protected $schemaErrors = [];
     protected $dbWarnings = [];
     protected $logEntries = [];
@@ -15,6 +16,13 @@ class FeedbackMessageStore extends \PoP\FieldQuery\FeedbackMessageStore implemen
                 $resultItemWarnings
             );
         }
+    }
+    public function addSchemaWarnings(array $schemaWarnings)
+    {
+        $this->schemaWarnings = array_merge(
+            $this->schemaWarnings,
+            $schemaWarnings
+        );
     }
     public function retrieveAndClearResultItemDBWarnings($resultItemID): ?array
     {
@@ -33,6 +41,10 @@ class FeedbackMessageStore extends \PoP\FieldQuery\FeedbackMessageStore implemen
     public function getSchemaErrors(): array
     {
         return $this->schemaErrors;
+    }
+    public function getSchemaWarnings(): array
+    {
+        return $this->schemaWarnings;
     }
     public function getSchemaErrorsForField(string $dbKey, string $field): ?array
     {
