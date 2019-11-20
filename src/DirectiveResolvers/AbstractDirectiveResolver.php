@@ -1,12 +1,11 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
-use PoP\FieldQuery\QuerySyntax;
+use PoP\FieldQuery\QueryHelpers;
 use League\Pipeline\StageInterface;
 use PoP\ComponentModel\Environment;
 use PoP\ComponentModel\DataloaderInterface;
 use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
-use PoP\QueryParsing\Facades\QueryParserFacade;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\FieldResolvers\PipelinePositions;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
@@ -39,8 +38,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         $nestedFieldDirectives = $fieldQueryInterpreter->getFieldDirectives($this->directive, false);
         if ($nestedFieldDirectives) {
             $nestedDirectiveSchemaErrors = [];
-            $queryParser = QueryParserFacade::getInstance();
-            $nestedFieldDirectives = $queryParser->splitElements($nestedFieldDirectives, QuerySyntax::SYMBOL_QUERYFIELDS_SEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_BOOKMARK_OPENING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_BOOKMARK_CLOSING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING], QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING);
+            $nestedFieldDirectives = QueryHelpers::splitFieldDirectives($nestedFieldDirectives);
             // Each nested directive will deal with the same fields as the current directive
             foreach ($nestedFieldDirectives as $nestedFieldDirective) {
                 $fieldDirectiveFields[$nestedFieldDirective] = $fieldDirectiveFields[$this->directive];

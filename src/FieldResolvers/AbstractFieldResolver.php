@@ -1,19 +1,20 @@
 <?php
 namespace PoP\ComponentModel\FieldResolvers;
-use PoP\ComponentModel\GeneralUtils;
+use PoP\FieldQuery\QuerySyntax;
+use PoP\FieldQuery\QueryHelpers;
 use PoP\ComponentModel\ErrorUtils;
 use PoP\FieldQuery\FieldQueryUtils;
 use League\Pipeline\PipelineBuilder;
 use PoP\ComponentModel\DataloaderInterface;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
+use PoP\ComponentModel\Facades\Engine\DataloadingEngineFacade;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
-use PoP\ComponentModel\Facades\Engine\DataloadingEngineFacade;
 
 abstract class AbstractFieldResolver implements FieldResolverInterface
 {
@@ -312,18 +313,25 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             foreach ($data_fields['direct'] as $field) {
                 $cacheKey = $field.($isRootDirective ? ':root' : '');
                 if (is_null($this->fieldDirectivesFromFieldCache[$cacheKey])) {
-                    // For the root directiveSet (e.g. non-nested ones), place the mandatory directives at the beginning of the list, then they will be added to their needed position in the pipeline
-                    $directives = $isRootDirective ? $this->getMandatoryRootDirectives() : [];
                     $fieldDirectives = $fieldQueryInterpreter->getFieldDirectives($field, false) ?? '';
-                    $this->fieldDirectivesFromFieldCache[$cacheKey] = array_merge(
-                        $directives,
-                        $fieldQueryInterpreter->extractFieldDirectives($fieldDirectives)
-                    );
+                    // For the root directiveSet (e.g. non-nested ones), place the mandatory directives at the beginning of the list, then they will be added to their needed position in the pipeline
+                    if ($isRootDirective) {
+                        $mandatoryRootFieldDirectives = implode(
+                            QuerySyntax::SYMBOL_QUERYFIELDS_SEPARATOR,
+                            array_map(
+                                [$fieldQueryInterpreter, 'convertDirectiveToFieldDirective'],
+                                $this->getMandatoryRootDirectives()
+                            )
+                        );
+                        $fieldDirectives = $fieldDirectives ?
+                            $mandatoryRootFieldDirectives.QuerySyntax::SYMBOL_QUERYFIELDS_SEPARATOR.$fieldDirectives :
+                            $mandatoryRootFieldDirectives;
+                    }
+                    $this->fieldDirectivesFromFieldCache[$cacheKey] = $fieldDirectives;
                 }
                 // Extract all the directives, and store which fields they process
-                foreach ($this->fieldDirectivesFromFieldCache[$cacheKey] as $directive) {
+                foreach (QueryHelpers::splitFieldDirectives($this->fieldDirectivesFromFieldCache[$cacheKey]) as $fieldDirective) {
                     // Store which ID/field this directive must process
-                    $fieldDirective = $fieldQueryInterpreter->convertDirectiveToFieldDirective($directive);
                     $this->fieldDirectiveIDsFields[$fieldDirective][$id]['direct'][] = $field;
                     $this->fieldDirectiveIDsFields[$fieldDirective][$id]['conditional'] = array_merge_recursive(
                         $this->fieldDirectiveIDsFields[$fieldDirective][$id]['conditional'] ?? [],
