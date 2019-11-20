@@ -42,12 +42,14 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
             // Obtain its ID and the required data-fields for that ID
             $resultItem = $resultIDItems[$id];
             // It could be that the object is NULL. For instance: a post has a location stored a meta value, and the corresponding location object was deleted, so the ID is pointing to a non-existing object
-            // In that case, simply return a dbError
+            // In that case, simply return a dbError, and set the result as an empty array
             if (is_null($resultItem)) {
                 $dbErrors[(string)$id]['id'][] = sprintf(
                     $translationAPI->__('Corrupted data: Object with ID \'%s\' doesn\'t exist', 'component-model'),
                     $id
                 );
+                // Avoid errors in the Engine which expects this result to be an array
+                $dbItems[(string)$id] = [];
                 continue;
             }
 
