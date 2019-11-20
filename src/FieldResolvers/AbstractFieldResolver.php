@@ -445,11 +445,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                         $directiveIDFields[$id]['conditional'][$field] = $fieldDirectiveIDFields[$fieldDirective][$id]['conditional'][$field];
                     }
                 }
-                // var_dump('$directiveIDFields', $fieldDirective, $directiveIDFields);
                 $pipelineIDsDataFields[] = $directiveIDFields;
                 $directiveResolverInstances[] = $directiveResolverInstance;
             }
-            // var_dump('$pipelineIDsDataFields', $pipelineIDsDataFields);
 
             // We can finally resolve the pipeline, passing along an array with the ID and fields for each directive
             $directivePipeline = $this->getDirectivePipeline($directiveResolverInstances);
