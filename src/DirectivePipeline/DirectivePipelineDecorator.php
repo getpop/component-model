@@ -11,14 +11,14 @@ class DirectivePipelineDecorator
     {
         $this->pipeline = $pipeline;
     }
-    public function resolveDirectivePipeline(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$pipelineIDsDataFields, array &$resultIDItems/*$pipelineResultIDItems*/, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    public function resolveDirectivePipeline(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$pipelineIDsDataFields, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         $payload = $this->pipeline->process(
             DirectivePipelineUtils::convertArgumentsToPayload(
                 $dataloader,
                 $fieldResolver,
                 $pipelineIDsDataFields,
-                $resultIDItems,//$pipelineResultIDItems,
+                $resultIDItems,
                 $dbItems,
                 $previousDBItems,
                 $variables,
@@ -34,7 +34,7 @@ class DirectivePipelineDecorator
             $dataloader,
             $fieldResolver,
             $pipelineIDsDataFields,
-            $resultIDItems,//$pipelineResultIDItems,
+            $resultIDItems,
             $dbItems,
             $previousDBItems,
             $variables,

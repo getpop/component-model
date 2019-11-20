@@ -333,13 +333,13 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     public function __invoke($payload)
     {
         // 1. Extract the arguments from the payload
-        // $pipelineResultIDItems and $pipelineIDsDataFields are arrays containing all stages of the pipe
+        // $pipelineIDsDataFields is an array containing all stages of the pipe
         // The one corresponding to the current stage is at the head. Take it out from there, and keep passing down the rest of the array to the next stages
         list(
             $dataloader,
             $fieldResolver,
             $pipelineIDsDataFields,
-            $resultIDItems,//$pipelineResultIDItems,
+            $resultIDItems,
             $dbItems,
             $previousDBItems,
             $variables,
@@ -351,8 +351,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $schemaDeprecations
         ) = DirectivePipelineUtils::extractArgumentsFromPayload($payload);
 
-        // $resultIDItems = $pipelineResultIDItems[0];
-        // array_shift($pipelineResultIDItems);
+        // Extract the head, keep passing down the rest
         $idsDataFields = $pipelineIDsDataFields[0];
         array_shift($pipelineIDsDataFields);
 
@@ -398,7 +397,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $dataloader,
             $fieldResolver,
             $pipelineIDsDataFields,
-            $resultIDItems,//$pipelineResultIDItems,
+            $resultIDItems,
             $dbItems,
             $previousDBItems,
             $variables,
