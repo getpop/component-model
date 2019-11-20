@@ -77,7 +77,8 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
                                 'conditional' => $conditionalDataFields,
                             ],
                         ],
-                        $resultIDItems
+                        // $resultIDItems,
+                        false
                     );
                 }
             }

@@ -11,7 +11,7 @@ interface FieldResolverInterface
     public function getFieldNamesToResolve(): array;
     public function getDirectiveNameClasses(): array;
     public function validateFieldArgumentsForSchema(string $field, array $fieldArgs, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array;
-    public function enqueueFillingResultItemsFromIDs(array $ids_data_fields, array &$resultIDItems);
+    public function enqueueFillingResultItemsFromIDs(array $ids_data_fields, /*array &$resultIDItems, */bool $isRootDirective);
     public function fillResultItems(DataloaderInterface $dataloader, array $ids_data_fields, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations);
     public function resolveSchemaValidationErrorDescriptions(string $field, array &$variables = null): ?array;
     public function resolveSchemaValidationWarningDescriptions(string $field, array &$variables = null): ?array;
@@ -22,6 +22,8 @@ interface FieldResolverInterface
     public function resolveValue($resultItem, string $field, ?array $variables = null, ?array $expressions = null, array $options = []);
     public function getSchemaDefinition(array $fieldArgs = [], array $options = []): array;
     public function hasFieldValueResolversForField(string $field): bool;
-    public function getFieldDirectivePipeline(string $fieldDirectives, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): DirectivePipelineDecorator;
-    public function getDirectiveNestedDirectivePipeline(string $fieldDirectives, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): DirectivePipelineDecorator;
+    // public function getFieldDirectivePipeline(array $fieldDirectives, array &$fieldDirectiveFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): DirectivePipelineDecorator;
+    // public function getDirectiveNestedDirectivePipeline(array $fieldDirectives, array &$fieldDirectiveFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): DirectivePipelineDecorator;
+    public function getDirectivePipelineData(array $fieldDirectives, array &$fieldDirectiveFields, /*bool $isRootDirective, */array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array;
+    public function getDirectivePipeline(array $orderedDirectiveInstances): DirectivePipelineDecorator;
 }

@@ -5,13 +5,14 @@ use PoP\ComponentModel\DataloaderInterface;
 
 class DirectivePipelineUtils
 {
-    public static function convertArgumentsToPayload(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    public static function convertArgumentsToPayload(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$pipelineIDsDataFields, array &$resultIDItems/*$pipelineResultIDItems*/, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         return [
             'dataloader' => &$dataloader,
             'fieldResolver' => &$fieldResolver,
-            'directiveResultSet' => &$resultIDItems,
-            'idsDataFields' => &$idsDataFields,
+            'pipelineIDsDataFields' => &$pipelineIDsDataFields,
+            'resultIDItems' => &$resultIDItems,
+            // 'pipelineResultIDItems' => &$pipelineResultIDItems,
             'dbItems' => &$dbItems,
             'previousDBItems' => &$previousDBItems,
             'variables' => &$variables,
@@ -29,8 +30,9 @@ class DirectivePipelineUtils
         return [
             &$payload['dataloader'],
             &$payload['fieldResolver'],
-            &$payload['directiveResultSet'],
-            &$payload['idsDataFields'],
+            &$payload['pipelineIDsDataFields'],
+            &$payload['resultIDItems'],
+            // &$payload['pipelineResultIDItems'],
             &$payload['dbItems'],
             &$payload['previousDBItems'],
             &$payload['variables'],

@@ -23,7 +23,7 @@ interface DirectiveResolverInterface
      * @param array $schemaDeprecations
      * @return array
      */
-    public function dissectAndValidateDirectiveForSchema(FieldResolverInterface $fieldResolver, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array;
+    public function dissectAndValidateDirectiveForSchema(FieldResolverInterface $fieldResolver, array &$fieldDirectiveFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array;
 
     /**
      * Enable the directiveResolver to validate the directive arguments in a custom way

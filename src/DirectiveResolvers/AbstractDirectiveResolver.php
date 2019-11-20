@@ -1,10 +1,12 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
+use PoP\FieldQuery\QuerySyntax;
 use League\Pipeline\StageInterface;
-use PoP\ComponentModel\DataloaderInterface;
 use PoP\ComponentModel\Environment;
+use PoP\ComponentModel\DataloaderInterface;
 use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
+use PoP\QueryParsing\Facades\QueryParserFacade;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\FieldResolvers\PipelinePositions;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
@@ -21,14 +23,14 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     protected $directive;
     protected $directiveArgsForSchema = [];
     protected $directiveArgsForResultItems = [];
-    protected $nestedDirectivePipeline;
+    protected $nestedDirectivePipelineData;
     function __construct($directive = null) {
         // If the directive is not provided, then it directly the directive name
         // This allows to instantiate the directive through the DependencyInjection component
         $this->directive = $directive ?? $this->getDirectiveName();
     }
 
-    public function dissectAndValidateDirectiveForSchema(FieldResolverInterface $fieldResolver, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    public function dissectAndValidateDirectiveForSchema(FieldResolverInterface $fieldResolver, array &$fieldDirectiveFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
@@ -37,7 +39,13 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         $nestedFieldDirectives = $fieldQueryInterpreter->getFieldDirectives($this->directive, false);
         if ($nestedFieldDirectives) {
             $nestedDirectiveSchemaErrors = [];
-            $this->nestedDirectivePipeline = $fieldResolver->getDirectiveNestedDirectivePipeline($nestedFieldDirectives, $nestedDirectiveSchemaErrors, $schemaWarnings, $schemaDeprecations);
+            $queryParser = QueryParserFacade::getInstance();
+            $nestedFieldDirectives = $queryParser->splitElements($nestedFieldDirectives, QuerySyntax::SYMBOL_QUERYFIELDS_SEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_BOOKMARK_OPENING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_BOOKMARK_CLOSING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING], QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING);
+            // Each nested directive will deal with the same fields as the current directive
+            foreach ($nestedFieldDirectives as $nestedFieldDirective) {
+                $fieldDirectiveFields[$nestedFieldDirective] = $fieldDirectiveFields[$this->directive];
+            }
+            $this->nestedDirectivePipelineData = $fieldResolver->getDirectivePipelineData($nestedFieldDirectives, $fieldDirectiveFields, $nestedDirectiveSchemaErrors, $schemaWarnings, $schemaDeprecations);
             // If there is any error, then we also can't proceed with the current directive
             if ($nestedDirectiveSchemaErrors) {
                 $schemaErrors = array_merge(
@@ -325,11 +333,13 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     public function __invoke($payload)
     {
         // 1. Extract the arguments from the payload
+        // $pipelineResultIDItems and $pipelineIDsDataFields are arrays containing all stages of the pipe
+        // The one corresponding to the current stage is at the head. Take it out from there, and keep passing down the rest of the array to the next stages
         list(
             $dataloader,
             $fieldResolver,
-            $resultIDItems,
-            $idsDataFields,
+            $pipelineIDsDataFields,
+            $resultIDItems,//$pipelineResultIDItems,
             $dbItems,
             $previousDBItems,
             $variables,
@@ -340,6 +350,11 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $schemaWarnings,
             $schemaDeprecations
         ) = DirectivePipelineUtils::extractArgumentsFromPayload($payload);
+
+        // $resultIDItems = $pipelineResultIDItems[0];
+        // array_shift($pipelineResultIDItems);
+        $idsDataFields = $pipelineIDsDataFields[0];
+        array_shift($pipelineIDsDataFields);
 
         // 2. Validate operation
         $this->validateDirective(
@@ -382,8 +397,8 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         return DirectivePipelineUtils::convertArgumentsToPayload(
             $dataloader,
             $fieldResolver,
-            $resultIDItems,
-            $idsDataFields,
+            $pipelineIDsDataFields,
+            $resultIDItems,//$pipelineResultIDItems,
             $dbItems,
             $previousDBItems,
             $variables,

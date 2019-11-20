@@ -1,5 +1,6 @@
 <?php
 namespace PoP\ComponentModel\FieldResolvers;
+use PoP\ComponentModel\GeneralUtils;
 use PoP\ComponentModel\ErrorUtils;
 use PoP\FieldQuery\FieldQueryUtils;
 use League\Pipeline\PipelineBuilder;
@@ -30,7 +31,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     protected $safeVars;
 
     private $fieldDirectiveIDsFields = [];
-    private $directiveResultSet = [];
+    // private $directiveResultSet = [];
+    private $directives = [];
     private $fieldDirectivePipelineInstanceCache = [];
     private $fieldDirectiveInstanceCache = [];
     private $fieldDirectivesFromFieldCache = [];
@@ -76,117 +78,206 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         );
     }
 
-    public function getFieldDirectivePipeline(string $fieldDirectives, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): DirectivePipelineDecorator
+    // public function getFieldDirectivePipeline(array $fieldDirectives, array &$fieldDirectiveFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): DirectivePipelineDecorator
+    // {
+    //     $directivePipelineData = $this->getDirectivePipelineData($fieldDirectives, $fieldDirectiveFields, true, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+    //     return $this->getDirectivePipeline(
+    //         $directivePipelineData['instances']
+    //     );
+    // }
+
+    // public function getDirectiveNestedDirectivePipeline(array $fieldDirectives, array &$fieldDirectiveFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): DirectivePipelineDecorator
+    // {
+    //     $directivePipelineData = $this->getDirectivePipelineData($fieldDirectives, $fieldDirectiveFields, false, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+    //     return $this->getDirectivePipeline(
+    //         $directivePipelineData['instances']
+    //     );
+    // }
+
+    public function getDirectivePipelineData(array $fieldDirectives, array &$fieldDirectiveFields, /*bool $isRootDirective, */array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
-        return $this->getDirectivePipeline($fieldDirectives, true, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+        /**
+        * All directives are placed somewhere in the pipeline. There are 3 positions:
+        * 1. At the beginning, before Validate directive
+        * 2. In the middle, between the Validate and Resolve directives
+        * 3. At the end, after the ResolveAndMerge directive
+        */
+        $directiveInstancesByPosition = [
+            PipelinePositions::FRONT => [],
+            PipelinePositions::MIDDLE => [],
+            PipelinePositions::BACK => [],
+        ];
+        $directiveIDFieldsByPosition = [
+            PipelinePositions::FRONT => [],
+            PipelinePositions::MIDDLE => [],
+            PipelinePositions::BACK => [],
+        ];
+        $directiveResultItemsByPosition = [
+            PipelinePositions::FRONT => [],
+            PipelinePositions::MIDDLE => [],
+            PipelinePositions::BACK => [],
+        ];
+
+        // Resolve from directive into their actual object instance.
+        $directiveResolverInstanceData = $this->validateAndResolveInstances($fieldDirectives, $fieldDirectiveFields, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+        // Create an array with the idsDataFields and resultSet affected by each directive, in order in which they will be invoked
+        // $directiveIDsDataFields = $directiveResultSet = [];
+        $orderedFieldDirectives = [];
+        foreach ($directiveResolverInstanceData as $instanceID => $directiveResolverInstanceData) {
+            // If it is null, the directive was not valid so it was ignored
+            $directiveResolverInstance = $directiveResolverInstanceData['instance'];
+            $orderedFieldDirectives[] = $directiveResolverInstanceData['fieldDirective'];
+
+            // if (!is_null($directiveResolverInstance)) {
+            // $fieldDirective = $fieldDirectives[$i];
+            // $directiveIDsDataFields[] = $this->fieldDirectiveIDsFields[$fieldDirective];
+            // $directiveResultSet[] = $this->directiveResultSet[$fieldDirective];
+            // Add the directive in its required position in the pipeline
+            $pipelinePosition = $directiveResolverInstance->getPipelinePosition();
+            $directiveInstancesByPosition[$pipelinePosition][] = $directiveResolverInstance;
+            $directiveIDFieldsByPosition[$pipelinePosition][] = $directiveResolverInstanceData['fields'];//$directiveIDFields;//$this->fieldDirectiveIDsFields[$fieldDirective];
+            // $directiveResultItemsByPosition[$pipelinePosition][] = $this->directiveResultSet[$fieldDirective];
+            // }
+        }
+        // Once we have them ordered, we can simply discard the positions, keep only the values
+        $orderedDirectiveInstances = GeneralUtils::arrayFlatten(array_values($directiveInstancesByPosition));
+        $orderedDirectiveIDFields = GeneralUtils::arrayFlatten(array_values($directiveIDFieldsByPosition));
+        return [
+            'instances' => $orderedDirectiveInstances,
+            'fields' => $orderedDirectiveIDFields,
+            'fieldDirective' => $orderedFieldDirectives,
+        ];
     }
 
-    public function getDirectiveNestedDirectivePipeline(string $fieldDirectives, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): DirectivePipelineDecorator
+    public function getDirectivePipeline(array $orderedDirectiveInstances): DirectivePipelineDecorator
     {
-        return $this->getDirectivePipeline($fieldDirectives, false, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+        // From the ordered directives, create the pipeline
+        $pipelineBuilder = new PipelineBuilder();
+        foreach ($orderedDirectiveInstances as $directiveResolverInstance) {
+            $pipelineBuilder->add($directiveResolverInstance);
+        }
+        $directivePipeline = new DirectivePipelineDecorator($pipelineBuilder->build());
+        return $directivePipeline;
+
+        //     // Build the pipeline
+        //     $this->fieldDirectivePipelineInstanceCache[$fieldDirectives] = new DirectivePipelineDecorator($pipelineBuilder->build());
+        // }
+        // return $this->fieldDirectivePipelineInstanceCache[$fieldDirectives];
     }
 
-    protected function getDirectivePipeline(string $fieldDirectives, bool $isRootDirective, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): DirectivePipelineDecorator
+    protected function validateAndResolveInstances(array $fieldDirectives, array $fieldDirectiveFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         // Pipeline cache
-        if (is_null($this->fieldDirectivePipelineInstanceCache[$fieldDirectives])) {
-            $translationAPI = TranslationAPIFacade::getInstance();
-            $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
-            $pipelineBuilder = new PipelineBuilder();
-            $directiveNameClasses = $this->getDirectiveNameClasses();
-            // Initialize with the default values, adding "validate" and "merge" if not there yet
-            $directiveSet = $fieldQueryInterpreter->extractFieldDirectives($fieldDirectives);
+        // if (is_null($this->fieldDirectivePipelineInstanceCache[$fieldDirectives])) {
+        $translationAPI = TranslationAPIFacade::getInstance();
+        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+        $directiveNameClasses = $this->getDirectiveNameClasses();
 
-            /**
-            * All directives are placed somewhere in the pipeline, using the 3 mandatory directives as anchors.
-            * There are 3 positions:
-            * 1. At the beginning, between the SetSelfAsVar and Validate directives
-            * 2. In the middle, between the Validate and Resolve directives
-            * 3. At the end, after the ResolveAndMerge directive
-            */
-            $directivesByPosition = [
-                PipelinePositions::FRONT => [],
-                PipelinePositions::MIDDLE => [],
-                PipelinePositions::BACK => [],
-            ];
-            // For the root directiveSet (e.g. non-nested ones), place the mandatory directives at the beginning of the list, then they will be added to their needed position in the pipeline
-            if ($isRootDirective) {
-                $directiveSet = array_merge(
-                    $this->getMandatoryRootDirectives(),
-                    $directiveSet
+        $instances = [];
+        // For the root directiveSet (e.g. non-nested ones), place the mandatory directives at the beginning of the list, then they will be added to their needed position in the pipeline
+        // if ($isRootDirective) {
+        //     $directiveSet = array_merge(
+        //         $this->getMandatoryRootDirectives(),
+        //         $directiveSet
+        //     );
+        // }
+        // Count how many times each directive is added
+        $directiveCount = [];
+        for ($i=0; $i<count($fieldDirectives); $i++) {
+            $fieldDirective = $fieldDirectives[$i];
+            $directive = $fieldQueryInterpreter->listFieldDirective($fieldDirective);
+            $directiveName = $fieldQueryInterpreter->getDirectiveName($directive);
+            $fieldDirective = $fieldQueryInterpreter->convertDirectiveToFieldDirective($directive);
+
+            // if (is_null($this->fieldDirectiveInstanceCache[$fieldDirective])) {
+            $directiveArgs = $fieldQueryInterpreter->extractStaticDirectiveArguments($fieldDirective);
+            $directiveClasses = $directiveNameClasses[$directiveName];
+            // If there is no directive with this name, show an error and skip it
+            if (is_null($directiveClasses)) {
+                $schemaErrors[$fieldDirective][] = sprintf(
+                    $translationAPI->__('No DirectiveResolver resolves directive with name \'%s\'', 'pop-component-model'),
+                    $directiveName
                 );
+                continue;
             }
-            // Count how many times each directive is added
-            $directiveCount = [];
-            foreach ($directiveSet as $directive) {
-                $directiveName = $fieldQueryInterpreter->getDirectiveName($directive);
-                $fieldDirective = $fieldQueryInterpreter->convertDirectiveToFieldDirective($directive);
-                if (is_null($this->fieldDirectiveInstanceCache[$fieldDirective])) {
-                    $directiveArgs = $fieldQueryInterpreter->extractStaticDirectiveArguments($fieldDirective);
-                    $directiveClasses = $directiveNameClasses[$directiveName];
-                    // If there is no directive with this name, show an error and skip it
-                    if (is_null($directiveClasses)) {
-                        $schemaErrors[$fieldDirective][] = sprintf(
-                            $translationAPI->__('No DirectiveResolver resolves directive with name \'%s\'', 'pop-component-model'),
-                            $directiveName
-                        );
-                        continue;
+
+            // Calculate directives per field
+            $fieldDirectiveResolverInstances = [];
+            foreach ($fieldDirectiveFields[$fieldDirective] as $field) {
+                // Check that at least one class which deals with this directiveName can satisfy the directive (for instance, validating that a required directiveArg is present)
+                // $directiveResolverInstance = null;
+                foreach ($directiveClasses as $directiveClass) {
+                    // Get the instance from the cache if it exists, or create it if not
+                    if (is_null($this->directiveResolverInstanceCache[$directiveClass][$fieldDirective])) {
+                        $this->directiveResolverInstanceCache[$directiveClass][$fieldDirective] = new $directiveClass($fieldDirective);
                     }
+                    $maybeDirectiveResolverInstance = $this->directiveResolverInstanceCache[$directiveClass][$fieldDirective];
 
-                    // Check that at least one class which deals with this directiveName can satisfy the directive (for instance, validating that a required directiveArg is present)
-                    $directiveResolverInstance = null;
-                    foreach ($directiveClasses as $directiveClass) {
-                        // Get the instance from the cache if it exists, or create it if not
-                        if (is_null($this->directiveResolverInstanceCache[$directiveClass][$fieldDirective])) {
-                            $this->directiveResolverInstanceCache[$directiveClass][$fieldDirective] = new $directiveClass($fieldDirective);
-                        }
-                        $maybeDirectiveResolverInstance = $this->directiveResolverInstanceCache[$directiveClass][$fieldDirective];
-
+                    $directiveSupportedFieldNames = $maybeDirectiveResolverInstance->getFieldNamesToApplyTo();
+                    if (
+                        // Check if this field is supported by the directive
+                        (!$directiveSupportedFieldNames || in_array($field, $directiveSupportedFieldNames)) &&
                         // Check if this instance can process the directive
-                        if ($maybeDirectiveResolverInstance->resolveCanProcess($this, $directiveName, $directiveArgs)) {
-                            $directiveResolverInstance = $maybeDirectiveResolverInstance;
-                            break;
-                        }
+                        $maybeDirectiveResolverInstance->resolveCanProcess($this, $directiveName, $directiveArgs)
+                    ) {
+                        // $directiveResolverInstance = $maybeDirectiveResolverInstance;
+                        $fieldDirectiveResolverInstances[$field] = $maybeDirectiveResolverInstance;
+                        break;
                     }
-                    if (is_null($directiveResolverInstance)) {
-                        $schemaErrors[$fieldDirective][] = sprintf(
-                            $translationAPI->__('No DirectiveResolver processes directive with name \'%s\' and arguments \'%s\'', 'pop-component-model'),
-                            $directiveName,
-                            json_encode($directiveArgs)
-                        );
-                        continue;
-                    }
+                }
+            }
 
-                    // Validate schema (eg of error in schema: ?query=posts<include(if:this-field-doesnt-exist())>)
-                    list(
-                        $validFieldDirective,
+            if (empty($fieldDirectiveResolverInstances)) {
+                $schemaErrors[$fieldDirective][] = sprintf(
+                    $translationAPI->__('No DirectiveResolver processes directive with name \'%s\' and arguments \'%s\'', 'pop-component-model'),
+                    $directiveName,
+                    json_encode($directiveArgs)
+                );
+                continue;
+            }
+
+            foreach ($fieldDirectiveFields[$fieldDirective] as $field) {
+                $directiveResolverInstance = $fieldDirectiveResolverInstances[$field];
+                if (is_null($directiveResolverInstance)) {
+                    $schemaErrors[$fieldDirective][] = sprintf(
+                        $translationAPI->__('No DirectiveResolver processes directive with name \'%s\' and arguments \'%s\' for field \'%s\'', 'pop-component-model'),
                         $directiveName,
-                        $directiveArgs,
-                    ) = $directiveResolverInstance->dissectAndValidateDirectiveForSchema($this, $schemaErrors, $schemaWarnings, $schemaDeprecations);
-                    // Check that the directive is a valid one (eg: no schema errors)
-                    if (is_null($validFieldDirective)) {
-                        $schemaErrors[$fieldDirective][] = $translationAPI->__('This directive can\'t be processed due to previous errors', 'pop-component-model');
-                        continue;
-                    }
+                        json_encode($directiveArgs),
+                        $field
+                    );
+                    continue;
+                }
 
-                    // Validate against the directiveResolver
-                    if ($maybeError = $directiveResolverInstance->resolveSchemaValidationErrorDescription($this, $directiveName, $directiveArgs)) {
-                        $schemaErrors[$fieldDirective][] = $maybeError;
-                        continue;
-                    }
+                // Validate schema (eg of error in schema: ?query=posts<include(if:this-field-doesnt-exist())>)
+                list(
+                    $validFieldDirective,
+                    $directiveName,
+                    $directiveArgs,
+                ) = $directiveResolverInstance->dissectAndValidateDirectiveForSchema($this, $fieldDirectiveFields, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+                // Check that the directive is a valid one (eg: no schema errors)
+                if (is_null($validFieldDirective)) {
+                    $schemaErrors[$fieldDirective][] = $translationAPI->__('This directive can\'t be processed due to previous errors', 'pop-component-model');
+                    continue;
+                }
+
+                // Validate against the directiveResolver
+                if ($maybeError = $directiveResolverInstance->resolveSchemaValidationErrorDescription($this, $directiveName, $directiveArgs)) {
+                    $schemaErrors[$fieldDirective][] = $maybeError;
+                    continue;
+                }
 
                     // Directive is valid so far. Assign the instance to the cache
-                    $this->fieldDirectiveInstanceCache[$fieldDirective] = $directiveResolverInstance;
-                }
-                $directiveResolverInstance = $this->fieldDirectiveInstanceCache[$fieldDirective];
+                //     $this->fieldDirectiveInstanceCache[$fieldDirective] = $directiveResolverInstance;
+                // }
+                // $directiveResolverInstance = $this->fieldDirectiveInstanceCache[$fieldDirective];
 
                 // Validate if the directive can be executed multiple times
-                $directiveCount[$directiveName] = isset($directiveCount[$directiveName]) ? $directiveCount[$directiveName] + 1 : 1;
-                if ($directiveCount[$directiveName] > 1 && !$directiveResolverInstance->canExecuteMultipleTimesInField()) {
+                $directiveCount[$field][$directiveName] = isset($directiveCount[$field][$directiveName]) ? $directiveCount[$field][$directiveName] + 1 : 1;
+                if ($directiveCount[$field][$directiveName] > 1 && !$directiveResolverInstance->canExecuteMultipleTimesInField()) {
                     $schemaErrors[$fieldDirective][] = sprintf(
                         $translationAPI->__('Directive \'%s\' can be executed only once within a field, so the current execution (number %s) has been ignored', 'pop-component-model'),
                         $fieldDirective,
-                        $directiveCount[$directiveName]
+                        $directiveCount[$field][$directiveName]
                     );
                     continue;
                 }
@@ -197,19 +288,15 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 }
 
                 // Directive is valid. Add it as a pipeline stage, in its required position
-                $directivesByPosition[$directiveResolverInstance->getPipelinePosition()][] = $directiveResolverInstance;
+                // The instanceID enables to add fields under the same directiveResolverInstance
+                $instanceID = get_class($directiveResolverInstance).$fieldDirective;
+                $instances[$instanceID]['fieldDirective'] = $fieldDirective;
+                $instances[$instanceID]['instance'] = $directiveResolverInstance;
+                $instances[$instanceID]['fields'][] = $field;
             }
-            // Add all the directives into the pipeline
-            foreach ($directivesByPosition as $position => $directiveResolverInstances) {
-                foreach ($directiveResolverInstances as $directiveResolverInstance) {
-                    $pipelineBuilder->add($directiveResolverInstance);
-                }
-            }
-
-            // Build the pipeline
-            $this->fieldDirectivePipelineInstanceCache[$fieldDirectives] = new DirectivePipelineDecorator($pipelineBuilder->build());
         }
-        return $this->fieldDirectivePipelineInstanceCache[$fieldDirectives];
+        return $instances;
+        // }
     }
 
     /**
@@ -233,61 +320,122 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         $resultIDItems = $dataloader->getData(array_keys($ids_data_fields));
 
         // Enqueue the items
-        $this->enqueueFillingResultItemsFromIDs($ids_data_fields, $resultIDItems);
+        $this->enqueueFillingResultItemsFromIDs($ids_data_fields, true);
 
         // Process them
-        $this->processFillingResultItemsFromIDs($dataloader, $dbItems, $previousDBItems, $variables, $messages, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+        $this->processFillingResultItemsFromIDs($dataloader, $resultIDItems, $dbItems, $previousDBItems, $variables, $messages, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations);
     }
 
-    public function enqueueFillingResultItemsFromIDs(array $ids_data_fields, array &$resultIDItems)
+    /**
+     * Collect all directives for all fields, and then build a single directive pipeline for all fields,
+     * including all directives, even if they don't apply to all fields
+     * Eg: id|title<skip>|excerpt<translate> will produce a pipeline [Skip, Translate] where they apply
+     * to different fields. After producing the pipeline, add the mandatory items
+     *
+     * @param array $ids_data_fields
+     * @param array $resultIDItems
+     * @return void
+     */
+    public function enqueueFillingResultItemsFromIDs(array $ids_data_fields, bool $isRootDirective)
     {
-        // Collect all combinations of ID/data-fields for each directive
+        // Collect all directives for all fields
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         foreach ($ids_data_fields as $id => $data_fields) {
             foreach ($data_fields['direct'] as $field) {
                 if (is_null($this->fieldDirectivesFromFieldCache[$field])) {
-                    $this->fieldDirectivesFromFieldCache[$field] = $fieldQueryInterpreter->getFieldDirectives($field, false) ?? '';
+                    $fieldDirectives = $fieldQueryInterpreter->getFieldDirectives($field, false) ?? '';
+                    // For the root directiveSet (e.g. non-nested ones), place the mandatory directives at the beginning of the list, then they will be added to their needed position in the pipeline
+                    if ($isRootDirective) {
+                        $directives = $this->getMandatoryRootDirectives();
+                    } else {
+                        $directives = [];
+                    }
+                    $this->fieldDirectivesFromFieldCache[$field] = array_merge(
+                        $directives,
+                        $fieldQueryInterpreter->extractFieldDirectives($fieldDirectives)
+                    );
                 }
-                $fieldDirectives = $this->fieldDirectivesFromFieldCache[$field];
-                $this->directiveResultSet[$fieldDirectives][$id] = $resultIDItems[$id];
-                $this->fieldDirectiveIDsFields[$fieldDirectives][$id]['direct'][] = $field;
-                $this->fieldDirectiveIDsFields[$fieldDirectives][$id]['conditional'] = $this->fieldDirectiveIDsFields[$fieldDirectives][$id]['conditional'] ?? [];
-            }
-            foreach ($data_fields['conditional'] as $field => $conditionalFields) {
-                $this->fieldDirectiveIDsFields[$fieldDirectives][$id]['conditional'][$field] = array_merge_recursive(
-                    $this->fieldDirectiveIDsFields[$fieldDirectives][$id]['conditional'][$field] ?? [],
-                    $conditionalFields
-                );
+                // Extract all the directives, and store which fields they process
+                foreach ($this->fieldDirectivesFromFieldCache[$field] as $directive) {
+                    $fieldDirective = $fieldQueryInterpreter->convertDirectiveToFieldDirective($directive);
+
+                    // Store which ID/field this directive must process
+                    // $this->directives[$fieldDirective][$id] = $directive;
+                    // $resultIDItems;//$this->directiveResultSet[$fieldDirective][$id] = $resultIDItems[$id];
+                    $this->fieldDirectiveIDsFields[$fieldDirective][$id]['direct'][] = $field;
+                    $this->fieldDirectiveIDsFields[$fieldDirective][$id]['conditional'] = array_merge_recursive(
+                        $this->fieldDirectiveIDsFields[$fieldDirective][$id]['conditional'] ?? [],
+                        $data_fields['conditional'][$field] ?? []
+                    );
+                }
             }
         }
+        // // Extract all the directives, and store which fields they process
+        // foreach ($this->fieldDirectivesFromFieldCache as $field => $directive) {
+        //     $fieldDirective = $fieldQueryInterpreter->convertDirectiveToFieldDirective($directive);
+        //     $this->directives[$fieldDirective] = $directive;
+        // }
     }
 
-    protected function processFillingResultItemsFromIDs(DataloaderInterface $dataloader, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    protected function processFillingResultItemsFromIDs(DataloaderInterface $dataloader, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
+        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+
         // Iterate while there are directives with data to be processed
         while (!empty($this->fieldDirectiveIDsFields)) {
-            // Move the pointer to the first element, and get it
-            reset($this->fieldDirectiveIDsFields);
-            $fieldDirectives = key($this->fieldDirectiveIDsFields);
-            $idsDataFields = $this->fieldDirectiveIDsFields[$fieldDirectives];
-            $directiveResultSet = $this->directiveResultSet[$fieldDirectives];
+            $fieldDirectives = array_keys($this->fieldDirectiveIDsFields);
 
-            // Remove the directive element from the array, so it doesn't process it anymore
-            unset($this->fieldDirectiveIDsFields[$fieldDirectives]);
-            unset($this->directiveResultSet[$fieldDirectives]);
+            // Calculate all the fields on which the directive will be applied.
+            // Also transpose the array to match field to IDs later on
+            $fieldDirectiveFields = $fieldDirectiveFieldIDs = [];
+            foreach ($fieldDirectives as $fieldDirective) {
+                $fieldDirectiveIDsFields = $this->fieldDirectiveIDsFields[$fieldDirective];
+                foreach ($fieldDirectiveIDsFields as $id => $dataFields) {
+                    $fieldDirectiveFields[$fieldDirective] = array_unique(array_merge(
+                        $fieldDirectiveFields[$fieldDirective] ?? [],
+                        $dataFields['direct']
+                    ));
+                    foreach ($dataFields['direct'] as $field) {
+                        $fieldDirectiveFieldIDs[$fieldDirective][$field][] = $id;
+                    }
+                }
+            }
+            $directivePipelineData = $this->getDirectivePipelineData($fieldDirectives, $fieldDirectiveFields, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+            $directiveResolverInstances = $directivePipelineData['instances'];
+            $directiveResolverFields = $directivePipelineData['fields'];
+            $directiveResolverFieldDirectives = $directivePipelineData['fieldDirective'];
+            $directivePipeline = $this->getDirectivePipeline($directiveResolverInstances);
 
-            // If no ids to execute, then skip
-            if (empty($idsDataFields)) {
-                continue;
+            // From the fields, reconstitute the $idsDataFields
+            $orderedDirectiveIDFields = /*$orderedDirectiveResultItems =*/[];
+            for ($i=0; $i<count($directiveResolverInstances); $i++) {
+                // $orderedDirectiveResultItems[] = $resultIDItems;//$this->directiveResultSet[$fieldDirective];
+                $fieldDirective = $directiveResolverFieldDirectives[$i];
+                $fieldDirectiveIDFields = $this->fieldDirectiveIDsFields[$fieldDirective];
+                $directiveIDFields = [];
+                foreach ($directiveResolverFields[$i] as $field) {
+                    $ids = $fieldDirectiveFieldIDs[$fieldDirective][$field];
+                    foreach ($ids as $id) {
+                        $directiveIDFields[$id]['direct'][] = $field;
+                        $directiveIDFields[$id]['conditional'] = $directiveIDFields[$id]['conditional'] ?? [];
+                        if ($conditionalFields = $fieldDirectiveIDFields[$id]['conditional'][$field]) {
+                            $directiveIDFields[$id]['conditional'][$field] = $conditionalFields;
+                        }
+                    }
+                }
+                $orderedDirectiveIDFields[] = $directiveIDFields;
             }
 
-            // From the fieldDirectiveName get the class that processes it. If null, the users passed a wrong name through the API, so show an error
-            $directivePipeline = $this->getFieldDirectivePipeline($fieldDirectives, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+            // Now that we have all data, remove all entries from the inner stack.
+            // It may be filled again with nested directives, when resolving the pipeline
+            $this->fieldDirectiveIDsFields = [];
+
+            // We can finally resolve the pipeline, passing along an array with the ID and fields for each directive
             $directivePipeline->resolveDirectivePipeline(
                 $dataloader,
                 $this,
-                $directiveResultSet,
-                $idsDataFields,
+                $orderedDirectiveIDFields,
+                $resultIDItems,//$orderedDirectiveResultItems,
                 $dbItems,
                 $previousDBItems,
                 $variables,
