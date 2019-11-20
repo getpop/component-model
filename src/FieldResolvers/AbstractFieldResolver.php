@@ -127,11 +127,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         }
         $directivePipeline = new DirectivePipelineDecorator($pipelineBuilder->build());
         return $directivePipeline;
-
-        //     // Build the pipeline
-        //     $this->fieldDirectivePipelineInstanceCache[$fieldDirectives] = new DirectivePipelineDecorator($pipelineBuilder->build());
-        // }
-        // return $this->fieldDirectivePipelineInstanceCache[$fieldDirectives];
     }
 
     protected function validateAndResolveInstances(array $fieldDirectives, array $fieldDirectiveFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
@@ -143,13 +138,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         $directiveNameClasses = $this->getDirectiveNameClasses();
 
         $instances = [];
-        // For the root directiveSet (e.g. non-nested ones), place the mandatory directives at the beginning of the list, then they will be added to their needed position in the pipeline
-        // if ($isRootDirective) {
-        //     $directiveSet = array_merge(
-        //         $this->getMandatoryRootDirectives(),
-        //         $directiveSet
-        //     );
-        // }
         // Count how many times each directive is added
         $directiveCount = [];
         for ($i=0; $i<count($fieldDirectives); $i++) {
@@ -189,7 +177,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                         // Check if this instance can process the directive
                         $maybeDirectiveResolverInstance->resolveCanProcess($this, $directiveName, $directiveArgs)
                     ) {
-                        // $directiveResolverInstance = $maybeDirectiveResolverInstance;
                         $fieldDirectiveResolverInstances[$field] = $maybeDirectiveResolverInstance;
                         break;
                     }
@@ -235,7 +222,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     continue;
                 }
 
-                    // Directive is valid so far. Assign the instance to the cache
+                // Directive is valid so far. Assign the instance to the cache
                 //     $this->fieldDirectiveInstanceCache[$fieldDirective] = $directiveResolverInstance;
                 // }
                 // $directiveResolverInstance = $this->fieldDirectiveInstanceCache[$fieldDirective];
@@ -326,11 +313,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 }
                 // Extract all the directives, and store which fields they process
                 foreach ($this->fieldDirectivesFromFieldCache[$field] as $directive) {
-                    $fieldDirective = $fieldQueryInterpreter->convertDirectiveToFieldDirective($directive);
-
                     // Store which ID/field this directive must process
-                    // $this->directives[$fieldDirective][$id] = $directive;
-                    // $resultIDItems;//$this->directiveResultSet[$fieldDirective][$id] = $resultIDItems[$id];
+                    $fieldDirective = $fieldQueryInterpreter->convertDirectiveToFieldDirective($directive);
                     $this->fieldDirectiveIDsFields[$fieldDirective][$id]['direct'][] = $field;
                     $this->fieldDirectiveIDsFields[$fieldDirective][$id]['conditional'] = array_merge_recursive(
                         $this->fieldDirectiveIDsFields[$fieldDirective][$id]['conditional'] ?? [],
@@ -339,11 +323,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 }
             }
         }
-        // // Extract all the directives, and store which fields they process
-        // foreach ($this->fieldDirectivesFromFieldCache as $field => $directive) {
-        //     $fieldDirective = $fieldQueryInterpreter->convertDirectiveToFieldDirective($directive);
-        //     $this->directives[$fieldDirective] = $directive;
-        // }
     }
 
     protected function processFillingResultItemsFromIDs(DataloaderInterface $dataloader, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
