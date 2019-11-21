@@ -31,6 +31,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     protected $directiveNameClasses;
     protected $safeVars;
 
+    private $fieldDirectiveIDFields = [];
     private $fieldDirectivePipelineInstanceCache = [];
     private $fieldDirectiveInstanceCache = [];
     private $fieldDirectivesFromFieldCache = [];
@@ -376,8 +377,14 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
      */
     public function enqueueFillingResultItemsFromIDs(array $ids_data_fields)
     {
-        // Collect all directives for all fields
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+        $mandatoryRootFieldDirectives = implode(
+            QuerySyntax::SYMBOL_FIELDDIRECTIVE_SEPARATOR,
+            array_map(
+                [$fieldQueryInterpreter, 'convertDirectiveToFieldDirective'],
+                $this->getMandatoryRootDirectives()
+            )
+        );
         foreach ($ids_data_fields as $id => $data_fields) {
             $fields = $data_fields['direct'];
             // Watch out: If there are conditional fields, these will be processed by this directive too
@@ -391,13 +398,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 if (is_null($this->fieldDirectivesFromFieldCache[$field])) {
                     $fieldDirectives = $fieldQueryInterpreter->getFieldDirectives($field, false) ?? '';
                     // Place the mandatory directives at the beginning of the list, then they will be added to their needed position in the pipeline
-                    $mandatoryRootFieldDirectives = implode(
-                        QuerySyntax::SYMBOL_FIELDDIRECTIVE_SEPARATOR,
-                        array_map(
-                            [$fieldQueryInterpreter, 'convertDirectiveToFieldDirective'],
-                            $this->getMandatoryRootDirectives()
-                        )
-                    );
                     $fieldDirectives = $fieldDirectives ?
                         $mandatoryRootFieldDirectives.QuerySyntax::SYMBOL_FIELDDIRECTIVE_SEPARATOR.$fieldDirectives :
                         $mandatoryRootFieldDirectives;
@@ -405,6 +405,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 }
                 // Extract all the directives, and store which fields they process
                 foreach (QueryHelpers::splitFieldDirectives($this->fieldDirectivesFromFieldCache[$field]) as $fieldDirective) {
+                    // Check if the fields for that directive are already set (for if it is the 2nd execution), then just skip
+                    if (isset($this->fieldDirectiveIDFields[$fieldDirective][$id])) {
+                        continue;
+                    }
                     // Store which ID/field this directive must process
                     if (in_array($field, $data_fields['direct'])) {
                         $this->fieldDirectiveIDFields[$fieldDirective][$id]['direct'][] = $field;
@@ -422,16 +426,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     {
         // Iterate while there are directives with data to be processed
         while (!empty($this->fieldDirectiveIDFields)) {
-
             $fieldDirectiveIDFields = $this->fieldDirectiveIDFields;
-
             // Now that we have all data, remove all entries from the inner stack.
             // It may be filled again with nested directives, when resolving the pipeline
             $this->fieldDirectiveIDFields = [];
 
-            $fieldDirectives = array_keys($fieldDirectiveIDFields);
-
             // Calculate all the fields on which the directive will be applied.
+            $fieldDirectives = array_keys($fieldDirectiveIDFields);
             $fieldDirectiveFields = $fieldDirectiveFieldIDs = [];
             $fieldDirectiveDirectFields = $fieldDirectiveOnlyConditionFields = [];
             foreach ($fieldDirectives as $fieldDirective) {
