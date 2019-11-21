@@ -195,9 +195,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
             if (empty($fieldDirectiveResolverInstances)) {
                 $schemaErrors[$fieldDirective][] = sprintf(
-                    $translationAPI->__('No DirectiveResolver processes directive with name \'%s\' and arguments \'%s\'', 'pop-component-model'),
+                    $translationAPI->__('No DirectiveResolver processes directive with name \'%s\' and arguments \'%s\' in field(s) \'%s\'', 'pop-component-model'),
                     $directiveName,
-                    json_encode($directiveArgs)
+                    json_encode($directiveArgs),
+                    implode(
+                        $translationAPI->__('\', \'', 'pop-component-model'),
+                        $fieldDirectiveFields[$fieldDirective]
+                    )
                 );
                 continue;
             }
