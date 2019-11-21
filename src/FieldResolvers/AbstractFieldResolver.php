@@ -207,7 +207,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $directiveResolverInstance = $fieldDirectiveResolverInstances[$field];
                 if (is_null($directiveResolverInstance)) {
                     $schemaErrors[$fieldDirective][] = sprintf(
-                        $translationAPI->__('No DirectiveResolver processes directive with name \'%s\' and arguments \'%s\' for field \'%s\'', 'pop-component-model'),
+                        $translationAPI->__('No DirectiveResolver processes directive with name \'%s\' and arguments \'%s\' in field \'%s\'', 'pop-component-model'),
                         $directiveName,
                         json_encode($directiveArgs),
                         $field
@@ -223,13 +223,21 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 ) = $directiveResolverInstance->dissectAndValidateDirectiveForSchema($this, $fieldDirectiveFields, $schemaErrors, $schemaWarnings, $schemaDeprecations);
                 // Check that the directive is a valid one (eg: no schema errors)
                 if (is_null($validFieldDirective)) {
-                    $schemaErrors[$fieldDirective][] = $translationAPI->__('This directive can\'t be processed due to previous errors', 'pop-component-model');
+                    $schemaErrors[$fieldDirective][] = sprintf(
+                        $translationAPI->__('Error in field \'%s\': directive \'%s\' can\'t be processed due to previous errors', 'pop-component-model'),
+                        $fieldDirective,
+                        $field
+                    );
                     continue;
                 }
 
                 // Validate against the directiveResolver
                 if ($maybeError = $directiveResolverInstance->resolveSchemaValidationErrorDescription($this, $directiveName, $directiveArgs)) {
-                    $schemaErrors[$fieldDirective][] = $maybeError;
+                    $schemaErrors[$fieldDirective][] = sprintf(
+                        $translationAPI->__('Error in field \'%s\': %s', 'pop-component-model'),
+                        $field,
+                        $maybeError
+                    );
                     continue;
                 }
 
@@ -242,8 +250,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $directiveCount[$field][$directiveName] = isset($directiveCount[$field][$directiveName]) ? $directiveCount[$field][$directiveName] + 1 : 1;
                 if ($directiveCount[$field][$directiveName] > 1 && !$directiveResolverInstance->canExecuteMultipleTimesInField()) {
                     $schemaErrors[$fieldDirective][] = sprintf(
-                        $translationAPI->__('Directive \'%s\' can be executed only once within a field, so the current execution (number %s) has been ignored', 'pop-component-model'),
+                        $translationAPI->__('Directive \'%s\' can be executed only once within field \'%s\', so the current execution (number %s) has been ignored', 'pop-component-model'),
                         $fieldDirective,
+                        $field,
                         $directiveCount[$field][$directiveName]
                     );
                     continue;
