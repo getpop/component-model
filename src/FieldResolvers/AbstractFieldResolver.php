@@ -405,10 +405,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 }
                 // Extract all the directives, and store which fields they process
                 foreach (QueryHelpers::splitFieldDirectives($this->fieldDirectivesFromFieldCache[$field]) as $fieldDirective) {
-                    // Check if the fields for that directive are already set (for if it is the 2nd execution), then just skip
-                    if (isset($this->fieldDirectiveIDFields[$fieldDirective][$id])) {
-                        continue;
-                    }
                     // Store which ID/field this directive must process
                     if (in_array($field, $data_fields['direct'])) {
                         $this->fieldDirectiveIDFields[$fieldDirective][$id]['direct'][] = $field;
