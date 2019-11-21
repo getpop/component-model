@@ -206,6 +206,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 continue;
             }
 
+            $directiveResolverInstanceFields = [];
             foreach ($fieldDirectiveFields[$fieldDirective] as $field) {
                 $directiveResolverInstance = $fieldDirectiveResolverInstances[$field];
                 if (is_null($directiveResolverInstance)) {
@@ -218,6 +219,16 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     continue;
                 }
 
+                // Consolidate the same directiveResolverInstances for different fields, as to do the validation only once on each of them
+                $instanceID = get_class($directiveResolverInstance).$fieldDirective;
+                $directiveResolverInstanceFields[$instanceID]['instance'] = $directiveResolverInstance;
+                $directiveResolverInstanceFields[$instanceID]['fields'][] = $field;
+            }
+            // Validate the directiveResolvers
+            foreach ($directiveResolverInstanceFields as $instanceID => $instanceData) {
+                $directiveResolverInstance = $instanceData['instance'];
+                $directiveResolverFields = $instanceData['fields'];
+
                 // Validate schema (eg of error in schema: ?query=posts<include(if:this-field-doesnt-exist())>)
                 $fieldSchemaErrors = $fieldSchemaWarnings = $fieldSchemaDeprecations = [];
                 list(
@@ -229,8 +240,11 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 foreach ($fieldSchemaDeprecations as $deprecationFieldDirective => $deprecations) {
                     foreach ($deprecations as $deprecation) {
                         $schemaDeprecations[$deprecationFieldDirective][] = sprintf(
-                            $translationAPI->__('In field \'%s\' and directive \'%s\': %s', 'pop-component-model'),
-                            $field,
+                            $translationAPI->__('In field(s) \'%s\' and directive \'%s\': %s', 'pop-component-model'),
+                            implode(
+                                $translationAPI->__('\', \'', 'pop-component-model'),
+                                $directiveResolverFields
+                            ),
                             $fieldDirective,
                             $deprecation
                         );
@@ -239,8 +253,11 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 foreach ($fieldSchemaWarnings as $warningFieldDirective => $warnings) {
                     foreach ($warnings as $warning) {
                         $schemaDeprecations[$warningFieldDirective][] = sprintf(
-                            $translationAPI->__('In field \'%s\' and directive \'%s\': %s', 'pop-component-model'),
-                            $field,
+                            $translationAPI->__('In field(s) \'%s\' and directive \'%s\': %s', 'pop-component-model'),
+                            implode(
+                                $translationAPI->__('\', \'', 'pop-component-model'),
+                                $directiveResolverFields
+                            ),
                             $fieldDirective,
                             $warning
                         );
@@ -249,8 +266,11 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 foreach ($fieldSchemaErrors as $errorFieldDirective => $errors) {
                     foreach ($errors as $error) {
                         $schemaErrors[$errorFieldDirective][] = sprintf(
-                            $translationAPI->__('In field \'%s\' and directive \'%s\': %s', 'pop-component-model'),
-                            $field,
+                            $translationAPI->__('In field(s) \'%s\' and directive \'%s\': %s', 'pop-component-model'),
+                            implode(
+                                $translationAPI->__('\', \'', 'pop-component-model'),
+                                $directiveResolverFields
+                            ),
                             $fieldDirective,
                             $error
                         );
@@ -264,8 +284,11 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 // Validate against the directiveResolver
                 if ($maybeError = $directiveResolverInstance->resolveSchemaValidationErrorDescription($this, $directiveName, $directiveArgs)) {
                     $schemaErrors[$fieldDirective][] = sprintf(
-                        $translationAPI->__('In field \'%s\' and directive \'%s\': %s', 'pop-component-model'),
-                        $field,
+                        $translationAPI->__('In field(s) \'%s\' and directive \'%s\': %s', 'pop-component-model'),
+                        implode(
+                            $translationAPI->__('\', \'', 'pop-component-model'),
+                            $directiveResolverFields
+                        ),
                         $fieldDirective,
                         $maybeError
                     );
@@ -278,15 +301,24 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 // $directiveResolverInstance = $this->fieldDirectiveInstanceCache[$fieldDirective];
 
                 // Validate if the directive can be executed multiple times
-                $directiveCount[$field][$directiveName] = isset($directiveCount[$field][$directiveName]) ? $directiveCount[$field][$directiveName] + 1 : 1;
-                if ($directiveCount[$field][$directiveName] > 1 && !$directiveResolverInstance->canExecuteMultipleTimesInField()) {
-                    $schemaErrors[$fieldDirective][] = sprintf(
-                        $translationAPI->__('Directive \'%s\' can be executed only once within field \'%s\', so the current execution (number %s) has been ignored', 'pop-component-model'),
-                        $fieldDirective,
-                        $field,
-                        $directiveCount[$field][$directiveName]
-                    );
-                    continue;
+                $removeIndexes = [];
+                for ($index=0; $index<count($directiveResolverFields); $index++) {
+                    $field = $directiveResolverFields[$index];
+                    $directiveCount[$field][$directiveName] = isset($directiveCount[$field][$directiveName]) ? $directiveCount[$field][$directiveName] + 1 : 1;
+                    if ($directiveCount[$field][$directiveName] > 1 && !$directiveResolverInstance->canExecuteMultipleTimesInField()) {
+                        $schemaErrors[$fieldDirective][] = sprintf(
+                            $translationAPI->__('Directive \'%s\' can be executed only once within field \'%s\', so the current execution (number %s) has been ignored', 'pop-component-model'),
+                            $fieldDirective,
+                            $field,
+                            $directiveCount[$field][$directiveName]
+                        );
+                        // Remove the element from the list
+                        $removeIndexes[] = $index;
+                    }
+                }
+                // Remove the fields whose count are not permitted. Start from the end
+                foreach(array_reverse($removeIndexes) as $index) {
+                    array_splice($directiveResolverFields, $index, 1);
                 }
 
                 // Check for deprecations
@@ -296,12 +328,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
                 // Directive is valid. Add it as a pipeline stage, in its required position
                 // The instanceID enables to add fields under the same directiveResolverInstance
-                $instanceID = get_class($directiveResolverInstance).$fieldDirective;
-                if (!isset($instances[$instanceID])) {
-                    $instances[$instanceID]['instance'] = $directiveResolverInstance;
-                    $instances[$instanceID]['fieldDirective'] = $fieldDirective;
-                }
-                $instances[$instanceID]['fields'][] = $field;
+                $instances[$instanceID]['instance'] = $directiveResolverInstance;
+                $instances[$instanceID]['fieldDirective'] = $fieldDirective;
+                $instances[$instanceID]['fields'] = $directiveResolverFields;
             }
         }
         return $instances;
