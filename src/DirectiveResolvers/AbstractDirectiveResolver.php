@@ -3,7 +3,6 @@ namespace PoP\ComponentModel\DirectiveResolvers;
 use PoP\FieldQuery\QueryHelpers;
 use League\Pipeline\StageInterface;
 use PoP\ComponentModel\Environment;
-use PoP\ComponentModel\DataloaderInterface;
 use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
@@ -15,7 +14,7 @@ use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 
 abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, SchemaDirectiveResolverInterface, StageInterface
 {
-    use AttachableExtensionTrait;
+    use AttachableExtensionTrait, RemoveIDsDataFieldsDirectiveResolverTrait;
 
     const MESSAGE_EXPRESSIONS = 'expressions';
 
@@ -487,45 +486,46 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
      * @param array $schemaWarnings
      * @return void
      */
-    protected function processFailure(string $failureMessage, array $failedFields = [], array &$idsDataFields, array &$schemaErrors, array &$schemaWarnings)
+    protected function processFailure(string $failureMessage, array $failedFields = [], array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$schemaErrors, array &$schemaWarnings)
     {
-        // If the failure must be processed as an error, we must also remove the fields from the directive pipeline
-        $removeFieldIfDirectiveFailed = Environment::removeFieldIfDirectiveFailed();
         $allFieldsFailed = empty($failedFields);
-        if ($removeFieldIfDirectiveFailed || $allFieldsFailed) {
-            // If $failedFields is empty, it means all fields failed
+        if ($allFieldsFailed) {
+            // Remove all fields
+            $idsDataFieldsToRemove = $idsDataFields;
+            // Calculate which fields are being removed, to add to the error
             foreach ($idsDataFields as $id => &$data_fields) {
-                // Calculate which fields are being removed, to add to the error
-                if ($allFieldsFailed) {
-                    $failedFields = array_merge(
-                        $failedFields,
-                        $data_fields['direct']
-                    );
-                }
-                // Remove the failed fields
-                if ($removeFieldIfDirectiveFailed) {
-                    if ($allFieldsFailed) {
-                        $data_fields['direct'] = [];
-                    } else {
-                        $data_fields['direct'] = array_diff(
-                            $data_fields['direct'],
-                            $failedFields
-                        );
-                    }
-                }
+                $failedFields = array_merge(
+                    $failedFields,
+                    $data_fields['direct']
+                );
             }
             $failedFields = array_values(array_unique($failedFields));
+        } else {
+            $idsDataFieldsToRemove = [];
+            // Calculate which fields to remove
+            foreach ($idsDataFields as $id => &$data_fields) {
+                $idsDataFieldsToRemove[(string)$id]['direct'] = array_intersect(
+                    $data_fields['direct'],
+                    $failedFields
+                );
+            }
         }
+        // If the failure must be processed as an error, we must also remove the fields from the directive pipeline
+        $removeFieldIfDirectiveFailed = Environment::removeFieldIfDirectiveFailed();
+        if ($removeFieldIfDirectiveFailed) {
+            $this->removeIDsDataFields($idsDataFieldsToRemove, $succeedingPipelineIDsDataFields);
+        }
+
         // Show the failureMessage either as error or as warning
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         $translationAPI = TranslationAPIFacade::getInstance();
         $directiveName = $this->getDirectiveName();
-        $failedFieldNames = array_map(
-            [$fieldQueryInterpreter, 'getFieldName'],
-            $failedFields
-        );
+        // $failedFieldNames = array_map(
+        //     [$fieldQueryInterpreter, 'getFieldName'],
+        //     $failedFields
+        // );
         if ($removeFieldIfDirectiveFailed) {
-            if (count($failedFieldNames) == 1) {
+            if (count($failedFields) == 1) {
                 $message = $translationAPI->__('%s. Field \'%s\' has been removed from the directive pipeline', 'component-model');
             } else {
                 $message = $translationAPI->__('%s. Fields \'%s\' have been removed from the directive pipeline', 'component-model');
@@ -533,10 +533,10 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $schemaErrors[$this->directive][] = sprintf(
                 $message,
                 $failureMessage,
-                implode($translationAPI->__('\', \''), $failedFieldNames)
+                implode($translationAPI->__('\', \''), $failedFields)
             );
         } else {
-            if (count($failedFieldNames) == 1) {
+            if (count($failedFields) == 1) {
                 $message = $translationAPI->__('%s. Execution of directive \'%s\' has been ignored on field \'%s\'', 'component-model');
             } else {
                 $message = $translationAPI->__('%s. Execution of directive \'%s\' has been ignored on fields \'%s\'', 'component-model');
@@ -545,7 +545,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 $message,
                 $failureMessage,
                 $directiveName,
-                implode($translationAPI->__('\', \''), $failedFieldNames)
+                implode($translationAPI->__('\', \''), $failedFields)
             );
         }
     }
