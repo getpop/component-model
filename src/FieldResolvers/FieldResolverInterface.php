@@ -11,7 +11,7 @@ interface FieldResolverInterface
     public function getFieldNamesToResolve(): array;
     public function getDirectiveNameClasses(): array;
     public function validateFieldArgumentsForSchema(string $field, array $fieldArgs, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array;
-    public function enqueueFillingResultItemsFromIDs(array $ids_data_fields, /*array &$resultIDItems, */bool $isRootDirective);
+    public function enqueueFillingResultItemsFromIDs(array $ids_data_fields);
     public function fillResultItems(DataloaderInterface $dataloader, array $ids_data_fields, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations);
     public function resolveSchemaValidationErrorDescriptions(string $field, array &$variables = null): ?array;
     public function resolveSchemaValidationWarningDescriptions(string $field, array &$variables = null): ?array;

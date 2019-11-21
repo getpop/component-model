@@ -87,9 +87,7 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
                                 'direct' => array_keys($conditionalDataFields),
                                 'conditional' => $conditionalDataFields,
                             ],
-                        ],
-                        // $resultIDItems,
-                        true
+                        ]
                     );
                 }
             }
