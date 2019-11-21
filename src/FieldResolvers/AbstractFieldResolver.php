@@ -254,7 +254,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 }
                 foreach ($fieldSchemaWarnings as $warningFieldDirective => $warnings) {
                     foreach ($warnings as $warning) {
-                        $schemaDeprecations[$warningFieldDirective][] = sprintf(
+                        $schemaWarnings[$warningFieldDirective][] = sprintf(
                             $translationAPI->__('In field(s) \'%s\' and directive \'%s\': %s', 'pop-component-model'),
                             implode(
                                 $translationAPI->__('\', \'', 'pop-component-model'),
