@@ -343,7 +343,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     if (in_array($field, $data_fields['direct'])) {
                         $this->fieldDirectiveIDFields[$fieldDirective][$id]['direct'][] = $field;
                     }
-                    $this->fieldDirectiveIDFields[$fieldDirective][$id]['conditional'] = $data_fields['conditional'];
+                    $this->fieldDirectiveIDFields[$fieldDirective][$id]['conditional'] = array_merge_recursive(
+                        $this->fieldDirectiveIDFields[$fieldDirective][$id]['conditional'] ?? [],
+                        $data_fields['conditional']
+                    );
                 }
             }
         }
@@ -420,7 +423,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                         $directiveIDFields[$id]['direct'][] = $field;
                         $directiveIDFields[$id]['conditional'] = $directiveIDFields[$id]['conditional'] ?? [];
                         if ($conditionalFields = $fieldDirectiveIDFields[$fieldDirective][$id]['conditional'][$field]) {
-                            $directiveIDFields[$id]['conditional'][$field] = array_merge(
+                            $directiveIDFields[$id]['conditional'][$field] = array_merge_recursive(
                                 $directiveIDFields[$id]['conditional'][$field] ?? [],
                                 $conditionalFields
                             );
@@ -430,7 +433,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 foreach ($directiveOnlyConditionFields as $field) {
                     $ids = $fieldDirectiveFieldIDs[$fieldDirective][$field];
                     foreach ($ids as $id) {
-                        $directiveIDFields[$id]['conditional'][$field] = $fieldDirectiveIDFields[$fieldDirective][$id]['conditional'][$field];
+                        $directiveIDFields[$id]['conditional'][$field] = array_merge_recursive(
+                            $directiveIDFields[$id]['conditional'][$field] ?? [],
+                            $fieldDirectiveIDFields[$fieldDirective][$id]['conditional'][$field]
+                        );
                     }
                 }
                 $pipelineIDsDataFields[] = $directiveIDFields;
