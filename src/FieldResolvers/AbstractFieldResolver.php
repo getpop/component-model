@@ -222,7 +222,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     $directiveName,
                     $directiveArgs,
                 ) = $directiveResolverInstance->dissectAndValidateDirectiveForSchema($this, $fieldDirectiveFields, $fieldSchemaErrors, $fieldSchemaWarnings, $fieldSchemaDeprecations);
-                // For each warning/deprecation, add the field to provide a better message
+                // For each error/warning/deprecation, add the field to provide a better message
                 foreach ($fieldSchemaDeprecations as $deprecationFieldDirective => $deprecations) {
                     foreach ($deprecations as $deprecation) {
                         $schemaDeprecations[$deprecationFieldDirective][] = sprintf(
@@ -243,13 +243,15 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                         );
                     }
                 }
-                foreach ($fieldSchemaErrors as $error) {
-                    $schemaErrors[$fieldDirective][] = sprintf(
-                        $translationAPI->__('In field \'%s\' and directive \'%s\': %s', 'pop-component-model'),
-                        $field,
-                        $fieldDirective,
-                        $error
-                    );
+                foreach ($fieldSchemaErrors as $errorFieldDirective => $errors) {
+                    foreach ($errors as $error) {
+                        $schemaErrors[$errorFieldDirective][] = sprintf(
+                            $translationAPI->__('In field \'%s\' and directive \'%s\': %s', 'pop-component-model'),
+                            $field,
+                            $fieldDirective,
+                            $error
+                        );
+                    }
                 }
                 // Check that the directive is a valid one (eg: no schema errors)
                 if (is_null($validFieldDirective)) {
