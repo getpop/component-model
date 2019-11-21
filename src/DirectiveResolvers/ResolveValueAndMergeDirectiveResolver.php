@@ -48,8 +48,9 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
                     $translationAPI->__('Corrupted data: Object with ID \'%s\' doesn\'t exist', 'component-model'),
                     $id
                 );
-                // Avoid errors in the Engine which expects this result to be an array
-                $dbItems[(string)$id] = [];
+                // This is currently pointing to NULL and returning this entry in the database. Remove it
+                // (this will also avoid errors in the Engine, which expects this result to be an array and can't be null)
+                unset($dbItems[(string)$id]);
                 continue;
             }
 
