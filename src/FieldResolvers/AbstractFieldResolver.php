@@ -413,7 +413,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                         continue;
                     }
                     // Store the order in which the directives were executed
-                    $this->fieldDirectiveExecutionList[$field][$id][] = $fieldDirective;
+                    $this->fieldDirectiveExecutionList[$field][(string)$id][] = $fieldDirective;
                     // Store which ID/field this directive must process
                     if (in_array($field, $data_fields['direct'])) {
                         $this->fieldDirectiveIDFields[$fieldDirective][(string)$id]['direct'][] = $field;
