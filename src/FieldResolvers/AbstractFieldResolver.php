@@ -32,7 +32,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     protected $safeVars;
 
     private $fieldDirectiveIDFields = [];
-    private $fieldDirectiveExecutionList = [];
+    private $fieldDirectiveCounter = [];
     private $fieldDirectivePipelineInstanceCache = [];
     private $fieldDirectiveInstanceCache = [];
     private $fieldDirectivesFromFieldCache = [];
@@ -408,12 +408,15 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 foreach (QueryHelpers::splitFieldDirectives($this->fieldDirectivesFromFieldCache[$field]) as $fieldDirective) {
                     // Watch out! Directives can be repeated, and then they must be executed multiple times
                     // Eg: resizing a pic to 25%: <resize(50%),resize(50%)>
-                    // If the fields for that directive are already set (since this may be the 2nd execution of a directive within a field, such as: <resize(50%),resize(50%)>), then skip
-                    if (in_array($fieldDirective, $this->fieldDirectiveExecutionList[$field][(string)$id] ?? [])) {
-                        continue;
+                    // However, because we are adding the $idsDataFields under key $fieldDirective, when the 2nd occurrence of the directive is found,
+                    // adding data would just override the previous entry, and we can't keep track that it's another iteration
+                    // Then, as solution, change the name of the $fieldDirective, adding ":counter"
+                    if (isset($this->fieldDirectiveCounter[$field][(string)$id][$fieldDirective])) {
+                        // Increase counter and add to $fieldDirective
+                        $fieldDirective .= ':'.(++$this->fieldDirectiveCounter[$field][(string)$id][$fieldDirective]);
+                    } else {
+                        $this->fieldDirectiveCounter[$field][(string)$id][$fieldDirective] = 0;
                     }
-                    // Store the order in which the directives were executed
-                    $this->fieldDirectiveExecutionList[$field][(string)$id][] = $fieldDirective;
                     // Store which ID/field this directive must process
                     if (in_array($field, $data_fields['direct'])) {
                         $this->fieldDirectiveIDFields[$fieldDirective][(string)$id]['direct'][] = $field;
@@ -435,7 +438,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             // Now that we have all data, remove all entries from the inner stack.
             // It may be filled again with nested directives, when resolving the pipeline
             $this->fieldDirectiveIDFields = [];
-            $this->fieldDirectiveExecutionList = [];
+            $this->fieldDirectiveCounter = [];
 
             // Calculate all the fields on which the directive will be applied.
             $fieldDirectives = array_keys($fieldDirectiveIDFields);
