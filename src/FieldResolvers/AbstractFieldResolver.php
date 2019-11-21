@@ -1,5 +1,6 @@
 <?php
 namespace PoP\ComponentModel\FieldResolvers;
+use PoP\FieldQuery\QueryUtils;
 use PoP\FieldQuery\QuerySyntax;
 use PoP\FieldQuery\QueryHelpers;
 use PoP\ComponentModel\ErrorUtils;
@@ -20,6 +21,7 @@ use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFa
 abstract class AbstractFieldResolver implements FieldResolverInterface
 {
     public const OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM = 'validateSchemaOnResultItem';
+    protected const REPEATED_DIRECTIVE_COUNTER_SEPARATOR = '|';
     /**
      * Cache of which fieldValueResolvers will process the given field
      *
@@ -410,10 +412,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     // Eg: resizing a pic to 25%: <resize(50%),resize(50%)>
                     // However, because we are adding the $idsDataFields under key $fieldDirective, when the 2nd occurrence of the directive is found,
                     // adding data would just override the previous entry, and we can't keep track that it's another iteration
-                    // Then, as solution, change the name of the $fieldDirective, adding ":counter"
+                    // Then, as solution, change the name of the $fieldDirective, adding "|counter"
                     if (isset($this->fieldDirectiveCounter[$field][(string)$id][$fieldDirective])) {
                         // Increase counter and add to $fieldDirective
-                        $fieldDirective .= ':'.(++$this->fieldDirectiveCounter[$field][(string)$id][$fieldDirective]);
+                        $fieldDirective .= self::REPEATED_DIRECTIVE_COUNTER_SEPARATOR.(++$this->fieldDirectiveCounter[$field][(string)$id][$fieldDirective]);
                     } else {
                         $this->fieldDirectiveCounter[$field][(string)$id][$fieldDirective] = 0;
                     }
@@ -440,8 +442,26 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $this->fieldDirectiveIDFields = [];
             $this->fieldDirectiveCounter = [];
 
+            // Calculate the fieldDirectives. If there is a duplicated directive, we remove the "|counter" from them
+            $fieldDirectives = array_map(
+                function($fieldDirective) {
+                    $counterPos = QueryUtils::findLastSymbolPosition(
+                        $fieldDirective,
+                        self::REPEATED_DIRECTIVE_COUNTER_SEPARATOR,
+                        [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING],
+                        [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING],
+                        QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING,
+                        QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING
+                    );
+                    if ($counterPos !== false) {
+                        return substr($fieldDirective, 0, $counterPos);
+                    }
+                    return $fieldDirective;
+                },
+                array_keys($fieldDirectiveIDFields)
+            );
+
             // Calculate all the fields on which the directive will be applied.
-            $fieldDirectives = array_keys($fieldDirectiveIDFields);
             $fieldDirectiveFields = $fieldDirectiveFieldIDs = [];
             $fieldDirectiveDirectFields = $fieldDirectiveOnlyConditionFields = [];
             foreach ($fieldDirectives as $fieldDirective) {
