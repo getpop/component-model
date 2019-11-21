@@ -354,25 +354,25 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         $idsDataFields = $pipelineIDsDataFields[0];
         array_shift($pipelineIDsDataFields);
 
-        // 2. Validate operation
-        $this->validateDirective(
-            $dataloader,
-            $fieldResolver,
-            $idsDataFields,
-            $pipelineIDsDataFields,
-            $resultIDItems,
-            $dbItems,
-            $previousDBItems,
-            $variables,
-            $messages,
-            $dbErrors,
-            $dbWarnings,
-            $schemaErrors,
-            $schemaWarnings,
-            $schemaDeprecations
-        );
+        // // 2. Validate operation
+        // $this->validateDirective(
+        //     $dataloader,
+        //     $fieldResolver,
+        //     $idsDataFields,
+        //     $pipelineIDsDataFields,
+        //     $resultIDItems,
+        //     $dbItems,
+        //     $previousDBItems,
+        //     $variables,
+        //     $messages,
+        //     $dbErrors,
+        //     $dbWarnings,
+        //     $schemaErrors,
+        //     $schemaWarnings,
+        //     $schemaDeprecations
+        // );
 
-        // 3. Execute operation. First check that if the validation took away the elements, and so the directive can't execute anymore
+        // 2. Execute operation. First check that if the validation took away the elements, and so the directive can't execute anymore
         // For instance, executing ?query=posts.id|title<default,translate(from:en,to:es)> will fail after directive "default", so directive "translate" must not even execute
         if (!$this->needsIDsDataFieldsToExecute() || $this->hasIDsDataFields($idsDataFields)) {
             $this->resolveDirective(
@@ -393,7 +393,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             );
         }
 
-        // 4. Re-create the payload from the modified variables
+        // 3. Re-create the payload from the modified variables
         return DirectivePipelineUtils::convertArgumentsToPayload(
             $dataloader,
             $fieldResolver,
@@ -411,73 +411,73 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         );
     }
 
-    public function validateDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
-    {
-        // Check that the directive can be applied to all provided fields
-        $this->validateAndFilterFieldsForDirective($idsDataFields, $schemaErrors, $schemaWarnings);
-    }
+    // public function validateDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    // {
+    //     // Check that the directive can be applied to all provided fields
+    //     $this->validateAndFilterFieldsForDirective($idsDataFields, $schemaErrors, $schemaWarnings);
+    // }
 
-    /**
-     * Check that the directive can be applied to all provided fields
-     *
-     * @param array $idsDataFields
-     * @param array $schemaErrors
-     * @return void
-     */
-    protected function validateAndFilterFieldsForDirective(array &$idsDataFields, array &$schemaErrors, array &$schemaWarnings)
-    {
-        $directiveSupportedFieldNames = $this->getFieldNamesToApplyTo();
+    // /**
+    //  * Check that the directive can be applied to all provided fields
+    //  *
+    //  * @param array $idsDataFields
+    //  * @param array $schemaErrors
+    //  * @return void
+    //  */
+    // protected function validateAndFilterFieldsForDirective(array &$idsDataFields, array &$schemaErrors, array &$schemaWarnings)
+    // {
+    //     $directiveSupportedFieldNames = $this->getFieldNamesToApplyTo();
 
-        // If this function returns an empty array, then it supports all fields, then do nothing
-        if (!$directiveSupportedFieldNames) {
-            return;
-        }
+    //     // If this function returns an empty array, then it supports all fields, then do nothing
+    //     if (!$directiveSupportedFieldNames) {
+    //         return;
+    //     }
 
-        // Check if all fields are supported by this directive
-        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
-        $failedFields = [];
-        foreach ($idsDataFields as $id => &$data_fields) {
-            // Get the fieldName for each field
-            $nameFields = [];
-            foreach ($data_fields['direct'] as $field) {
-                $nameFields[$fieldQueryInterpreter->getFieldName($field)] = $field;
-            }
-            // If any fieldName failed, remove it from the list of fields to execute for this directive
-            if ($unsupportedFieldNames = array_diff(array_keys($nameFields), $directiveSupportedFieldNames)) {
-                $unsupportedFields = array_map(
-                    function($fieldName) use ($nameFields) {
-                        return $nameFields[$fieldName];
-                    },
-                    $unsupportedFieldNames
-                );
-                $failedFields = array_values(array_unique(array_merge(
-                    $failedFields,
-                    $unsupportedFields
-                )));
-            }
-        }
-        // Give an error message for all failed fields
-        if ($failedFields) {
-            $translationAPI = TranslationAPIFacade::getInstance();
-            $directiveName = $this->getDirectiveName();
-            $failedFieldNames = array_map(
-                [$fieldQueryInterpreter, 'getFieldName'],
-                $failedFields
-            );
-            if (count($failedFields) == 1) {
-                $message = $translationAPI->__('Directive \'%s\' doesn\'t support field \'%s\' (the only supported field names are: \'%s\')', 'component-model');
-            } else {
-                $message = $translationAPI->__('Directive \'%s\' doesn\'t support fields \'%s\' (the only supported field names are: \'%s\')', 'component-model');
-            }
-            $failureMessage = sprintf(
-                $message,
-                $directiveName,
-                implode($translationAPI->__('\', \''), $failedFieldNames),
-                implode($translationAPI->__('\', \''), $directiveSupportedFieldNames)
-            );
-            $this->processFailure($failureMessage, $failedFields, $idsDataFields, $schemaErrors, $schemaWarnings);
-        }
-    }
+    //     // Check if all fields are supported by this directive
+    //     $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+    //     $failedFields = [];
+    //     foreach ($idsDataFields as $id => &$data_fields) {
+    //         // Get the fieldName for each field
+    //         $nameFields = [];
+    //         foreach ($data_fields['direct'] as $field) {
+    //             $nameFields[$fieldQueryInterpreter->getFieldName($field)] = $field;
+    //         }
+    //         // If any fieldName failed, remove it from the list of fields to execute for this directive
+    //         if ($unsupportedFieldNames = array_diff(array_keys($nameFields), $directiveSupportedFieldNames)) {
+    //             $unsupportedFields = array_map(
+    //                 function($fieldName) use ($nameFields) {
+    //                     return $nameFields[$fieldName];
+    //                 },
+    //                 $unsupportedFieldNames
+    //             );
+    //             $failedFields = array_values(array_unique(array_merge(
+    //                 $failedFields,
+    //                 $unsupportedFields
+    //             )));
+    //         }
+    //     }
+    //     // Give an error message for all failed fields
+    //     if ($failedFields) {
+    //         $translationAPI = TranslationAPIFacade::getInstance();
+    //         $directiveName = $this->getDirectiveName();
+    //         $failedFieldNames = array_map(
+    //             [$fieldQueryInterpreter, 'getFieldName'],
+    //             $failedFields
+    //         );
+    //         if (count($failedFields) == 1) {
+    //             $message = $translationAPI->__('Directive \'%s\' doesn\'t support field \'%s\' (the only supported field names are: \'%s\')', 'component-model');
+    //         } else {
+    //             $message = $translationAPI->__('Directive \'%s\' doesn\'t support fields \'%s\' (the only supported field names are: \'%s\')', 'component-model');
+    //         }
+    //         $failureMessage = sprintf(
+    //             $message,
+    //             $directiveName,
+    //             implode($translationAPI->__('\', \''), $failedFieldNames),
+    //             implode($translationAPI->__('\', \''), $directiveSupportedFieldNames)
+    //         );
+    //         $this->processFailure($failureMessage, $failedFields, $idsDataFields, $schemaErrors, $schemaWarnings);
+    //     }
+    // }
 
 
     /**
