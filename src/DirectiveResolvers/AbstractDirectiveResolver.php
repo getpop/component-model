@@ -251,34 +251,34 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         return true;
     }
 
-    /**
-     * Indicate if the directive needs to be passed $idsDataFields filled with data to be able to execute
-     * Because most commonly it will need, the default value is `true`
-     *
-     * @return void
-     */
-    public function needsIDsDataFieldsToExecute(): bool
-    {
-        return true;
-    }
+    // /**
+    //  * Indicate if the directive needs to be passed $idsDataFields filled with data to be able to execute
+    //  * Because most commonly it will need, the default value is `true`
+    //  *
+    //  * @return void
+    //  */
+    // public function needsIDsDataFieldsToExecute(): bool
+    // {
+    //     return true;
+    // }
 
-    /**
-     * Indicate that there is data in variable $idsDataFields
-     *
-     * @param array $idsDataFields
-     * @return boolean
-     */
-    protected function hasIDsDataFields(array &$idsDataFields): bool
-    {
-        foreach ($idsDataFields as $id => &$data_fields) {
-            if ($data_fields['direct']) {
-                // If there's data-fields to fetch for any ID, that's it, there's data
-                return true;
-            }
-        }
-        // If we reached here, there is no data
-        return false;
-    }
+    // /**
+    //  * Indicate that there is data in variable $idsDataFields
+    //  *
+    //  * @param array $idsDataFields
+    //  * @return boolean
+    //  */
+    // protected function hasIDsDataFields(array &$idsDataFields): bool
+    // {
+    //     foreach ($idsDataFields as $id => &$data_fields) {
+    //         if ($data_fields['direct']) {
+    //             // If there's data-fields to fetch for any ID, that's it, there's data
+    //             return true;
+    //         }
+    //     }
+    //     // If we reached here, there is no data
+    //     return false;
+    // }
 
     public function enableOrderedSchemaDirectiveArgs(FieldResolverInterface $fieldResolver): bool
     {
@@ -371,26 +371,27 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         //     $schemaDeprecations
         // );
 
-        // 2. Execute operation. First check that if the validation took away the elements, and so the directive can't execute anymore
-        // For instance, executing ?query=posts.id|title<default,translate(from:en,to:es)> will fail after directive "default", so directive "translate" must not even execute
-        if (!$this->needsIDsDataFieldsToExecute() || $this->hasIDsDataFields($idsDataFields)) {
-            $this->resolveDirective(
-                $dataloader,
-                $fieldResolver,
-                $idsDataFields,
-                $pipelineIDsDataFields,
-                $resultIDItems,
-                $dbItems,
-                $previousDBItems,
-                $variables,
-                $messages,
-                $dbErrors,
-                $dbWarnings,
-                $schemaErrors,
-                $schemaWarnings,
-                $schemaDeprecations
-            );
-        }
+        // 2. Execute operation.
+        // // First check that if the validation took away the elements, and so the directive can't execute anymore
+        // // For instance, executing ?query=posts.id|title<default,translate(from:en,to:es)> will fail after directive "default", so directive "translate" must not even execute
+        // if (!$this->needsIDsDataFieldsToExecute() || $this->hasIDsDataFields($idsDataFields)) {
+        $this->resolveDirective(
+            $dataloader,
+            $fieldResolver,
+            $idsDataFields,
+            $pipelineIDsDataFields,
+            $resultIDItems,
+            $dbItems,
+            $previousDBItems,
+            $variables,
+            $messages,
+            $dbErrors,
+            $dbWarnings,
+            $schemaErrors,
+            $schemaWarnings,
+            $schemaDeprecations
+        );
+        // }
 
         // 3. Re-create the payload from the modified variables
         return DirectivePipelineUtils::convertArgumentsToPayload(
@@ -517,7 +518,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         }
 
         // Show the failureMessage either as error or as warning
-        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+        // $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         $translationAPI = TranslationAPIFacade::getInstance();
         $directiveName = $this->getDirectiveName();
         // $failedFieldNames = array_map(
@@ -562,7 +563,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             SchemaDefinition::ARGNAME_NAME => $directiveName,
             SchemaDefinition::ARGNAME_DIRECTIVE_PIPELINE_POSITION => $this->getPipelinePosition(),
             SchemaDefinition::ARGNAME_DIRECTIVE_CAN_EXECUTE_MULTIPLE_TIMES => $this->canExecuteMultipleTimesInField(),
-            SchemaDefinition::ARGNAME_DIRECTIVE_NEEDS_DATA_TO_EXECUTE => $this->needsIDsDataFieldsToExecute(),
+            // SchemaDefinition::ARGNAME_DIRECTIVE_NEEDS_DATA_TO_EXECUTE => $this->needsIDsDataFieldsToExecute(),
         ];
         if ($limitedToFields = $this->getFieldNamesToApplyTo()) {
             $schemaDefinition[SchemaDefinition::ARGNAME_DIRECTIVE_LIMITED_TO_FIELDS] = $limitedToFields;

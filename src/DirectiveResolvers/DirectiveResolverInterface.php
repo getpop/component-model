@@ -63,12 +63,12 @@ interface DirectiveResolverInterface
      * @return boolean
      */
     public function canExecuteMultipleTimesInField(): bool;
-    /**
-     * Indicate if the directive needs to be passed $idsDataFields filled with data to be able to execute
-     *
-     * @return void
-     */
-    public function needsIDsDataFieldsToExecute(): bool;
+    // /**
+    //  * Indicate if the directive needs to be passed $idsDataFields filled with data to be able to execute
+    //  *
+    //  * @return void
+    //  */
+    // public function needsIDsDataFieldsToExecute(): bool;
     /**
      * Validate that the directive can be applied to all passed fields
      *
