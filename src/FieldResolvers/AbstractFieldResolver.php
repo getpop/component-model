@@ -277,84 +277,93 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $directiveResolverInstance = $instanceData['instance'];
                 $directiveResolverFields = $instanceData['fields'];
 
-                // Validate schema (eg of error in schema: ?query=posts<include(if:this-field-doesnt-exist())>)
-                $fieldSchemaErrors = $fieldSchemaWarnings = $fieldSchemaDeprecations = [];
-                list(
-                    $validFieldDirective,
-                    $directiveName,
-                    $directiveArgs,
-                ) = $directiveResolverInstance->dissectAndValidateDirectiveForSchema($this, $fieldDirectiveFields, $fieldSchemaErrors, $fieldSchemaWarnings, $fieldSchemaDeprecations);
-                // For each error/warning/deprecation, add the field to provide a better message
-                foreach ($fieldSchemaDeprecations as $deprecationFieldDirective => $deprecations) {
-                    foreach ($deprecations as $deprecation) {
-                        $schemaDeprecations[$deprecationFieldDirective][] = sprintf(
-                            $translationAPI->__('In field(s) \'%s\' and directive \'%s\': %s', 'pop-component-model'),
-                            implode(
-                                $translationAPI->__('\', \'', 'pop-component-model'),
-                                $directiveResolverFields
-                            ),
-                            $fieldDirective,
-                            $deprecation
-                        );
+                // If it is a repeated directive, no need to do the validation below again,
+                // just check if there is an existing error
+                if ($isRepeatedFieldDirective) {
+                    if (!empty($schemaErrors[$fieldDirective])) {
+                        continue;
                     }
-                }
-                foreach ($fieldSchemaWarnings as $warningFieldDirective => $warnings) {
-                    foreach ($warnings as $warning) {
-                        $schemaWarnings[$warningFieldDirective][] = sprintf(
-                            $translationAPI->__('In field(s) \'%s\' and directive \'%s\': %s', 'pop-component-model'),
-                            implode(
-                                $translationAPI->__('\', \'', 'pop-component-model'),
-                                $directiveResolverFields
-                            ),
-                            $fieldDirective,
-                            $warning
-                        );
-                    }
-                }
-                foreach ($fieldSchemaErrors as $errorFieldDirective => $errors) {
-                    foreach ($errors as $error) {
-                        $schemaErrors[$errorFieldDirective][] = sprintf(
-                            $translationAPI->__('In field(s) \'%s\' and directive \'%s\': %s', 'pop-component-model'),
-                            implode(
-                                $translationAPI->__('\', \'', 'pop-component-model'),
-                                $directiveResolverFields
-                            ),
-                            $fieldDirective,
-                            $error
-                        );
-                    }
-                }
-                // Check that the directive is a valid one (eg: no schema errors)
-                if (is_null($validFieldDirective)) {
-                    if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
-                        $schemaErrors[$fieldDirective][] = sprintf(
-                            $stopDirectivePipelineExecutionPlaceholder,
-                            $fieldDirective
-                        );
-                        break;
-                    }
-                    continue;
-                }
+                } else {
 
-                // Validate against the directiveResolver
-                if ($maybeError = $directiveResolverInstance->resolveSchemaValidationErrorDescription($this, $directiveName, $directiveArgs)) {
-                    $schemaErrors[$fieldDirective][] = sprintf(
-                        $translationAPI->__('In field(s) \'%s\' and directive \'%s\': %s', 'pop-component-model'),
-                        implode(
-                            $translationAPI->__('\', \'', 'pop-component-model'),
-                            $directiveResolverFields
-                        ),
-                        $fieldDirective,
-                        $maybeError
-                    );
-                    if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
-                        $schemaErrors[$fieldDirective][] = sprintf(
-                            $stopDirectivePipelineExecutionPlaceholder,
-                            $fieldDirective
-                        );
-                        break;
+                    // Validate schema (eg of error in schema: ?query=posts<include(if:this-field-doesnt-exist())>)
+                    $fieldSchemaErrors = $fieldSchemaWarnings = $fieldSchemaDeprecations = [];
+                    list(
+                        $validFieldDirective,
+                        $directiveName,
+                        $directiveArgs,
+                    ) = $directiveResolverInstance->dissectAndValidateDirectiveForSchema($this, $fieldDirectiveFields, $fieldSchemaErrors, $fieldSchemaWarnings, $fieldSchemaDeprecations);
+                    // For each error/warning/deprecation, add the field to provide a better message
+                    foreach ($fieldSchemaDeprecations as $deprecationFieldDirective => $deprecations) {
+                        foreach ($deprecations as $deprecation) {
+                            $schemaDeprecations[$deprecationFieldDirective][] = sprintf(
+                                $translationAPI->__('In field(s) \'%s\' and directive \'%s\': %s', 'pop-component-model'),
+                                implode(
+                                    $translationAPI->__('\', \'', 'pop-component-model'),
+                                    $directiveResolverFields
+                                ),
+                                $fieldDirective,
+                                $deprecation
+                            );
+                        }
                     }
-                    continue;
+                    foreach ($fieldSchemaWarnings as $warningFieldDirective => $warnings) {
+                        foreach ($warnings as $warning) {
+                            $schemaWarnings[$warningFieldDirective][] = sprintf(
+                                $translationAPI->__('In field(s) \'%s\' and directive \'%s\': %s', 'pop-component-model'),
+                                implode(
+                                    $translationAPI->__('\', \'', 'pop-component-model'),
+                                    $directiveResolverFields
+                                ),
+                                $fieldDirective,
+                                $warning
+                            );
+                        }
+                    }
+                    foreach ($fieldSchemaErrors as $errorFieldDirective => $errors) {
+                        foreach ($errors as $error) {
+                            $schemaErrors[$errorFieldDirective][] = sprintf(
+                                $translationAPI->__('In field(s) \'%s\' and directive \'%s\': %s', 'pop-component-model'),
+                                implode(
+                                    $translationAPI->__('\', \'', 'pop-component-model'),
+                                    $directiveResolverFields
+                                ),
+                                $fieldDirective,
+                                $error
+                            );
+                        }
+                    }
+                    // Check that the directive is a valid one (eg: no schema errors)
+                    if (is_null($validFieldDirective)) {
+                        if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
+                            $schemaErrors[$fieldDirective][] = sprintf(
+                                $stopDirectivePipelineExecutionPlaceholder,
+                                $fieldDirective
+                            );
+                            break;
+                        }
+                        continue;
+                    }
+
+                    // Validate against the directiveResolver
+                    if ($maybeError = $directiveResolverInstance->resolveSchemaValidationErrorDescription($this, $directiveName, $directiveArgs)) {
+                        $schemaErrors[$fieldDirective][] = sprintf(
+                            $translationAPI->__('In field(s) \'%s\' and directive \'%s\': %s', 'pop-component-model'),
+                            implode(
+                                $translationAPI->__('\', \'', 'pop-component-model'),
+                                $directiveResolverFields
+                            ),
+                            $fieldDirective,
+                            $maybeError
+                        );
+                        if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
+                            $schemaErrors[$fieldDirective][] = sprintf(
+                                $stopDirectivePipelineExecutionPlaceholder,
+                                $fieldDirective
+                            );
+                            break;
+                        }
+                        continue;
+                    }
                 }
             }
 
