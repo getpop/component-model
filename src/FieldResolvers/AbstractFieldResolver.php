@@ -58,24 +58,29 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     }
 
     /**
-    * The pipeline must always have directives:
-    * 1. SetSelfAsVar: to enable to access the current object's properties under expression `%self%`
-    * 2. Validate: to validate that the schema, fieldNames, etc are supported, and filter them out if not
-    * 3. ResolveAndMerge: to resolve the field and place the data into the DB object
-    * All other directives are placed somewhere in the pipeline, using these 3 directives as anchors.
-    * There are 3 positions:
-    * 1. At the beginning, between the SetSelfAsVar and Validate directives
-    * 2. In the middle, between the Validate and Resolve directives
-    * 3. At the end, after the ResolveAndMerge directive
+    * By default, the pipeline must always have directives:
+    * 1. Validate: to validate that the schema, fieldNames, etc are supported, and filter them out if not
+    * 2. ResolveAndMerge: to resolve the field and place the data into the DB object
+    * Additionally to these 2, we can add other mandatory directives, such as:
+    * setSelfAsExpression, cacheControl
+    * Because it may be more convenient to add the directive or the class, there are 2 methods
     */
     protected function getMandatoryRootDirectives() {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         $dataloadingEngine = DataloadingEngineFacade::getInstance();
-        return array_map(
-            function($directiveClass) use($fieldQueryInterpreter) {
-                return $fieldQueryInterpreter->listFieldDirective($directiveClass::getDirectiveName());
-            },
-            $dataloadingEngine->getMandatoryRootDirectiveClasses()
+        return array_merge(
+            array_map(
+                function($directiveClass) use($fieldQueryInterpreter) {
+                    return $fieldQueryInterpreter->listFieldDirective($directiveClass::getDirectiveName());
+                },
+                $dataloadingEngine->getMandatoryRootDirectiveClasses()
+            ),
+            array_map(
+                function($directive) use($fieldQueryInterpreter) {
+                    return $fieldQueryInterpreter->listFieldDirective($directive);
+                },
+                $dataloadingEngine->getMandatoryRootDirectives()
+            )
         );
     }
 
