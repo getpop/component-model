@@ -65,7 +65,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     * setSelfAsExpression, cacheControl
     * Because it may be more convenient to add the directive or the class, there are 2 methods
     */
-    protected function getMandatoryRootDirectives() {
+    protected function getMandatoryDirectives() {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         $dataloadingEngine = DataloadingEngineFacade::getInstance();
         return array_merge(
@@ -73,13 +73,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 function($directiveClass) use($fieldQueryInterpreter) {
                     return $fieldQueryInterpreter->listFieldDirective($directiveClass::getDirectiveName());
                 },
-                $dataloadingEngine->getMandatoryRootDirectiveClasses()
+                $dataloadingEngine->getMandatoryDirectiveClasses()
             ),
             array_map(
                 function($directive) use($fieldQueryInterpreter) {
                     return $fieldQueryInterpreter->listFieldDirective($directive);
                 },
-                $dataloadingEngine->getMandatoryRootDirectives()
+                $dataloadingEngine->getMandatoryDirectives()
             )
         );
     }
@@ -456,7 +456,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             QuerySyntax::SYMBOL_FIELDDIRECTIVE_SEPARATOR,
             array_map(
                 [$fieldQueryInterpreter, 'convertDirectiveToFieldDirective'],
-                $this->getMandatoryRootDirectives()
+                $this->getMandatoryDirectives()
             )
         );
         foreach ($ids_data_fields as $id => $data_fields) {

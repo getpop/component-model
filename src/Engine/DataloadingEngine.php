@@ -6,32 +6,32 @@ class DataloadingEngine implements DataloadingEngineInterface
     protected $mandatoryRootDirectiveClasses = [];
     protected $mandatoryRootDirectives = [];
 
-    public function getMandatoryRootDirectiveClasses(): array
+    public function getMandatoryDirectiveClasses(): array
     {
         return $this->mandatoryRootDirectiveClasses;
     }
-    public function getMandatoryRootDirectives(): array
+    public function getMandatoryDirectives(): array
     {
         return $this->mandatoryRootDirectives;
     }
 
-    public function addMandatoryRootDirectiveClass(string $directiveClass): void
+    public function addMandatoryDirectiveClass(string $directiveClass): void
     {
         $this->mandatoryRootDirectiveClasses[] = $directiveClass;
     }
-    public function addMandatoryRootDirective(string $directive): void
+    public function addMandatoryDirective(string $directive): void
     {
         $this->mandatoryRootDirectives[] = $directive;
     }
 
-    public function addMandatoryRootDirectiveClasses(array $directiveClasses): void
+    public function addMandatoryDirectiveClasses(array $directiveClasses): void
     {
         $this->mandatoryRootDirectiveClasses = array_merge(
             $this->mandatoryRootDirectiveClasses,
             $directiveClasses
         );
     }
-    public function addMandatoryRootDirectives(array $directives): void
+    public function addMandatoryDirectives(array $directives): void
     {
         $this->mandatoryRootDirectives = array_merge(
             $this->mandatoryRootDirectives,

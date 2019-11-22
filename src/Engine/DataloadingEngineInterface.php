@@ -3,7 +3,7 @@ namespace PoP\ComponentModel\Engine;
 
 interface DataloadingEngineInterface
 {
-    public function getMandatoryRootDirectiveClasses(): array;
-    public function addMandatoryRootDirectiveClass(string $directiveClass): void;
-    public function addMandatoryRootDirectiveClasses(array $directiveClasses): void;
+    public function getMandatoryDirectiveClasses(): array;
+    public function addMandatoryDirectiveClass(string $directiveClass): void;
+    public function addMandatoryDirectiveClasses(array $directiveClasses): void;
 }

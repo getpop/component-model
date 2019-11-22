@@ -25,7 +25,7 @@ class ServiceConfiguration
         // Inject the mandatory root directives
         ContainerBuilderUtils::injectValuesIntoService(
             'dataloading_engine',
-            'addMandatoryRootDirectiveClasses',
+            'addMandatoryDirectiveClasses',
             [
                 ValidateDirectiveResolver::class,
                 ResolveValueAndMergeDirectiveResolver::class,
