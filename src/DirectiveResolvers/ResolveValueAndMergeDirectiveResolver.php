@@ -26,6 +26,16 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
         return PipelinePositions::BACK;
     }
 
+    /**
+     * Resolving the value can be executed only once (and it is mandatory!)
+     *
+     * @return boolean
+     */
+    public function canExecuteMultipleTimesInField(): bool
+    {
+        return false;
+    }
+
     public function resolveDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Iterate data, extract into final results

@@ -26,6 +26,16 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
         return PipelinePositions::MIDDLE;
     }
 
+    /**
+     * Validating the directive can be done only once (and it is mandatory!)
+     *
+     * @return boolean
+     */
+    public function canExecuteMultipleTimesInField(): bool
+    {
+        return false;
+    }
+
     public function resolveDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         $this->validateAndFilterFields($fieldResolver, $idsDataFields, $succeedingPipelineIDsDataFields, $variables, $schemaErrors, $schemaWarnings, $schemaDeprecations);

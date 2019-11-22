@@ -242,13 +242,13 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     }
 
     /**
-     * By default, a directive can be executed only once in the field (i.e. placed only once in the directive pipeline)
+     * By default, a directive can be executed multiple times in the field (eg: <translate(en,es),translate(es,en)>)
      *
      * @return boolean
      */
     public function canExecuteMultipleTimesInField(): bool
     {
-        return false;
+        return true;
     }
 
     /**
