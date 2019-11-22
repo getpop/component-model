@@ -156,13 +156,32 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         // Count how many times each directive is added
         $directiveCount = [];
         for ($i=0; $i<count($fieldDirectives); $i++) {
-            $fieldDirective = $fieldDirectives[$i];
-            $directive = $fieldQueryInterpreter->listFieldDirective($fieldDirective);
-            $directiveName = $fieldQueryInterpreter->getDirectiveName($directive);
-            $fieldDirective = $fieldQueryInterpreter->convertDirectiveToFieldDirective($directive);
+            // Because directives can be repeated inside a field (eg: <resize(50%),resize(50%)>),
+            // then we deal with 2 variables:
+            // 1. $fieldDirective: the actual directive
+            // 2. $enqueuedFieldDirective: how it was added to the array
+            // For retrieving the idsDataFields for the directive, we'll use $enqueuedFieldDirective, since under this entry we stored all the data in the previous functions
+            // For everything else, we use $fieldDirective
+            $enqueuedFieldDirective = $fieldDirectives[$i];
+            // Check if it is a repeated directive: if it has the "|" symbol
+            $counterSeparatorPos = QueryUtils::findLastSymbolPosition(
+                $enqueuedFieldDirective,
+                self::REPEATED_DIRECTIVE_COUNTER_SEPARATOR,
+                [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING],
+                [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING],
+                QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING,
+                QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING
+            );
+            $isRepeatedFieldDirective = $counterSeparatorPos !== false;
+            if ($isRepeatedFieldDirective) {
+                // Remove the "|counter" bit from the fieldDirective
+                $fieldDirective = substr($enqueuedFieldDirective, 0, $counterSeparatorPos);
+            } else {
+                $fieldDirective = $enqueuedFieldDirective;
+            }
 
             // if (is_null($this->fieldDirectiveInstanceCache[$fieldDirective])) {
-            $directiveArgs = $fieldQueryInterpreter->extractStaticDirectiveArguments($fieldDirective);
+            $directiveName = $fieldQueryInterpreter->getFieldDirectiveName($fieldDirective);
             $directiveClasses = $directiveNameClasses[$directiveName];
             // If there is no directive with this name, show an error and skip it
             if (is_null($directiveClasses)) {
@@ -174,8 +193,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             }
 
             // Calculate directives per field
+            $directiveArgs = $fieldQueryInterpreter->extractStaticDirectiveArguments($fieldDirective);
             $fieldDirectiveResolverInstances = [];
-            foreach ($fieldDirectiveFields[$fieldDirective] as $field) {
+            foreach ($fieldDirectiveFields[$enqueuedFieldDirective] as $field) {
                 // Check that at least one class which deals with this directiveName can satisfy the directive (for instance, validating that a required directiveArg is present)
                 $fieldName = $fieldQueryInterpreter->getFieldName($field);
                 foreach ($directiveClasses as $directiveClass) {
@@ -211,7 +231,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             }
 
             $directiveResolverInstanceFields = [];
-            foreach ($fieldDirectiveFields[$fieldDirective] as $field) {
+            foreach ($fieldDirectiveFields[$enqueuedFieldDirective] as $field) {
                 $directiveResolverInstance = $fieldDirectiveResolverInstances[$field];
                 if (is_null($directiveResolverInstance)) {
                     $schemaErrors[$fieldDirective][] = sprintf(
@@ -224,11 +244,12 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 }
 
                 // Consolidate the same directiveResolverInstances for different fields, as to do the validation only once on each of them
-                $instanceID = get_class($directiveResolverInstance).$fieldDirective;
+                $instanceID = get_class($directiveResolverInstance).$enqueuedFieldDirective;
                 $directiveResolverInstanceFields[$instanceID]['instance'] = $directiveResolverInstance;
                 $directiveResolverInstanceFields[$instanceID]['fields'][] = $field;
             }
-            // Validate the directiveResolvers
+
+            // Validate all the directiveResolvers in the field
             foreach ($directiveResolverInstanceFields as $instanceID => $instanceData) {
                 $directiveResolverInstance = $instanceData['instance'];
                 $directiveResolverFields = $instanceData['fields'];
@@ -298,28 +319,29 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     );
                     continue;
                 }
+            }
 
-                // Directive is valid so far. Assign the instance to the cache
-                //     $this->fieldDirectiveInstanceCache[$fieldDirective] = $directiveResolverInstance;
-                // }
-                // $directiveResolverInstance = $this->fieldDirectiveInstanceCache[$fieldDirective];
+            // Directive is valid so far. Assign the instance to the cache
+            //     $this->fieldDirectiveInstanceCache[$fieldDirective] = $directiveResolverInstance;
+            // }
+            // $directiveResolverInstance = $this->fieldDirectiveInstanceCache[$fieldDirective];
 
-                // Validate if the directive can be executed multiple times
-                $removeIndexes = [];
-                for ($index=0; $index<count($directiveResolverFields); $index++) {
-                    $field = $directiveResolverFields[$index];
-                    $directiveCount[$field][$directiveName] = isset($directiveCount[$field][$directiveName]) ? $directiveCount[$field][$directiveName] + 1 : 1;
-                    if ($directiveCount[$field][$directiveName] > 1 && !$directiveResolverInstance->canExecuteMultipleTimesInField()) {
-                        $schemaErrors[$fieldDirective][] = sprintf(
-                            $translationAPI->__('Directive \'%s\' can be executed only once within field \'%s\', so the current execution (number %s) has been ignored', 'pop-component-model'),
-                            $fieldDirective,
-                            $field,
-                            $directiveCount[$field][$directiveName]
-                        );
-                        // Remove the element from the list
-                        $removeIndexes[] = $index;
-                    }
+            // Validate if the directive can be executed multiple times
+            $removeIndexes = [];
+            for ($index=0; $index<count($directiveResolverFields); $index++) {
+                $field = $directiveResolverFields[$index];
+                $directiveCount[$field][$directiveName] = isset($directiveCount[$field][$directiveName]) ? $directiveCount[$field][$directiveName] + 1 : 1;
+                if ($directiveCount[$field][$directiveName] > 1 && !$directiveResolverInstance->canExecuteMultipleTimesInField()) {
+                    $schemaErrors[$fieldDirective][] = sprintf(
+                        $translationAPI->__('Directive \'%s\' can be executed only once within field \'%s\', so the current execution (number %s) has been ignored', 'pop-component-model'),
+                        $fieldDirective,
+                        $field,
+                        $directiveCount[$field][$directiveName]
+                    );
+                    // Remove the element from the list
+                    $removeIndexes[] = $index;
                 }
+
                 // Remove the fields whose count are not permitted. Start from the end
                 foreach(array_reverse($removeIndexes) as $index) {
                     array_splice($directiveResolverFields, $index, 1);
@@ -412,7 +434,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     // Eg: resizing a pic to 25%: <resize(50%),resize(50%)>
                     // However, because we are adding the $idsDataFields under key $fieldDirective, when the 2nd occurrence of the directive is found,
                     // adding data would just override the previous entry, and we can't keep track that it's another iteration
-                    // Then, as solution, change the name of the $fieldDirective, adding "|counter"
+                    // Then, as solution, change the name of the $fieldDirective, adding "|counter". This is an artificial construction,
+                    // in which the "|" symbol could not be part of the field naturally
                     if (isset($this->fieldDirectiveCounter[$field][(string)$id][$fieldDirective])) {
                         // Increase counter and add to $fieldDirective
                         $fieldDirective .= self::REPEATED_DIRECTIVE_COUNTER_SEPARATOR.(++$this->fieldDirectiveCounter[$field][(string)$id][$fieldDirective]);
@@ -442,24 +465,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $this->fieldDirectiveIDFields = [];
             $this->fieldDirectiveCounter = [];
 
-            // Calculate the fieldDirectives. If there is a duplicated directive, we remove the "|counter" from them
-            $fieldDirectives = array_map(
-                function($fieldDirective) {
-                    $counterPos = QueryUtils::findLastSymbolPosition(
-                        $fieldDirective,
-                        self::REPEATED_DIRECTIVE_COUNTER_SEPARATOR,
-                        [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING],
-                        [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING],
-                        QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING,
-                        QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING
-                    );
-                    if ($counterPos !== false) {
-                        return substr($fieldDirective, 0, $counterPos);
-                    }
-                    return $fieldDirective;
-                },
-                array_keys($fieldDirectiveIDFields)
-            );
+            // Calculate the fieldDirectives
+            $fieldDirectives = array_keys($fieldDirectiveIDFields);
 
             // Calculate all the fields on which the directive will be applied.
             $fieldDirectiveFields = $fieldDirectiveFieldIDs = [];
