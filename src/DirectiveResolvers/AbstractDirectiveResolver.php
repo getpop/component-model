@@ -560,6 +560,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         $directiveName = $this->getDirectiveName();
         $schemaDefinition = [
             SchemaDefinition::ARGNAME_NAME => $directiveName,
+            SchemaDefinition::ARGNAME_DIRECTIVE_PIPELINE_POSITION => $this->getPipelinePosition(),
             SchemaDefinition::ARGNAME_DIRECTIVE_CAN_EXECUTE_MULTIPLE_TIMES => $this->canExecuteMultipleTimesInField(),
             SchemaDefinition::ARGNAME_DIRECTIVE_NEEDS_DATA_TO_EXECUTE => $this->needsIDsDataFieldsToExecute(),
         ];
