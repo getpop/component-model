@@ -36,8 +36,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
     private $fieldDirectiveIDFields = [];
     private $fieldDirectiveCounter = [];
-    private $fieldDirectivePipelineInstanceCache = [];
-    private $fieldDirectiveInstanceCache = [];
     private $fieldDirectivesFromFieldCache = [];
     private $dissectedFieldForSchemaCache = [];
     private $fieldResolverSchemaIdsCache = [];
@@ -147,8 +145,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
     protected function validateAndResolveInstances(array $fieldDirectives, array $fieldDirectiveFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
-        // Pipeline cache
-        // if (is_null($this->fieldDirectivePipelineInstanceCache[$fieldDirectives])) {
         $translationAPI = TranslationAPIFacade::getInstance();
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         $directiveNameClasses = $this->getDirectiveNameClasses();
@@ -187,7 +183,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $fieldDirective = $enqueuedFieldDirective;
             }
 
-            // if (is_null($this->fieldDirectiveInstanceCache[$fieldDirective])) {
             $directiveName = $fieldQueryInterpreter->getFieldDirectiveName($fieldDirective);
             $directiveClasses = $directiveNameClasses[$directiveName];
             // If there is no directive with this name, show an error and skip it
@@ -363,11 +358,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 }
             }
 
-            // Directive is valid so far. Assign the instance to the cache
-            //     $this->fieldDirectiveInstanceCache[$fieldDirective] = $directiveResolverInstance;
-            // }
-            // $directiveResolverInstance = $this->fieldDirectiveInstanceCache[$fieldDirective];
-
             // Validate if the directive can be executed multiple times
             $removeIndexes = [];
             for ($index=0; $index<count($directiveResolverFields); $index++) {
@@ -402,7 +392,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             }
         }
         return $instances;
-        // }
     }
 
     /**
