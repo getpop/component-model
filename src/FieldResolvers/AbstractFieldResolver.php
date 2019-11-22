@@ -4,6 +4,7 @@ use PoP\FieldQuery\QueryUtils;
 use PoP\FieldQuery\QuerySyntax;
 use PoP\FieldQuery\QueryHelpers;
 use PoP\ComponentModel\ErrorUtils;
+use PoP\ComponentModel\Environment;
 use PoP\FieldQuery\FieldQueryUtils;
 use League\Pipeline\PipelineBuilder;
 use PoP\ComponentModel\DataloaderInterface;
@@ -152,6 +153,12 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         $directiveNameClasses = $this->getDirectiveNameClasses();
 
+        // Check if, once a directive fails, the continuing directives must execute or not
+        $stopDirectivePipelineExecutionIfDirectiveFailed = Environment::stopDirectivePipelineExecutionIfDirectiveFailed();
+        if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
+            $stopDirectivePipelineExecutionPlaceholder = $translationAPI->__('Because directive \'%s\' failed, the succeeding directives in the pipeline have not been executed', 'pop-component-model');
+        }
+
         $instances = [];
         // Count how many times each directive is added
         $directiveCount = [];
@@ -189,6 +196,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     $translationAPI->__('No DirectiveResolver resolves directive with name \'%s\'', 'pop-component-model'),
                     $directiveName
                 );
+                if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
+                    $schemaErrors[$fieldDirective][] = sprintf(
+                        $stopDirectivePipelineExecutionPlaceholder,
+                        $fieldDirective
+                    );
+                    break;
+                }
                 continue;
             }
 
@@ -227,6 +241,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                         $fieldDirectiveFields[$fieldDirective]
                     )
                 );
+                if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
+                    $schemaErrors[$fieldDirective][] = sprintf(
+                        $stopDirectivePipelineExecutionPlaceholder,
+                        $fieldDirective
+                    );
+                    break;
+                }
                 continue;
             }
 
@@ -240,6 +261,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                         json_encode($directiveArgs),
                         $field
                     );
+                    if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
+                        $schemaErrors[$fieldDirective][] = sprintf(
+                            $stopDirectivePipelineExecutionPlaceholder,
+                            $fieldDirective
+                        );
+                        break;
+                    }
                     continue;
                 }
 
@@ -303,6 +331,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 }
                 // Check that the directive is a valid one (eg: no schema errors)
                 if (is_null($validFieldDirective)) {
+                    if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
+                        $schemaErrors[$fieldDirective][] = sprintf(
+                            $stopDirectivePipelineExecutionPlaceholder,
+                            $fieldDirective
+                        );
+                        break;
+                    }
                     continue;
                 }
 
@@ -317,6 +352,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                         $fieldDirective,
                         $maybeError
                     );
+                    if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
+                        $schemaErrors[$fieldDirective][] = sprintf(
+                            $stopDirectivePipelineExecutionPlaceholder,
+                            $fieldDirective
+                        );
+                        break;
+                    }
                     continue;
                 }
             }
