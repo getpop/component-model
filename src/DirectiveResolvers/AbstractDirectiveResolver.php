@@ -232,13 +232,13 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     }
 
     /**
-     * By default, place the directive between Validate and ResolveAndMerge directives
+     * By default, place the directive after the ResolveAndMerge directive, so the property will be in $dbItems by then
      *
      * @return void
      */
     public function getPipelinePosition(): string
     {
-        return PipelinePositions::MIDDLE;
+        return PipelinePositions::BACK;
     }
 
     /**
