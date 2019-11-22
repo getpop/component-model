@@ -802,7 +802,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         return $fieldArgValue;
     }
 
-    protected function maybeConvertFieldArgumentArrayValue($fieldArgValue, ?array $variables)
+    public function maybeConvertFieldArgumentArrayValue($fieldArgValue, ?array $variables = null)
     {
         if (is_string($fieldArgValue)) {
             $fieldArgValue = $this->maybeConvertFieldArgumentArrayValueFromStringToArray($fieldArgValue);

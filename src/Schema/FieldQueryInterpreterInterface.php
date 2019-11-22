@@ -21,4 +21,5 @@ interface FieldQueryInterpreterInterface extends \PoP\FieldQuery\FieldQueryInter
     public function extractFieldArgumentsForResultItem(FieldResolverInterface $fieldResolver, $resultItem, string $field, ?array $variables, ?array $expressions): array;
     public function extractDirectiveArgumentsForResultItem(DirectiveResolverInterface $directiveResolver, FieldResolverInterface $fieldResolver, $resultItem, string $directive, array $variables, array $expressions): array;
     public function maybeConvertFieldArgumentValue($fieldArgValue, ?array $variables = null);
+    public function maybeConvertFieldArgumentArrayValue($fieldArgValue, ?array $variables = null);
 }
