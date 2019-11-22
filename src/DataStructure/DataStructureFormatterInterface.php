@@ -6,5 +6,5 @@ interface DataStructureFormatterInterface
     public static function getName();
     public function getFormattedData($data);
     public function getContentType();
-    public function outputResponse(&$data);
+    public function outputResponse(&$data, array $headers = []);
 }
