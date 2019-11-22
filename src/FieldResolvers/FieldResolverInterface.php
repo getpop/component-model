@@ -37,4 +37,5 @@ interface FieldResolverInterface
      */
     public function resolveDirectivesIntoPipelineData(array $fieldDirectives, array &$fieldDirectiveFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array;
     public function getDirectivePipeline(array $directiveResolverInstances): DirectivePipelineDecorator;
+    public function getDirectiveResolverInstanceForDirective(string $fieldDirective, array $fieldDirectiveFields): ?array;
 }

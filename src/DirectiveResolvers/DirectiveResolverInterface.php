@@ -54,9 +54,10 @@ interface DirectiveResolverInterface
      * @param FieldResolverInterface $fieldResolver
      * @param string $directiveName
      * @param array $directiveArgs
+     * @param string $field
      * @return boolean
      */
-    public function resolveCanProcess(FieldResolverInterface $fieldResolver, string $directiveName, array $directiveArgs = []): bool;
+    public function resolveCanProcess(FieldResolverInterface $fieldResolver, string $directiveName, array $directiveArgs = [], string $field): bool;
     /**
      * Indicates if the directive can be added several times to the pipeline, or only once
      *

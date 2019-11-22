@@ -169,7 +169,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
      * @param array $directiveArgs
      * @return boolean
      */
-    public function resolveCanProcess(FieldResolverInterface $fieldResolver, string $directiveName, array $directiveArgs = []): bool
+    public function resolveCanProcess(FieldResolverInterface $fieldResolver, string $directiveName, array $directiveArgs = [], string $field): bool
     {
         return true;
     }

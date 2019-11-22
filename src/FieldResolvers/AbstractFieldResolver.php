@@ -152,7 +152,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
-        $directiveNameClasses = $this->getDirectiveNameClasses();
 
         // Check if, once a directive fails, the continuing directives must execute or not
         $stopDirectivePipelineExecutionIfDirectiveFailed = Environment::stopDirectivePipelineExecutionIfDirectiveFailed();
@@ -189,10 +188,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $fieldDirective = $enqueuedFieldDirective;
             }
 
+            $fieldDirectiveResolverInstances = $this->getDirectiveResolverInstanceForDirective($fieldDirective, $fieldDirectiveFields[$enqueuedFieldDirective]);
             $directiveName = $fieldQueryInterpreter->getFieldDirectiveName($fieldDirective);
-            $directiveClasses = $directiveNameClasses[$directiveName];
             // If there is no directive with this name, show an error and skip it
-            if (is_null($directiveClasses)) {
+            if (is_null($fieldDirectiveResolverInstances)) {
                 $schemaErrors[$fieldDirective][] = sprintf(
                     $translationAPI->__('No DirectiveResolver resolves directive with name \'%s\'', 'pop-component-model'),
                     $directiveName
@@ -206,31 +205,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 }
                 continue;
             }
-
-            // Calculate directives per field
             $directiveArgs = $fieldQueryInterpreter->extractStaticDirectiveArguments($fieldDirective);
-            $fieldDirectiveResolverInstances = [];
-            foreach ($fieldDirectiveFields[$enqueuedFieldDirective] as $field) {
-                // Check that at least one class which deals with this directiveName can satisfy the directive (for instance, validating that a required directiveArg is present)
-                $fieldName = $fieldQueryInterpreter->getFieldName($field);
-                foreach ($directiveClasses as $directiveClass) {
-                    // Get the instance from the cache if it exists, or create it if not
-                    if (is_null($this->directiveResolverInstanceCache[$directiveClass][$fieldDirective])) {
-                        $this->directiveResolverInstanceCache[$directiveClass][$fieldDirective] = new $directiveClass($fieldDirective);
-                    }
-                    $maybeDirectiveResolverInstance = $this->directiveResolverInstanceCache[$directiveClass][$fieldDirective];
-                    $directiveSupportedFieldNames = $maybeDirectiveResolverInstance->getFieldNamesToApplyTo();
-                    if (
-                        // Check if this field is supported by the directive
-                        (!$directiveSupportedFieldNames || in_array($fieldName, $directiveSupportedFieldNames)) &&
-                        // Check if this instance can process the directive
-                        $maybeDirectiveResolverInstance->resolveCanProcess($this, $directiveName, $directiveArgs)
-                    ) {
-                        $fieldDirectiveResolverInstances[$field] = $maybeDirectiveResolverInstance;
-                        break;
-                    }
-                }
-            }
 
             if (empty($fieldDirectiveResolverInstances)) {
                 $schemaErrors[$fieldDirective][] = sprintf(
@@ -410,6 +385,44 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $instances[$instanceID]['fields'] = $directiveResolverFields;
         }
         return $instances;
+    }
+
+    public function getDirectiveResolverInstanceForDirective(string $fieldDirective, array $fieldDirectiveFields): ?array
+    {
+        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+        $directiveName = $fieldQueryInterpreter->getFieldDirectiveName($fieldDirective);
+        $directiveArgs = $fieldQueryInterpreter->extractStaticDirectiveArguments($fieldDirective);
+
+        $directiveNameClasses = $this->getDirectiveNameClasses();
+        $directiveClasses = $directiveNameClasses[$directiveName];
+        if (is_null($directiveClasses)) {
+            return null;
+        }
+
+        // Calculate directives per field
+        $fieldDirectiveResolverInstances = [];
+        foreach ($fieldDirectiveFields as $field) {
+            // Check that at least one class which deals with this directiveName can satisfy the directive (for instance, validating that a required directiveArg is present)
+            $fieldName = $fieldQueryInterpreter->getFieldName($field);
+            foreach ($directiveClasses as $directiveClass) {
+                // Get the instance from the cache if it exists, or create it if not
+                if (is_null($this->directiveResolverInstanceCache[$directiveClass][$fieldDirective])) {
+                    $this->directiveResolverInstanceCache[$directiveClass][$fieldDirective] = new $directiveClass($fieldDirective);
+                }
+                $maybeDirectiveResolverInstance = $this->directiveResolverInstanceCache[$directiveClass][$fieldDirective];
+                $directiveSupportedFieldNames = $maybeDirectiveResolverInstance->getFieldNamesToApplyTo();
+                if (
+                    // Check if this field is supported by the directive
+                    (!$directiveSupportedFieldNames || in_array($fieldName, $directiveSupportedFieldNames)) &&
+                    // Check if this instance can process the directive
+                    $maybeDirectiveResolverInstance->resolveCanProcess($this, $directiveName, $directiveArgs, $field)
+                ) {
+                    $fieldDirectiveResolverInstances[$field] = $maybeDirectiveResolverInstance;
+                    break;
+                }
+            }
+        }
+        return $fieldDirectiveResolverInstances;
     }
 
     /**
