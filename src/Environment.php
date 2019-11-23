@@ -8,7 +8,7 @@ class Environment
      *
      * @return void
      */
-    public static function removeFieldIfDirectiveFailed()
+    public static function removeFieldIfDirectiveFailed(): bool
     {
         return isset($_ENV['REMOVE_FIELD_IF_DIRECTIVE_FAILED']) ? strtolower($_ENV['REMOVE_FIELD_IF_DIRECTIVE_FAILED']) == "true" : false;
     }
@@ -18,7 +18,7 @@ class Environment
      *
      * @return void
      */
-    public static function stopDirectivePipelineExecutionIfDirectiveFailed()
+    public static function stopDirectivePipelineExecutionIfDirectiveFailed(): bool
     {
         return isset($_ENV['STOP_DIRECTIVE_PIPELINE_EXECUTION_IF_DIRECTIVE_FAILED']) ? strtolower($_ENV['STOP_DIRECTIVE_PIPELINE_EXECUTION_IF_DIRECTIVE_FAILED']) == "true" : false;
     }
