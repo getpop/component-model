@@ -552,10 +552,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                         $fieldDirectiveFieldIDs[$fieldDirective][$field][] = $id;
                     }
                 }
+                $fieldDirectiveFields[$fieldDirective] = array_unique($fieldDirectiveFields[$fieldDirective]);
             }
             $fieldDirectiveDirectFields = array_unique($fieldDirectiveDirectFields);
             $idFieldDirectiveIDFields = array_unique($idFieldDirectiveIDFields);
-            $fieldDirectiveFields[$fieldDirective] = array_unique($fieldDirectiveFields[$fieldDirective]);
 
             // Validate and resolve the directives into instances and fields they operate on
             $directivePipelineData = $this->resolveDirectivesIntoPipelineData($fieldDirectives, $fieldDirectiveFields, $variables, $schemaErrors, $schemaWarnings, $schemaDeprecations);

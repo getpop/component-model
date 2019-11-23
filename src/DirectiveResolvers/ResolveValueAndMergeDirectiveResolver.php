@@ -48,6 +48,7 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+        $enqueueFillingResultItemsFromIDs = [];
         foreach (array_keys($idsDataFields) as $id) {
             // Obtain its ID and the required data-fields for that ID
             $resultItem = $resultIDItems[$id];
@@ -79,17 +80,22 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
                     $conditionSatisfied = false;
                 }
                 if ($conditionSatisfied) {
-                    // Shape of $conditionalResultIDItems: [$id => $resultItem];
-                    $fieldResolver->enqueueFillingResultItemsFromIDs(
-                        [
-                            (string)$id => [
-                                'direct' => array_keys($conditionalDataFields),
-                                'conditional' => $conditionalDataFields,
-                            ],
-                        ]
-                    );
+                    $enqueueFillingResultItemsFromIDs[(string)$id]['direct'] = array_unique(array_merge(
+                        $enqueueFillingResultItemsFromIDs[(string)$id]['direct'] ?? [],
+                        array_keys($conditionalDataFields)
+                    ));
+                    foreach ($conditionalDataFields as $nextConditionDataField => $nextConditionalDataFields) {
+                        $enqueueFillingResultItemsFromIDs[(string)$id]['conditional'][$nextConditionDataField] = array_merge_recursive(
+                            $enqueueFillingResultItemsFromIDs[(string)$id]['conditional'][$nextConditionDataField] ?? [],
+                            $nextConditionalDataFields
+                        );
+                    }
                 }
             }
+        }
+        // Enqueue items for the next iteration
+        if ($enqueueFillingResultItemsFromIDs) {
+            $fieldResolver->enqueueFillingResultItemsFromIDs($enqueueFillingResultItemsFromIDs);
         }
     }
 
