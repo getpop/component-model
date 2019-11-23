@@ -35,7 +35,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     protected $safeVars;
 
     private $fieldDirectiveIDFields = [];
-    private $fieldDirectiveCounter = [];
     private $fieldDirectivesFromFieldCache = [];
     private $dissectedFieldForSchemaCache = [];
     private $fieldResolverSchemaIdsCache = [];
@@ -472,6 +471,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $this->getMandatoryDirectives()
             )
         );
+        $fieldDirectiveCounter = [];
         foreach ($ids_data_fields as $id => $data_fields) {
             $fields = $data_fields['direct'];
             // Watch out: If there are conditional fields, these will be processed by this directive too
@@ -498,18 +498,21 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     // adding data would just override the previous entry, and we can't keep track that it's another iteration
                     // Then, as solution, change the name of the $fieldDirective, adding "|counter". This is an artificial construction,
                     // in which the "|" symbol could not be part of the field naturally
-                    if (isset($this->fieldDirectiveCounter[$field][(string)$id][$fieldDirective])) {
+                    if (isset($fieldDirectiveCounter[$field][(string)$id][$fieldDirective])) {
                         // Increase counter and add to $fieldDirective
-                        $fieldDirective .= self::REPEATED_DIRECTIVE_COUNTER_SEPARATOR.(++$this->fieldDirectiveCounter[$field][(string)$id][$fieldDirective]);
+                        $fieldDirective .= self::REPEATED_DIRECTIVE_COUNTER_SEPARATOR.(++$fieldDirectiveCounter[$field][(string)$id][$fieldDirective]);
                     } else {
-                        $this->fieldDirectiveCounter[$field][(string)$id][$fieldDirective] = 0;
+                        $fieldDirectiveCounter[$field][(string)$id][$fieldDirective] = 0;
                     }
                     // Store which ID/field this directive must process
                     if (in_array($field, $data_fields['direct'])) {
                         $this->fieldDirectiveIDFields[$fieldDirective][(string)$id]['direct'][] = $field;
                     }
                     if ($conditionalFields = $data_fields['conditional'][$field]) {
-                        $this->fieldDirectiveIDFields[$fieldDirective][(string)$id]['conditional'][$field] = $conditionalFields;
+                        $this->fieldDirectiveIDFields[$fieldDirective][(string)$id]['conditional'][$field] = array_merge_recursive(
+                            $this->fieldDirectiveIDFields[$fieldDirective][(string)$id]['conditional'][$field] ?? [],
+                            $conditionalFields
+                        );
                     }
                 }
             }
@@ -524,7 +527,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             // Now that we have all data, remove all entries from the inner stack.
             // It may be filled again with nested directives, when resolving the pipeline
             $this->fieldDirectiveIDFields = [];
-            $this->fieldDirectiveCounter = [];
 
             // Calculate the fieldDirectives
             $fieldDirectives = array_keys($fieldDirectiveIDFields);
