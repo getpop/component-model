@@ -97,7 +97,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
      * @param array $schemaDeprecations
      * @return array
      */
-    public function resolveDirectivesIntoPipelineData(array $fieldDirectives, array &$fieldDirectiveFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    public function resolveDirectivesIntoPipelineData(array $fieldDirectives, array &$fieldDirectiveFields, array &$variables, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         /**
         * All directives are placed somewhere in the pipeline. There are 3 positions:
@@ -112,7 +112,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         ];
 
         // Resolve from directive into their actual object instance.
-        $directiveResolverInstanceData = $this->validateAndResolveInstances($fieldDirectives, $fieldDirectiveFields, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+        $directiveResolverInstanceData = $this->validateAndResolveInstances($fieldDirectives, $fieldDirectiveFields, $variables, $schemaErrors, $schemaWarnings, $schemaDeprecations);
         // Create an array with the dataFields affected by each directive, in order in which they will be invoked
         foreach ($directiveResolverInstanceData as $instanceID => $directiveResolverInstanceData) {
             // Add the directive in its required position in the pipeline, and retrieve what fields it will process
@@ -148,7 +148,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         return $directivePipeline;
     }
 
-    protected function validateAndResolveInstances(array $fieldDirectives, array $fieldDirectiveFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    protected function validateAndResolveInstances(array $fieldDirectives, array $fieldDirectiveFields, array &$variables, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
@@ -188,7 +188,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $fieldDirective = $enqueuedFieldDirective;
             }
 
-            $fieldDirectiveResolverInstances = $this->getDirectiveResolverInstanceForDirective($fieldDirective, $fieldDirectiveFields[$enqueuedFieldDirective]);
+            $fieldDirectiveResolverInstances = $this->getDirectiveResolverInstanceForDirective($fieldDirective, $fieldDirectiveFields[$enqueuedFieldDirective], $variables);
             $directiveName = $fieldQueryInterpreter->getFieldDirectiveName($fieldDirective);
             // If there is no directive with this name, show an error and skip it
             if (is_null($fieldDirectiveResolverInstances)) {
@@ -279,7 +279,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     $validFieldDirective,
                     $directiveName,
                     $directiveArgs,
-                ) = $directiveResolverInstance->dissectAndValidateDirectiveForSchema($this, $fieldDirectiveFields, $fieldSchemaErrors, $fieldSchemaWarnings, $fieldSchemaDeprecations);
+                ) = $directiveResolverInstance->dissectAndValidateDirectiveForSchema($this, $fieldDirectiveFields, $variables, $fieldSchemaErrors, $fieldSchemaWarnings, $fieldSchemaDeprecations);
                 // For each error/warning/deprecation, add the field to provide a better message
                 foreach ($fieldSchemaDeprecations as $deprecationFieldDirective => $deprecations) {
                     foreach ($deprecations as $deprecation) {
@@ -387,7 +387,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         return $instances;
     }
 
-    public function getDirectiveResolverInstanceForDirective(string $fieldDirective, array $fieldDirectiveFields): ?array
+    public function getDirectiveResolverInstanceForDirective(string $fieldDirective, array $fieldDirectiveFields, array &$variables): ?array
     {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         $directiveName = $fieldQueryInterpreter->getFieldDirectiveName($fieldDirective);
@@ -415,7 +415,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     // Check if this field is supported by the directive
                     (!$directiveSupportedFieldNames || in_array($fieldName, $directiveSupportedFieldNames)) &&
                     // Check if this instance can process the directive
-                    $maybeDirectiveResolverInstance->resolveCanProcess($this, $directiveName, $directiveArgs, $field)
+                    $maybeDirectiveResolverInstance->resolveCanProcess($this, $directiveName, $directiveArgs, $field, $variables)
                 ) {
                     $fieldDirectiveResolverInstances[$field] = $maybeDirectiveResolverInstance;
                     break;
@@ -563,7 +563,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             }
 
             // Validate and resolve the directives into instances and fields they operate on
-            $directivePipelineData = $this->resolveDirectivesIntoPipelineData($fieldDirectives, $fieldDirectiveFields, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+            $directivePipelineData = $this->resolveDirectivesIntoPipelineData($fieldDirectives, $fieldDirectiveFields, $variables, $schemaErrors, $schemaWarnings, $schemaDeprecations);
 
             // From the fields, reconstitute the $idsDataFields for each directive, and build the array to pass to the pipeline, for each directive (stage)
             $directiveResolverInstances = $pipelineIDsDataFields = [];

@@ -23,7 +23,7 @@ interface DirectiveResolverInterface
      * @param array $schemaDeprecations
      * @return array
      */
-    public function dissectAndValidateDirectiveForSchema(FieldResolverInterface $fieldResolver, array &$fieldDirectiveFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array;
+    public function dissectAndValidateDirectiveForSchema(FieldResolverInterface $fieldResolver, array &$fieldDirectiveFields, array &$variables, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array;
 
     /**
      * Enable the directiveResolver to validate the directive arguments in a custom way
@@ -57,7 +57,7 @@ interface DirectiveResolverInterface
      * @param string $field
      * @return boolean
      */
-    public function resolveCanProcess(FieldResolverInterface $fieldResolver, string $directiveName, array $directiveArgs = [], string $field): bool;
+    public function resolveCanProcess(FieldResolverInterface $fieldResolver, string $directiveName, array $directiveArgs = [], string $field, array &$variables): bool;
     /**
      * Indicates if the directive can be added several times to the pipeline, or only once
      *
