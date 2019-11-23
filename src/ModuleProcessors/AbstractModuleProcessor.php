@@ -701,25 +701,17 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         return $ret;
     }
 
-    public function outputConditionFields(array $module, array &$props): bool
-    {
-        return true;
-    }
-
     public function getDatasetmoduletreeSectionFlattenedDataFields(array $module, array &$props): array
     {
         $ret = array();
-
-        // Check if to add the conditionFields to the output or not
-        $outputConditionFields = $this->outputConditionFields($module, $props);
 
         // Calculate the data-fields from merging them with the subcomponent modules' keys, which are data-fields too
         if ($data_fields = array_unique(
             array_merge(
                 $this->getDataFields($module, $props),
                 array_keys($this->getDomainSwitchingSubmodules($module)),
-                $outputConditionFields ? array_keys($this->getConditionalOnDataFieldSubmodules($module)) : [],
-                $outputConditionFields ? array_keys($this->getConditionalOnDataFieldDomainSwitchingSubmodules($module)) : []
+                array_keys($this->getConditionalOnDataFieldSubmodules($module)),
+                array_keys($this->getConditionalOnDataFieldDomainSwitchingSubmodules($module))
             )
         )) {
             $ret['data-fields'] = $data_fields;

@@ -71,26 +71,15 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
             // If the conditionalDataFields are empty, we already reached the end of the tree. Nothing else to do
             foreach (array_filter($idsDataFields[$id]['conditional']) as $conditionDataField => $conditionalDataFields) {
                 // Check if the condition field has value `true`
-                // There are 2 possibilities:
-                // 1. `outputConditionFields` => true in the ModuleProcessor: The conditionField has been defined as to be resolved, then it will be in $dbItems and can be retrieved from there
-                // 2. `outputConditionFields` => false in the ModuleProcessor: The conditionField is not present in $dbItems, so it must be resolved now
+                // All 'conditional' fields must have their own key as 'direct', then simply look for this element on $dbItems
                 $conditionFieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($conditionDataField);
                 if (isset($dbItems[$id]) && array_key_exists($conditionFieldOutputKey, $dbItems[$id])) {
                     $conditionSatisfied = (bool)$dbItems[$id][$conditionFieldOutputKey];
                 } else {
-                    $conditionFieldValue = $this->resolveFieldValue($dataloader, $fieldResolver, $id, $resultItem, $conditionDataField, $previousDBItems, $variables, $expressions, $dbWarnings);
-                    if (GeneralUtils::isError($conditionFieldValue)) {
-                        $error = $conditionFieldValue;
-                        $dbErrors[(string)$id][$conditionDataField] = array_merge(
-                            $dbErrors[(string)$id][$conditionDataField] ?? [],
-                            $error->getErrorMessages()
-                        );
-                        continue;
-                    }
-                    $conditionSatisfied = $conditionFieldValue;
+                    $conditionSatisfied = false;
                 }
                 if ($conditionSatisfied) {
-                    // $conditionalResultIDItems = [$id => $resultItem];
+                    // Shape of $conditionalResultIDItems: [$id => $resultItem];
                     $fieldResolver->enqueueFillingResultItemsFromIDs(
                         [
                             (string)$id => [
