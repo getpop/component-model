@@ -404,18 +404,18 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             // Check that at least one class which deals with this directiveName can satisfy the directive (for instance, validating that a required directiveArg is present)
             $fieldName = $fieldQueryInterpreter->getFieldName($field);
             foreach ($directiveClasses as $directiveClass) {
+                $directiveSupportedFieldNames = $directiveClass::getFieldNamesToApplyTo();
+                // If this field is not supported by the directive, skip
+                if ($directiveSupportedFieldNames && !in_array($fieldName, $directiveSupportedFieldNames)) {
+                    continue;
+                }
                 // Get the instance from the cache if it exists, or create it if not
                 if (is_null($this->directiveResolverInstanceCache[$directiveClass][$fieldDirective])) {
                     $this->directiveResolverInstanceCache[$directiveClass][$fieldDirective] = new $directiveClass($fieldDirective);
                 }
                 $maybeDirectiveResolverInstance = $this->directiveResolverInstanceCache[$directiveClass][$fieldDirective];
-                $directiveSupportedFieldNames = $maybeDirectiveResolverInstance->getFieldNamesToApplyTo();
-                if (
-                    // Check if this field is supported by the directive
-                    (!$directiveSupportedFieldNames || in_array($fieldName, $directiveSupportedFieldNames)) &&
-                    // Check if this instance can process the directive
-                    $maybeDirectiveResolverInstance->resolveCanProcess($this, $directiveName, $directiveArgs, $field, $variables)
-                ) {
+                // Check if this instance can process the directive
+                if ($maybeDirectiveResolverInstance->resolveCanProcess($this, $directiveName, $directiveArgs, $field, $variables)) {
                     $fieldDirectiveResolverInstances[$field] = $maybeDirectiveResolverInstance;
                     break;
                 }

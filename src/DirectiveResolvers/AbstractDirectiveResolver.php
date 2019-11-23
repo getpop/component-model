@@ -565,7 +565,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             SchemaDefinition::ARGNAME_DIRECTIVE_CAN_EXECUTE_MULTIPLE_TIMES => $this->canExecuteMultipleTimesInField(),
             // SchemaDefinition::ARGNAME_DIRECTIVE_NEEDS_DATA_TO_EXECUTE => $this->needsIDsDataFieldsToExecute(),
         ];
-        if ($limitedToFields = $this->getFieldNamesToApplyTo()) {
+        if ($limitedToFields = $this::getFieldNamesToApplyTo()) {
             $schemaDefinition[SchemaDefinition::ARGNAME_DIRECTIVE_LIMITED_TO_FIELDS] = $limitedToFields;
         }
         if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
