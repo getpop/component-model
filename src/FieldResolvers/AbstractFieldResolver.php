@@ -765,6 +765,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $schemaErrors,
                 $schemaWarnings,
             ) = $this->dissectFieldForSchema($field);
+
             // Store the warnings to be read if needed
             if ($schemaWarnings) {
                 $feedbackMessageStore->addSchemaWarnings($schemaWarnings);
@@ -772,6 +773,24 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             if ($schemaErrors) {
                 return ErrorUtils::getNestedSchemaErrorsFieldError($schemaErrors, $fieldName);
             }
+
+            // Important: calculate 'isAnyFieldArgumentValueDynamic' before resolving the args for the resultItem
+            // That is because if when resolving there is an error, the fieldArgValue will be removed completely, then we don't know that we must validate the schema again
+            // Eg: doing /?query=arrayUnique(extract(..., 0)) and extract fails, arrayUnique will have no fieldArgs. However its fieldArg is mandatory, but by then it doesn't know it needs to validate it
+            // Before resolving the fieldArgValues which are fields:
+            // Calculate $validateSchemaOnResultItem: if any value containes a field, then we must perform the schemaValidation on the item, such as checking that all mandatory fields are there
+            // For instance: After resolving a field and being casted it may be incorrect, so the value is invalidated, and after the schemaValidation the proper error is shown
+            // Also need to check for variables, since these must be resolved too
+            // For instance: ?query=posts(limit:3),post(id:$id).id|title&id=112
+            // We can also force it through an option. This is needed when the field is created on runtime.
+            // Eg: through the <transform> directive, in which case no parameter is dynamic anymore by the time it reaches here, yet it was not validated statically either
+            $validateSchemaOnResultItem =
+                $options[self::OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM] ||
+                FieldQueryUtils::isAnyFieldArgumentValueDynamic(
+                    array_values(
+                        $fieldQueryInterpreter->extractFieldArguments($this, $field)
+                    )
+                );
 
             // Once again, the $validField becomes the $field
             list(
@@ -789,20 +808,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             if ($dbErrors) {
                 return ErrorUtils::getNestedDBErrorsFieldError($dbErrors, $fieldName);
             }
-            // Before resolving the fieldArgValues which are fields:
-            // Calculate $validateSchemaOnResultItem: if any value containes a field, then we must perform the schemaValidation on the item, such as checking that all mandatory fields are there
-            // For instance: After resolving a field and being casted it may be incorrect, so the value is invalidated, and after the schemaValidation the proper error is shown
-            // Also need to check for variables, since these must be resolved too
-            // For instance: ?query=posts(limit:3),post(id:$id).id|title&id=112
-            // We can also force it through an option. This is needed when the field is created on runtime.
-            // Eg: through the <transform> directive, in which case no parameter is dynamic anymore by the time it reaches here, yet it was not validated statically either
-            $validateSchemaOnResultItem =
-                $options[self::OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM] ||
-                FieldQueryUtils::isAnyFieldArgumentValueDynamic(
-                    array_values(
-                        $fieldQueryInterpreter->extractFieldArguments($this, $field)
-                    )
-                );
+
             foreach ($fieldValueResolvers as $fieldValueResolver) {
                 // Also send the fieldResolver along, as to get the id of the $resultItem being passed
                 if ($fieldValueResolver->resolveCanProcessResultItem($this, $resultItem, $fieldName, $fieldArgs)) {
