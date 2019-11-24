@@ -28,6 +28,18 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         $this->directive = $directive ?? $this->getDirectiveName();
     }
 
+    /**
+     * If a directive does not operate over the resultItems, then it must not allow to add fields or dynamic values in the directive arguments
+     * Otherwise, it can lead to errors, since the field would never be transformed/casted to the expected type
+     * Eg: <cacheControl(maxAge:id())>
+     *
+     * @return bool
+     */
+    protected function disableDynamicFieldsFromDirectiveArgs(): bool
+    {
+        return false;
+    }
+
     public function dissectAndValidateDirectiveForSchema(FieldResolverInterface $fieldResolver, array &$fieldDirectiveFields, array &$variables, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         $translationAPI = TranslationAPIFacade::getInstance();
@@ -67,7 +79,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $directiveSchemaErrors,
             $directiveSchemaWarnings,
             $directiveSchemaDeprecations
-        ) = $fieldQueryInterpreter->extractDirectiveArgumentsForSchema($this, $fieldResolver, $this->directive);
+        ) = $fieldQueryInterpreter->extractDirectiveArgumentsForSchema($this, $fieldResolver, $this->directive, $variables, $this->disableDynamicFieldsFromDirectiveArgs());
 
         // Store the args, they may be used in `resolveDirective`
         $this->directiveArgsForSchema = $directiveArgs;
