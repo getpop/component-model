@@ -556,6 +556,10 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         return null;
     }
 
+    public function skipAddingToSchemaDefinition() {
+        return false;
+    }
+
     public function getSchemaDefinitionForDirective(FieldResolverInterface $fieldResolver): array
     {
         $directiveName = $this->getDirectiveName();

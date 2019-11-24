@@ -95,5 +95,11 @@ interface DirectiveResolverInterface
      * @return void
      */
     public function getSchemaDefinitionResolver(FieldResolverInterface $fieldResolver): ?SchemaDirectiveResolverInterface;
+    /**
+     * A directive can decide to not be added to the schema, eg: when it is repeated/implemented several times
+     *
+     * @return void
+     */
+    public function skipAddingToSchemaDefinition();
     public function getSchemaDefinitionForDirective(FieldResolverInterface $fieldResolver): array;
 }

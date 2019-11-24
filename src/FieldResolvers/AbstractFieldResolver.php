@@ -874,7 +874,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         foreach ($directiveNameClasses as $directiveName => $directiveClasses) {
             foreach ($directiveClasses as $directiveClass) {
                 $directiveResolverInstance = $instanceManager->getInstance($directiveClass);
-                // $directiveResolverInstance = new $directiveClass($directiveName);
+                // A directive can decide to not be added to the schema, eg: when it is repeated/implemented several times
+                if ($directiveResolverInstance->skipAddingToSchemaDefinition()) {
+                    continue;
+                }
                 $isGlobal = $directiveResolverInstance->isGlobal($this);
                 if (!$isGlobal || ($isGlobal && $isRoot)) {
                     $directiveSchemaDefinition = $directiveResolverInstance->getSchemaDefinitionForDirective($this);
