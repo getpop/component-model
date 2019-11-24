@@ -283,12 +283,12 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 foreach ($fieldSchemaDeprecations as $deprecationFieldDirective => $deprecations) {
                     foreach ($deprecations as $deprecation) {
                         $schemaDeprecations[$deprecationFieldDirective][] = sprintf(
-                            $translationAPI->__('In field(s) \'%s\' and directive \'%s\': %s', 'pop-component-model'),
+                            $translationAPI->__('In directive \'%s\' from field(s) \'%s\': %s', 'pop-component-model'),
+                            $fieldDirective,
                             implode(
                                 $translationAPI->__('\', \'', 'pop-component-model'),
                                 $directiveResolverFields
                             ),
-                            $fieldDirective,
                             $deprecation
                         );
                     }
@@ -296,12 +296,12 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 foreach ($fieldSchemaWarnings as $warningFieldDirective => $warnings) {
                     foreach ($warnings as $warning) {
                         $schemaWarnings[$warningFieldDirective][] = sprintf(
-                            $translationAPI->__('In field(s) \'%s\' and directive \'%s\': %s', 'pop-component-model'),
+                            $translationAPI->__('In directive \'%s\' from field(s) \'%s\': %s', 'pop-component-model'),
+                            $fieldDirective,
                             implode(
                                 $translationAPI->__('\', \'', 'pop-component-model'),
                                 $directiveResolverFields
                             ),
-                            $fieldDirective,
                             $warning
                         );
                     }
@@ -310,12 +310,12 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     foreach ($fieldSchemaErrors as $errorFieldDirective => $errors) {
                         foreach ($errors as $error) {
                             $schemaErrors[$errorFieldDirective][] = sprintf(
-                                $translationAPI->__('In field(s) \'%s\' and directive \'%s\': %s', 'pop-component-model'),
+                                $translationAPI->__('In directive \'%s\' from field(s) \'%s\': %s', 'pop-component-model'),
+                                $fieldDirective,
                                 implode(
                                     $translationAPI->__('\', \'', 'pop-component-model'),
                                     $directiveResolverFields
                                 ),
-                                $fieldDirective,
                                 $error
                             );
                         }
@@ -334,12 +334,12 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 // Validate against the directiveResolver
                 if ($maybeError = $directiveResolverInstance->resolveSchemaValidationErrorDescription($this, $directiveName, $directiveArgs)) {
                     $schemaErrors[$fieldDirective][] = sprintf(
-                        $translationAPI->__('In field(s) \'%s\' and directive \'%s\': %s', 'pop-component-model'),
+                        $translationAPI->__('In directive \'%s\' from field(s) \'%s\': %s', 'pop-component-model'),
+                        $fieldDirective,
                         implode(
                             $translationAPI->__('\', \'', 'pop-component-model'),
                             $directiveResolverFields
                         ),
-                        $fieldDirective,
                         $maybeError
                     );
                     if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
