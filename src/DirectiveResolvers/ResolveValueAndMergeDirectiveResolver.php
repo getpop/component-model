@@ -56,7 +56,7 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
             // In that case, simply return a dbError, and set the result as an empty array
             if (is_null($resultItem)) {
                 $dbErrors[(string)$id][] = [
-                    'path' => 'id',
+                    'path' => ['id'],
                     'message' => sprintf(
                         $translationAPI->__('Corrupted data: Object with ID \'%s\' doesn\'t exist', 'component-model'),
                         $id
@@ -140,7 +140,7 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
             $error = $value;
             foreach ($error->getErrorMessages() as $errorMessage) {
                 $dbErrors[(string)$id][] = [
-                    'path' => $field,
+                    'path' => [$field],
                     'message' => $errorMessage,
                 ];
             }

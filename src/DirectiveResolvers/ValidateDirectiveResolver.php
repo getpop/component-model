@@ -82,7 +82,7 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
         if ($schemaValidationErrors = $fieldResolver->resolveSchemaValidationErrorDescriptions($field, $variables)) {
             foreach ($schemaValidationErrors as $schemaValidationError) {
                 $schemaErrors[] = [
-                    'path' => $field.'=>'.$schemaValidationError['path'],
+                    'path' => array_merge([$field], $schemaValidationError['path']),
                     'message' => $schemaValidationError['message'],
                 ];
             }
@@ -92,7 +92,7 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
         if ($schemaValidationWarnings = $fieldResolver->resolveSchemaValidationWarningDescriptions($field, $variables)) {
             foreach ($schemaValidationWarnings as $schemaValidationWarning) {
                 $schemaWarnings[] = [
-                    'path' => $field.'=>'.$schemaValidationWarning['path'],
+                    'path' => array_merge([$field], $schemaValidationWarning['path']),
                     'message' => $schemaValidationWarning['message'],
                 ];
             }
@@ -100,7 +100,7 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
         if ($schemaValidationDeprecations = $fieldResolver->getSchemaDeprecationDescriptions($field, $variables)) {
             foreach ($schemaValidationDeprecations as $schemaValidationDeprecation) {
                 $schemaDeprecations[] = [
-                    'path' => $field.'=>'.$schemaValidationDeprecation['path'],
+                    'path' => array_merge([$field], $schemaValidationDeprecation['path']),
                     'message' => $schemaValidationDeprecation['message'],
                 ];
             }
