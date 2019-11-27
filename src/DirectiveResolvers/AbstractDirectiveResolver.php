@@ -3,15 +3,16 @@ namespace PoP\ComponentModel\DirectiveResolvers;
 use PoP\FieldQuery\QueryHelpers;
 use League\Pipeline\StageInterface;
 use PoP\ComponentModel\Environment;
+use PoP\ComponentModel\Feedback\Tokens;
 use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
+use PoP\ComponentModel\FieldResolvers\FieldSymbols;
 use PoP\ComponentModel\FieldResolvers\PipelinePositions;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineUtils;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
-use PoP\ComponentModel\Feedback\Tokens;
 
 abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, SchemaDirectiveResolverInterface, StageInterface
 {
@@ -51,6 +52,22 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         if ($nestedFieldDirectives) {
             $nestedDirectiveSchemaErrors = $nestedDirectiveSchemaWarnings = $nestedDirectiveSchemaDeprecations = [];
             $nestedFieldDirectives = QueryHelpers::splitFieldDirectives($nestedFieldDirectives);
+            // Support repeated fields by adding a counter next to them
+            if (count($nestedFieldDirectives) != count(array_unique($nestedFieldDirectives))) {
+                // Find the repeated fields, and add a counter next to them
+                $expandedNestedFieldDirectives = [];
+                $counters = [];
+                foreach ($nestedFieldDirectives as $nestedFieldDirective) {
+                    if (!isset($counters[$nestedFieldDirective])) {
+                        $expandedNestedFieldDirectives[] = $nestedFieldDirective;
+                        $counters[$nestedFieldDirective] = 1;
+                    } else {
+                        $expandedNestedFieldDirectives[] = $nestedFieldDirective.FieldSymbols::REPEATED_DIRECTIVE_COUNTER_SEPARATOR.$counters[$nestedFieldDirective];
+                        $counters[$nestedFieldDirective]++;
+                    }
+                }
+                $nestedFieldDirectives = $expandedNestedFieldDirectives;
+            }
             // Each nested directive will deal with the same fields as the current directive
             $nestedFieldDirectiveFields = $fieldDirectiveFields;
             foreach ($nestedFieldDirectives as $nestedFieldDirective) {

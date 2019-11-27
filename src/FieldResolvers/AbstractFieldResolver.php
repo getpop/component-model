@@ -23,7 +23,7 @@ use PoP\ComponentModel\Feedback\Tokens;
 abstract class AbstractFieldResolver implements FieldResolverInterface
 {
     public const OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM = 'validateSchemaOnResultItem';
-    protected const REPEATED_DIRECTIVE_COUNTER_SEPARATOR = '|';
+
     /**
      * Cache of which fieldValueResolvers will process the given field
      *
@@ -231,7 +231,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             // Check if it is a repeated directive: if it has the "|" symbol
             $counterSeparatorPos = QueryUtils::findLastSymbolPosition(
                 $enqueuedFieldDirective,
-                self::REPEATED_DIRECTIVE_COUNTER_SEPARATOR,
+                FieldSymbols::REPEATED_DIRECTIVE_COUNTER_SEPARATOR,
                 [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING],
                 [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING],
                 QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING,
@@ -340,7 +340,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $directiveResolverFields = $instanceData['fields'];
             // If the enqueued and the fieldDirective are different, it's because it is a repeated one
             $isRepeatedFieldDirective = $fieldDirective != $enqueuedFieldDirective;
-
             // If it is a repeated directive, no need to do the validation again
             if ($isRepeatedFieldDirective) {
                 // If there is an existing error, then skip adding this resolver to the pipeline
@@ -555,7 +554,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     // in which the "|" symbol could not be part of the field naturally
                     if (isset($fieldDirectiveCounter[$field][(string)$id][$fieldDirective])) {
                         // Increase counter and add to $fieldDirective
-                        $fieldDirective .= self::REPEATED_DIRECTIVE_COUNTER_SEPARATOR.(++$fieldDirectiveCounter[$field][(string)$id][$fieldDirective]);
+                        $fieldDirective .= FieldSymbols::REPEATED_DIRECTIVE_COUNTER_SEPARATOR.(++$fieldDirectiveCounter[$field][(string)$id][$fieldDirective]);
                     } else {
                         $fieldDirectiveCounter[$field][(string)$id][$fieldDirective] = 0;
                     }
