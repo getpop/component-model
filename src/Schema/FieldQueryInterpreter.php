@@ -1000,7 +1000,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
 
         // If the result fieldArgValue is a field, then validate it and resolve it
         if ($this->isFieldArgumentValueAField($fieldArgValue)) {
-            return $fieldResolver->getSchemaDeprecationDescriptions($fieldArgValue, $variables);
+            return $fieldResolver->resolveSchemaDeprecationDescriptions($fieldArgValue, $variables);
         }
 
         return [];

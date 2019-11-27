@@ -97,7 +97,7 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
                 $schemaValidationWarnings
             );
         }
-        if ($schemaValidationDeprecations = $fieldResolver->getSchemaDeprecationDescriptions($field, $variables)) {
+        if ($schemaValidationDeprecations = $fieldResolver->resolveSchemaDeprecationDescriptions($field, $variables)) {
             $schemaDeprecations = array_merge(
                 $schemaDeprecations,
                 $schemaValidationDeprecations
