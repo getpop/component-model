@@ -49,20 +49,29 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         // If it has nestedDirectives, extract them and validate them
         $nestedFieldDirectives = $fieldQueryInterpreter->getFieldDirectives($this->directive, false);
         if ($nestedFieldDirectives) {
-            $nestedDirectiveSchemaErrors = [];
+            $nestedDirectiveSchemaErrors = $nestedDirectiveSchemaWarnings = $nestedDirectiveSchemaDeprecations = [];
             $nestedFieldDirectives = QueryHelpers::splitFieldDirectives($nestedFieldDirectives);
             // Each nested directive will deal with the same fields as the current directive
             $nestedFieldDirectiveFields = $fieldDirectiveFields;
             foreach ($nestedFieldDirectives as $nestedFieldDirective) {
                 $nestedFieldDirectiveFields[$nestedFieldDirective] = $fieldDirectiveFields[$this->directive];
             }
-            $this->nestedDirectivePipelineData = $fieldResolver->resolveDirectivesIntoPipelineData($nestedFieldDirectives, $nestedFieldDirectiveFields, true, $variables, $nestedDirectiveSchemaErrors, $schemaWarnings, $schemaDeprecations);
+            $this->nestedDirectivePipelineData = $fieldResolver->resolveDirectivesIntoPipelineData($nestedFieldDirectives, $nestedFieldDirectiveFields, true, $variables, $nestedDirectiveSchemaErrors, $nestedDirectiveSchemaWarnings, $nestedDirectiveSchemaDeprecations);
+            foreach ($nestedDirectiveSchemaDeprecations as $nestedDirectiveSchemaDeprecation) {
+                $schemaDeprecations[] = [
+                    Tokens::PATH => array_merge([$this->directive], $nestedDirectiveSchemaDeprecation[Tokens::PATH]),
+                    Tokens::MESSAGE => $nestedDirectiveSchemaDeprecation[Tokens::MESSAGE],
+                ];
+            }
+            foreach ($nestedDirectiveSchemaWarnings as $nestedDirectiveSchemaWarning) {
+                $schemaWarnings[] = [
+                    Tokens::PATH => array_merge([$this->directive], $nestedDirectiveSchemaWarning[Tokens::PATH]),
+                    Tokens::MESSAGE => $nestedDirectiveSchemaWarning[Tokens::MESSAGE],
+                ];
+            }
             // If there is any error, then we also can't proceed with the current directive
             if ($nestedDirectiveSchemaErrors) {
                 foreach ($nestedDirectiveSchemaErrors as $nestedDirectiveSchemaError) {
-                    // // Because the nested directive contains the field where it is contained, remove it
-                    // // Eg: /?query=echo([hola,chau])@titles|getSelfProp(%self%,titles)<forEach<translate(es)>>
-                    // array_shift($nestedDirectiveSchemaError[Tokens::PATH]);
                     $schemaErrors[] = [
                         Tokens::PATH => array_merge([$this->directive], $nestedDirectiveSchemaError[Tokens::PATH]),
                         Tokens::MESSAGE => $nestedDirectiveSchemaError[Tokens::MESSAGE],
