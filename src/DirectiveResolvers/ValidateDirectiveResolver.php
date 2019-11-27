@@ -81,12 +81,6 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
         // Check for errors first, warnings and deprecations then
         $success = true;
         if ($schemaValidationErrors = $fieldResolver->resolveSchemaValidationErrorDescriptions($field, $variables)) {
-            // foreach ($schemaValidationErrors as $schemaValidationError) {
-            //     $schemaErrors[] = [
-            //         Tokens::PATH => array_merge([$field], $schemaValidationError[Tokens::PATH]),
-            //         Tokens::MESSAGE => $schemaValidationError[Tokens::MESSAGE],
-            //     ];
-            // }
             $schemaErrors = array_merge(
                 $schemaErrors,
                 $schemaValidationErrors
@@ -95,24 +89,12 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
             $success = false;
         }
         if ($schemaValidationWarnings = $fieldResolver->resolveSchemaValidationWarningDescriptions($field, $variables)) {
-            // foreach ($schemaValidationWarnings as $schemaValidationWarning) {
-            //     $schemaWarnings[] = [
-            //         Tokens::PATH => array_merge([$field], $schemaValidationWarning[Tokens::PATH]),
-            //         Tokens::MESSAGE => $schemaValidationWarning[Tokens::MESSAGE],
-            //     ];
-            // }
             $schemaWarnings = array_merge(
                 $schemaWarnings,
                 $schemaValidationWarnings
             );
         }
         if ($schemaValidationDeprecations = $fieldResolver->getSchemaDeprecationDescriptions($field, $variables)) {
-            // foreach ($schemaValidationDeprecations as $schemaValidationDeprecation) {
-            //     $schemaDeprecations[] = [
-            //         Tokens::PATH => array_merge([$field], $schemaValidationDeprecation[Tokens::PATH]),
-            //         Tokens::MESSAGE => $schemaValidationDeprecation[Tokens::MESSAGE],
-            //     ];
-            // }
             $schemaDeprecations = array_merge(
                 $schemaDeprecations,
                 $schemaValidationDeprecations
