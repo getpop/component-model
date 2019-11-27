@@ -347,7 +347,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 if (!empty(array_filter(
                     $schemaErrors,
                     function($schemaError) use($fieldDirective) {
-                        return $schemaError[Tokens::PATH] == $fieldDirective;
+                        return $schemaError[Tokens::PATH][0] == $fieldDirective;
                     }
                 ))) {
                     continue;
