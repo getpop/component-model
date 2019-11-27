@@ -60,8 +60,11 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
         // Remove from the data_fields list to execute on the resultItem for the next stages of the pipeline
         if ($failedDataFields) {
             $idsDataFieldsToRemove = [];
-            foreach (array_keys($idsDataFields) as $id) {
-                $idsDataFieldsToRemove[(string)$id]['direct'] = $failedDataFields;
+            foreach ($idsDataFields as $id => $dataFields) {
+                $idsDataFieldsToRemove[(string)$id]['direct'] = array_intersect(
+                    $dataFields['direct'],
+                    $failedDataFields
+                );
             }
             $this->removeIDsDataFields($idsDataFieldsToRemove, $succeedingPipelineIDsDataFields);
         }
