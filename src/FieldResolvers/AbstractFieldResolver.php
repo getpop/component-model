@@ -354,48 +354,17 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 }
             } else {
                 // Validate schema (eg of error in schema: ?query=posts<include(if:this-field-doesnt-exist())>)
-                $fieldSchemaErrors = $fieldSchemaWarnings = $fieldSchemaDeprecations = [];
+                $fieldSchemaErrors = [];
                 list(
                     $validFieldDirective,
                     $directiveName,
                     $directiveArgs,
-                ) = $directiveResolverInstance->dissectAndValidateDirectiveForSchema($this, $fieldDirectiveFields, $variables, $fieldSchemaErrors, $fieldSchemaWarnings, $fieldSchemaDeprecations);
-                // For each error/warning/deprecation, add the field to provide a better message
-                // $directiveResolverFieldList = implode(
-                //     $translationAPI->__('\', \'', 'pop-component-model'),
-                //     $directiveResolverFields
-                // );
-                $schemaDeprecations = array_merge(
-                    $schemaDeprecations,
-                    $fieldSchemaDeprecations
-                );
-                // foreach ($fieldSchemaDeprecations as $fieldSchemaDeprecation) {
-                //     $schemaDeprecations[] = [
-                //     Tokens::PATH => array_merge([$directiveResolverFieldList/*, $fieldDirective*/], $fieldSchemaDeprecation[Tokens::PATH]),
-                //         Tokens::MESSAGE => $fieldSchemaDeprecation[Tokens::MESSAGE],
-                //     ];
-                // }
-                $schemaWarnings = array_merge(
-                    $schemaWarnings,
-                    $fieldSchemaWarnings
-                );
-                // foreach ($fieldSchemaWarnings as $fieldSchemaWarning) {
-                //     $schemaWarnings[] = [
-                //     Tokens::PATH => array_merge([$directiveResolverFieldList/*, $fieldDirective*/], $fieldSchemaWarning[Tokens::PATH]),
-                //         Tokens::MESSAGE => $fieldSchemaWarning[Tokens::MESSAGE],
-                //     ];
-                // }
+                ) = $directiveResolverInstance->dissectAndValidateDirectiveForSchema($this, $fieldDirectiveFields, $variables, $fieldSchemaErrors, $schemaWarnings, $schemaDeprecations);
                 if ($fieldSchemaErrors) {
                     $schemaErrors = array_merge(
                         $schemaErrors,
                         $fieldSchemaErrors
                     );
-                    // foreach ($fieldSchemaErrors as $fieldSchemaError) {
-                    //     $schemaErrors[] = [
-                    //     Tokens::PATH => array_merge([$directiveResolverFieldList/*, $fieldDirective*/], $fieldSchemaError[Tokens::PATH]),
-                    //         Tokens::MESSAGE => $fieldSchemaError[Tokens::MESSAGE],
-                    //     ];
-                    // }
                     // Because there were schema errors, skip this directive
                     if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
                         $schemaErrors[] = [
