@@ -660,7 +660,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         // $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
         if ($fieldValueResolvers = $this->getFieldValueResolversForField($field)) {
             list(
-                $field,
+                $validField,
                 $fieldName,
                 $fieldArgs,
                 $schemaErrors,
@@ -694,7 +694,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         // Get the value from a fieldValueResolver, from the first one that resolves it
         if ($fieldValueResolvers = $this->getFieldValueResolversForField($field)) {
             list(
-                $field,
+                $validField,
                 $fieldName,
                 $fieldArgs,
                 $schemaErrors,
@@ -719,7 +719,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         // Get the value from a fieldValueResolver, from the first one that resolves it
         if ($fieldValueResolvers = $this->getFieldValueResolversForField($field)) {
             list(
-                $field,
+                $validField,
                 $fieldName,
                 $fieldArgs,
                 $schemaErrors,
@@ -769,7 +769,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         // Get the value from a fieldValueResolver, from the first one that resolves it
         if ($fieldValueResolvers = $this->getFieldValueResolversForField($field)) {
             list(
-                $field,
+                $validField,
                 $fieldName,
                 $fieldArgs,
             ) = $this->dissectFieldForSchema($field);
