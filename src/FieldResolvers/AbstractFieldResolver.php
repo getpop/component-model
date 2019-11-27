@@ -627,6 +627,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     public function resolveSchemaValidationErrorDescriptions(string $field, array &$variables = null): ?array
     {
         // Get the value from a fieldValueResolver, from the first one that resolves it
+        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+        $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
         if ($fieldValueResolvers = $this->getFieldValueResolversForField($field)) {
             list(
                 $field,
@@ -635,7 +637,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $schemaErrors,
             ) = $this->dissectFieldForSchema($field);
             if ($maybeError = $fieldValueResolvers[0]->resolveSchemaValidationErrorDescription($this, $fieldName, $fieldArgs)) {
-                $schemaErrors[] = $maybeError;
+                $schemaErrors[$fieldOutputKey][] = $maybeError;
             }
             return $schemaErrors;
         }
@@ -645,10 +647,12 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         $fieldName = $fieldQueryInterpreter->getFieldName($field);
         return [
-            sprintf(
-                $translationAPI->__('No FieldValueResolver resolves field \'%s\'', 'pop-component-model'),
-                $fieldName
-            ),
+            $fieldOutputKey => [
+                sprintf(
+                    $translationAPI->__('No FieldValueResolver resolves field \'%s\'', 'pop-component-model'),
+                    $fieldName
+                ),
+            ],
         ];
     }
 
@@ -664,7 +668,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $schemaWarnings,
             ) = $this->dissectFieldForSchema($field);
             if ($maybeWarning = $fieldValueResolvers[0]->resolveSchemaValidationWarningDescription($this, $fieldName, $fieldArgs)) {
-                $schemaWarnings[] = $maybeWarning;
+                $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+                $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
+                $schemaWarnings[$fieldOutputKey][] = $maybeWarning;
             }
             return $schemaWarnings;
         }
@@ -685,7 +691,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $schemaDeprecations,
             ) = $this->dissectFieldForSchema($field);
             if ($maybeDeprecation = $fieldValueResolvers[0]->getSchemaFieldDeprecationDescription($this, $fieldName, $fieldArgs)) {
-                $schemaDeprecations[] = $maybeDeprecation;
+                $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+                $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
+                $schemaDeprecations[$fieldOutputKey][] = $maybeDeprecation;
             }
             return $schemaDeprecations;
         }

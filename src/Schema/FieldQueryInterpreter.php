@@ -115,7 +115,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         }
         // Integrate the schemaWarnings too
         if (!is_null($schemaWarnings)) {
-            $schemaWarnings = array_merge(
+            $schemaWarnings = array_merge_recursive(
                 $schemaWarnings,
                 $this->extractedDirectiveArgumentWarningsCache[get_class($fieldResolver)][$fieldDirective][$variablesHash]
             );
@@ -165,6 +165,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         if ($orderedFieldOrDirectiveArgNamesEnabled) {
             $orderedFieldOrDirectiveArgNames = array_keys($fieldOrDirectiveArgumentNameTypes);
         }
+        $fieldOrDirectiveOutputKey = $this->getFieldOutputKey($fieldOrDirective);
         $fieldOrDirectiveArgs = [];
         for ($i=0; $i<count($fieldOrDirectiveArgElems); $i++) {
             $fieldOrDirectiveArg = $fieldOrDirectiveArgElems[$i];
@@ -178,7 +179,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                     $errorMessage = $orderedFieldOrDirectiveArgNamesEnabled ?
                         $this->translationAPI->__('documentation for this argument in the schema definition has not been defined, hence it can\'t be deduced from there', 'pop-component-model') :
                         $this->translationAPI->__('retrieving this information from the schema definition is disabled for the corresponding “fieldResolver”', 'pop-component-model');
-                    $schemaWarnings[] = sprintf(
+                    $schemaWarnings[$fieldOrDirectiveOutputKey][] = sprintf(
                         $this->translationAPI->__('The argument on position number %s (with value \'%s\') has its name missing, and %s. Please define the query using the \'key%svalue\' format. This argument has been ignored', 'pop-component-model'),
                         $i+1,
                         $fieldOrDirectiveArgValue,
@@ -205,7 +206,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                 // Validate that this argument exists in the schema, or show a warning if not
                 // But don't skip it! It may be that the engine accepts the property, it is just not documented!
                 if (!array_key_exists($fieldOrDirectiveArgName, $fieldOrDirectiveArgumentNameTypes)) {
-                    $schemaWarnings[] = sprintf(
+                    $schemaWarnings[$fieldOrDirectiveOutputKey][] = sprintf(
                         $this->translationAPI->__('Argument with name \'%s\' has not been documented in the schema, so it may have no effect (it has not been removed from the query, though)', 'pop-component-model'),
                         $fieldOrDirectiveArgName
                     );
@@ -233,7 +234,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         }
         // Integrate the schemaWarnings too
         if (!is_null($schemaWarnings)) {
-            $schemaWarnings = array_merge(
+            $schemaWarnings = array_merge_recursive(
                 $schemaWarnings,
                 $this->extractedFieldArgumentWarningsCache[get_class($fieldResolver)][$field][$variablesHash]
             );
@@ -277,7 +278,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         $validAndResolvedField = $field;
         $fieldName = $this->getFieldName($field);
         $extractedFieldArgs = $fieldArgs = $this->extractFieldArguments($fieldResolver, $field, $variables, $schemaWarnings);
-        $fieldArgs = $this->validateExtractedFieldOrDirectiveArgumentsForSchema($fieldResolver, $fieldArgs, $variables, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+        $fieldArgs = $this->validateExtractedFieldOrDirectiveArgumentsForSchema($fieldResolver, $field, $fieldArgs, $variables, $schemaErrors, $schemaWarnings, $schemaDeprecations);
         // Cast the values to their appropriate type. If casting fails, the value returns as null
         $fieldArgs = $this->castAndValidateFieldArgumentsForSchema($fieldResolver, $field, $fieldArgs, $schemaWarnings);
         // Enable the fieldResolver to add its own code validations
@@ -310,7 +311,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         $validAndResolvedDirective = $fieldDirective;
         $directiveName = $this->getFieldDirectiveName($fieldDirective);
         $extractedDirectiveArgs = $directiveArgs = $this->extractDirectiveArguments($directiveResolver, $fieldResolver, $fieldDirective, $variables, $schemaWarnings);
-        $directiveArgs = $this->validateExtractedFieldOrDirectiveArgumentsForSchema($fieldResolver, $directiveArgs, $variables, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+        $directiveArgs = $this->validateExtractedFieldOrDirectiveArgumentsForSchema($fieldResolver, $fieldDirective, $directiveArgs, $variables, $schemaErrors, $schemaWarnings, $schemaDeprecations);
         // Cast the values to their appropriate type. If casting fails, the value returns as null
         $directiveArgs = $this->castAndValidateDirectiveArgumentsForSchema($directiveResolver, $fieldResolver, $fieldDirective, $directiveArgs, $schemaWarnings, $disableDynamicFields);
         // Enable the directiveResolver to add its own code validations
@@ -335,14 +336,14 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         ];
     }
 
-    protected function validateExtractedFieldOrDirectiveArgumentsForSchema(FieldResolverInterface $fieldResolver, array $fieldOrDirectiveArgs, ?array $variables, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    protected function validateExtractedFieldOrDirectiveArgumentsForSchema(FieldResolverInterface $fieldResolver, string $fieldOrDirective, array $fieldOrDirectiveArgs, ?array $variables, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         if ($fieldOrDirectiveArgs) {
             foreach ($fieldOrDirectiveArgs as $argName => $argValue) {
                 // Validate it
                 if ($maybeErrors = $this->resolveFieldArgumentValueErrorDescriptionsForSchema($fieldResolver, $argValue, $variables)) {
-                    $schemaErrors = array_merge(
-                        $schemaErrors,
+                    $schemaErrors = array_merge_recursive(
+                        $schemaErrors ?? [],
                         $maybeErrors
                     );
                     // Because it's an error, set the value to null, so it will be filtered out
@@ -350,14 +351,14 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                 }
                 // Find warnings and deprecations
                 if ($maybeWarnings = $this->resolveFieldArgumentValueWarningsForSchema($fieldResolver, $argValue, $variables)) {
-                    $schemaWarnings = array_merge(
-                        $schemaWarnings,
+                    $schemaWarnings = array_merge_recursive(
+                        $schemaWarnings ?? [],
                         $maybeWarnings
                     );
                 }
                 if ($maybeDeprecations = $this->resolveFieldArgumentValueDeprecationsForSchema($fieldResolver, $argValue, $variables)) {
-                    $schemaDeprecations = array_merge(
-                        $schemaDeprecations,
+                    $schemaDeprecations = array_merge_recursive(
+                        $schemaDeprecations ?? [],
                         $maybeDeprecations
                     );
                 }
@@ -655,7 +656,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                         TypeCastingHelpers::getTypeCombinationCurrentElement($directiveArgNameTypes[$failedCastingDirectiveArgName])
                     );
                 }
-                $schemaWarnings[] = $errorMessage;
+                $schemaWarnings[$fieldDirective][] = $errorMessage;
             }
             return $this->filterFieldArgs($castedDirectiveArgs);
         }
@@ -668,6 +669,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         if ($failedCastingFieldArgs = array_filter($castedFieldArgs, function($fieldArgValue) {
             return is_null($fieldArgValue);
         })) {
+            $fieldOutputKey = $this->getFieldOutputKey($field);
             $fieldName = $this->getFieldName($field);
             $fieldArgNameTypes = $this->getFieldArgumentNameTypes($fieldResolver, $field);
             foreach (array_keys($failedCastingFieldArgs) as $failedCastingFieldArgName) {
@@ -690,7 +692,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                         TypeCastingHelpers::getTypeCombinationCurrentElement($fieldArgNameTypes[$failedCastingFieldArgName])
                     );
                 }
-                $schemaWarnings[] = $errorMessage;
+                $schemaWarnings[$fieldOutputKey][] = $errorMessage;
             }
             return $this->filterFieldArgs($castedFieldArgs);
         }

@@ -19,7 +19,7 @@ class FeedbackMessageStore extends \PoP\FieldQuery\FeedbackMessageStore implemen
     }
     public function addSchemaWarnings(array $schemaWarnings)
     {
-        $this->schemaWarnings = array_merge(
+        $this->schemaWarnings = array_merge_recursive(
             $this->schemaWarnings,
             $schemaWarnings
         );
@@ -38,13 +38,17 @@ class FeedbackMessageStore extends \PoP\FieldQuery\FeedbackMessageStore implemen
             $this->schemaErrors[$dbKey][$field][] = $error;
         }
     }
-    public function getSchemaErrors(): array
+    public function retrieveAndClearSchemaErrors(): array
     {
-        return $this->schemaErrors;
+        $schemaErrors = $this->schemaErrors ?? [];
+        $this->schemaErrors = null;
+        return $schemaErrors;
     }
-    public function getSchemaWarnings(): array
+    public function retrieveAndClearSchemaWarnings(): array
     {
-        return $this->schemaWarnings;
+        $schemaWarnings = $this->schemaWarnings ?? [];
+        $this->schemaWarnings = null;
+        return $schemaWarnings;
     }
     public function getSchemaErrorsForField(string $dbKey, string $field): ?array
     {

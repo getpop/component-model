@@ -78,25 +78,24 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
 
     protected function validateField(FieldResolverInterface $fieldResolver, string $field, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$variables, array &$failedDataFields): bool {
         // Check for errors first, warnings and deprecations then
-        $fieldOutputKey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($field);
         $success = true;
         if ($schemaValidationErrors = $fieldResolver->resolveSchemaValidationErrorDescriptions($field, $variables)) {
-            $schemaErrors[$fieldOutputKey] = array_merge(
-                $schemaErrors[$fieldOutputKey] ?? [],
+            $schemaErrors = array_merge_recursive(
+                $schemaErrors ?? [],
                 $schemaValidationErrors
             );
             $failedDataFields[] = $field;
             $success = false;
         }
         if ($warningDescriptions = $fieldResolver->resolveSchemaValidationWarningDescriptions($field, $variables)) {
-            $schemaWarnings[$fieldOutputKey] = array_merge(
-                $schemaWarnings[$fieldOutputKey] ?? [],
+            $schemaWarnings = array_merge_recursive(
+                $schemaWarnings ?? [],
                 $warningDescriptions
             );
         }
         if ($deprecationDescriptions = $fieldResolver->getSchemaDeprecationDescriptions($field, $variables)) {
-            $schemaDeprecations[$fieldOutputKey] = array_merge(
-                $schemaDeprecations[$fieldOutputKey] ?? [],
+            $schemaDeprecations = array_merge_recursive(
+                $schemaDeprecations ?? [],
                 $deprecationDescriptions
             );
         }

@@ -1263,6 +1263,13 @@ class Engine implements EngineInterface
                     $this->addDatasetToDatabase($dbWarnings[$dbname], $database_key, $entries);
                 }
             }
+            $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();
+            if ($storeSchemaErrors = $feedbackMessageStore->retrieveAndClearSchemaErrors()) {
+                $iterationSchemaErrors = array_merge_recursive(
+                    $iterationSchemaErrors ?? [],
+                    $storeSchemaErrors
+                );
+            }
             if ($iterationSchemaErrors) {
                 $dbNameSchemaErrorEntries = $this->moveEntriesUnderDBName($iterationSchemaErrors, false, $dataloader);
                 foreach ($dbNameSchemaErrorEntries as $dbname => $entries) {
@@ -1271,6 +1278,12 @@ class Engine implements EngineInterface
                         $entries
                     );
                 }
+            }
+            if ($storeSchemaWarnings = $feedbackMessageStore->retrieveAndClearSchemaWarnings()) {
+                $iterationSchemaWarnings = array_merge_recursive(
+                    $iterationSchemaWarnings ?? [],
+                    $storeSchemaWarnings
+                );
             }
             if ($iterationSchemaWarnings) {
                 $dbNameSchemaWarningEntries = $this->moveEntriesUnderDBName($iterationSchemaWarnings, false, $dataloader);
@@ -1496,19 +1509,7 @@ class Engine implements EngineInterface
         $this->maybeCombineAndAddDatabaseEntries($ret, 'dbErrors', $dbErrors);
         $this->maybeCombineAndAddDatabaseEntries($ret, 'dbWarnings', $dbWarnings);
         $this->maybeCombineAndAddSchemaEntries($ret, 'schemaErrors', $schemaErrors);
-        if ($schemaErrors = $feedbackMessageStore->getSchemaErrors()) {
-            $ret['schemaErrors'] = array_merge_recursive(
-                $ret['schemaErrors'] ?? [],
-                $schemaErrors
-            );
-        }
         $this->maybeCombineAndAddSchemaEntries($ret, 'schemaWarnings', $schemaWarnings);
-        if ($schemaErrors = $feedbackMessageStore->getSchemaWarnings()) {
-            $ret['schemaWarnings'] = array_merge(
-                $ret['schemaWarnings'] ?? [],
-                $schemaErrors
-            );
-        }
         $this->maybeCombineAndAddSchemaEntries($ret, 'schemaDeprecations', $schemaDeprecations);
         if (ServerUtils::enableShowLogs()) {
             if (in_array(POP_ACTION_SHOW_LOGS, $vars['actions'])) {
