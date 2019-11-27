@@ -27,7 +27,13 @@ class TypeCastingExecuter implements TypeCastingExecuterInterface
     {
         switch ($type) {
             case SchemaDefinition::TYPE_MIXED:
+                // Accept anything and everything
+                return $value;
             case SchemaDefinition::TYPE_ID:
+                // An array or an object cannot be an ID
+                if (is_array($value) || is_object($value)) {
+                    return null;
+                }
                 // Accept anything and everything
                 return $value;
             case SchemaDefinition::TYPE_STRING:

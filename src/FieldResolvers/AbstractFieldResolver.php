@@ -818,13 +818,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $fieldName,
                 $fieldArgs,
                 $schemaErrors,
-                $schemaWarnings,
+                // $schemaWarnings,
             ) = $this->dissectFieldForSchema($field);
 
-            // Store the warnings to be read if needed
-            if ($schemaWarnings) {
-                $feedbackMessageStore->addSchemaWarnings($schemaWarnings);
-            }
+            // // Store the warnings to be read if needed
+            // if ($schemaWarnings) {
+            //     $feedbackMessageStore->addSchemaWarnings($schemaWarnings);
+            // }
             if ($schemaErrors) {
                 return ErrorUtils::getNestedSchemaErrorsFieldError($schemaErrors, $fieldName);
             }
