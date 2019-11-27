@@ -308,20 +308,20 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     $translationAPI->__('\', \'', 'pop-component-model'),
                     $directiveResolverFields
                 );
-                // $schemaDeprecations = array_unique(array_merge(
+                // $schemaDeprecations = array_merge(
                 //     $schemaDeprecations,
                 //     $fieldSchemaDeprecations
-                // ));
+                // );
                 foreach ($fieldSchemaDeprecations as $fieldSchemaDeprecation) {
                     $schemaDeprecations[] = [
                     Tokens::PATH => array_merge([$directiveResolverFieldList/*, $fieldDirective*/], $fieldSchemaDeprecation[Tokens::PATH]),
                         Tokens::MESSAGE => $fieldSchemaDeprecation[Tokens::MESSAGE],
                     ];
                 }
-                // $schemaWarnings = array_unique(array_merge(
+                // $schemaWarnings = array_merge(
                 //     $schemaWarnings,
                 //     $fieldSchemaWarnings
-                // ));
+                // );
                 foreach ($fieldSchemaWarnings as $fieldSchemaWarning) {
                     $schemaWarnings[] = [
                     Tokens::PATH => array_merge([$directiveResolverFieldList/*, $fieldDirective*/], $fieldSchemaWarning[Tokens::PATH]),
@@ -329,10 +329,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     ];
                 }
                 if ($fieldSchemaErrors) {
-                    // $schemaErrors = array_unique(array_merge(
+                    // $schemaErrors = array_merge(
                     //     $schemaErrors,
                     //     $fieldSchemaErrors
-                    // ));
+                    // );
                     foreach ($fieldSchemaErrors as $fieldSchemaError) {
                         $schemaErrors[] = [
                         Tokens::PATH => array_merge([$directiveResolverFieldList/*, $fieldDirective*/], $fieldSchemaError[Tokens::PATH]),

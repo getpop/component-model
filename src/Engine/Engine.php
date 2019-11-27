@@ -1265,42 +1265,42 @@ class Engine implements EngineInterface
             }
             $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();
             if ($storeSchemaErrors = $feedbackMessageStore->retrieveAndClearSchemaErrors()) {
-                $iterationSchemaErrors = array_unique(array_merge(
+                $iterationSchemaErrors = array_merge(
                     $iterationSchemaErrors ?? [],
                     $storeSchemaErrors
-                ));
+                );
             }
             if ($iterationSchemaErrors) {
                 $dbNameSchemaErrorEntries = $this->moveEntriesUnderDBName($iterationSchemaErrors, false, $dataloader);
                 foreach ($dbNameSchemaErrorEntries as $dbname => $entries) {
-                    $schemaErrors[$dbname][$database_key] = array_unique(array_merge(
+                    $schemaErrors[$dbname][$database_key] = array_merge(
                         $schemaErrors[$dbname][$database_key] ?? [],
                         $entries
-                    ));
+                    );
                 }
             }
             if ($storeSchemaWarnings = $feedbackMessageStore->retrieveAndClearSchemaWarnings()) {
-                $iterationSchemaWarnings = array_unique(array_merge(
+                $iterationSchemaWarnings = array_merge(
                     $iterationSchemaWarnings ?? [],
                     $storeSchemaWarnings
-                ));
+                );
             }
             if ($iterationSchemaWarnings) {
                 $dbNameSchemaWarningEntries = $this->moveEntriesUnderDBName($iterationSchemaWarnings, false, $dataloader);
                 foreach ($dbNameSchemaWarningEntries as $dbname => $entries) {
-                    $schemaWarnings[$dbname][$database_key] = array_unique(array_merge(
+                    $schemaWarnings[$dbname][$database_key] = array_merge(
                         $schemaWarnings[$dbname][$database_key] ?? [],
                         $entries
-                    ));
+                    );
                 }
             }
             if ($iterationSchemaDeprecations) {
                 $dbNameSchemaDeprecationEntries = $this->moveEntriesUnderDBName($iterationSchemaDeprecations, false, $dataloader);
                 foreach ($dbNameSchemaDeprecationEntries as $dbname => $entries) {
-                    $schemaDeprecations[$dbname][$database_key] = array_unique(array_merge(
+                    $schemaDeprecations[$dbname][$database_key] = array_merge(
                         $schemaDeprecations[$dbname][$database_key] ?? [],
                         $entries
-                    ));
+                    );
                 }
             }
 

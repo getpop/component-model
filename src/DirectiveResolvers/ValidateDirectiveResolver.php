@@ -87,10 +87,10 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
             //         Tokens::MESSAGE => $schemaValidationError[Tokens::MESSAGE],
             //     ];
             // }
-            $schemaErrors = array_unique(array_merge(
+            $schemaErrors = array_merge(
                 $schemaErrors,
                 $schemaValidationErrors
-            ));
+            );
             $failedDataFields[] = $field;
             $success = false;
         }
@@ -101,10 +101,10 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
             //         Tokens::MESSAGE => $schemaValidationWarning[Tokens::MESSAGE],
             //     ];
             // }
-            $schemaWarnings = array_unique(array_merge(
+            $schemaWarnings = array_merge(
                 $schemaWarnings,
                 $schemaValidationWarnings
-            ));
+            );
         }
         if ($schemaValidationDeprecations = $fieldResolver->getSchemaDeprecationDescriptions($field, $variables)) {
             // foreach ($schemaValidationDeprecations as $schemaValidationDeprecation) {
@@ -113,10 +113,10 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
             //         Tokens::MESSAGE => $schemaValidationDeprecation[Tokens::MESSAGE],
             //     ];
             // }
-            $schemaDeprecations = array_unique(array_merge(
+            $schemaDeprecations = array_merge(
                 $schemaDeprecations,
                 $schemaValidationDeprecations
-            ));
+            );
         }
         return $success;
     }

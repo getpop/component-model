@@ -113,10 +113,10 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         }
         // Integrate the schemaWarnings too
         if (!is_null($schemaWarnings)) {
-            $schemaWarnings = array_unique(array_merge(
+            $schemaWarnings = array_merge(
                 $schemaWarnings,
                 $this->extractedDirectiveArgumentWarningsCache[get_class($fieldResolver)][$fieldDirective][$variablesHash]
-            ));
+            );
             // foreach ($this->extractedDirectiveArgumentWarningsCache[get_class($fieldResolver)][$fieldDirective][$variablesHash] as $schemaWarning) {
             //     $schemaWarnings[] = [
             //         Tokens::PATH => array_merge([$fieldDirective], $schemaWarning[Tokens::PATH]),
@@ -241,10 +241,10 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         }
         // Integrate the schemaWarnings too
         if (!is_null($schemaWarnings)) {
-            $schemaWarnings = array_unique(array_merge(
+            $schemaWarnings = array_merge(
                 $schemaWarnings,
                 $this->extractedFieldArgumentWarningsCache[get_class($fieldResolver)][$field][$variablesHash]
-            ));
+            );
             // foreach ($this->extractedFieldArgumentWarningsCache[get_class($fieldResolver)][$field][$variablesHash] as $schemaWarning) {
             //     $schemaWarnings[] = [
             //         Tokens::PATH => array_merge([$field], $schemaWarning[Tokens::PATH]),
@@ -402,10 +402,10 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         $fieldArgs = $this->castAndValidateFieldArgumentsForResultItem($fieldResolver, $field, $fieldArgs, $resultItemDBWarnings);
         if ($resultItemDBWarnings) {
             $id = $fieldResolver->getId($resultItem);
-            $dbWarnings[(string)$id] = array_unique(array_merge(
+            $dbWarnings[(string)$id] = array_merge(
                 $dbWarnings[(string)$id] ?? [],
                 $resultItemDBWarnings
-            ));
+            );
         }
         if ($dbErrors) {
             $validAndResolvedField = null;
@@ -438,10 +438,10 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         $directiveArgs = $this->castAndValidateDirectiveArgumentsForResultItem($directiveResolver, $fieldResolver, $fieldDirective, $directiveArgs, $resultItemDBWarnings);
         if ($resultItemDBWarnings) {
             $id = $fieldResolver->getId($resultItem);
-            $dbWarnings[(string)$id] = array_unique(array_merge(
+            $dbWarnings[(string)$id] = array_merge(
                 $dbWarnings[(string)$id] ?? [],
                 $resultItemDBWarnings
-            ));
+            );
         }
         if ($dbErrors) {
             $validAndResolvedDirective = null;

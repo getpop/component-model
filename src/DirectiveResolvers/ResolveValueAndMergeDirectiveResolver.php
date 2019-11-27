@@ -123,10 +123,10 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
         // Merge the dbWarnings, if any
         $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();
         if ($resultItemDBWarnings = $feedbackMessageStore->retrieveAndClearResultItemDBWarnings($id)) {
-            $dbWarnings[$id] = array_unique(array_merge(
+            $dbWarnings[$id] = array_merge(
                 $dbWarnings[$id] ?? [],
                 $resultItemDBWarnings
-            ));
+            );
         }
 
         return $value;
