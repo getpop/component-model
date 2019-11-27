@@ -97,7 +97,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
      * @param array $schemaDeprecations
      * @return array
      */
-    public function resolveDirectivesIntoPipelineData(array $fieldDirectives, array &$fieldDirectiveFields, array &$variables, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    public function resolveDirectivesIntoPipelineData(array $fieldDirectives, array &$fieldDirectiveFields, bool $areNestedDirectives, array &$variables, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         /**
@@ -113,15 +113,16 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         ];
 
         // Resolve from directive into their actual object instance.
-        $directiveSchemaErrors = [];
-        $directiveResolverInstanceData = $this->validateAndResolveInstances($fieldDirectives, $fieldDirectiveFields, $variables, $directiveSchemaErrors, $schemaWarnings, $schemaDeprecations);
-        if ($directiveSchemaErrors) {
+        $directiveSchemaErrors = $directiveSchemaWarnings = $directiveSchemaDeprecations = [];
+        $directiveResolverInstanceData = $this->validateAndResolveInstances($fieldDirectives, $fieldDirectiveFields, $variables, $directiveSchemaErrors, $directiveSchemaWarnings, $directiveSchemaDeprecations);
+        // If it is a root directives, then add the fields where they appear into the errors/warnings/deprecations
+        if (!$areNestedDirectives) {
             // In the case of an error, Maybe prepend the field(s) containing the directive. Eg: when the directive name doesn't exist:
             // /?query=id<skipanga>
             foreach ($directiveSchemaErrors as $directiveSchemaError) {
-                $lastFailedPathLevel = $directiveSchemaError[Tokens::PATH][0];
-                if ($lastFailedPathLevelDirective = $fieldDirectiveFields[$lastFailedPathLevel]) {
-                    $fields = implode($translationAPI->__(', '), $lastFailedPathLevelDirective);
+                $directive = $directiveSchemaError[Tokens::PATH][0];
+                if ($directiveFields = $fieldDirectiveFields[$directive]) {
+                    $fields = implode($translationAPI->__(', '), $directiveFields);
                     $schemaErrors[] = [
                         Tokens::PATH => array_merge([$fields], $directiveSchemaError[Tokens::PATH]),
                         Tokens::MESSAGE => $directiveSchemaError[Tokens::MESSAGE],
@@ -130,7 +131,45 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     $schemaErrors[] = $directiveSchemaError;
                 }
             }
+            foreach ($directiveSchemaWarnings as $directiveSchemaWarning) {
+                $directive = $directiveSchemaWarning[Tokens::PATH][0];
+                if ($directiveFields = $fieldDirectiveFields[$directive]) {
+                    $fields = implode($translationAPI->__(', '), $directiveFields);
+                    $schemaWarnings[] = [
+                        Tokens::PATH => array_merge([$fields], $directiveSchemaWarning[Tokens::PATH]),
+                        Tokens::MESSAGE => $directiveSchemaWarning[Tokens::MESSAGE],
+                    ];
+                } else {
+                    $schemaWarnings[] = $directiveSchemaWarning;
+                }
+            }
+            foreach ($directiveSchemaDeprecations as $directiveSchemaDeprecation) {
+                $directive = $directiveSchemaDeprecation[Tokens::PATH][0];
+                if ($directiveFields = $fieldDirectiveFields[$directive]) {
+                    $fields = implode($translationAPI->__(', '), $directiveFields);
+                    $schemaDeprecations[] = [
+                        Tokens::PATH => array_merge([$fields], $directiveSchemaDeprecation[Tokens::PATH]),
+                        Tokens::MESSAGE => $directiveSchemaDeprecation[Tokens::MESSAGE],
+                    ];
+                } else {
+                    $schemaDeprecations[] = $directiveSchemaDeprecation;
+                }
+            }
+        } else {
+            $schemaErrors = array_merge(
+                $schemaErrors,
+                $directiveSchemaErrors
+            );
+            $schemaWarnings = array_merge(
+                $schemaWarnings,
+                $directiveSchemaWarnings
+            );
+            $schemaDeprecations = array_merge(
+                $schemaDeprecations,
+                $directiveSchemaDeprecations
+            );
         }
+
         // Create an array with the dataFields affected by each directive, in order in which they will be invoked
         foreach ($directiveResolverInstanceData as $instanceID => $directiveResolverInstanceData) {
             // Add the directive in its required position in the pipeline, and retrieve what fields it will process
@@ -322,41 +361,41 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     $directiveArgs,
                 ) = $directiveResolverInstance->dissectAndValidateDirectiveForSchema($this, $fieldDirectiveFields, $variables, $fieldSchemaErrors, $fieldSchemaWarnings, $fieldSchemaDeprecations);
                 // For each error/warning/deprecation, add the field to provide a better message
-                $directiveResolverFieldList = implode(
-                    $translationAPI->__('\', \'', 'pop-component-model'),
-                    $directiveResolverFields
+                // $directiveResolverFieldList = implode(
+                //     $translationAPI->__('\', \'', 'pop-component-model'),
+                //     $directiveResolverFields
+                // );
+                $schemaDeprecations = array_merge(
+                    $schemaDeprecations,
+                    $fieldSchemaDeprecations
                 );
-                // $schemaDeprecations = array_merge(
-                //     $schemaDeprecations,
-                //     $fieldSchemaDeprecations
-                // );
-                foreach ($fieldSchemaDeprecations as $fieldSchemaDeprecation) {
-                    $schemaDeprecations[] = [
-                    Tokens::PATH => array_merge([$directiveResolverFieldList/*, $fieldDirective*/], $fieldSchemaDeprecation[Tokens::PATH]),
-                        Tokens::MESSAGE => $fieldSchemaDeprecation[Tokens::MESSAGE],
-                    ];
-                }
-                // $schemaWarnings = array_merge(
-                //     $schemaWarnings,
-                //     $fieldSchemaWarnings
-                // );
-                foreach ($fieldSchemaWarnings as $fieldSchemaWarning) {
-                    $schemaWarnings[] = [
-                    Tokens::PATH => array_merge([$directiveResolverFieldList/*, $fieldDirective*/], $fieldSchemaWarning[Tokens::PATH]),
-                        Tokens::MESSAGE => $fieldSchemaWarning[Tokens::MESSAGE],
-                    ];
-                }
+                // foreach ($fieldSchemaDeprecations as $fieldSchemaDeprecation) {
+                //     $schemaDeprecations[] = [
+                //     Tokens::PATH => array_merge([$directiveResolverFieldList/*, $fieldDirective*/], $fieldSchemaDeprecation[Tokens::PATH]),
+                //         Tokens::MESSAGE => $fieldSchemaDeprecation[Tokens::MESSAGE],
+                //     ];
+                // }
+                $schemaWarnings = array_merge(
+                    $schemaWarnings,
+                    $fieldSchemaWarnings
+                );
+                // foreach ($fieldSchemaWarnings as $fieldSchemaWarning) {
+                //     $schemaWarnings[] = [
+                //     Tokens::PATH => array_merge([$directiveResolverFieldList/*, $fieldDirective*/], $fieldSchemaWarning[Tokens::PATH]),
+                //         Tokens::MESSAGE => $fieldSchemaWarning[Tokens::MESSAGE],
+                //     ];
+                // }
                 if ($fieldSchemaErrors) {
-                    // $schemaErrors = array_merge(
-                    //     $schemaErrors,
-                    //     $fieldSchemaErrors
-                    // );
-                    foreach ($fieldSchemaErrors as $fieldSchemaError) {
-                        $schemaErrors[] = [
-                        Tokens::PATH => array_merge([$directiveResolverFieldList/*, $fieldDirective*/], $fieldSchemaError[Tokens::PATH]),
-                            Tokens::MESSAGE => $fieldSchemaError[Tokens::MESSAGE],
-                        ];
-                    }
+                    $schemaErrors = array_merge(
+                        $schemaErrors,
+                        $fieldSchemaErrors
+                    );
+                    // foreach ($fieldSchemaErrors as $fieldSchemaError) {
+                    //     $schemaErrors[] = [
+                    //     Tokens::PATH => array_merge([$directiveResolverFieldList/*, $fieldDirective*/], $fieldSchemaError[Tokens::PATH]),
+                    //         Tokens::MESSAGE => $fieldSchemaError[Tokens::MESSAGE],
+                    //     ];
+                    // }
                     // Because there were schema errors, skip this directive
                     if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
                         $schemaErrors[] = [
@@ -374,12 +413,12 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 // Validate against the directiveResolver
                 if ($maybeError = $directiveResolverInstance->resolveSchemaValidationErrorDescription($this, $directiveName, $directiveArgs)) {
                     $schemaErrors[] = [
-                        Tokens::PATH => [$directiveResolverFieldList, $fieldDirective],
+                        Tokens::PATH => [/*$directiveResolverFieldList, */$fieldDirective],
                         Tokens::MESSAGE => $maybeError,
                     ];
                     if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
                         $schemaErrors[] = [
-                            Tokens::PATH => [$directiveResolverFieldList, $fieldDirective],
+                            Tokens::PATH => [/*$directiveResolverFieldList, */$fieldDirective],
                             Tokens::MESSAGE => sprintf(
                                 $stopDirectivePipelineExecutionPlaceholder,
                                 $fieldDirective
@@ -607,7 +646,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $idFieldDirectiveIDFields = array_unique($idFieldDirectiveIDFields);
 
             // Validate and resolve the directives into instances and fields they operate on
-            $directivePipelineData = $this->resolveDirectivesIntoPipelineData($fieldDirectives, $fieldDirectiveFields, $variables, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+            $directivePipelineData = $this->resolveDirectivesIntoPipelineData($fieldDirectives, $fieldDirectiveFields, false, $variables, $schemaErrors, $schemaWarnings, $schemaDeprecations);
 
             // From the fields, reconstitute the $idsDataFields for each directive, and build the array to pass to the pipeline, for each directive (stage)
             $directiveResolverInstances = $pipelineIDsDataFields = [];

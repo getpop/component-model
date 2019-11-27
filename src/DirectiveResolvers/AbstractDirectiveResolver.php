@@ -56,10 +56,13 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             foreach ($nestedFieldDirectives as $nestedFieldDirective) {
                 $nestedFieldDirectiveFields[$nestedFieldDirective] = $fieldDirectiveFields[$this->directive];
             }
-            $this->nestedDirectivePipelineData = $fieldResolver->resolveDirectivesIntoPipelineData($nestedFieldDirectives, $nestedFieldDirectiveFields, $variables, $nestedDirectiveSchemaErrors, $schemaWarnings, $schemaDeprecations);
+            $this->nestedDirectivePipelineData = $fieldResolver->resolveDirectivesIntoPipelineData($nestedFieldDirectives, $nestedFieldDirectiveFields, true, $variables, $nestedDirectiveSchemaErrors, $schemaWarnings, $schemaDeprecations);
             // If there is any error, then we also can't proceed with the current directive
             if ($nestedDirectiveSchemaErrors) {
                 foreach ($nestedDirectiveSchemaErrors as $nestedDirectiveSchemaError) {
+                    // // Because the nested directive contains the field where it is contained, remove it
+                    // // Eg: /?query=echo([hola,chau])@titles|getSelfProp(%self%,titles)<forEach<translate(es)>>
+                    // array_shift($nestedDirectiveSchemaError[Tokens::PATH]);
                     $schemaErrors[] = [
                         Tokens::PATH => array_merge([$this->directive], $nestedDirectiveSchemaError[Tokens::PATH]),
                         Tokens::MESSAGE => $nestedDirectiveSchemaError[Tokens::MESSAGE],
