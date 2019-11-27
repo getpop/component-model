@@ -91,24 +91,36 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         $this->directiveArgsForSchema = $directiveArgs;
 
         // If there were errors, warning or deprecations, integrate them into the feedback objects
-        foreach ($directiveSchemaErrors as $directiveSchemaError) {
-            $schemaErrors[] = [
-                Tokens::PATH => array_merge([$this->directive], $directiveSchemaError[Tokens::PATH]),
-                Tokens::MESSAGE => $directiveSchemaError[Tokens::MESSAGE],
-            ];
-        }
-        foreach ($directiveSchemaWarnings as $directiveSchemaWarning) {
-            $schemaWarnings[] = [
-                Tokens::PATH => array_merge([$this->directive], $directiveSchemaWarning[Tokens::PATH]),
-                Tokens::MESSAGE => $directiveSchemaWarning[Tokens::MESSAGE],
-            ];
-        }
-        foreach ($directiveSchemaDeprecations as $directiveSchemaDeprecation) {
-            $schemaDeprecations[] = [
-                Tokens::PATH => array_merge([$this->directive], $directiveSchemaDeprecation[Tokens::PATH]),
-                Tokens::MESSAGE => $directiveSchemaDeprecation[Tokens::MESSAGE],
-            ];
-        }
+        $schemaErrors = array_unique(array_merge(
+            $schemaErrors,
+            $directiveSchemaErrors
+        ));
+        // foreach ($directiveSchemaErrors as $directiveSchemaError) {
+        //     $schemaErrors[] = [
+        //         Tokens::PATH => array_merge([$this->directive], $directiveSchemaError[Tokens::PATH]),
+        //         Tokens::MESSAGE => $directiveSchemaError[Tokens::MESSAGE],
+        //     ];
+        // }
+        $schemaWarnings = array_unique(array_merge(
+            $schemaWarnings,
+            $directiveSchemaWarnings
+        ));
+        // foreach ($directiveSchemaWarnings as $directiveSchemaWarning) {
+        //     $schemaWarnings[] = [
+        //         Tokens::PATH => array_merge([$this->directive], $directiveSchemaWarning[Tokens::PATH]),
+        //         Tokens::MESSAGE => $directiveSchemaWarning[Tokens::MESSAGE],
+        //     ];
+        // }
+        $schemaDeprecations = array_unique(array_merge(
+            $schemaDeprecations,
+            $directiveSchemaDeprecations
+        ));
+        // foreach ($directiveSchemaDeprecations as $directiveSchemaDeprecation) {
+        //     $schemaDeprecations[] = [
+        //         Tokens::PATH => array_merge([$this->directive], $directiveSchemaDeprecation[Tokens::PATH]),
+        //         Tokens::MESSAGE => $directiveSchemaDeprecation[Tokens::MESSAGE],
+        //     ];
+        // }
         return [
             $validDirective,
             $directiveName,
