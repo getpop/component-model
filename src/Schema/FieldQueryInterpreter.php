@@ -109,19 +109,20 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         if (!isset($this->extractedDirectiveArgumentsCache[get_class($fieldResolver)][$fieldDirective][$variablesHash])) {
             $fieldSchemaWarnings = [];
             $this->extractedDirectiveArgumentsCache[get_class($fieldResolver)][$fieldDirective][$variablesHash] = $this->doExtractDirectiveArguments($directiveResolver, $fieldResolver, $fieldDirective, $variables, $fieldSchemaWarnings);
-            // Also cache the schemaWarnings
-            if (!is_null($schemaWarnings)) {
-                $this->extractedDirectiveArgumentWarningsCache[get_class($fieldResolver)][$fieldDirective][$variablesHash] = $fieldSchemaWarnings;
-            }
+            $this->extractedDirectiveArgumentWarningsCache[get_class($fieldResolver)][$fieldDirective][$variablesHash] = $fieldSchemaWarnings;
         }
         // Integrate the schemaWarnings too
         if (!is_null($schemaWarnings)) {
-            foreach ($this->extractedDirectiveArgumentWarningsCache[get_class($fieldResolver)][$fieldDirective][$variablesHash] as $schemaWarning) {
-                $schemaWarnings[] = [
-                    Tokens::PATH => array_merge([$fieldDirective], $schemaWarning[Tokens::PATH]),
-                    Tokens::MESSAGE => $schemaWarning[Tokens::MESSAGE],
-                ];
-            }
+            $schemaWarnings = array_unique(array_merge(
+                $schemaWarnings,
+                $this->extractedDirectiveArgumentWarningsCache[get_class($fieldResolver)][$fieldDirective][$variablesHash]
+            ));
+            // foreach ($this->extractedDirectiveArgumentWarningsCache[get_class($fieldResolver)][$fieldDirective][$variablesHash] as $schemaWarning) {
+            //     $schemaWarnings[] = [
+            //         Tokens::PATH => array_merge([$fieldDirective], $schemaWarning[Tokens::PATH]),
+            //         Tokens::MESSAGE => $schemaWarning[Tokens::MESSAGE],
+            //     ];
+            // }
         }
         return $this->extractedDirectiveArgumentsCache[get_class($fieldResolver)][$fieldDirective][$variablesHash];
     }
@@ -236,19 +237,20 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         if (!isset($this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field][$variablesHash])) {
             $fieldSchemaWarnings = [];
             $this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field][$variablesHash] = $this->doExtractFieldArguments($fieldResolver, $field, $variables, $fieldSchemaWarnings);
-            // Also cache the schemaWarnings
-            if (!is_null($schemaWarnings)) {
-                $this->extractedFieldArgumentWarningsCache[get_class($fieldResolver)][$field][$variablesHash] = $fieldSchemaWarnings;
-            }
+            $this->extractedFieldArgumentWarningsCache[get_class($fieldResolver)][$field][$variablesHash] = $fieldSchemaWarnings;
         }
         // Integrate the schemaWarnings too
         if (!is_null($schemaWarnings)) {
-            foreach ($this->extractedFieldArgumentWarningsCache[get_class($fieldResolver)][$field][$variablesHash] as $schemaWarning) {
-                $schemaWarnings[] = [
-                    Tokens::PATH => array_merge([$field], $schemaWarning[Tokens::PATH]),
-                    Tokens::MESSAGE => $schemaWarning[Tokens::MESSAGE],
-                ];
-            }
+            $schemaWarnings = array_unique(array_merge(
+                $schemaWarnings,
+                $this->extractedFieldArgumentWarningsCache[get_class($fieldResolver)][$field][$variablesHash]
+            ));
+            // foreach ($this->extractedFieldArgumentWarningsCache[get_class($fieldResolver)][$field][$variablesHash] as $schemaWarning) {
+            //     $schemaWarnings[] = [
+            //         Tokens::PATH => array_merge([$field], $schemaWarning[Tokens::PATH]),
+            //         Tokens::MESSAGE => $schemaWarning[Tokens::MESSAGE],
+            //     ];
+            // }
         }
         return $this->extractedFieldArgumentsCache[get_class($fieldResolver)][$field][$variablesHash];
     }
