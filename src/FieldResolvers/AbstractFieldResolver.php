@@ -113,30 +113,22 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         ];
 
         // Resolve from directive into their actual object instance.
-        $directiveSchemaErrors = $directiveSchemaWarnings = $directiveSchemaDeprecations = [];
-        $directiveResolverInstanceData = $this->validateAndResolveInstances($fieldDirectives, $fieldDirectiveFields, $variables, $directiveSchemaErrors, $directiveSchemaWarnings, $directiveSchemaDeprecations);
-        if ($directiveSchemaErrors || $directiveSchemaWarnings || $directiveSchemaDeprecations) {
-            // Prepend the field(s) containing the directive
+        $directiveSchemaErrors = [];
+        $directiveResolverInstanceData = $this->validateAndResolveInstances($fieldDirectives, $fieldDirectiveFields, $variables, $directiveSchemaErrors, $schemaWarnings, $schemaDeprecations);
+        if ($directiveSchemaErrors) {
+            // In the case of an error, Maybe prepend the field(s) containing the directive. Eg: when the directive name doesn't exist:
+            // /?query=id<skipanga>
             foreach ($directiveSchemaErrors as $directiveSchemaError) {
-                $fields = implode($translationAPI->__(', '), $fieldDirectiveFields[$directiveSchemaError[Tokens::PATH][0]]);
-                $schemaErrors[] = [
-                    Tokens::PATH => array_merge([$fields], $directiveSchemaError[Tokens::PATH]),
-                    Tokens::MESSAGE => $directiveSchemaError[Tokens::MESSAGE],
-                ];
-            }
-            foreach ($directiveSchemaWarnings as $directiveSchemaWarning) {
-                $fields = implode($translationAPI->__(', '), $fieldDirectiveFields[$directiveSchemaWarning[Tokens::PATH][0]]);
-                $schemaWarnings[] = [
-                    Tokens::PATH => array_merge([$fields], $directiveSchemaWarning[Tokens::PATH]),
-                    Tokens::MESSAGE => $directiveSchemaWarning[Tokens::MESSAGE],
-                ];
-            }
-            foreach ($directiveSchemaDeprecations as $directiveSchemaDeprecation) {
-                $fields = implode($translationAPI->__(', '), $fieldDirectiveFields[$directiveSchemaDeprecation[Tokens::PATH][0]]);
-                $schemaDeprecations[] = [
-                    Tokens::PATH => array_merge([$fields], $directiveSchemaDeprecation[Tokens::PATH]),
-                    Tokens::MESSAGE => $directiveSchemaDeprecation[Tokens::MESSAGE],
-                ];
+                $lastFailedPathLevel = $directiveSchemaError[Tokens::PATH][0];
+                if ($lastFailedPathLevelDirective = $fieldDirectiveFields[$lastFailedPathLevel]) {
+                    $fields = implode($translationAPI->__(', '), $lastFailedPathLevelDirective);
+                    $schemaErrors[] = [
+                        Tokens::PATH => array_merge([$fields], $directiveSchemaError[Tokens::PATH]),
+                        Tokens::MESSAGE => $directiveSchemaError[Tokens::MESSAGE],
+                    ];
+                } else {
+                    $schemaErrors[] = $directiveSchemaError;
+                }
             }
         }
         // Create an array with the dataFields affected by each directive, in order in which they will be invoked
