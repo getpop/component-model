@@ -1263,6 +1263,8 @@ class Engine implements EngineInterface
                     $this->addDatasetToDatabase($dbWarnings[$dbname], $database_key, $entries);
                 }
             }
+
+
             $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();
             if ($storeSchemaErrors = $feedbackMessageStore->retrieveAndClearSchemaErrors()) {
                 $iterationSchemaErrors = array_merge(
@@ -1271,6 +1273,15 @@ class Engine implements EngineInterface
                 );
             }
             if ($iterationSchemaErrors) {
+                // Executing the following query will produce duplicates on SchemaWarnings:
+                // ?query=posts(limit:3.5).title,posts(limit:extract(posts(limit:4.5),saraza)).title
+                // This is unavoidable, since add schemaWarnings (and, correspondingly, errors and deprecations) in functions
+                // `resolveSchemaValidationWarningDescriptions` and `resolveValue` from the AbstractFieldResolver
+                // Ideally, doing it in `resolveValue` is not needed, since it already went through the validation in `resolveSchemaValidationWarningDescriptions`, so it's a duplication
+                // However, when doing nested fields, the warnings are caught only in `resolveValue`, hence we need to add it there too
+                // Then, we will certainly have duplicates. Remove them now
+                // Because these are arrays of arrays, we use the method taken from https://stackoverflow.com/a/2561283
+                $iterationSchemaErrors = array_intersect_key($iterationSchemaErrors, array_unique(array_map('serialize', $iterationSchemaErrors)));
                 $dbNameSchemaErrorEntries = $this->moveEntriesUnderDBName($iterationSchemaErrors, false, $dataloader);
                 foreach ($dbNameSchemaErrorEntries as $dbname => $entries) {
                     $schemaErrors[$dbname][$database_key] = array_merge(
@@ -1286,6 +1297,7 @@ class Engine implements EngineInterface
                 );
             }
             if ($iterationSchemaWarnings) {
+                $iterationSchemaWarnings = array_intersect_key($iterationSchemaWarnings, array_unique(array_map('serialize', $iterationSchemaWarnings)));
                 $dbNameSchemaWarningEntries = $this->moveEntriesUnderDBName($iterationSchemaWarnings, false, $dataloader);
                 foreach ($dbNameSchemaWarningEntries as $dbname => $entries) {
                     $schemaWarnings[$dbname][$database_key] = array_merge(
@@ -1295,6 +1307,7 @@ class Engine implements EngineInterface
                 }
             }
             if ($iterationSchemaDeprecations) {
+                $iterationSchemaDeprecations = array_intersect_key($iterationSchemaDeprecations, array_unique(array_map('serialize', $iterationSchemaDeprecations)));
                 $dbNameSchemaDeprecationEntries = $this->moveEntriesUnderDBName($iterationSchemaDeprecations, false, $dataloader);
                 foreach ($dbNameSchemaDeprecationEntries as $dbname => $entries) {
                     $schemaDeprecations[$dbname][$database_key] = array_merge(
@@ -1502,6 +1515,7 @@ class Engine implements EngineInterface
 
         $ret = array();
 
+        // Add the feedback (errors, warnings, deprecations) into the output
         $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();
         if ($queryErrors = $feedbackMessageStore->getQueryErrors()) {
             $ret['queryErrors'] = $queryErrors;
