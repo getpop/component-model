@@ -382,12 +382,12 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 // Validate against the directiveResolver
                 if ($maybeError = $directiveResolverInstance->resolveSchemaValidationErrorDescription($this, $directiveName, $directiveArgs)) {
                     $schemaErrors[] = [
-                        Tokens::PATH => [/*$directiveResolverFieldList, */$fieldDirective],
+                        Tokens::PATH => [$fieldDirective],
                         Tokens::MESSAGE => $maybeError,
                     ];
                     if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
                         $schemaErrors[] = [
-                            Tokens::PATH => [/*$directiveResolverFieldList, */$fieldDirective],
+                            Tokens::PATH => [$fieldDirective],
                             Tokens::MESSAGE => sprintf(
                                 $stopDirectivePipelineExecutionPlaceholder,
                                 $fieldDirective
@@ -401,7 +401,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 // Check for deprecations
                 if ($deprecationDescription = $directiveResolverInstance->getSchemaDirectiveDeprecationDescription($this)) {
                     $schemaDeprecations[] = [
-                        Tokens::PATH => [$directiveResolverFieldList, $fieldDirective],
+                        Tokens::PATH => [$fieldDirective],
                         Tokens::MESSAGE => $deprecationDescription,
                     ];
                 }
