@@ -191,15 +191,21 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $directiveName = $fieldQueryInterpreter->getFieldDirectiveName($fieldDirective);
             // If there is no directive with this name, show an error and skip it
             if (is_null($fieldDirectiveResolverInstances)) {
-                $schemaErrors[$fieldDirective][] = sprintf(
-                    $translationAPI->__('No DirectiveResolver resolves directive with name \'%s\'', 'pop-component-model'),
-                    $directiveName
-                );
+                $schemaErrors[] = [
+                    'path' => $fieldDirective,
+                    'message' => sprintf(
+                        $translationAPI->__('No DirectiveResolver resolves directive with name \'%s\'', 'pop-component-model'),
+                        $directiveName
+                    ),
+                ];
                 if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
-                    $schemaErrors[$fieldDirective][] = sprintf(
-                        $stopDirectivePipelineExecutionPlaceholder,
-                        $fieldDirective
-                    );
+                    $schemaErrors[] = [
+                        'path' => $fieldDirective,
+                        'message' => sprintf(
+                            $stopDirectivePipelineExecutionPlaceholder,
+                            $fieldDirective
+                        ),
+                    ];
                     break;
                 }
                 continue;
@@ -207,20 +213,26 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $directiveArgs = $fieldQueryInterpreter->extractStaticDirectiveArguments($fieldDirective);
 
             if (empty($fieldDirectiveResolverInstances)) {
-                $schemaErrors[$fieldDirective][] = sprintf(
-                    $translationAPI->__('No DirectiveResolver processes directive with name \'%s\' and arguments \'%s\' in field(s) \'%s\'', 'pop-component-model'),
-                    $directiveName,
-                    json_encode($directiveArgs),
-                    implode(
-                        $translationAPI->__('\', \'', 'pop-component-model'),
-                        $fieldDirectiveFields[$fieldDirective]
-                    )
-                );
+                $schemaErrors[] = [
+                    'path' => $fieldDirective,
+                    'message' => sprintf(
+                        $translationAPI->__('No DirectiveResolver processes directive with name \'%s\' and arguments \'%s\' in field(s) \'%s\'', 'pop-component-model'),
+                        $directiveName,
+                        json_encode($directiveArgs),
+                        implode(
+                            $translationAPI->__('\', \'', 'pop-component-model'),
+                            $fieldDirectiveFields[$fieldDirective]
+                        )
+                    ),
+                ];
                 if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
-                    $schemaErrors[$fieldDirective][] = sprintf(
-                        $stopDirectivePipelineExecutionPlaceholder,
-                        $fieldDirective
-                    );
+                    $schemaErrors[] = [
+                        'path' => $fieldDirective,
+                        'message' => sprintf(
+                            $stopDirectivePipelineExecutionPlaceholder,
+                            $fieldDirective
+                        ),
+                    ];
                     break;
                 }
                 continue;
@@ -229,17 +241,23 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             foreach ($fieldDirectiveFields[$enqueuedFieldDirective] as $field) {
                 $directiveResolverInstance = $fieldDirectiveResolverInstances[$field];
                 if (is_null($directiveResolverInstance)) {
-                    $schemaErrors[$fieldDirective][] = sprintf(
-                        $translationAPI->__('No DirectiveResolver processes directive with name \'%s\' and arguments \'%s\' in field \'%s\'', 'pop-component-model'),
-                        $directiveName,
-                        json_encode($directiveArgs),
-                        $field
-                    );
+                    $schemaErrors[] = [
+                        'path' => $fieldDirective,
+                        'message' => sprintf(
+                            $translationAPI->__('No DirectiveResolver processes directive with name \'%s\' and arguments \'%s\' in field \'%s\'', 'pop-component-model'),
+                            $directiveName,
+                            json_encode($directiveArgs),
+                            $field
+                        ),
+                    ];
                     if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
-                        $schemaErrors[$fieldDirective][] = sprintf(
-                            $stopDirectivePipelineExecutionPlaceholder,
-                            $fieldDirective
-                        );
+                        $schemaErrors[] = [
+                            'path' => $fieldDirective,
+                            'message' => sprintf(
+                                $stopDirectivePipelineExecutionPlaceholder,
+                                $fieldDirective
+                            ),
+                        ];
                         break;
                     }
                     continue;
@@ -268,7 +286,12 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             // If it is a repeated directive, no need to do the validation again
             if ($isRepeatedFieldDirective) {
                 // If there is an existing error, then skip adding this resolver to the pipeline
-                if (!empty($schemaErrors[$fieldDirective])) {
+                if (!empty(array_filter(
+                    $schemaErrors,
+                    function($schemaError) use($fieldDirective) {
+                        return $schemaError['path'] == $fieldDirective;
+                    }
+                ))) {
                     continue;
                 }
             } else {
@@ -280,52 +303,38 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     $directiveArgs,
                 ) = $directiveResolverInstance->dissectAndValidateDirectiveForSchema($this, $fieldDirectiveFields, $variables, $fieldSchemaErrors, $fieldSchemaWarnings, $fieldSchemaDeprecations);
                 // For each error/warning/deprecation, add the field to provide a better message
-                foreach ($fieldSchemaDeprecations as $deprecationFieldDirective => $deprecations) {
-                    foreach ($deprecations as $deprecation) {
-                        $schemaDeprecations[$deprecationFieldDirective][] = sprintf(
-                            $translationAPI->__('In directive \'%s\' from field(s) \'%s\': %s', 'pop-component-model'),
-                            $fieldDirective,
-                            implode(
-                                $translationAPI->__('\', \'', 'pop-component-model'),
-                                $directiveResolverFields
-                            ),
-                            $deprecation
-                        );
-                    }
+                $directiveResolverFieldList = implode(
+                    $translationAPI->__('\', \'', 'pop-component-model'),
+                    $directiveResolverFields
+                );
+                foreach ($fieldSchemaDeprecations as $fieldSchemaDeprecation) {
+                    $schemaDeprecations[] = [
+                        'path' => $directiveResolverFieldList.'=>'.$fieldDirective.'=>'.$fieldSchemaDeprecation['path'],
+                        'message' => $fieldSchemaDeprecation['message'],
+                    ];
                 }
-                foreach ($fieldSchemaWarnings as $warningFieldDirective => $warnings) {
-                    foreach ($warnings as $warning) {
-                        $schemaWarnings[$warningFieldDirective][] = sprintf(
-                            $translationAPI->__('In directive \'%s\' from field(s) \'%s\': %s', 'pop-component-model'),
-                            $fieldDirective,
-                            implode(
-                                $translationAPI->__('\', \'', 'pop-component-model'),
-                                $directiveResolverFields
-                            ),
-                            $warning
-                        );
-                    }
+                foreach ($fieldSchemaWarnings as $fieldSchemaWarning) {
+                    $schemaWarnings[] = [
+                        'path' => $directiveResolverFieldList.'=>'.$fieldDirective.'=>'.$fieldSchemaWarning['path'],
+                        'message' => $fieldSchemaWarning['message'],
+                    ];
                 }
                 if ($fieldSchemaErrors) {
-                    foreach ($fieldSchemaErrors as $errorFieldDirective => $errors) {
-                        foreach ($errors as $error) {
-                            $schemaErrors[$errorFieldDirective][] = sprintf(
-                                $translationAPI->__('In directive \'%s\' from field(s) \'%s\': %s', 'pop-component-model'),
-                                $fieldDirective,
-                                implode(
-                                    $translationAPI->__('\', \'', 'pop-component-model'),
-                                    $directiveResolverFields
-                                ),
-                                $error
-                            );
-                        }
+                    foreach ($fieldSchemaErrors as $fieldSchemaError) {
+                        $schemaErrors[] = [
+                            'path' => $directiveResolverFieldList.'=>'.$fieldDirective.'=>'.$fieldSchemaError['path'],
+                            'message' => $fieldSchemaError['message'],
+                        ];
                     }
                     // Because there were schema errors, skip this directive
                     if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
-                        $schemaErrors[$fieldDirective][] = sprintf(
-                            $stopDirectivePipelineExecutionPlaceholder,
-                            $fieldDirective
-                        );
+                        $schemaErrors[] = [
+                            'path' => $fieldDirective,
+                            'message' => sprintf(
+                                $stopDirectivePipelineExecutionPlaceholder,
+                                $fieldDirective
+                            ),
+                        ];
                         break;
                     }
                     continue;
@@ -333,20 +342,18 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
                 // Validate against the directiveResolver
                 if ($maybeError = $directiveResolverInstance->resolveSchemaValidationErrorDescription($this, $directiveName, $directiveArgs)) {
-                    $schemaErrors[$fieldDirective][] = sprintf(
-                        $translationAPI->__('In directive \'%s\' from field(s) \'%s\': %s', 'pop-component-model'),
-                        $fieldDirective,
-                        implode(
-                            $translationAPI->__('\', \'', 'pop-component-model'),
-                            $directiveResolverFields
-                        ),
-                        $maybeError
-                    );
+                    $schemaErrors[] = [
+                        'path' => $directiveResolverFieldList,
+                        'message' => $maybeError,
+                    ];
                     if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
-                        $schemaErrors[$fieldDirective][] = sprintf(
-                            $stopDirectivePipelineExecutionPlaceholder,
-                            $fieldDirective
-                        );
+                        $schemaErrors[] = [
+                            'path' => $directiveResolverFieldList,
+                            'message' => sprintf(
+                                $stopDirectivePipelineExecutionPlaceholder,
+                                $fieldDirective
+                            ),
+                        ];
                         break;
                     }
                     continue;
@@ -354,7 +361,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
                 // Check for deprecations
                 if ($deprecationDescription = $directiveResolverInstance->getSchemaDirectiveDeprecationDescription($this)) {
-                    $schemaDeprecations[$fieldDirective][] = $deprecationDescription;
+                    $schemaDeprecations[] = [
+                        'path' => $fieldDirective,
+                        'message' => $deprecationDescription,
+                    ];
                 }
             }
 
@@ -362,17 +372,23 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $directiveName = $fieldQueryInterpreter->getFieldDirectiveName($fieldDirective);
             $directiveCount[$directiveName] = isset($directiveCount[$directiveName]) ? $directiveCount[$directiveName] + 1 : 1;
             if ($directiveCount[$directiveName] > 1 && !$directiveResolverInstance->canExecuteMultipleTimesInField()) {
-                $schemaErrors[$fieldDirective][] = sprintf(
-                    $translationAPI->__('Directive \'%s\' can be executed only once within field \'%s\', so the current execution (number %s) has been ignored', 'pop-component-model'),
-                    $fieldDirective,
-                    $field,
-                    $directiveCount[$directiveName]
-                );
+                $schemaErrors[] = [
+                    'path' => $fieldDirective,
+                    'message' => sprintf(
+                        $translationAPI->__('Directive \'%s\' can be executed only once within field \'%s\', so the current execution (number %s) has been ignored', 'pop-component-model'),
+                        $fieldDirective,
+                        $field,
+                        $directiveCount[$directiveName]
+                    ),
+                ];
                 if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
-                    $schemaErrors[$fieldDirective][] = sprintf(
-                        $stopDirectivePipelineExecutionPlaceholder,
-                        $fieldDirective
-                    );
+                    $schemaErrors[] = [
+                        'path' => $fieldDirective,
+                        'message' => sprintf(
+                            $stopDirectivePipelineExecutionPlaceholder,
+                            $fieldDirective
+                        ),
+                    ];
                     break;
                 }
                 continue;
@@ -627,8 +643,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     public function resolveSchemaValidationErrorDescriptions(string $field, array &$variables = null): ?array
     {
         // Get the value from a fieldValueResolver, from the first one that resolves it
-        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
-        $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
+        // $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+        // $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
         if ($fieldValueResolvers = $this->getFieldValueResolversForField($field)) {
             list(
                 $field,
@@ -637,7 +653,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $schemaErrors,
             ) = $this->dissectFieldForSchema($field);
             if ($maybeError = $fieldValueResolvers[0]->resolveSchemaValidationErrorDescription($this, $fieldName, $fieldArgs)) {
-                $schemaErrors[$fieldOutputKey][] = $maybeError;
+                $schemaErrors[] = [
+                    'path' => $field,
+                    'message' => $maybeError,
+                ];
             }
             return $schemaErrors;
         }
@@ -647,8 +666,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         $fieldName = $fieldQueryInterpreter->getFieldName($field);
         return [
-            $fieldOutputKey => [
-                sprintf(
+            [
+                'path' => $field,
+                'message' => sprintf(
                     $translationAPI->__('No FieldValueResolver resolves field \'%s\'', 'pop-component-model'),
                     $fieldName
                 ),
@@ -668,14 +688,17 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $schemaWarnings,
             ) = $this->dissectFieldForSchema($field);
             if ($maybeWarning = $fieldValueResolvers[0]->resolveSchemaValidationWarningDescription($this, $fieldName, $fieldArgs)) {
-                $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
-                $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
-                $schemaWarnings[$fieldOutputKey][] = $maybeWarning;
+                // $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+                // $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
+                $schemaWarnings[] = [
+                    'path' => $field,
+                    'message' => $maybeWarning,
+                ];
             }
             return $schemaWarnings;
         }
 
-        return null;
+        return [];
     }
 
     public function getSchemaDeprecationDescriptions(string $field, array &$variables = null): ?array
@@ -691,14 +714,17 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $schemaDeprecations,
             ) = $this->dissectFieldForSchema($field);
             if ($maybeDeprecation = $fieldValueResolvers[0]->getSchemaFieldDeprecationDescription($this, $fieldName, $fieldArgs)) {
-                $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
-                $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
-                $schemaDeprecations[$fieldOutputKey][] = $maybeDeprecation;
+                // $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+                // $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
+                $schemaDeprecations[] = [
+                    'path' => $field,
+                    'message' => $maybeDeprecation,
+                ];
             }
             return $schemaDeprecations;
         }
 
-        return null;
+        return [];
     }
 
     public function getSchemaFieldArgs(string $field): array

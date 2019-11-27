@@ -11,18 +11,18 @@ class FeedbackMessageStore extends \PoP\FieldQuery\FeedbackMessageStore implemen
     public function addDBWarnings(array $dbWarnings)
     {
         foreach ($dbWarnings as $resultItemID => $resultItemWarnings) {
-            $this->dbWarnings[$resultItemID] = array_merge(
+            $this->dbWarnings[$resultItemID] = array_unique(array_merge(
                 $this->dbWarnings[$resultItemID] ?? [],
                 $resultItemWarnings
-            );
+            ));
         }
     }
     public function addSchemaWarnings(array $schemaWarnings)
     {
-        $this->schemaWarnings = array_merge_recursive(
+        $this->schemaWarnings = array_unique(array_merge(
             $this->schemaWarnings,
             $schemaWarnings
-        );
+        ));
     }
     public function retrieveAndClearResultItemDBWarnings($resultItemID): ?array
     {

@@ -55,10 +55,13 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
             // It could be that the object is NULL. For instance: a post has a location stored a meta value, and the corresponding location object was deleted, so the ID is pointing to a non-existing object
             // In that case, simply return a dbError, and set the result as an empty array
             if (is_null($resultItem)) {
-                $dbErrors[(string)$id]['id'][] = sprintf(
-                    $translationAPI->__('Corrupted data: Object with ID \'%s\' doesn\'t exist', 'component-model'),
-                    $id
-                );
+                $dbErrors[(string)$id][] = [
+                    'path' => 'id',
+                    'message' => sprintf(
+                        $translationAPI->__('Corrupted data: Object with ID \'%s\' doesn\'t exist', 'component-model'),
+                        $id
+                    ),
+                ];
                 // This is currently pointing to NULL and returning this entry in the database. Remove it
                 // (this will also avoid errors in the Engine, which expects this result to be an array and can't be null)
                 unset($dbItems[(string)$id]);
@@ -119,10 +122,10 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
         // Merge the dbWarnings, if any
         $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();
         if ($resultItemDBWarnings = $feedbackMessageStore->retrieveAndClearResultItemDBWarnings($id)) {
-            $dbWarnings[$id] = array_merge(
+            $dbWarnings[$id] = array_unique(array_merge(
                 $dbWarnings[$id] ?? [],
                 $resultItemDBWarnings
-            );
+            ));
         }
 
         return $value;
@@ -130,18 +133,20 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
 
     protected function addValueForResultItem(FieldResolverInterface $fieldResolver, $id, string $field, $value, array &$dbItems, array &$dbErrors)
     {
-        // If there is an alias, store the results under this. Otherwise, on the fieldName+fieldArgs
-        $fieldOutputKey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($field);
         // The dataitem can contain both rightful values and also errors (eg: when the field doesn't exist, or the field validation fails)
         // Extract the errors and add them on the other array
         if (GeneralUtils::isError($value)) {
             // Extract the error message
             $error = $value;
-            $dbErrors[(string)$id][$fieldOutputKey] = array_merge(
-                $dbErrors[(string)$id][$fieldOutputKey] ?? [],
-                $error->getErrorMessages()
-            );
+            foreach ($error->getErrorMessages() as $errorMessage) {
+                $dbErrors[(string)$id][] = [
+                    'path' => $field,
+                    'message' => $errorMessage,
+                ];
+            }
         } else {
+            // If there is an alias, store the results under this. Otherwise, on the fieldName+fieldArgs
+            $fieldOutputKey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($field);
             $dbItems[(string)$id][$fieldOutputKey] = $value;
         }
     }

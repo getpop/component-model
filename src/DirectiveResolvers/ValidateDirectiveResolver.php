@@ -80,24 +80,30 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
         // Check for errors first, warnings and deprecations then
         $success = true;
         if ($schemaValidationErrors = $fieldResolver->resolveSchemaValidationErrorDescriptions($field, $variables)) {
-            $schemaErrors = array_merge_recursive(
-                $schemaErrors ?? [],
-                $schemaValidationErrors
-            );
+            foreach ($schemaValidationErrors as $schemaValidationError) {
+                $schemaErrors[] = [
+                    'path' => $field.'=>'.$schemaValidationError['path'],
+                    'message' => $schemaValidationError['message'],
+                ];
+            }
             $failedDataFields[] = $field;
             $success = false;
         }
-        if ($warningDescriptions = $fieldResolver->resolveSchemaValidationWarningDescriptions($field, $variables)) {
-            $schemaWarnings = array_merge_recursive(
-                $schemaWarnings ?? [],
-                $warningDescriptions
-            );
+        if ($schemaValidationWarnings = $fieldResolver->resolveSchemaValidationWarningDescriptions($field, $variables)) {
+            foreach ($schemaValidationWarnings as $schemaValidationWarning) {
+                $schemaWarnings[] = [
+                    'path' => $field.'=>'.$schemaValidationWarning['path'],
+                    'message' => $schemaValidationWarning['message'],
+                ];
+            }
         }
-        if ($deprecationDescriptions = $fieldResolver->getSchemaDeprecationDescriptions($field, $variables)) {
-            $schemaDeprecations = array_merge_recursive(
-                $schemaDeprecations ?? [],
-                $deprecationDescriptions
-            );
+        if ($schemaValidationDeprecations = $fieldResolver->getSchemaDeprecationDescriptions($field, $variables)) {
+            foreach ($schemaValidationDeprecations as $schemaValidationDeprecation) {
+                $schemaDeprecations[] = [
+                    'path' => $field.'=>'.$schemaValidationDeprecation['path'],
+                    'message' => $schemaValidationDeprecation['message'],
+                ];
+            }
         }
         return $success;
     }

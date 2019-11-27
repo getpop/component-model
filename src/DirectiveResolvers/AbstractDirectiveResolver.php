@@ -58,11 +58,16 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $this->nestedDirectivePipelineData = $fieldResolver->resolveDirectivesIntoPipelineData($nestedFieldDirectives, $nestedFieldDirectiveFields, $variables, $nestedDirectiveSchemaErrors, $schemaWarnings, $schemaDeprecations);
             // If there is any error, then we also can't proceed with the current directive
             if ($nestedDirectiveSchemaErrors) {
-                $schemaErrors = array_merge_recursive(
-                    $schemaErrors,
-                    $nestedDirectiveSchemaErrors
-                );
-                $schemaErrors[$this->directive][] = $translationAPI->__('This directive can\'t be executed due to errors from its nested directives', 'component-model');
+                foreach ($nestedDirectiveSchemaErrors as $nestedDirectiveSchemaError) {
+                    $schemaErrors[] = [
+                        'path' => $this->directive.'=>'.$nestedDirectiveSchemaError['path'],
+                        'message' => $nestedDirectiveSchemaError['message'],
+                    ];
+                }
+                $schemaErrors[] = [
+                    'path' => $this->directive,
+                    'message' => $translationAPI->__('This directive can\'t be executed due to errors from its nested directives', 'component-model'),
+                ];
                 return [
                     null, // $validDirective
                     // null, // $directiveName <= null because no need to find out which one it is
@@ -85,23 +90,23 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         $this->directiveArgsForSchema = $directiveArgs;
 
         // If there were errors, warning or deprecations, integrate them into the feedback objects
-        if ($directiveSchemaErrors) {
-            $schemaErrors[$this->directive] = array_merge(
-                $schemaErrors[$this->directive] ?? [],
-                $directiveSchemaErrors
-            );
+        foreach ($directiveSchemaErrors as $directiveSchemaError) {
+            $schemaErrors[] = [
+                'path' => $this->directive.'=>'.$directiveSchemaError['path'],
+                'message' => $directiveSchemaError['message'],
+            ];
         }
-        if ($directiveSchemaWarnings) {
-            $schemaWarnings[$this->directive] = array_merge(
-                $schemaWarnings[$this->directive] ?? [],
-                $directiveSchemaWarnings
-            );
+        foreach ($directiveSchemaWarnings as $directiveSchemaWarning) {
+            $schemaWarnings[] = [
+                'path' => $this->directive.'=>'.$directiveSchemaWarning['path'],
+                'message' => $directiveSchemaWarning['message'],
+            ];
         }
-        if ($directiveSchemaDeprecations) {
-            $schemaDeprecations[$this->directive] = array_merge(
-                $schemaDeprecations[$this->directive] ?? [],
-                $directiveSchemaDeprecations
-            );
+        foreach ($directiveSchemaDeprecations as $directiveSchemaDeprecation) {
+            $schemaDeprecations[] = [
+                'path' => $this->directive.'=>'.$directiveSchemaDeprecation['path'],
+                'message' => $directiveSchemaDeprecation['message'],
+            ];
         }
         return [
             $validDirective,
@@ -141,16 +146,16 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
 
         if ($nestedDBWarnings || $nestedDBErrors) {
             foreach ($nestedDBErrors as $id => $fieldOutputKeyErrorMessages) {
-                $dbErrors[$id] = array_merge(
+                $dbErrors[$id] = array_unique(array_merge(
                     $dbErrors[$id] ?? [],
                     $fieldOutputKeyErrorMessages
-                );
+                ));
             }
             foreach ($nestedDBWarnings as $id => $fieldOutputKeyWarningMessages) {
-                $dbWarnings[$id] = array_merge(
+                $dbWarnings[$id] = array_unique(array_merge(
                     $dbWarnings[$id] ?? [],
                     $fieldOutputKeyWarningMessages
-                );
+                ));
             }
         }
         return [
@@ -543,23 +548,29 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             } else {
                 $message = $translationAPI->__('%s. Fields \'%s\' have been removed from the directive pipeline', 'component-model');
             }
-            $schemaErrors[$this->directive][] = sprintf(
-                $message,
-                $failureMessage,
-                implode($translationAPI->__('\', \''), $failedFields)
-            );
+            $schemaErrors[] = [
+                'path' => $this->directive,
+                'message' => sprintf(
+                    $message,
+                    $failureMessage,
+                    implode($translationAPI->__('\', \''), $failedFields)
+                ),
+            ];
         } else {
             if (count($failedFields) == 1) {
                 $message = $translationAPI->__('%s. Execution of directive \'%s\' has been ignored on field \'%s\'', 'component-model');
             } else {
                 $message = $translationAPI->__('%s. Execution of directive \'%s\' has been ignored on fields \'%s\'', 'component-model');
             }
-            $schemaWarnings[$this->directive][] = sprintf(
-                $message,
-                $failureMessage,
-                $directiveName,
-                implode($translationAPI->__('\', \''), $failedFields)
-            );
+            $schemaWarnings[] = [
+                'path' => $this->directive,
+                'message' => sprintf(
+                    $message,
+                    $failureMessage,
+                    $directiveName,
+                    implode($translationAPI->__('\', \''), $failedFields)
+                ),
+            ];
         }
     }
 
