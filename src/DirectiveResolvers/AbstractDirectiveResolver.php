@@ -562,7 +562,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 $message = $translationAPI->__('%s. Fields \'%s\' have been removed from the directive pipeline', 'component-model');
             }
             $schemaErrors[] = [
-                Tokens::PATH => [$this->directive],
+                Tokens::PATH => [implode($translationAPI->__('\', \''), $failedFields), $this->directive],
                 Tokens::MESSAGE => sprintf(
                     $message,
                     $failureMessage,
@@ -576,7 +576,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 $message = $translationAPI->__('%s. Execution of directive \'%s\' has been ignored on fields \'%s\'', 'component-model');
             }
             $schemaWarnings[] = [
-                Tokens::PATH => [$this->directive],
+                Tokens::PATH => [implode($translationAPI->__('\', \''), $failedFields), $this->directive],
                 Tokens::MESSAGE => sprintf(
                     $message,
                     $failureMessage,
