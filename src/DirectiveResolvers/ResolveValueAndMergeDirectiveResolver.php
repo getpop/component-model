@@ -8,6 +8,7 @@ use PoP\ComponentModel\FieldResolvers\PipelinePositions;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
+use PoP\ComponentModel\Feedback\Tokens;
 
 class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResolver
 {
@@ -56,8 +57,8 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
             // In that case, simply return a dbError, and set the result as an empty array
             if (is_null($resultItem)) {
                 $dbErrors[(string)$id][] = [
-                    'path' => ['id'],
-                    'message' => sprintf(
+                    Tokens::PATH => ['id'],
+                    Tokens::MESSAGE => sprintf(
                         $translationAPI->__('Corrupted data: Object with ID \'%s\' doesn\'t exist', 'component-model'),
                         $id
                     ),
@@ -140,8 +141,8 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
             $error = $value;
             foreach ($error->getErrorMessages() as $errorMessage) {
                 $dbErrors[(string)$id][] = [
-                    'path' => [$field],
-                    'message' => $errorMessage,
+                    Tokens::PATH => [$field],
+                    Tokens::MESSAGE => $errorMessage,
                 ];
             }
         } else {

@@ -6,6 +6,7 @@ use PoP\ComponentModel\FieldResolvers\PipelinePositions;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\DirectiveResolvers\RemoveIDsDataFieldsDirectiveResolverTrait;
+use PoP\ComponentModel\Feedback\Tokens;
 
 class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
 {
@@ -82,8 +83,8 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
         if ($schemaValidationErrors = $fieldResolver->resolveSchemaValidationErrorDescriptions($field, $variables)) {
             foreach ($schemaValidationErrors as $schemaValidationError) {
                 $schemaErrors[] = [
-                    'path' => array_merge([$field], $schemaValidationError['path']),
-                    'message' => $schemaValidationError['message'],
+                    Tokens::PATH => array_merge([$field], $schemaValidationError[Tokens::PATH]),
+                    Tokens::MESSAGE => $schemaValidationError[Tokens::MESSAGE],
                 ];
             }
             $failedDataFields[] = $field;
@@ -92,16 +93,16 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
         if ($schemaValidationWarnings = $fieldResolver->resolveSchemaValidationWarningDescriptions($field, $variables)) {
             foreach ($schemaValidationWarnings as $schemaValidationWarning) {
                 $schemaWarnings[] = [
-                    'path' => array_merge([$field], $schemaValidationWarning['path']),
-                    'message' => $schemaValidationWarning['message'],
+                    Tokens::PATH => array_merge([$field], $schemaValidationWarning[Tokens::PATH]),
+                    Tokens::MESSAGE => $schemaValidationWarning[Tokens::MESSAGE],
                 ];
             }
         }
         if ($schemaValidationDeprecations = $fieldResolver->getSchemaDeprecationDescriptions($field, $variables)) {
             foreach ($schemaValidationDeprecations as $schemaValidationDeprecation) {
                 $schemaDeprecations[] = [
-                    'path' => array_merge([$field], $schemaValidationDeprecation['path']),
-                    'message' => $schemaValidationDeprecation['message'],
+                    Tokens::PATH => array_merge([$field], $schemaValidationDeprecation[Tokens::PATH]),
+                    Tokens::MESSAGE => $schemaValidationDeprecation[Tokens::MESSAGE],
                 ];
             }
         }

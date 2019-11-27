@@ -13,6 +13,7 @@ use PoP\ComponentModel\Schema\TypeCastingHelpers;
 use PoP\ComponentModel\FieldResolvers\AbstractFieldResolver;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\DirectiveResolvers\DirectiveResolverInterface;
+use PoP\ComponentModel\Feedback\Tokens;
 
 class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implements FieldQueryInterpreterInterface
 {
@@ -117,8 +118,8 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         if (!is_null($schemaWarnings)) {
             foreach ($this->extractedDirectiveArgumentWarningsCache[get_class($fieldResolver)][$fieldDirective][$variablesHash] as $schemaWarning) {
                 $schemaWarnings[] = [
-                    'path' => array_merge([$fieldDirective], $schemaWarning['path']),
-                    'message' => $schemaWarning['message'],
+                    Tokens::PATH => array_merge([$fieldDirective], $schemaWarning[Tokens::PATH]),
+                    Tokens::MESSAGE => $schemaWarning[Tokens::MESSAGE],
                 ];
             }
         }
@@ -182,8 +183,8 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                         $this->translationAPI->__('documentation for this argument in the schema definition has not been defined, hence it can\'t be deduced from there', 'pop-component-model') :
                         $this->translationAPI->__('retrieving this information from the schema definition is disabled for the corresponding “fieldResolver”', 'pop-component-model');
                     $schemaWarnings[] = [
-                        'path' => [$fieldOrDirective],
-                        'message' => sprintf(
+                        Tokens::PATH => [$fieldOrDirective],
+                        Tokens::MESSAGE => sprintf(
                             $this->translationAPI->__('The argument on position number %s (with value \'%s\') has its name missing, and %s. Please define the query using the \'key%svalue\' format. This argument has been ignored', 'pop-component-model'),
                             $i+1,
                             $fieldOrDirectiveArgValue,
@@ -212,8 +213,8 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                 // But don't skip it! It may be that the engine accepts the property, it is just not documented!
                 if (!array_key_exists($fieldOrDirectiveArgName, $fieldOrDirectiveArgumentNameTypes)) {
                     $schemaWarnings[] = [
-                        'path' => [$fieldOrDirective],
-                        'message' => sprintf(
+                        Tokens::PATH => [$fieldOrDirective],
+                        Tokens::MESSAGE => sprintf(
                             $this->translationAPI->__('Argument with name \'%s\' has not been documented in the schema, so it may have no effect (it has not been removed from the query, though)', 'pop-component-model'),
                             $fieldOrDirectiveArgName
                         ),
@@ -244,8 +245,8 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         if (!is_null($schemaWarnings)) {
             foreach ($this->extractedFieldArgumentWarningsCache[get_class($fieldResolver)][$field][$variablesHash] as $schemaWarning) {
                 $schemaWarnings[] = [
-                    'path' => array_merge([$field], $schemaWarning['path']),
-                    'message' => $schemaWarning['message'],
+                    Tokens::PATH => array_merge([$field], $schemaWarning[Tokens::PATH]),
+                    Tokens::MESSAGE => $schemaWarning[Tokens::MESSAGE],
                 ];
             }
         }
@@ -354,8 +355,8 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                 if ($maybeErrors = $this->resolveFieldArgumentValueErrorDescriptionsForSchema($fieldResolver, $argValue, $variables)) {
                     foreach ($maybeErrors as $schemaError) {
                         $schemaErrors[] = [
-                            'path' => array_merge([$fieldOrDirective], $schemaError['path']),
-                            'message' => $schemaError['message'],
+                            Tokens::PATH => array_merge([$fieldOrDirective], $schemaError[Tokens::PATH]),
+                            Tokens::MESSAGE => $schemaError[Tokens::MESSAGE],
                         ];
                     }
                     // Because it's an error, set the value to null, so it will be filtered out
@@ -365,16 +366,16 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                 if ($maybeWarnings = $this->resolveFieldArgumentValueWarningsForSchema($fieldResolver, $argValue, $variables)) {
                     foreach ($maybeWarnings as $schemaWarning) {
                         $schemaWarnings[] = [
-                            'path' => array_merge([$fieldOrDirective], $schemaWarning['path']),
-                            'message' => $schemaWarning['message'],
+                            Tokens::PATH => array_merge([$fieldOrDirective], $schemaWarning[Tokens::PATH]),
+                            Tokens::MESSAGE => $schemaWarning[Tokens::MESSAGE],
                         ];
                     }
                 }
                 if ($maybeDeprecations = $this->resolveFieldArgumentValueDeprecationsForSchema($fieldResolver, $argValue, $variables)) {
                     foreach ($maybeDeprecations as $schemaDeprecation) {
                         $schemaDeprecations[] = [
-                            'path' => array_merge([$fieldOrDirective], $schemaDeprecation['path']),
-                            'message' => $schemaDeprecation['message'],
+                            Tokens::PATH => array_merge([$fieldOrDirective], $schemaDeprecation[Tokens::PATH]),
+                            Tokens::MESSAGE => $schemaDeprecation[Tokens::MESSAGE],
                         ];
                     }
                 }
@@ -476,8 +477,8 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                     }
                     $errorFieldOrDirective = $errorFieldOrDirective ?? $fieldOrDirectiveOutputKey;
                     $dbErrors[(string)$id][] = [
-                        'path' => [$errorFieldOrDirective],
-                        'message' => $error->getErrorMessage(),
+                        Tokens::PATH => [$errorFieldOrDirective],
+                        Tokens::MESSAGE => $error->getErrorMessage(),
                     ];
                     $fieldOrDirectiveArgs[$directiveArgName] = null;
                     continue;
@@ -676,8 +677,8 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                     );
                 }
                 $schemaWarnings[] = [
-                    'path' => [$fieldDirective],
-                    'message' => $errorMessage,
+                    Tokens::PATH => [$fieldDirective],
+                    Tokens::MESSAGE => $errorMessage,
                 ];
             }
             return $this->filterFieldArgs($castedDirectiveArgs);
@@ -715,8 +716,8 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                     );
                 }
                 $schemaWarnings[] = [
-                    'path' => [$field],
-                    'message' => $errorMessage,
+                    Tokens::PATH => [$field],
+                    Tokens::MESSAGE => $errorMessage,
                 ];
             }
             return $this->filterFieldArgs($castedFieldArgs);

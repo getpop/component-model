@@ -18,6 +18,7 @@ use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
+use PoP\ComponentModel\Feedback\Tokens;
 
 abstract class AbstractFieldResolver implements FieldResolverInterface
 {
@@ -192,16 +193,16 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             // If there is no directive with this name, show an error and skip it
             if (is_null($fieldDirectiveResolverInstances)) {
                 $schemaErrors[] = [
-                    'path' => [$fieldDirective],
-                    'message' => sprintf(
+                    Tokens::PATH => [$fieldDirective],
+                    Tokens::MESSAGE => sprintf(
                         $translationAPI->__('No DirectiveResolver resolves directive with name \'%s\'', 'pop-component-model'),
                         $directiveName
                     ),
                 ];
                 if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
                     $schemaErrors[] = [
-                        'path' => [$fieldDirective],
-                        'message' => sprintf(
+                        Tokens::PATH => [$fieldDirective],
+                        Tokens::MESSAGE => sprintf(
                             $stopDirectivePipelineExecutionPlaceholder,
                             $fieldDirective
                         ),
@@ -214,8 +215,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
             if (empty($fieldDirectiveResolverInstances)) {
                 $schemaErrors[] = [
-                    'path' => [$fieldDirective],
-                    'message' => sprintf(
+                    Tokens::PATH => [$fieldDirective],
+                    Tokens::MESSAGE => sprintf(
                         $translationAPI->__('No DirectiveResolver processes directive with name \'%s\' and arguments \'%s\' in field(s) \'%s\'', 'pop-component-model'),
                         $directiveName,
                         json_encode($directiveArgs),
@@ -227,8 +228,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 ];
                 if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
                     $schemaErrors[] = [
-                        'path' => [$fieldDirective],
-                        'message' => sprintf(
+                        Tokens::PATH => [$fieldDirective],
+                        Tokens::MESSAGE => sprintf(
                             $stopDirectivePipelineExecutionPlaceholder,
                             $fieldDirective
                         ),
@@ -242,8 +243,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 $directiveResolverInstance = $fieldDirectiveResolverInstances[$field];
                 if (is_null($directiveResolverInstance)) {
                     $schemaErrors[] = [
-                        'path' => [$fieldDirective],
-                        'message' => sprintf(
+                        Tokens::PATH => [$fieldDirective],
+                        Tokens::MESSAGE => sprintf(
                             $translationAPI->__('No DirectiveResolver processes directive with name \'%s\' and arguments \'%s\' in field \'%s\'', 'pop-component-model'),
                             $directiveName,
                             json_encode($directiveArgs),
@@ -252,8 +253,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     ];
                     if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
                         $schemaErrors[] = [
-                            'path' => [$fieldDirective],
-                            'message' => sprintf(
+                            Tokens::PATH => [$fieldDirective],
+                            Tokens::MESSAGE => sprintf(
                                 $stopDirectivePipelineExecutionPlaceholder,
                                 $fieldDirective
                             ),
@@ -289,7 +290,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 if (!empty(array_filter(
                     $schemaErrors,
                     function($schemaError) use($fieldDirective) {
-                        return $schemaError['path'] == $fieldDirective;
+                        return $schemaError[Tokens::PATH] == $fieldDirective;
                     }
                 ))) {
                     continue;
@@ -309,28 +310,28 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 );
                 foreach ($fieldSchemaDeprecations as $fieldSchemaDeprecation) {
                     $schemaDeprecations[] = [
-                        'path' => array_merge([$directiveResolverFieldList, $fieldDirective], $fieldSchemaDeprecation['path']),
-                        'message' => $fieldSchemaDeprecation['message'],
+                        Tokens::PATH => array_merge([$directiveResolverFieldList, $fieldDirective], $fieldSchemaDeprecation[Tokens::PATH]),
+                        Tokens::MESSAGE => $fieldSchemaDeprecation[Tokens::MESSAGE],
                     ];
                 }
                 foreach ($fieldSchemaWarnings as $fieldSchemaWarning) {
                     $schemaWarnings[] = [
-                        'path' => array_merge([$directiveResolverFieldList, $fieldDirective], $fieldSchemaWarning['path']),
-                        'message' => $fieldSchemaWarning['message'],
+                        Tokens::PATH => array_merge([$directiveResolverFieldList, $fieldDirective], $fieldSchemaWarning[Tokens::PATH]),
+                        Tokens::MESSAGE => $fieldSchemaWarning[Tokens::MESSAGE],
                     ];
                 }
                 if ($fieldSchemaErrors) {
                     foreach ($fieldSchemaErrors as $fieldSchemaError) {
                         $schemaErrors[] = [
-                            'path' => array_merge([$directiveResolverFieldList, $fieldDirective], $fieldSchemaError['path']),
-                            'message' => $fieldSchemaError['message'],
+                            Tokens::PATH => array_merge([$directiveResolverFieldList, $fieldDirective], $fieldSchemaError[Tokens::PATH]),
+                            Tokens::MESSAGE => $fieldSchemaError[Tokens::MESSAGE],
                         ];
                     }
                     // Because there were schema errors, skip this directive
                     if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
                         $schemaErrors[] = [
-                            'path' => [$fieldDirective],
-                            'message' => sprintf(
+                            Tokens::PATH => [$fieldDirective],
+                            Tokens::MESSAGE => sprintf(
                                 $stopDirectivePipelineExecutionPlaceholder,
                                 $fieldDirective
                             ),
@@ -343,13 +344,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 // Validate against the directiveResolver
                 if ($maybeError = $directiveResolverInstance->resolveSchemaValidationErrorDescription($this, $directiveName, $directiveArgs)) {
                     $schemaErrors[] = [
-                        'path' => [$directiveResolverFieldList],
-                        'message' => $maybeError,
+                        Tokens::PATH => [$directiveResolverFieldList],
+                        Tokens::MESSAGE => $maybeError,
                     ];
                     if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
                         $schemaErrors[] = [
-                            'path' => [$directiveResolverFieldList],
-                            'message' => sprintf(
+                            Tokens::PATH => [$directiveResolverFieldList],
+                            Tokens::MESSAGE => sprintf(
                                 $stopDirectivePipelineExecutionPlaceholder,
                                 $fieldDirective
                             ),
@@ -362,8 +363,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 // Check for deprecations
                 if ($deprecationDescription = $directiveResolverInstance->getSchemaDirectiveDeprecationDescription($this)) {
                     $schemaDeprecations[] = [
-                        'path' => [$fieldDirective],
-                        'message' => $deprecationDescription,
+                        Tokens::PATH => [$fieldDirective],
+                        Tokens::MESSAGE => $deprecationDescription,
                     ];
                 }
             }
@@ -373,8 +374,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $directiveCount[$directiveName] = isset($directiveCount[$directiveName]) ? $directiveCount[$directiveName] + 1 : 1;
             if ($directiveCount[$directiveName] > 1 && !$directiveResolverInstance->canExecuteMultipleTimesInField()) {
                 $schemaErrors[] = [
-                    'path' => [$fieldDirective],
-                    'message' => sprintf(
+                    Tokens::PATH => [$fieldDirective],
+                    Tokens::MESSAGE => sprintf(
                         $translationAPI->__('Directive \'%s\' can be executed only once within field \'%s\', so the current execution (number %s) has been ignored', 'pop-component-model'),
                         $fieldDirective,
                         $field,
@@ -383,8 +384,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 ];
                 if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
                     $schemaErrors[] = [
-                        'path' => [$fieldDirective],
-                        'message' => sprintf(
+                        Tokens::PATH => [$fieldDirective],
+                        Tokens::MESSAGE => sprintf(
                             $stopDirectivePipelineExecutionPlaceholder,
                             $fieldDirective
                         ),
@@ -654,8 +655,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             ) = $this->dissectFieldForSchema($field);
             if ($maybeError = $fieldValueResolvers[0]->resolveSchemaValidationErrorDescription($this, $fieldName, $fieldArgs)) {
                 $schemaErrors[] = [
-                    'path' => [$field],
-                    'message' => $maybeError,
+                    Tokens::PATH => [$field],
+                    Tokens::MESSAGE => $maybeError,
                 ];
             }
             return $schemaErrors;
@@ -667,8 +668,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         $fieldName = $fieldQueryInterpreter->getFieldName($field);
         return [
             [
-                'path' => [$field],
-                'message' => sprintf(
+                Tokens::PATH => [$field],
+                Tokens::MESSAGE => sprintf(
                     $translationAPI->__('No FieldValueResolver resolves field \'%s\'', 'pop-component-model'),
                     $fieldName
                 ),
@@ -691,8 +692,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 // $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
                 // $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
                 $schemaWarnings[] = [
-                    'path' => [$field],
-                    'message' => $maybeWarning,
+                    Tokens::PATH => [$field],
+                    Tokens::MESSAGE => $maybeWarning,
                 ];
             }
             return $schemaWarnings;
@@ -717,8 +718,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                 // $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
                 // $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
                 $schemaDeprecations[] = [
-                    'path' => [$field],
-                    'message' => $maybeDeprecation,
+                    Tokens::PATH => [$field],
+                    Tokens::MESSAGE => $maybeDeprecation,
                 ];
             }
             return $schemaDeprecations;

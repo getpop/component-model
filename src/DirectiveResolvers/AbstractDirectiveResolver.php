@@ -11,6 +11,7 @@ use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineUtils;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
+use PoP\ComponentModel\Feedback\Tokens;
 
 abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, SchemaDirectiveResolverInterface, StageInterface
 {
@@ -60,13 +61,13 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             if ($nestedDirectiveSchemaErrors) {
                 foreach ($nestedDirectiveSchemaErrors as $nestedDirectiveSchemaError) {
                     $schemaErrors[] = [
-                        'path' => array_merge([$this->directive], $nestedDirectiveSchemaError['path']),
-                        'message' => $nestedDirectiveSchemaError['message'],
+                        Tokens::PATH => array_merge([$this->directive], $nestedDirectiveSchemaError[Tokens::PATH]),
+                        Tokens::MESSAGE => $nestedDirectiveSchemaError[Tokens::MESSAGE],
                     ];
                 }
                 $schemaErrors[] = [
-                    'path' => [$this->directive],
-                    'message' => $translationAPI->__('This directive can\'t be executed due to errors from its nested directives', 'component-model'),
+                    Tokens::PATH => [$this->directive],
+                    Tokens::MESSAGE => $translationAPI->__('This directive can\'t be executed due to errors from its nested directives', 'component-model'),
                 ];
                 return [
                     null, // $validDirective
@@ -92,20 +93,20 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         // If there were errors, warning or deprecations, integrate them into the feedback objects
         foreach ($directiveSchemaErrors as $directiveSchemaError) {
             $schemaErrors[] = [
-                'path' => array_merge([$this->directive], $directiveSchemaError['path']),
-                'message' => $directiveSchemaError['message'],
+                Tokens::PATH => array_merge([$this->directive], $directiveSchemaError[Tokens::PATH]),
+                Tokens::MESSAGE => $directiveSchemaError[Tokens::MESSAGE],
             ];
         }
         foreach ($directiveSchemaWarnings as $directiveSchemaWarning) {
             $schemaWarnings[] = [
-                'path' => array_merge([$this->directive], $directiveSchemaWarning['path']),
-                'message' => $directiveSchemaWarning['message'],
+                Tokens::PATH => array_merge([$this->directive], $directiveSchemaWarning[Tokens::PATH]),
+                Tokens::MESSAGE => $directiveSchemaWarning[Tokens::MESSAGE],
             ];
         }
         foreach ($directiveSchemaDeprecations as $directiveSchemaDeprecation) {
             $schemaDeprecations[] = [
-                'path' => array_merge([$this->directive], $directiveSchemaDeprecation['path']),
-                'message' => $directiveSchemaDeprecation['message'],
+                Tokens::PATH => array_merge([$this->directive], $directiveSchemaDeprecation[Tokens::PATH]),
+                Tokens::MESSAGE => $directiveSchemaDeprecation[Tokens::MESSAGE],
             ];
         }
         return [
@@ -549,8 +550,8 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 $message = $translationAPI->__('%s. Fields \'%s\' have been removed from the directive pipeline', 'component-model');
             }
             $schemaErrors[] = [
-                'path' => [$this->directive],
-                'message' => sprintf(
+                Tokens::PATH => [$this->directive],
+                Tokens::MESSAGE => sprintf(
                     $message,
                     $failureMessage,
                     implode($translationAPI->__('\', \''), $failedFields)
@@ -563,8 +564,8 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 $message = $translationAPI->__('%s. Execution of directive \'%s\' has been ignored on fields \'%s\'', 'component-model');
             }
             $schemaWarnings[] = [
-                'path' => [$this->directive],
-                'message' => sprintf(
+                Tokens::PATH => [$this->directive],
+                Tokens::MESSAGE => sprintf(
                     $message,
                     $failureMessage,
                     $directiveName,
