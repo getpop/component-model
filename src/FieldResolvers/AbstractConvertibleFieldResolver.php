@@ -211,7 +211,7 @@ abstract class AbstractConvertibleFieldResolver extends AbstractFieldResolver
         return parent::resolveSchemaValidationErrorDescriptions($field, $variables);
     }
 
-    public function resolveSchemaValidationWarningDescriptions(string $field, array &$variables = null): ?array
+    public function resolveSchemaValidationWarningDescriptions(string $field, array &$variables = null): array
     {
         $fieldName = FieldQueryInterpreterFacade::getInstance()->getFieldName($field);
         $instanceManager = InstanceManagerFacade::getInstance();
@@ -234,7 +234,7 @@ abstract class AbstractConvertibleFieldResolver extends AbstractFieldResolver
         return parent::resolveSchemaValidationWarningDescriptions($field, $variables);
     }
 
-    public function getSchemaDeprecationDescriptions(string $field, array &$variables = null): ?array
+    public function getSchemaDeprecationDescriptions(string $field, array &$variables = null): array
     {
         $fieldName = FieldQueryInterpreterFacade::getInstance()->getFieldName($field);
         $instanceManager = InstanceManagerFacade::getInstance();
