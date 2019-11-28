@@ -38,14 +38,14 @@ class CoreFieldValueResolver extends AbstractDBDataFieldValueResolver
         return $descriptions[$fieldName] ?? parent::getSchemaFieldDescription($fieldResolver, $fieldName);
     }
 
-    public function resolveValue(FieldResolverInterface $fieldResolver, $resultItem, string $fieldName, array $fieldArgs = [])
+    public function resolveValue(FieldResolverInterface $fieldResolver, $resultItem, string $fieldName, array $fieldArgs = [], ?array $variables = null, ?array $expressions = null, array $options = [])
     {
         switch ($fieldName) {
             case 'id':
                 return $fieldResolver->getId($resultItem);
         }
 
-        return parent::resolveValue($fieldResolver, $resultItem, $fieldName, $fieldArgs);
+        return parent::resolveValue($fieldResolver, $resultItem, $fieldName, $fieldArgs, $variables, $expressions, $options);
     }
 
     public function resolveFieldDefaultDataloaderClass(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?string

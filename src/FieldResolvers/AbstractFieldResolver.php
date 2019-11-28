@@ -874,7 +874,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     if ($validationErrorDescription = $fieldValueResolver->getValidationErrorDescription($this, $resultItem, $fieldName, $fieldArgs)) {
                         return ErrorUtils::getValidationFailedError($fieldName, $fieldArgs, $validationErrorDescription);
                     }
-                    return $fieldValueResolver->resolveValue($this, $resultItem, $fieldName, $fieldArgs);
+                    return $fieldValueResolver->resolveValue($this, $resultItem, $fieldName, $fieldArgs, $variables, $expressions, $options);
                 }
             }
             return ErrorUtils::getNoFieldValueResolverProcessesFieldError($this->getId($resultItem), $fieldName, $fieldArgs);

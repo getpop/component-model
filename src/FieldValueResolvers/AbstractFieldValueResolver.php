@@ -219,7 +219,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         return null;
     }
 
-    public function resolveValue(FieldResolverInterface $fieldResolver, $resultItem, string $fieldName, array $fieldArgs = [])
+    public function resolveValue(FieldResolverInterface $fieldResolver, $resultItem, string $fieldName, array $fieldArgs = [], ?array $variables = null, ?array $expressions = null, array $options = [])
     {
         return null;
     }
