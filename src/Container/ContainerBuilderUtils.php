@@ -28,7 +28,7 @@ class ContainerBuilderUtils extends RootContainerBuilderUtils {
     public static function attachDirectiveResolversFromNamespace(string $namespace, bool $includeSubfolders = true): void
     {
         foreach (self::getServiceClassesUnderNamespace($namespace, $includeSubfolders) as $serviceClass) {
-            $serviceClass::attach(AttachableExtensionGroups::FIELDDIRECTIVERESOLVERS);
+            $serviceClass::attach(AttachableExtensionGroups::DIRECTIVERESOLVERS);
         }
     }
 }

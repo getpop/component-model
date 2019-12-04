@@ -1102,7 +1102,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $class = get_called_class();
         do {
             // Important: do array_reverse to enable more specific hooks, which are initialized later on in the project, to be the chosen ones (if their priority is the same)
-            $extensionClassPriorities = array_reverse($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDDIRECTIVERESOLVERS));
+            $extensionClassPriorities = array_reverse($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::DIRECTIVERESOLVERS));
             // Order them by priority: higher priority are evaluated first
             $extensionClasses = array_keys($extensionClassPriorities);
             $extensionPriorities = array_values($extensionClassPriorities);

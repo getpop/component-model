@@ -4,6 +4,6 @@ namespace PoP\ComponentModel\AttachableExtensions;
 class AttachableExtensionGroups
 {
     const FIELDVALUERESOLVERS = 'fieldvalueresolvers';
-    const FIELDDIRECTIVERESOLVERS = 'fielddirectiveresolvers';
+    const DIRECTIVERESOLVERS = 'directiveresolvers';
     const TYPERESOLVERPICKERS = 'typeresolver-pickers';
 }
