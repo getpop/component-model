@@ -272,8 +272,8 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     protected function getExpressionsForResultItem($id, array &$variables, array &$messages)
     {
         // Create a custom $variables containing all the properties from $dbItems for this resultItem
-        // This way, when encountering $propName in a fieldArg in a fieldValueResolver, it can resolve that value
-        // Otherwise it can't, since the fieldValueResolver doesn't have access to either $dbItems
+        // This way, when encountering $propName in a fieldArg in a fieldResolver, it can resolve that value
+        // Otherwise it can't, since the fieldResolver doesn't have access to either $dbItems
         return array_merge(
             $variables,
             $messages[self::MESSAGE_EXPRESSIONS][(string)$id] ?? []

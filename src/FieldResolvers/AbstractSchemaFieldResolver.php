@@ -1,8 +1,8 @@
 <?php
-namespace PoP\ComponentModel\FieldValueResolvers;
+namespace PoP\ComponentModel\FieldResolvers;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
-abstract class AbstractSchemaFieldValueResolver extends AbstractFieldValueResolver implements FieldValueResolverSchemaInterface
+abstract class AbstractSchemaFieldResolver extends AbstractFieldResolver implements FieldResolverSchemaInterface
 {
     /**
      * The object resolves its own schema definition

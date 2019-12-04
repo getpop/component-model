@@ -1,10 +1,10 @@
 <?php
-namespace PoP\ComponentModel\FieldValueResolvers;
+namespace PoP\ComponentModel\FieldResolvers;
 
 use PoP\ComponentModel\TypeResolvers\AbstractTypeResolver;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
-abstract class AbstractOperatorOrHelperFieldValueResolver extends AbstractDBDataFieldValueResolver
+abstract class AbstractOperatorOrHelperFieldResolver extends AbstractDBDataFieldResolver
 {
     public static function getClassesToAttachTo(): array
     {

@@ -1,5 +1,5 @@
 <?php
-namespace PoP\ComponentModel\FieldValueResolvers;
+namespace PoP\ComponentModel\FieldResolvers;
 use PoP\ComponentModel\GeneralUtils;
 use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
@@ -10,7 +10,7 @@ use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
 
-abstract class AbstractFieldValueResolver implements FieldValueResolverInterface, FieldValueResolverSchemaInterface
+abstract class AbstractFieldResolver implements FieldResolverInterface, FieldResolverSchemaInterface
 {
     /**
      * This class is attached to a TypeResolver
@@ -18,8 +18,8 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
     use AttachableExtensionTrait;
 
     /**
-     * Indicates if the fieldValueResolver can process this combination of fieldName and fieldArgs
-     * It is required to support a multiverse of fields: different fieldValueResolvers can resolve the field, based on the required version (passed through $fieldArgs['branch'])
+     * Indicates if the fieldResolver can process this combination of fieldName and fieldArgs
+     * It is required to support a multiverse of fields: different fieldResolvers can resolve the field, based on the required version (passed through $fieldArgs['branch'])
      *
      * @param string $fieldName
      * @param array $fieldArgs
@@ -66,7 +66,7 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
     }
 
     /**
-     * Return the object implementing the schema definition for this fieldValueResolver
+     * Return the object implementing the schema definition for this fieldResolver
      *
      * @return void
      */

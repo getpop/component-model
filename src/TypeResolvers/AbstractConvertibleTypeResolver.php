@@ -35,17 +35,17 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver
         return parent::getFieldNamesToResolve();
     }
 
-    public function hasFieldValueResolversForField(string $field): bool
+    public function hasFieldResolversForField(string $field): bool
     {
         $instanceManager = InstanceManagerFacade::getInstance();
         // The only FieldNames we can always guarantee are those from the base class
         // The others depend on the resultItem, to see if they satisfy the specific resolver condition
         if ($baseTypeResolverClass = $this->getBaseTypeResolverClass()) {
             $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-            return $typeResolver->hasFieldValueResolversForField($field);
+            return $typeResolver->hasFieldResolversForField($field);
         }
 
-        return parent::hasFieldValueResolversForField($field);
+        return parent::hasFieldResolversForField($field);
     }
 
     public function getSchemaFieldArgs(string $field): array
@@ -117,7 +117,7 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver
     protected function getTypeResolverAndPicker($resultItem)
     {
         $instanceManager = InstanceManagerFacade::getInstance();
-        // Among all registered fieldvalueresolvers, check if any is able to process the object, through function `process`
+        // Among all registered fieldresolvers, check if any is able to process the object, through function `process`
         // Important: iterate from back to front, because more general components (eg: Users) are defined first,
         // and dependent components (eg: Communities, Organizations) are defined later
         // Then, more specific implementations (eg: Organizations) must be queried before more general ones (eg: Communities)
@@ -146,11 +146,11 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver
     public function resolveValue($resultItem, string $field, ?array $variables = null, ?array $expressions = null, array $options = [])
     {
         // Delegate to the TypeResolver corresponding to this object
-        list($typeResolver, $fieldvalueresolverpicker) = $this->getTypeResolverAndPicker($resultItem);
+        list($typeResolver, $fieldresolverpicker) = $this->getTypeResolverAndPicker($resultItem);
 
         // Cast object, eg from post to event
-        if ($fieldvalueresolverpicker) {
-            $resultItem = $fieldvalueresolverpicker->cast($resultItem);
+        if ($fieldresolverpicker) {
+            $resultItem = $fieldresolverpicker->cast($resultItem);
         }
 
         // Delegate to that typeResolver to obtain the value

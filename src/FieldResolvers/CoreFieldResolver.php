@@ -1,11 +1,11 @@
 <?php
-namespace PoP\ComponentModel\FieldValueResolvers;
+namespace PoP\ComponentModel\FieldResolvers;
 use PoP\ComponentModel\TypeResolvers\AbstractTypeResolver;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
-class CoreFieldValueResolver extends AbstractDBDataFieldValueResolver
+class CoreFieldResolver extends AbstractDBDataFieldResolver
 {
     public static function getClassesToAttachTo(): array
     {

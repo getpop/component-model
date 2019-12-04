@@ -1,8 +1,8 @@
 <?php
-namespace PoP\ComponentModel\FieldValueResolvers;
+namespace PoP\ComponentModel\FieldResolvers;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
-interface FieldValueResolverSchemaInterface
+interface FieldResolverSchemaInterface
 {
     public function getSchemaFieldType(TypeResolverInterface $typeResolver, string $fieldName): ?string;
     public function getSchemaFieldDescription(TypeResolverInterface $typeResolver, string $fieldName): ?string;

@@ -1,17 +1,17 @@
 <?php
-namespace PoP\ComponentModel\FieldValueResolvers;
+namespace PoP\ComponentModel\FieldResolvers;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
-interface FieldValueResolverInterface
+interface FieldResolverInterface
 {
     /**
-     * Get an array with the fieldNames that this fieldValueResolver resolves
+     * Get an array with the fieldNames that this fieldResolver resolves
      *
      * @return array
      */
     public static function getFieldNamesToResolve(): array;
     /**
-     * Get an instance of the object defining the schema for this fieldValueResolver
+     * Get an instance of the object defining the schema for this fieldResolver
      *
      * @param TypeResolverInterface $typeResolver
      * @param string $fieldName
@@ -22,8 +22,8 @@ interface FieldValueResolverInterface
     public function getSchemaDefinitionForField(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): array;
 
     /**
-     * Indicates if the fieldValueResolver can process this combination of fieldName and fieldArgs
-     * It is required to support a multiverse of fields: different fieldValueResolvers can resolve the field, based on the required version (passed through $fieldArgs['branch'])
+     * Indicates if the fieldResolver can process this combination of fieldName and fieldArgs
+     * It is required to support a multiverse of fields: different fieldResolvers can resolve the field, based on the required version (passed through $fieldArgs['branch'])
      *
      * @param string $fieldName
      * @param array $fieldArgs
