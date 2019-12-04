@@ -169,7 +169,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
             }
             foreach ($this->getDomainSwitchingSubmodules($module) as $subcomponent_data_field => $subcomponent_dataloader_options) {
                 foreach ($subcomponent_dataloader_options as $subcomponent_dataloader_class => $subcomponent_modules) {
-                    // If the subcomponent dataloader is not explicitly set in `getDomainSwitchingSubmodules`, then retrieve it now from the current dataloader's fieldResolver
+                    // If the subcomponent dataloader is not explicitly set in `getDomainSwitchingSubmodules`, then retrieve it now from the current dataloader's typeResolver
                     if ($subcomponent_dataloader_class == POP_CONSTANT_SUBCOMPONENTDATALOADER_DEFAULTFROMFIELD) {
                         $subcomponent_dataloader_class = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($dataloader_class, $subcomponent_data_field);
                     }
@@ -189,7 +189,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
             foreach ($this->getConditionalOnDataFieldDomainSwitchingSubmodules($module) as $conditionDataField => $dataFieldDataloaderOptionsConditionalSubmodules) {
                 foreach ($dataFieldDataloaderOptionsConditionalSubmodules as $conditionalDataField => $dataloaderOptionsConditionalSubmodules) {
                     foreach ($dataloaderOptionsConditionalSubmodules as $subcomponentDataloaderClass => $conditionalSubmodules) {
-                        // If the subcomponent dataloader is not explicitly set in `getConditionalOnDataFieldDomainSwitchingSubmodules`, then retrieve it now from the current dataloader's fieldResolver
+                        // If the subcomponent dataloader is not explicitly set in `getConditionalOnDataFieldDomainSwitchingSubmodules`, then retrieve it now from the current dataloader's typeResolver
                         if ($subcomponentDataloaderClass == POP_CONSTANT_SUBCOMPONENTDATALOADER_DEFAULTFROMFIELD) {
                             $subcomponentDataloaderClass = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($dataloader_class, $conditionalDataField);
                         }
@@ -499,7 +499,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                 // Eg: a module using POSTLIST, another one using CONVERTIBLEPOSTLIST, it doesn't conflict since the db-key for both is "posts"
                 $subcomponent_dataloader_classes = array_keys($subcomponent_dataloader_options);
                 foreach ($subcomponent_dataloader_classes as $subcomponent_dataloader_class) {
-                    // If the subcomponent dataloader is not explicitly set in `getDomainSwitchingSubmodules`, then retrieve it now from the current dataloader's fieldResolver
+                    // If the subcomponent dataloader is not explicitly set in `getDomainSwitchingSubmodules`, then retrieve it now from the current dataloader's typeResolver
                     if ($subcomponent_dataloader_class == POP_CONSTANT_SUBCOMPONENTDATALOADER_DEFAULTFROMFIELD) {
                         $subcomponent_dataloader_class = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($dataloader_class, $subcomponent_data_field);
                     }
@@ -517,7 +517,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                 foreach ($dataFieldDataloaderOptionsConditionalSubmodules as $conditionalDataField => $dataloaderOptionsConditionalSubmodules) {
                     $subcomponentDataloaderClasses = array_keys($dataloaderOptionsConditionalSubmodules);
                     foreach ($subcomponentDataloaderClasses as $subcomponentDataloaderClass) {
-                        // If the subcomponent dataloader is not explicitly set in `getConditionalOnDataFieldDomainSwitchingSubmodules`, then retrieve it now from the current dataloader's fieldResolver
+                        // If the subcomponent dataloader is not explicitly set in `getConditionalOnDataFieldDomainSwitchingSubmodules`, then retrieve it now from the current dataloader's typeResolver
                         if ($subcomponentDataloaderClass == POP_CONSTANT_SUBCOMPONENTDATALOADER_DEFAULTFROMFIELD) {
                             $subcomponentDataloaderClass = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($dataloader_class, $conditionalDataField);
                         }

@@ -7,9 +7,9 @@ use PoP\ComponentModel\Feedback\Tokens;
 use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
-use PoP\ComponentModel\FieldResolvers\FieldSymbols;
-use PoP\ComponentModel\FieldResolvers\PipelinePositions;
-use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
+use PoP\ComponentModel\TypeResolvers\FieldSymbols;
+use PoP\ComponentModel\TypeResolvers\PipelinePositions;
+use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineUtils;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
@@ -42,7 +42,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         return false;
     }
 
-    public function dissectAndValidateDirectiveForSchema(FieldResolverInterface $fieldResolver, array &$fieldDirectiveFields, array &$variables, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    public function dissectAndValidateDirectiveForSchema(TypeResolverInterface $typeResolver, array &$fieldDirectiveFields, array &$variables, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
@@ -73,7 +73,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             foreach ($nestedFieldDirectives as $nestedFieldDirective) {
                 $nestedFieldDirectiveFields[$nestedFieldDirective] = $fieldDirectiveFields[$this->directive];
             }
-            $this->nestedDirectivePipelineData = $fieldResolver->resolveDirectivesIntoPipelineData($nestedFieldDirectives, $nestedFieldDirectiveFields, true, $variables, $nestedDirectiveSchemaErrors, $nestedDirectiveSchemaWarnings, $nestedDirectiveSchemaDeprecations);
+            $this->nestedDirectivePipelineData = $typeResolver->resolveDirectivesIntoPipelineData($nestedFieldDirectives, $nestedFieldDirectiveFields, true, $variables, $nestedDirectiveSchemaErrors, $nestedDirectiveSchemaWarnings, $nestedDirectiveSchemaDeprecations);
             foreach ($nestedDirectiveSchemaDeprecations as $nestedDirectiveSchemaDeprecation) {
                 $schemaDeprecations[] = [
                     Tokens::PATH => array_merge([$this->directive], $nestedDirectiveSchemaDeprecation[Tokens::PATH]),
@@ -114,7 +114,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $directiveSchemaErrors,
             $directiveSchemaWarnings,
             $directiveSchemaDeprecations
-        ) = $fieldQueryInterpreter->extractDirectiveArgumentsForSchema($this, $fieldResolver, $this->directive, $variables, $this->disableDynamicFieldsFromDirectiveArgs());
+        ) = $fieldQueryInterpreter->extractDirectiveArgumentsForSchema($this, $typeResolver, $this->directive, $variables, $this->disableDynamicFieldsFromDirectiveArgs());
 
         // Store the args, they may be used in `resolveDirective`
         $this->directiveArgsForSchema = $directiveArgs;
@@ -160,19 +160,19 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     /**
      * By default, do nothing
      *
-     * @param FieldResolverInterface $fieldResolver
+     * @param TypeResolverInterface $typeResolver
      * @param array $directiveArgs
      * @param array $schemaErrors
      * @param array $schemaWarnings
      * @param array $schemaDeprecations
      * @return array
      */
-    public function validateDirectiveArgumentsForSchema(FieldResolverInterface $fieldResolver, array $directiveArgs, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    public function validateDirectiveArgumentsForSchema(TypeResolverInterface $typeResolver, array $directiveArgs, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         return $directiveArgs;
     }
 
-    public function dissectAndValidateDirectiveForResultItem(FieldResolverInterface $fieldResolver, $resultItem, array &$variables, array &$expressions, array &$dbErrors, array &$dbWarnings): array
+    public function dissectAndValidateDirectiveForResultItem(TypeResolverInterface $typeResolver, $resultItem, array &$variables, array &$expressions, array &$dbErrors, array &$dbWarnings): array
     {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         list(
@@ -181,10 +181,10 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $directiveArgs,
             $nestedDBErrors,
             $nestedDBWarnings
-        ) = $fieldQueryInterpreter->extractDirectiveArgumentsForResultItem($this, $fieldResolver, $resultItem, $this->directive, $variables, $expressions);
+        ) = $fieldQueryInterpreter->extractDirectiveArgumentsForResultItem($this, $typeResolver, $resultItem, $this->directive, $variables, $expressions);
 
         // Store the args, they may be used in `resolveDirective`
-        $this->directiveArgsForResultItems[$fieldResolver->getId($resultItem)] = $directiveArgs;
+        $this->directiveArgsForResultItems[$typeResolver->getId($resultItem)] = $directiveArgs;
 
         if ($nestedDBWarnings || $nestedDBErrors) {
             foreach ($nestedDBErrors as $id => $fieldOutputKeyErrorMessages) {
@@ -223,20 +223,20 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
      * By default, the directiveResolver instance can process the directive
      * This function can be overriden to force certain value on the directive args before it can be executed
      *
-     * @param FieldResolverInterface $fieldResolver
+     * @param TypeResolverInterface $typeResolver
      * @param string $directiveName
      * @param array $directiveArgs
      * @return boolean
      */
-    public function resolveCanProcess(FieldResolverInterface $fieldResolver, string $directiveName, array $directiveArgs = [], string $field, array &$variables): bool
+    public function resolveCanProcess(TypeResolverInterface $typeResolver, string $directiveName, array $directiveArgs = [], string $field, array &$variables): bool
     {
         return true;
     }
 
-    public function resolveSchemaValidationErrorDescription(FieldResolverInterface $fieldResolver, string $directiveName, array $directiveArgs = []): ?string
+    public function resolveSchemaValidationErrorDescription(TypeResolverInterface $typeResolver, string $directiveName, array $directiveArgs = []): ?string
     {
         // Iterate all the mandatory fieldArgs and, if they are not present, throw an error
-        if ($schemaDirectiveArgs = $this->getSchemaDirectiveArgs($fieldResolver)) {
+        if ($schemaDirectiveArgs = $this->getSchemaDirectiveArgs($typeResolver)) {
             if ($mandatoryArgs = SchemaHelpers::getSchemaMandatoryFieldArgs($schemaDirectiveArgs)) {
                 if ($maybeError = $this->validateNotMissingDirectiveArguments(
                     SchemaHelpers::getSchemaFieldArgNames($mandatoryArgs),
@@ -339,50 +339,50 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     //     return false;
     // }
 
-    public function enableOrderedSchemaDirectiveArgs(FieldResolverInterface $fieldResolver): bool
+    public function enableOrderedSchemaDirectiveArgs(TypeResolverInterface $typeResolver): bool
     {
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
-            return $schemaDefinitionResolver->enableOrderedSchemaDirectiveArgs($fieldResolver);
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
+            return $schemaDefinitionResolver->enableOrderedSchemaDirectiveArgs($typeResolver);
         }
         return true;
     }
 
-    public function getSchemaDirectiveArgs(FieldResolverInterface $fieldResolver): array
+    public function getSchemaDirectiveArgs(TypeResolverInterface $typeResolver): array
     {
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
-            return $schemaDefinitionResolver->getSchemaDirectiveArgs($fieldResolver);
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
+            return $schemaDefinitionResolver->getSchemaDirectiveArgs($typeResolver);
         }
         return [];
     }
 
-    public function getSchemaDirectiveDeprecationDescription(FieldResolverInterface $fieldResolver): ?string
+    public function getSchemaDirectiveDeprecationDescription(TypeResolverInterface $typeResolver): ?string
     {
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
-            return $schemaDefinitionResolver->getSchemaDirectiveDeprecationDescription($fieldResolver);
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
+            return $schemaDefinitionResolver->getSchemaDirectiveDeprecationDescription($typeResolver);
         }
         return null;
     }
 
-    public function getSchemaDirectiveExpressions(FieldResolverInterface $fieldResolver): array
+    public function getSchemaDirectiveExpressions(TypeResolverInterface $typeResolver): array
     {
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
-            return $schemaDefinitionResolver->getSchemaDirectiveExpressions($fieldResolver);
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
+            return $schemaDefinitionResolver->getSchemaDirectiveExpressions($typeResolver);
         }
         return [];
     }
 
-    public function getSchemaDirectiveDescription(FieldResolverInterface $fieldResolver): ?string
+    public function getSchemaDirectiveDescription(TypeResolverInterface $typeResolver): ?string
     {
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
-            return $schemaDefinitionResolver->getSchemaDirectiveDescription($fieldResolver);
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
+            return $schemaDefinitionResolver->getSchemaDirectiveDescription($typeResolver);
         }
         return null;
     }
 
-    public function isGlobal(FieldResolverInterface $fieldResolver): bool
+    public function isGlobal(TypeResolverInterface $typeResolver): bool
     {
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
-            return $schemaDefinitionResolver->isGlobal($fieldResolver);
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
+            return $schemaDefinitionResolver->isGlobal($typeResolver);
         }
         return false;
     }
@@ -394,7 +394,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         // The one corresponding to the current stage is at the head. Take it out from there, and keep passing down the rest of the array to the next stages
         list(
             $dataloader,
-            $fieldResolver,
+            $typeResolver,
             $pipelineIDsDataFields,
             $resultIDItems,
             $dbItems,
@@ -415,7 +415,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         // // 2. Validate operation
         // $this->validateDirective(
         //     $dataloader,
-        //     $fieldResolver,
+        //     $typeResolver,
         //     $idsDataFields,
         //     $pipelineIDsDataFields,
         //     $resultIDItems,
@@ -436,7 +436,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         // if (!$this->needsIDsDataFieldsToExecute() || $this->hasIDsDataFields($idsDataFields)) {
         $this->resolveDirective(
             $dataloader,
-            $fieldResolver,
+            $typeResolver,
             $idsDataFields,
             $pipelineIDsDataFields,
             $resultIDItems,
@@ -455,7 +455,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         // 3. Re-create the payload from the modified variables
         return DirectivePipelineUtils::convertArgumentsToPayload(
             $dataloader,
-            $fieldResolver,
+            $typeResolver,
             $pipelineIDsDataFields,
             $resultIDItems,
             $dbItems,
@@ -470,7 +470,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         );
     }
 
-    // public function validateDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    // public function validateDirective(DataloaderInterface $dataloader, TypeResolverInterface $typeResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     // {
     //     // Check that the directive can be applied to all provided fields
     //     $this->validateAndFilterFieldsForDirective($idsDataFields, $schemaErrors, $schemaWarnings);
@@ -616,7 +616,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         }
     }
 
-    public function getSchemaDefinitionResolver(FieldResolverInterface $fieldResolver): ?SchemaDirectiveResolverInterface
+    public function getSchemaDefinitionResolver(TypeResolverInterface $typeResolver): ?SchemaDirectiveResolverInterface
     {
         return null;
     }
@@ -625,7 +625,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         return false;
     }
 
-    public function getSchemaDefinitionForDirective(FieldResolverInterface $fieldResolver): array
+    public function getSchemaDefinitionForDirective(TypeResolverInterface $typeResolver): array
     {
         $directiveName = $this->getDirectiveName();
         $schemaDefinition = [
@@ -637,18 +637,18 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         if ($limitedToFields = $this::getFieldNamesToApplyTo()) {
             $schemaDefinition[SchemaDefinition::ARGNAME_DIRECTIVE_LIMITED_TO_FIELDS] = $limitedToFields;
         }
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
-            if ($description = $schemaDefinitionResolver->getSchemaDirectiveDescription($fieldResolver)) {
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
+            if ($description = $schemaDefinitionResolver->getSchemaDirectiveDescription($typeResolver)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
             }
-            if ($expressions = $schemaDefinitionResolver->getSchemaDirectiveExpressions($fieldResolver)) {
+            if ($expressions = $schemaDefinitionResolver->getSchemaDirectiveExpressions($typeResolver)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_DIRECTIVE_EXPRESSIONS] = $expressions;
             }
-            if ($deprecationDescription = $schemaDefinitionResolver->getSchemaDirectiveDeprecationDescription($fieldResolver)) {
+            if ($deprecationDescription = $schemaDefinitionResolver->getSchemaDirectiveDeprecationDescription($typeResolver)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATED] = true;
                 $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATEDDESCRIPTION] = $deprecationDescription;
             }
-            if ($args = $schemaDefinitionResolver->getSchemaDirectiveArgs($fieldResolver)) {
+            if ($args = $schemaDefinitionResolver->getSchemaDirectiveArgs($typeResolver)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_ARGS] = $args;
             }
         }

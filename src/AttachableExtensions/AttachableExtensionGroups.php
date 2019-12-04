@@ -5,5 +5,5 @@ class AttachableExtensionGroups
 {
     const FIELDVALUERESOLVERS = 'fieldvalueresolvers';
     const FIELDDIRECTIVERESOLVERS = 'fielddirectiveresolvers';
-    const FIELDRESOLVERPICKERS = 'fieldresolver-pickers';
+    const TYPERESOLVERPICKERS = 'typeresolver-pickers';
 }

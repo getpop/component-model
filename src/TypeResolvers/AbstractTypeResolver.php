@@ -1,5 +1,5 @@
 <?php
-namespace PoP\ComponentModel\FieldResolvers;
+namespace PoP\ComponentModel\TypeResolvers;
 use PoP\FieldQuery\QueryUtils;
 use PoP\FieldQuery\QuerySyntax;
 use PoP\FieldQuery\QueryHelpers;
@@ -10,7 +10,7 @@ use League\Pipeline\PipelineBuilder;
 use PoP\ComponentModel\DataloaderInterface;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
-use PoP\ComponentModel\FieldResolvers\FieldHelpers;
+use PoP\ComponentModel\TypeResolvers\FieldHelpers;
 use PoP\ComponentModel\Facades\Engine\DataloadingEngineFacade;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
@@ -20,7 +20,7 @@ use PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
 use PoP\ComponentModel\Feedback\Tokens;
 
-abstract class AbstractFieldResolver implements FieldResolverInterface
+abstract class AbstractTypeResolver implements TypeResolverInterface
 {
     public const OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM = 'validateSchemaOnResultItem';
 
@@ -38,7 +38,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     private $fieldDirectiveIDFields = [];
     private $fieldDirectivesFromFieldCache = [];
     private $dissectedFieldForSchemaCache = [];
-    private $fieldResolverSchemaIdsCache = [];
+    private $typeResolverSchemaIdsCache = [];
     private $directiveResolverInstanceCache = [];
 
     public function getFieldNamesToResolve(): array
@@ -864,7 +864,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             }
 
             foreach ($fieldValueResolvers as $fieldValueResolver) {
-                // Also send the fieldResolver along, as to get the id of the $resultItem being passed
+                // Also send the typeResolver along, as to get the id of the $resultItem being passed
                 if ($fieldValueResolver->resolveCanProcessResultItem($this, $resultItem, $fieldName, $fieldArgs)) {
                     if ($validateSchemaOnResultItem) {
                         if ($maybeError = $fieldValueResolver->resolveSchemaValidationErrorDescription($this, $fieldName, $fieldArgs)) {
@@ -886,10 +886,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         return ErrorUtils::getNoFieldError($fieldName);
     }
 
-    protected function getFieldResolverSchemaId(string $class): string
+    protected function getTypeResolverSchemaId(string $class): string
     {
-        if (!isset($this->fieldResolverSchemaIdsCache[$class])) {
-            $this->fieldResolverSchemaIdsCache[$class] = $this->doGetFieldResolverSchemaId($class);
+        if (!isset($this->typeResolverSchemaIdsCache[$class])) {
+            $this->typeResolverSchemaIdsCache[$class] = $this->doGetTypeResolverSchemaId($class);
 
             // Log how the hash and the class are related
             $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();
@@ -897,15 +897,15 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
             $feedbackMessageStore->maybeAddLogEntry(
                 sprintf(
                     $translationAPI->__('Field resolver with ID \'%s\' corresponds to class \'%s\'', 'pop-component-model'),
-                    $this->fieldResolverSchemaIdsCache[$class],
+                    $this->typeResolverSchemaIdsCache[$class],
                     $class
                 )
             );
         }
-        return $this->fieldResolverSchemaIdsCache[$class];
+        return $this->typeResolverSchemaIdsCache[$class];
     }
 
-    protected function doGetFieldResolverSchemaId(string $class): string
+    protected function doGetTypeResolverSchemaId(string $class): string
     {
         return hash('md5', $class);
     }
@@ -916,7 +916,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         $class = get_called_class();
         if (in_array($class, $options['processed'])) {
             return [
-                SchemaDefinition::ARGNAME_RESOLVERID => $this->getFieldResolverSchemaId($class),
+                SchemaDefinition::ARGNAME_RESOLVERID => $this->getTypeResolverSchemaId($class),
                 SchemaDefinition::ARGNAME_RECURSION => true,
             ];
         }
@@ -924,7 +924,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         $options['processed'][] = $class;
         if (is_null($this->schemaDefinition)) {
             $this->schemaDefinition = [
-                SchemaDefinition::ARGNAME_RESOLVERID => $this->getFieldResolverSchemaId($class),
+                SchemaDefinition::ARGNAME_RESOLVERID => $this->getTypeResolverSchemaId($class),
             ];
             $this->addSchemaDefinition($fieldArgs, $options);
         }
@@ -982,15 +982,15 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                         $fieldArgs
                     );
                     $fieldSchemaDefinition = $fieldValueResolver->getSchemaDefinitionForField($this, $fieldName, $fieldArgs);
-                    // Add subfield schema if it is deep, and this fieldResolver has not been processed yet
+                    // Add subfield schema if it is deep, and this typeResolver has not been processed yet
                     if ($fieldArgs['deep']) {
                         // If this field is relational, then add its own schema
                         if ($fieldDataloaderClass = $this->resolveFieldDefaultDataloaderClass($field)) {
                             // Append subfields' schema
                             $fieldDataloader = $instanceManager->getInstance($fieldDataloaderClass);
-                            if ($fieldResolverClass = $fieldDataloader->getFieldResolverClass()) {
-                                $fieldResolver = $instanceManager->getInstance($fieldResolverClass);
-                                $fieldSchemaDefinition[SchemaDefinition::ARGNAME_RESOLVER] = $fieldResolver->getSchemaDefinition($fieldArgs, $options);
+                            if ($typeResolverClass = $fieldDataloader->getTypeResolverClass()) {
+                                $typeResolver = $instanceManager->getInstance($typeResolverClass);
+                                $fieldSchemaDefinition[SchemaDefinition::ARGNAME_RESOLVER] = $typeResolver->getSchemaDefinition($fieldArgs, $options);
                             }
                         }
                     }
@@ -1010,7 +1010,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         $attachableExtensionManager = AttachableExtensionManagerFacade::getInstance();
 
-        // Iterate classes from the current class towards the parent classes until finding fieldResolver that satisfies processing this field
+        // Iterate classes from the current class towards the parent classes until finding typeResolver that satisfies processing this field
         $class = get_called_class();
         do {
             foreach ($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDVALUERESOLVERS) as $extensionClass => $extensionPriority) {
@@ -1043,7 +1043,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
     protected function calculateFieldValueResolversForField(string $field): array
     {
         // Important: here we CAN'T use `dissectFieldForSchema` to get the fieldArgs, because it will attempt to validate them
-        // To validate them, the fieldQueryInterpreter needs to know the schema, so it once again calls functions from this fieldResolver
+        // To validate them, the fieldQueryInterpreter needs to know the schema, so it once again calls functions from this typeResolver
         // Generating an infinite loop
         // Then, just to find out which fieldValueResolvers will process this field, crudely obtain the fieldArgs, with NO schema-based validation!
         // list(
@@ -1058,12 +1058,12 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
         $instanceManager = InstanceManagerFacade::getInstance();
         $attachableExtensionManager = AttachableExtensionManagerFacade::getInstance();
 
-        // Iterate classes from the current class towards the parent classes until finding fieldResolver that satisfies processing this field
+        // Iterate classes from the current class towards the parent classes until finding typeResolver that satisfies processing this field
         $class = get_called_class();
         $fieldValueResolvers = [];
         do {
             // All the Units and their priorities for this class level
-            $classFieldResolverPriorities = [];
+            $classTypeResolverPriorities = [];
             $classFieldValueResolvers = [];
 
             // Important: do array_reverse to enable more specific hooks, which are initialized later on in the project, to be the chosen ones (if their priority is the same)
@@ -1073,14 +1073,14 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
                     // Check that the fieldValueResolver can handle the field based on other parameters (eg: "version" in the fieldArgs)
                     $fieldValueResolver = $instanceManager->getInstance($extensionClass);
                     if ($fieldValueResolver->resolveCanProcess($this, $fieldName, $fieldArgs)) {
-                        $classFieldResolverPriorities[] = $extensionPriority;
+                        $classTypeResolverPriorities[] = $extensionPriority;
                         $classFieldValueResolvers[] = $fieldValueResolver;
                     }
                 }
             }
             // Sort the found units by their priority, and then add to the stack of all units, for all classes
             // Higher priority means they execute first!
-            array_multisort($classFieldResolverPriorities, SORT_DESC, SORT_NUMERIC, $classFieldValueResolvers);
+            array_multisort($classTypeResolverPriorities, SORT_DESC, SORT_NUMERIC, $classFieldValueResolvers);
             $fieldValueResolvers = array_merge(
                 $fieldValueResolvers,
                 $classFieldValueResolvers
@@ -1098,7 +1098,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
         $directiveNameClasses = [];
 
-        // Iterate classes from the current class towards the parent classes until finding fieldResolver that satisfies processing this field
+        // Iterate classes from the current class towards the parent classes until finding typeResolver that satisfies processing this field
         $class = get_called_class();
         do {
             // Important: do array_reverse to enable more specific hooks, which are initialized later on in the project, to be the chosen ones (if their priority is the same)
@@ -1124,7 +1124,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface
 
         $ret = [];
 
-        // Iterate classes from the current class towards the parent classes until finding fieldResolver that satisfies processing this field
+        // Iterate classes from the current class towards the parent classes until finding typeResolver that satisfies processing this field
         $class = get_called_class();
         do {
             foreach ($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDVALUERESOLVERS) as $extensionClass => $extensionPriority) {

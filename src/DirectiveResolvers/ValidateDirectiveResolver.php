@@ -2,8 +2,8 @@
 namespace PoP\ComponentModel\DirectiveResolvers;
 use PoP\ComponentModel\DataloaderInterface;
 use PoP\Translation\Facades\TranslationAPIFacade;
-use PoP\ComponentModel\FieldResolvers\PipelinePositions;
-use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
+use PoP\ComponentModel\TypeResolvers\PipelinePositions;
+use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\DirectiveResolvers\RemoveIDsDataFieldsDirectiveResolverTrait;
 use PoP\ComponentModel\Feedback\Tokens;
@@ -37,12 +37,12 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
         return false;
     }
 
-    public function resolveDirective(DataloaderInterface $dataloader, FieldResolverInterface $fieldResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    public function resolveDirective(DataloaderInterface $dataloader, TypeResolverInterface $typeResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
-        $this->validateAndFilterFields($fieldResolver, $idsDataFields, $succeedingPipelineIDsDataFields, $variables, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+        $this->validateAndFilterFields($typeResolver, $idsDataFields, $succeedingPipelineIDsDataFields, $variables, $schemaErrors, $schemaWarnings, $schemaDeprecations);
     }
 
-    protected function validateAndFilterFields(FieldResolverInterface $fieldResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$variables, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    protected function validateAndFilterFields(TypeResolverInterface $typeResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$variables, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Validate that the schema and the provided data match, eg: passing mandatory values
         // (Such as fieldArg "status" for field "is-status")
@@ -55,7 +55,7 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
             )));
         }
         foreach ($dataFields as $field) {
-            $this->validateField($fieldResolver, $field, $schemaErrors, $schemaWarnings, $schemaDeprecations, $variables, $failedDataFields);
+            $this->validateField($typeResolver, $field, $schemaErrors, $schemaWarnings, $schemaDeprecations, $variables, $failedDataFields);
         }
         // Remove from the data_fields list to execute on the resultItem for the next stages of the pipeline
         if ($failedDataFields) {
@@ -75,15 +75,15 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
         // // Because on the leaves we encounter an empty array, all fields are conditional fields (even if they are on the leaves)
         // foreach ($idsDataFields as $id => $data_fields) {
         //     foreach ($data_fields['conditional'] as $conditionField => $conditionalFields) {
-        //         $this->validateAndFilterConditionalFields($fieldResolver, $conditionField, $idsDataFields[$id]['conditional'], $dataFields, $schemaErrors, $schemaWarnings, $schemaDeprecations, $variables, $failedDataFields);
+        //         $this->validateAndFilterConditionalFields($typeResolver, $conditionField, $idsDataFields[$id]['conditional'], $dataFields, $schemaErrors, $schemaWarnings, $schemaDeprecations, $variables, $failedDataFields);
         //     }
         // }
     }
 
-    protected function validateField(FieldResolverInterface $fieldResolver, string $field, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$variables, array &$failedDataFields): bool {
+    protected function validateField(TypeResolverInterface $typeResolver, string $field, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$variables, array &$failedDataFields): bool {
         // Check for errors first, warnings and deprecations then
         $success = true;
-        if ($schemaValidationErrors = $fieldResolver->resolveSchemaValidationErrorDescriptions($field, $variables)) {
+        if ($schemaValidationErrors = $typeResolver->resolveSchemaValidationErrorDescriptions($field, $variables)) {
             $schemaErrors = array_merge(
                 $schemaErrors,
                 $schemaValidationErrors
@@ -91,13 +91,13 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
             $failedDataFields[] = $field;
             $success = false;
         }
-        if ($schemaValidationWarnings = $fieldResolver->resolveSchemaValidationWarningDescriptions($field, $variables)) {
+        if ($schemaValidationWarnings = $typeResolver->resolveSchemaValidationWarningDescriptions($field, $variables)) {
             $schemaWarnings = array_merge(
                 $schemaWarnings,
                 $schemaValidationWarnings
             );
         }
-        if ($schemaValidationDeprecations = $fieldResolver->resolveSchemaDeprecationDescriptions($field, $variables)) {
+        if ($schemaValidationDeprecations = $typeResolver->resolveSchemaDeprecationDescriptions($field, $variables)) {
             $schemaDeprecations = array_merge(
                 $schemaDeprecations,
                 $schemaValidationDeprecations
@@ -108,7 +108,7 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
 
     // Since adding the Validate directive also when processing the conditional fields, there is no need to validate them now
     // They will be validated when it's their turn to be processed
-    // protected function validateAndFilterConditionalFields(FieldResolverInterface $fieldResolver, string $conditionField, array &$rootConditionFields, array &$validatedFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$variables, array &$failedDataFields) {
+    // protected function validateAndFilterConditionalFields(TypeResolverInterface $typeResolver, string $conditionField, array &$rootConditionFields, array &$validatedFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$variables, array &$failedDataFields) {
     //     // The root has key conditionField, and value conditionalFields
     //     // Check if the conditionField is valid. If it is not, remove from the root object
     //     // This will work because at the leaves we have empty arrays, so every data-field is a conditionField
@@ -120,7 +120,7 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
     //     // If this field has been already validated, then don't validate again
     //     if (!in_array($conditionField, $validatedFields)) {
     //         $validatedFields[] = $conditionField;
-    //         $validationResult = $this->validateField($fieldResolver, $conditionField, $schemaErrors, $schemaWarnings, $schemaDeprecations, $variables, $failedDataFields);
+    //         $validationResult = $this->validateField($typeResolver, $conditionField, $schemaErrors, $schemaWarnings, $schemaDeprecations, $variables, $failedDataFields);
     //         // If the field has failed, then remove item from the root (so it's not fetched from the DB), and stop iterating
     //         if (!$validationResult) {
     //             unset($rootConditionFields[$conditionField]);
@@ -129,11 +129,11 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
     //     }
     //     // Repeat the process for all conditional fields
     //     foreach ($conditionalDataFields as $conditionalDataField => $entries) {
-    //         $this->validateAndFilterConditionalFields($fieldResolver, $conditionalDataField, $rootConditionFields[$conditionField], $validatedFields, $schemaErrors, $schemaWarnings, $schemaDeprecations, $variables, $failedDataFields);
+    //         $this->validateAndFilterConditionalFields($typeResolver, $conditionalDataField, $rootConditionFields[$conditionField], $validatedFields, $schemaErrors, $schemaWarnings, $schemaDeprecations, $variables, $failedDataFields);
     //     }
     // }
 
-    public function getSchemaDirectiveDescription(FieldResolverInterface $fieldResolver): ?string
+    public function getSchemaDirectiveDescription(TypeResolverInterface $typeResolver): ?string
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         return $translationAPI->__('It validates the field, filtering out those field arguments that raised a warning, or directly invalidating the field if any field argument raised an error. For instance, if a mandatory field argument is not provided, then it is an error and the field is invalidated and removed from the output; if a field argument can\'t be casted to its intended type, then it is a warning, the affected field argument is removed and the field is executed without it. This directive is already included by the engine, since its execution is mandatory', 'component-model');

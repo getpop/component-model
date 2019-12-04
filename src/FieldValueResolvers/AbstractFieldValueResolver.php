@@ -5,7 +5,7 @@ use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\Facades\Engine\EngineFacade;
-use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
+use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
@@ -13,7 +13,7 @@ use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
 abstract class AbstractFieldValueResolver implements FieldValueResolverInterface, FieldValueResolverSchemaInterface
 {
     /**
-     * This class is attached to a FieldResolver
+     * This class is attached to a TypeResolver
      */
     use AttachableExtensionTrait;
 
@@ -25,14 +25,14 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
      * @param array $fieldArgs
      * @return boolean
      */
-    public function resolveCanProcess(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): bool
+    public function resolveCanProcess(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): bool
     {
         return true;
     }
-    public function resolveSchemaValidationErrorDescription(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?string
+    public function resolveSchemaValidationErrorDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
     {
         // Iterate all the mandatory fieldArgs and, if they are not present, throw an error
-        if ($schemaFieldArgs = $this->getSchemaFieldArgs($fieldResolver, $fieldName)) {
+        if ($schemaFieldArgs = $this->getSchemaFieldArgs($typeResolver, $fieldName)) {
             if ($mandatoryArgs = SchemaHelpers::getSchemaMandatoryFieldArgs($schemaFieldArgs)) {
                 if ($maybeError = $this->validateNotMissingFieldArguments(
                     SchemaHelpers::getSchemaFieldArgNames($mandatoryArgs),
@@ -70,47 +70,47 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
      *
      * @return void
      */
-    public function getSchemaDefinitionResolver(FieldResolverInterface $fieldResolver)
+    public function getSchemaDefinitionResolver(TypeResolverInterface $typeResolver)
     {
         return null;
     }
 
-    public function getSchemaFieldType(FieldResolverInterface $fieldResolver, string $fieldName): ?string
+    public function getSchemaFieldType(TypeResolverInterface $typeResolver, string $fieldName): ?string
     {
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
-            return $schemaDefinitionResolver->getSchemaFieldType($fieldResolver, $fieldName);
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
+            return $schemaDefinitionResolver->getSchemaFieldType($typeResolver, $fieldName);
         }
         return null;
     }
 
-    public function getSchemaFieldDescription(FieldResolverInterface $fieldResolver, string $fieldName): ?string
+    public function getSchemaFieldDescription(TypeResolverInterface $typeResolver, string $fieldName): ?string
     {
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
-            return $schemaDefinitionResolver->getSchemaFieldDescription($fieldResolver, $fieldName);
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
+            return $schemaDefinitionResolver->getSchemaFieldDescription($typeResolver, $fieldName);
         }
         return null;
     }
 
-    public function getSchemaFieldArgs(FieldResolverInterface $fieldResolver, string $fieldName): array
+    public function getSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): array
     {
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
-            return $schemaDefinitionResolver->getSchemaFieldArgs($fieldResolver, $fieldName);
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
+            return $schemaDefinitionResolver->getSchemaFieldArgs($typeResolver, $fieldName);
         }
         return [];
     }
 
-    public function getSchemaFieldDeprecationDescription(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?string
+    public function getSchemaFieldDeprecationDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
     {
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
-            return $schemaDefinitionResolver->getSchemaFieldDeprecationDescription($fieldResolver, $fieldName, $fieldArgs);
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
+            return $schemaDefinitionResolver->getSchemaFieldDeprecationDescription($typeResolver, $fieldName, $fieldArgs);
         }
         return null;
     }
 
-    public function isOperatorOrHelper(FieldResolverInterface $fieldResolver, string $fieldName): bool
+    public function isOperatorOrHelper(TypeResolverInterface $typeResolver, string $fieldName): bool
     {
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver)) {
-            return $schemaDefinitionResolver->isOperatorOrHelper($fieldResolver, $fieldName);
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
+            return $schemaDefinitionResolver->isOperatorOrHelper($typeResolver, $fieldName);
         }
         return false;
     }
@@ -120,39 +120,39 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
      *
      * @return array
      */
-    public function getSchemaDefinitionForField(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): array
+    public function getSchemaDefinitionForField(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): array
     {
         $schemaDefinition = [
             SchemaDefinition::ARGNAME_NAME => $fieldName,
         ];
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($fieldResolver, $fieldName, $fieldArgs)) {
-            if ($type = $schemaDefinitionResolver->getSchemaFieldType($fieldResolver, $fieldName)) {
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver, $fieldName, $fieldArgs)) {
+            if ($type = $schemaDefinitionResolver->getSchemaFieldType($typeResolver, $fieldName)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_TYPE] = $type;
             }
-            if ($description = $schemaDefinitionResolver->getSchemaFieldDescription($fieldResolver, $fieldName)) {
+            if ($description = $schemaDefinitionResolver->getSchemaFieldDescription($typeResolver, $fieldName)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
             }
-            if ($deprecationDescription = $schemaDefinitionResolver->getSchemaFieldDeprecationDescription($fieldResolver, $fieldName, $fieldArgs)) {
+            if ($deprecationDescription = $schemaDefinitionResolver->getSchemaFieldDeprecationDescription($typeResolver, $fieldName, $fieldArgs)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATED] = true;
                 $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATEDDESCRIPTION] = $deprecationDescription;
             }
-            if ($args = $schemaDefinitionResolver->getSchemaFieldArgs($fieldResolver, $fieldName)) {
+            if ($args = $schemaDefinitionResolver->getSchemaFieldArgs($typeResolver, $fieldName)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_ARGS] = $args;
             }
         }
-        if (!is_null($this->resolveFieldDefaultDataloaderClass($fieldResolver, $fieldName, $fieldArgs))) {
+        if (!is_null($this->resolveFieldDefaultDataloaderClass($typeResolver, $fieldName, $fieldArgs))) {
             $schemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL] = true;
         }
         $this->addSchemaDefinitionForField($schemaDefinition, $fieldName);
         return $schemaDefinition;
     }
 
-    public function enableOrderedSchemaFieldArgs(FieldResolverInterface $fieldResolver, string $fieldName): bool
+    public function enableOrderedSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): bool
     {
         return true;
     }
 
-    public function resolveSchemaValidationWarningDescription(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?string
+    public function resolveSchemaValidationWarningDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
     {
         return null;
     }
@@ -164,9 +164,9 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
     {
     }
 
-    protected function getFieldArgumentsSchemaDefinitions(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): array
+    protected function getFieldArgumentsSchemaDefinitions(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): array
     {
-        if ($filterDataloadingModule = $this->getFieldDefaultFilterDataloadingModule($fieldResolver, $fieldName, $fieldArgs)) {
+        if ($filterDataloadingModule = $this->getFieldDefaultFilterDataloadingModule($typeResolver, $fieldName, $fieldArgs)) {
             $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
             $filterqueryargs_modules = $moduleprocessor_manager->getProcessor($filterDataloadingModule)->getDataloadQueryArgsFilteringModules($filterDataloadingModule);
             return GeneralUtils::arrayFlatten(array_map(function($module) use($moduleprocessor_manager) {
@@ -177,30 +177,30 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         return [];
     }
 
-    public function resolveCanProcessResultItem(FieldResolverInterface $fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []): bool
+    public function resolveCanProcessResultItem(TypeResolverInterface $typeResolver, $resultItem, string $fieldName, array $fieldArgs = []): bool
     {
         return true;
     }
 
-    protected function getValidationCheckpoints(FieldResolverInterface $fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?array
+    protected function getValidationCheckpoints(TypeResolverInterface $typeResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?array
     {
         return null;
     }
 
-    protected function getValidationCheckpointsErrorMessage(FieldResolverInterface $fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?string
+    protected function getValidationCheckpointsErrorMessage(TypeResolverInterface $typeResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?string
     {
         return null;
     }
 
-    public function getValidationErrorDescription(FieldResolverInterface $fieldResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?string
+    public function getValidationErrorDescription(TypeResolverInterface $typeResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?string
     {
         // Can perform validation through checkpoints
-        if ($checkpoints = $this->getValidationCheckpoints($fieldResolver, $resultItem, $fieldName, $fieldArgs)) {
+        if ($checkpoints = $this->getValidationCheckpoints($typeResolver, $resultItem, $fieldName, $fieldArgs)) {
             $engine = EngineFacade::getInstance();
             $validation = $engine->validateCheckpoints($checkpoints);
             if (\PoP\ComponentModel\GeneralUtils::isError($validation)) {
                 // Check if there is a custom error message
-                $message = $this->getValidationCheckpointsErrorMessage($fieldResolver, $resultItem, $fieldName, $fieldArgs);
+                $message = $this->getValidationCheckpointsErrorMessage($typeResolver, $resultItem, $fieldName, $fieldArgs);
                 if (is_null($message)) {
                     // Return a generic message
                     $error = $validation;
@@ -219,29 +219,29 @@ abstract class AbstractFieldValueResolver implements FieldValueResolverInterface
         return null;
     }
 
-    public function resolveValue(FieldResolverInterface $fieldResolver, $resultItem, string $fieldName, array $fieldArgs = [], ?array $variables = null, ?array $expressions = null, array $options = [])
+    public function resolveValue(TypeResolverInterface $typeResolver, $resultItem, string $fieldName, array $fieldArgs = [], ?array $variables = null, ?array $expressions = null, array $options = [])
     {
         return null;
     }
 
-    public function resolveFieldDefaultDataloaderClass(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?string
+    public function resolveFieldDefaultDataloaderClass(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
     {
         return null;
     }
 
-    protected function getFieldDefaultFilterDataloadingModule(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = []): ?array
+    protected function getFieldDefaultFilterDataloadingModule(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?array
     {
         $instanceManager = InstanceManagerFacade::getInstance();
-        $dataloaderClass = $this->resolveFieldDefaultDataloaderClass($fieldResolver, $fieldName, $fieldArgs);
+        $dataloaderClass = $this->resolveFieldDefaultDataloaderClass($typeResolver, $fieldName, $fieldArgs);
         $dataloader = $instanceManager->getInstance($dataloaderClass);
         return $dataloader->getFilterDataloadingModule();
     }
 
-    protected function addFilterDataloadQueryArgs(array &$options, FieldResolverInterface $fieldResolver, string $fieldName, array $fieldArgs = [])
+    protected function addFilterDataloadQueryArgs(array &$options, TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = [])
     {
         $options['filter-dataload-query-args'] = [
             'source' => $fieldArgs,
-            'module' => $this->getFieldDefaultFilterDataloadingModule($fieldResolver, $fieldName, $fieldArgs),
+            'module' => $this->getFieldDefaultFilterDataloadingModule($typeResolver, $fieldName, $fieldArgs),
         ];
     }
 }

@@ -1,5 +1,5 @@
 <?php
-namespace PoP\ComponentModel\FieldResolvers;
+namespace PoP\ComponentModel\TypeResolvers;
 
 /**
  * Defines the constants indicating where to place a directive in the directive execution pipeline

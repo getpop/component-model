@@ -1,19 +1,19 @@
 <?php
 namespace PoP\ComponentModel\FieldValueResolvers;
 
-use PoP\ComponentModel\FieldResolvers\AbstractFieldResolver;
-use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
+use PoP\ComponentModel\TypeResolvers\AbstractTypeResolver;
+use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
 abstract class AbstractOperatorOrHelperFieldValueResolver extends AbstractDBDataFieldValueResolver
 {
     public static function getClassesToAttachTo(): array
     {
         return [
-        	AbstractFieldResolver::class,
+        	AbstractTypeResolver::class,
         ];
     }
 
-    public function isOperatorOrHelper(FieldResolverInterface $fieldResolver, string $fieldName): bool
+    public function isOperatorOrHelper(TypeResolverInterface $typeResolver, string $fieldName): bool
     {
         return true;
     }

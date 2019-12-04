@@ -1,12 +1,12 @@
 <?php
-namespace PoP\ComponentModel\FieldResolvers;
+namespace PoP\ComponentModel\TypeResolvers;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 
-abstract class AbstractConvertibleFieldResolverPicker
+abstract class AbstractConvertibleTypeResolverPicker
 {
 	use AttachableExtensionTrait;
 
-    abstract public function getFieldResolverClass(): string;
+    abstract public function getTypeResolverClass(): string;
 
     abstract public function getSchemaDefinitionObjectNature(): string;
 

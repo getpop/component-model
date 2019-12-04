@@ -1,5 +1,5 @@
 <?php
-namespace PoP\ComponentModel\FieldResolvers;
+namespace PoP\ComponentModel\TypeResolvers;
 
 class FieldHelpers
 {

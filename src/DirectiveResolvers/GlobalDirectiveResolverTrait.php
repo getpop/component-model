@@ -1,20 +1,20 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
 
-use PoP\ComponentModel\FieldResolvers\AbstractFieldResolver;
-use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
+use PoP\ComponentModel\TypeResolvers\AbstractTypeResolver;
+use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
 trait GlobalDirectiveResolverTrait
 {
     public static function getClassesToAttachTo(): array
     {
-        // Be attached to all fieldResolvers
+        // Be attached to all typeResolvers
         return [
-            AbstractFieldResolver::class,
+            AbstractTypeResolver::class,
         ];
     }
 
-    public function isGlobal(FieldResolverInterface $fieldResolver): bool
+    public function isGlobal(TypeResolverInterface $typeResolver): bool
     {
         return true;
     }

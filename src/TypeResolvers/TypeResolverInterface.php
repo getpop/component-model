@@ -1,10 +1,10 @@
 <?php
-namespace PoP\ComponentModel\FieldResolvers;
+namespace PoP\ComponentModel\TypeResolvers;
 
 use PoP\ComponentModel\DataloaderInterface;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
 
-interface FieldResolverInterface
+interface TypeResolverInterface
 {
     public function getId($resultItem);
     public function getIdFieldDataloaderClass();

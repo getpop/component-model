@@ -1,35 +1,35 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
 
-use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
+use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
 abstract class AbstractSchemaDirectiveResolver extends AbstractDirectiveResolver implements SchemaDirectiveResolverInterface
 {
-    public function getSchemaDefinitionResolver(FieldResolverInterface $fieldResolver): ?SchemaDirectiveResolverInterface
+    public function getSchemaDefinitionResolver(TypeResolverInterface $typeResolver): ?SchemaDirectiveResolverInterface
     {
         return $this;
     }
-    public function getSchemaDirectiveDescription(FieldResolverInterface $fieldResolver): ?string
+    public function getSchemaDirectiveDescription(TypeResolverInterface $typeResolver): ?string
     {
         return null;
     }
-    public function getSchemaDirectiveDeprecationDescription(FieldResolverInterface $fieldResolver): ?string
+    public function getSchemaDirectiveDeprecationDescription(TypeResolverInterface $typeResolver): ?string
     {
         return null;
     }
-    public function getSchemaDirectiveExpressions(FieldResolverInterface $fieldResolver): array
+    public function getSchemaDirectiveExpressions(TypeResolverInterface $typeResolver): array
     {
         return [];
     }
-    public function getSchemaDirectiveArgs(FieldResolverInterface $fieldResolver): array
+    public function getSchemaDirectiveArgs(TypeResolverInterface $typeResolver): array
     {
         return [];
     }
-    public function enableOrderedSchemaDirectiveArgs(FieldResolverInterface $fieldResolver): bool
+    public function enableOrderedSchemaDirectiveArgs(TypeResolverInterface $typeResolver): bool
     {
         return true;
     }
-    public function isGlobal(FieldResolverInterface $fieldResolver): bool
+    public function isGlobal(TypeResolverInterface $typeResolver): bool
     {
         return false;
     }

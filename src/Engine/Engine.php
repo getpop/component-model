@@ -1210,9 +1210,9 @@ class Engine implements EngineInterface
 
             // Execute the dataloader for all combined ids
             $iterationDBItems = $iterationDBErrors = $iterationDBWarnings = $iterationSchemaErrors = $iterationSchemaWarnings = $iterationSchemaDeprecations = array();
-            if ($fieldResolverClass = $dataloader->getFieldResolverClass()) {
-                $fieldResolver = $instanceManager->getInstance($fieldResolverClass);
-                $fieldResolver->fillResultItems($dataloader, $ids_data_fields, $iterationDBItems, $previousDBItems, $variables, $messages, $iterationDBErrors, $iterationDBWarnings, $iterationSchemaErrors, $iterationSchemaWarnings, $iterationSchemaDeprecations);
+            if ($typeResolverClass = $dataloader->getTypeResolverClass()) {
+                $typeResolver = $instanceManager->getInstance($typeResolverClass);
+                $typeResolver->fillResultItems($dataloader, $ids_data_fields, $iterationDBItems, $previousDBItems, $variables, $messages, $iterationDBErrors, $iterationDBWarnings, $iterationSchemaErrors, $iterationSchemaWarnings, $iterationSchemaDeprecations);
             }
 
             // Save in the database under the corresponding database-key (this way, different dataloaders, like 'list-users' and 'author',
@@ -1276,7 +1276,7 @@ class Engine implements EngineInterface
                 // Executing the following query will produce duplicates on SchemaWarnings:
                 // ?query=posts(limit:3.5).title,posts(limit:extract(posts(limit:4.5),saraza)).title
                 // This is unavoidable, since add schemaWarnings (and, correspondingly, errors and deprecations) in functions
-                // `resolveSchemaValidationWarningDescriptions` and `resolveValue` from the AbstractFieldResolver
+                // `resolveSchemaValidationWarningDescriptions` and `resolveValue` from the AbstractTypeResolver
                 // Ideally, doing it in `resolveValue` is not needed, since it already went through the validation in `resolveSchemaValidationWarningDescriptions`, so it's a duplication
                 // However, when doing nested fields, the warnings are caught only in `resolveValue`, hence we need to add it there too
                 // Then, we will certainly have duplicates. Remove them now
@@ -1433,7 +1433,7 @@ class Engine implements EngineInterface
                     foreach ($subcomponents_data_properties as $subcomponent_data_field => $subcomponent_dataloder_data_properties) {
                         $subcomponent_data_field_outputkey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($subcomponent_data_field);
                         foreach ($subcomponent_dataloder_data_properties as $subcomponent_dataloader_class => $subcomponent_data_properties) {
-                            // If the subcomponent dataloader is not explicitly set in `getDomainSwitchingSubmodules`, then retrieve it now from the current dataloader's fieldResolver
+                            // If the subcomponent dataloader is not explicitly set in `getDomainSwitchingSubmodules`, then retrieve it now from the current dataloader's typeResolver
                             if ($subcomponent_dataloader_class == POP_CONSTANT_SUBCOMPONENTDATALOADER_DEFAULTFROMFIELD) {
                                 $subcomponent_dataloader_class = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($dataloader, $subcomponent_data_field);
                             }
