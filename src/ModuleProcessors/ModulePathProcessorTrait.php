@@ -14,7 +14,7 @@ trait ModulePathProcessorTrait
 
     protected function hasNoDataloader(array $module): bool
     {
-        return is_null($this->getModuleProcessor($module)->getDataloaderClass($module));
+        return is_null($this->getModuleProcessor($module)->getTypeDataResolverClass($module));
     }
 
     protected function hasDataloader(array $module)

@@ -110,7 +110,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                 $submodule_wildcard_props_to_propagate = $wildcard_props_to_propagate;
 
                 // If the submodule belongs to the same dataset (meaning that it doesn't have a typeDataResolver of its own), then set the shared attributies for the same-dataset modules
-                if (!$submodule_processor->getDataloaderClass($submodule)) {
+                if (!$submodule_processor->getTypeDataResolverClass($submodule)) {
                     $submodule_wildcard_props_to_propagate = array_merge(
                         $submodule_wildcard_props_to_propagate,
                         $this->$get_props_for_descendant_datasetmodules_fn($module, $module_props)
@@ -155,7 +155,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
     public function initModelProps(array $module, array &$props)
     {
         // Set property "succeeding-typeDataResolver" on every module, so they know which is their typeDataResolver, needed to calculate the subcomponent data-fields when using typeDataResolver "*"
-        if ($typeDataResolver_class = $this->getDataloaderClass($module)) {
+        if ($typeDataResolver_class = $this->getTypeDataResolverClass($module)) {
             $this->setProp($module, $props, 'succeeding-typeDataResolver', $typeDataResolver_class);
         }
         // Get the prop assigned to the module by its ancestor
@@ -482,7 +482,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         $ret = array();
 
         $instanceManager = InstanceManagerFacade::getInstance();
-        if ($typeDataResolver_class = $this->getDataloaderClass($module)) {
+        if ($typeDataResolver_class = $this->getTypeDataResolverClass($module)) {
             $typeDataResolver = $instanceManager->getInstance($typeDataResolver_class);
 
             if ($dbkey = $typeDataResolver->getDatabaseKey()) {
@@ -562,7 +562,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
     protected function hasNoDataloader(array $module): bool
     {
         $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
-        return is_null($moduleprocessor_manager->getProcessor($module)->getDataloaderClass($module));
+        return is_null($moduleprocessor_manager->getProcessor($module)->getTypeDataResolverClass($module));
     }
 
     protected function addToDatasetDatabaseKeys(array $module, array &$props, $path, &$ret)
@@ -634,7 +634,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         return array();
     }
 
-    public function getDataloaderClass(array $module): ?string
+    public function getTypeDataResolverClass(array $module): ?string
     {
         return null;
     }
@@ -685,7 +685,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         $ret = array();
 
         // Only if this module has a typeDataResolver => We are at the head nodule of the dataset section
-        if ($this->getDataloaderClass($module)) {
+        if ($this->getTypeDataResolverClass($module)) {
             // Load the data-fields from all modules inside this section
             // And then, only for the top node, add its extra properties
             $properties = array_merge(
@@ -753,7 +753,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                 $submodule_processor = $moduleprocessor_manager->getProcessor($submodule);
 
                 // Propagate only if the submodule doesn't have a typeDataResolver. If it does, this is the end of the data line, and the submodule is the beginning of a new datasetmoduletree
-                if (!$submodule_processor->getDataloaderClass($submodule)) {
+                if (!$submodule_processor->getTypeDataResolverClass($submodule)) {
                     $submodule_processor->addDatasetmoduletreeSectionFlattenedModules($ret, $submodule);
                 }
             }
@@ -769,7 +769,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
     //             $submodule_processor = $moduleprocessor_manager->getProcessor($submodule);
 
     //             // Propagate only if the submodule doesn't have a typeDataResolver. If it does, this is the end of the data line, and the submodule is the beginning of a new datasetmoduletree
-    //             if (!$submodule_processor->getDataloaderClass($submodule)) {
+    //             if (!$submodule_processor->getTypeDataResolverClass($submodule)) {
     //                 if ($submodule_ret = $submodule_processor->$propagate_fn($submodule)) {
     //                     $ret = array_merge(
     //                         $ret,
@@ -822,7 +822,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         $ret = array();
 
         // Only if this module has a typeDataResolver
-        if ($this->getDataloaderClass($module)) {
+        if ($this->getTypeDataResolverClass($module)) {
             $properties = $this->getMutableonmodelHeaddatasetmoduleDataProperties($module, $props);
             if ($properties) {
                 $ret[POP_CONSTANT_DATAPROPERTIES] = $properties;
@@ -861,7 +861,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         $ret = array();
 
         // Only if this module has a typeDataResolver
-        if ($this->getDataloaderClass($module)) {
+        if ($this->getTypeDataResolverClass($module)) {
             // // Load the data-fields from all modules inside this section
             // // And then, only for the top node, add its extra properties
             // $properties = array_merge(
@@ -1127,7 +1127,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                         $submodule_processor = $moduleprocessor_manager->getProcessor($submodule);
 
                         // Propagate only if the submodule doesn't have a typeDataResolver. If it does, this is the end of the data line, and the submodule is the beginning of a new datasetmoduletree
-                        if (!$submodule_processor->getDataloaderClass($submodule, $props[$moduleFullName][POP_PROPS_SUBMODULES])) {
+                        if (!$submodule_processor->getTypeDataResolverClass($submodule, $props[$moduleFullName][POP_PROPS_SUBMODULES])) {
                             if ($submodule_ret = $submodule_processor->$propagate_fn($submodule, $props[$moduleFullName][POP_PROPS_SUBMODULES])) {
 
                                 // Chain the "data-fields" from the sublevels under the current "conditional-data-fields"
@@ -1173,7 +1173,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                 $submodule_processor = $moduleprocessor_manager->getProcessor($submodule);
 
                 // Propagate only if the submodule doesn't have a typeDataResolver. If it does, this is the end of the data line, and the submodule is the beginning of a new datasetmoduletree
-                if (!$submodule_processor->getDataloaderClass($submodule, $props[$moduleFullName][POP_PROPS_SUBMODULES])) {
+                if (!$submodule_processor->getTypeDataResolverClass($submodule, $props[$moduleFullName][POP_PROPS_SUBMODULES])) {
                     if ($submodule_ret = $submodule_processor->$propagate_fn($submodule, $props[$moduleFullName][POP_PROPS_SUBMODULES])) {
                         // array_merge_recursive => data-fields from different sidebar-components can be integrated all together
                         $ret = array_merge_recursive(

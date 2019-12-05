@@ -637,7 +637,7 @@ class Engine implements EngineInterface
         // If modulepaths is provided, and we haven't reached the destination module yet, then do not execute the function at this level
         if (!$modulefilter_manager->excludeModule($module, $props)) {
             // If the current module loads data, then add its path to the list
-            if ($processor->getDataloaderClass($module)) {
+            if ($processor->getTypeDataResolverClass($module)) {
                 $paths[] = array_merge(
                     $module_path,
                     array(
@@ -896,7 +896,7 @@ class Engine implements EngineInterface
                     $dbObjectIDs = is_array($dbObjectIDOrIDs) ? $dbObjectIDOrIDs : array($dbObjectIDOrIDs);
 
                     // Store the ids under $data under key dataload_name => id
-                    $typeDataResolver_class = $processor->getDataloaderClass($module);
+                    $typeDataResolver_class = $processor->getTypeDataResolverClass($module);
                     $data_fields = $data_properties['data-fields'] ?? array();
                     $conditional_data_fields = $data_properties['conditional-data-fields'] ?? array();
                     $this->combineIdsDatafields($this->dataloader_ids_data_fields, $typeDataResolver_class, $dbObjectIDs, $data_fields, $conditional_data_fields);

@@ -166,7 +166,7 @@ trait QueryDataModuleProcessorTrait
             $queryhandler->prepareQueryArgs($data_properties[DataloadingConstants::QUERYARGS]);
         }
 
-        $typeDataResolver = $instanceManager->getInstance($this->getDataloaderClass($module));
+        $typeDataResolver = $instanceManager->getInstance($this->getTypeDataResolverClass($module));
         return $typeDataResolver->resolveIDsFromDataProperties($data_properties);
     }
 

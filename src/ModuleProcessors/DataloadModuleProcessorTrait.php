@@ -73,7 +73,7 @@ trait DataloadModuleProcessorTrait
     // PROTECTED Functions
     //-------------------------------------------------
 
-    public function getDataloaderClass(array $module): ?string
+    public function getTypeDataResolverClass(array $module): ?string
     {
         return NilTypeQueryableDataResolver::class;
     }
