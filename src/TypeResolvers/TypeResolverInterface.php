@@ -7,7 +7,7 @@ use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
 interface TypeResolverInterface
 {
     public function getId($resultItem);
-    public function getIdFieldDataloaderClass();
+    public function getIdFieldTypeDataResolverClass();
     public function getFieldNamesToResolve(): array;
     public function getDirectiveNameClasses(): array;
     public function validateFieldArgumentsForSchema(string $field, array $fieldArgs, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array;
