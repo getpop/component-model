@@ -162,12 +162,12 @@ trait QueryDataModuleProcessorTrait
 
         if ($queryHandlerClass = $this->getQueryInputOutputHandlerClass($module)) {
             // Allow the queryhandler to override/normalize the query args
-            $queryhandler = $instanceManager->getInstance($queryHandlerClass);
+            $queryhandler = $instanceManager->getInstance((string)$queryHandlerClass);
             $queryhandler->prepareQueryArgs($data_properties[DataloadingConstants::QUERYARGS]);
         }
 
         $dataloader = $instanceManager->getInstance($this->getDataloaderClass($module));
-        return $dataloader->getDBObjectIDOrIDs($data_properties);
+        return $dataloader->resolveIDsFromDataProperties($data_properties);
     }
 
     public function getDatasetmeta(array $module, array &$props, array $data_properties, $dataaccess_checkpoint_validation, $actionexecution_checkpoint_validation, $executed, $dbObjectIDOrIDs): array
@@ -176,7 +176,7 @@ trait QueryDataModuleProcessorTrait
 
         if ($queryHandlerClass = $this->getQueryInputOutputHandlerClass($module)) {
             $instanceManager = InstanceManagerFacade::getInstance();
-            $queryhandler = $instanceManager->getInstance($queryHandlerClass);
+            $queryhandler = $instanceManager->getInstance((string)$queryHandlerClass);
 
             if ($query_state = $queryhandler->getQueryState($data_properties, $dataaccess_checkpoint_validation, $actionexecution_checkpoint_validation, $executed, $dbObjectIDOrIDs)) {
                 $ret['querystate'] = $query_state;
