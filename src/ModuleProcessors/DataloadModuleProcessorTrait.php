@@ -1,6 +1,8 @@
 <?php
 namespace PoP\ComponentModel\ModuleProcessors;
+
 use PoP\Hooks\Facades\HooksAPIFacade;
+use PoP\ComponentModel\TypeDataResolvers\NilTypeQueryableDataResolver;
 
 trait DataloadModuleProcessorTrait
 {
@@ -73,6 +75,6 @@ trait DataloadModuleProcessorTrait
 
     public function getDataloaderClass(array $module): ?string
     {
-        return \PoP\ComponentModel\Dataloader_Nil::class;
+        return NilTypeQueryableDataResolver::class;
     }
 }
