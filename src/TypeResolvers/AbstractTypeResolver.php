@@ -797,7 +797,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return false;
     }
 
-    public function resolveFieldDefaultDataloaderClass(string $field): ?string
+    public function resolveFieldDefaultTypeDataResolverClass(string $field): ?string
     {
         // Get the value from a fieldResolver, from the first one that resolves it
         if ($fieldResolvers = $this->getFieldResolversForField($field)) {
@@ -806,7 +806,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 $fieldName,
                 $fieldArgs,
             ) = $this->dissectFieldForSchema($field);
-            return $fieldResolvers[0]->resolveFieldDefaultDataloaderClass($this, $fieldName, $fieldArgs);
+            return $fieldResolvers[0]->resolveFieldDefaultTypeDataResolverClass($this, $fieldName, $fieldArgs);
         }
 
         return null;
@@ -993,7 +993,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     // Add subfield schema if it is deep, and this typeResolver has not been processed yet
                     if ($fieldArgs['deep']) {
                         // If this field is relational, then add its own schema
-                        if ($fieldDataloaderClass = $this->resolveFieldDefaultDataloaderClass($field)) {
+                        if ($fieldDataloaderClass = $this->resolveFieldDefaultTypeDataResolverClass($field)) {
                             // Append subfields' schema
                             $fieldDataloader = $instanceManager->getInstance($fieldDataloaderClass);
                             if ($typeResolverClass = $fieldDataloader->getTypeResolverClass()) {

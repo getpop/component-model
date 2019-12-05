@@ -257,7 +257,7 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver
         return parent::resolveSchemaDeprecationDescriptions($field, $variables);
     }
 
-    public function resolveFieldDefaultDataloaderClass(string $field): ?string
+    public function resolveFieldDefaultTypeDataResolverClass(string $field): ?string
     {
         $fieldName = FieldQueryInterpreterFacade::getInstance()->getFieldName($field);
         $instanceManager = InstanceManagerFacade::getInstance();
@@ -266,7 +266,7 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver
         if ($baseTypeResolverClass = $this->getBaseTypeResolverClass()) {
             $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
             if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
-                return $typeResolver->resolveFieldDefaultDataloaderClass($field);
+                return $typeResolver->resolveFieldDefaultTypeDataResolverClass($field);
             }
         }
 
@@ -274,10 +274,10 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver
         foreach ($this->getTypeResolverPickers() as $picker) {
             $typeResolver = $instanceManager->getInstance($picker->getTypeResolverClass());
             if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
-                return $typeResolver->resolveFieldDefaultDataloaderClass($field);
+                return $typeResolver->resolveFieldDefaultTypeDataResolverClass($field);
             }
         }
 
-        return parent::resolveFieldDefaultDataloaderClass($field);
+        return parent::resolveFieldDefaultTypeDataResolverClass($field);
     }
 }

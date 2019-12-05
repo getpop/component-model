@@ -18,7 +18,7 @@ interface TypeResolverInterface
     public function resolveSchemaDeprecationDescriptions(string $field, array &$variables = null): array;
     public function getSchemaFieldArgs(string $field): array;
     public function enableOrderedSchemaFieldArgs(string $field): bool;
-    public function resolveFieldDefaultDataloaderClass(string $field): ?string;
+    public function resolveFieldDefaultTypeDataResolverClass(string $field): ?string;
     public function resolveValue($resultItem, string $field, ?array $variables = null, ?array $expressions = null, array $options = []);
     public function getSchemaDefinition(array $fieldArgs = [], array $options = []): array;
     public function hasFieldResolversForField(string $field): bool;
