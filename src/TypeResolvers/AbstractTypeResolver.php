@@ -496,7 +496,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     public function fillResultItems(DataloaderInterface $dataloader, array $ids_data_fields, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Obtain the data for the required object IDs
-        $resultIDItems = $dataloader->getData(array_keys($ids_data_fields));
+        $resultIDItems = $dataloader->resolveObjectsFromIDs(array_keys($ids_data_fields));
 
         // Enqueue the items
         $this->enqueueFillingResultItemsFromIDs($ids_data_fields);
