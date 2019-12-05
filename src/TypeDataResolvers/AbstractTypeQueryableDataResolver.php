@@ -3,9 +3,118 @@ namespace PoP\ComponentModel\TypeDataResolvers;
 
 abstract class AbstractTypeQueryableDataResolver extends AbstractTypeDataResolver implements TypeQueryableDataResolverInterface
 {
-    public function resolveIDsFromDataProperties(array $data_properties)
+    /**
+     * Function to override
+     */
+    public function executeQuery($query, array $options = [])
     {
         return array();
+    }
+
+    public function executeQueryIds($query): array
+    {
+        return (array)$this->executeQuery($query);
+    }
+
+    protected function getPagenumberParam($query_args)
+    {
+        return HooksAPIFacade::getInstance()->applyFilters(
+            'GD_Dataloader_List:query:pagenumber',
+            $query_args[GD_URLPARAM_PAGENUMBER]
+        );
+    }
+    protected function getLimitParam($query_args)
+    {
+        return HooksAPIFacade::getInstance()->applyFilters(
+            'GD_Dataloader_List:query:limit',
+            $query_args[GD_URLPARAM_LIMIT]
+        );
+    }
+
+    public function resolveIDsFromDataProperties(array $data_properties)
+    {
+        $query_args = $data_properties[DataloadingConstants::QUERYARGS];
+
+        // If already indicating the ids to get back, then already return them
+        if ($include = $query_args['include']) {
+            return $include;
+        }
+
+        // Customize query
+        $query = $this->getQuery($query_args);
+
+        // Allow URE to modify the role, limiting selected users and excluding others, like 'subscriber'
+        $query = HooksAPIFacade::getInstance()->applyFilters(self::class.':gd_dataload_query', $query, $data_properties);
+
+        // Apply filtering of the data
+        if ($filtering_modules = $data_properties[DataloadingConstants::QUERYARGSFILTERINGMODULES]) {
+            $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
+            foreach ($filtering_modules as $module) {
+                $moduleprocessor_manager->getProcessor($module)->filterHeadmoduleDataloadQueryArgs($module, $query);
+            }
+        }
+
+        // Execute the query, get ids
+        $ids = $this->executeQueryIds($query);
+
+        return $ids;
+    }
+
+    /**
+     * Function to override
+     */
+    public function getDataFromIdsQuery(array $ids): array
+    {
+        return array();
+    }
+
+    public function resolveObjectsFromIDs(array $ids): array
+    {
+        $query = $this->getDataFromIdsQuery($ids);
+        return (array)$this->executeQuery($query);
+    }
+
+    protected function getOrderbyDefault()
+    {
+        return '';
+    }
+
+    protected function getOrderDefault()
+    {
+        return '';
+    }
+
+    protected function getQueryHookName()
+    {
+        return 'Dataloader_ListTrait:query';
+    }
+
+    public function getQuery($query_args): array
+    {
+    	// Use all the query params already provided in the query args
+        $query = $query_args;
+
+        // Allow to check for "loading-latest"
+        $limit = $this->getLimitParam($query_args);
+        $query['limit'] = $limit;
+        $pagenumber = $this->getPagenumberParam($query_args);
+        if ($pagenumber >= 2) {
+            $query['offset'] = ($pagenumber - 1) * $limit;
+        }
+        // Params and values by default
+        if (!$query['orderby']) {
+            $query['orderby'] = $this->getOrderbyDefault();
+        }
+        if (!$query['order']) {
+            $query['order'] = $this->getOrderDefault();
+        }
+
+        // Allow CoAuthors Plus to modify the query to add the coauthors
+        return HooksAPIFacade::getInstance()->applyFilters(
+            $this->getQueryHookName(),
+            $query,
+            $query_args
+        );
     }
 
     public function getFilterDataloadingModule(): ?array
