@@ -2,7 +2,6 @@
 namespace PoP\ComponentModel\ModuleProcessors;
 
 use PoP\Hooks\Facades\HooksAPIFacade;
-use PoP\ComponentModel\TypeDataResolvers\NilTypeQueryableDataResolver;
 
 trait DataloadModuleProcessorTrait
 {
@@ -49,32 +48,14 @@ trait DataloadModuleProcessorTrait
         );
     }
 
-    // public function getModelPropsForDescendantDatasetmodules(array $module, array &$props): array
-    // {
-    //     $ret = parent::getModelPropsForDescendantDatasetmodules($module, $props);
-
-    //     if ($filter_module = $this->getFilterSubmodule($module)) {
-    //         $ret['filter-module'] = $filter_module;
-    //     }
-    //     // if ($filter = $this->getFilter($module)) {
-    //     //     $ret['filter'] = $filter;
-    //     // }
-
-    //     return $ret;
-    // }
-
     public function initModelProps(array $module, array &$props)
     {
         $this->metaInitProps($module, $props);
         parent::initModelProps($module, $props);
     }
 
-    //-------------------------------------------------
-    // PROTECTED Functions
-    //-------------------------------------------------
-
-    public function getTypeDataResolverClass(array $module): ?string
+    public function moduleLoadsData(array $module): bool
     {
-        return NilTypeQueryableDataResolver::class;
+        return true;
     }
 }

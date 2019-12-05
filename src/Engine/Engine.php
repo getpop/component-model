@@ -637,7 +637,7 @@ class Engine implements EngineInterface
         // If modulepaths is provided, and we haven't reached the destination module yet, then do not execute the function at this level
         if (!$modulefilter_manager->excludeModule($module, $props)) {
             // If the current module loads data, then add its path to the list
-            if ($processor->getTypeDataResolverClass($module)) {
+            if ($processor->moduleLoadsData($module)) {
                 $paths[] = array_merge(
                     $module_path,
                     array(
