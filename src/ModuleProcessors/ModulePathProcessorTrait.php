@@ -12,16 +12,6 @@ trait ModulePathProcessorTrait
         return $moduleprocessor_manager->getProcessor($module);
     }
 
-    protected function hasNoDataloader(array $module): bool
-    {
-        return is_null($this->getModuleProcessor($module)->getTypeDataResolverClass($module));
-    }
-
-    protected function hasDataloader(array $module)
-    {
-        return !$this->hasNoDataloader($module);
-    }
-
     protected function executeOnSelfAndPropagateToDatasetmodules($eval_self_fn, $propagate_fn, array $module, array &$props, array $data_properties, $dataaccess_checkpoint_validation, $actionexecution_checkpoint_validation, $executed, $dbobjectids)
     {
         $ret = array();
@@ -36,8 +26,10 @@ trait ModulePathProcessorTrait
             }
         }
 
-        // Stop iterating when the submodule starts a new cycle of loading data (i.e. if it has a typeDataResolver)
-        $submodules = array_filter($this->getAllSubmodules($module), array($this, 'hasNoDataloader'));
+        // Stop iterating when the submodule starts a new cycle of loading data
+        $submodules = array_filter($this->getAllSubmodules($module), function($submodule) {
+            return !$this->getModuleProcessor($submodule)->startDataloadingSection($submodule);
+        });
         $submodules = $modulefilter_manager->removeExcludedSubmodules($module, $submodules);
 
         // This function must be called always, to register matching modules into requestmeta.filtermodules even when the module has no submodules
@@ -69,8 +61,10 @@ trait ModulePathProcessorTrait
             $ret = array();
         }
 
-        // Stop iterating when the submodule starts a new cycle of loading data (i.e. if it has a typeDataResolver)
-        $submodules = array_filter($this->getAllSubmodules($module), array($this, 'hasNoDataloader'));
+        // Stop iterating when the submodule starts a new cycle of loading data
+        $submodules = array_filter($this->getAllSubmodules($module), function($submodule) {
+            return !$this->getModuleProcessor($submodule)->startDataloadingSection($submodule);
+        });
         $submodules = $modulefilter_manager->removeExcludedSubmodules($module, $submodules);
 
         // This function must be called always, to register matching modules into requestmeta.filtermodules even when the module has no submodules
@@ -98,7 +92,7 @@ trait ModulePathProcessorTrait
         $modulefilter_manager = ModuleFilterManagerFacade::getInstance();
         if (!$modulefilter_manager->excludeModule($module, $props)) {
             // Maybe only execute function on the dataloading modules
-            if (!$options['only-execute-on-dataloading-modules'] || $this->hasDataloader($module)) {
+            if (!$options['only-execute-on-dataloading-modules'] || $this->getModuleProcessor($module)->startDataloadingSection($module)) {
                 if ($module_ret = $this->$eval_self_fn($module, $props)) {
                     $ret[$key] = $module_ret;
                 }

@@ -54,7 +54,7 @@ trait DataloadModuleProcessorTrait
         parent::initModelProps($module, $props);
     }
 
-    public function moduleLoadsData(array $module): bool
+    public function startDataloadingSection(array $module): bool
     {
         return true;
     }
