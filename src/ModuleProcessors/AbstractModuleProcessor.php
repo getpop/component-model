@@ -109,7 +109,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                 $submodule_processor = $moduleprocessor_manager->getProcessor($submodule);
                 $submodule_wildcard_props_to_propagate = $wildcard_props_to_propagate;
 
-                // If the submodule belongs to the same dataset (meaning that it doesn't have a dataloader of its own), then set the shared attributies for the same-dataset modules
+                // If the submodule belongs to the same dataset (meaning that it doesn't have a typeDataResolver of its own), then set the shared attributies for the same-dataset modules
                 if (!$submodule_processor->getDataloaderClass($submodule)) {
                     $submodule_wildcard_props_to_propagate = array_merge(
                         $submodule_wildcard_props_to_propagate,
@@ -138,7 +138,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
             $ret['skip-data-load'] = $skip_data_load;
         }
 
-        // Property 'ignore-request-params' => true makes a dataloader module not get values from $_REQUEST
+        // Property 'ignore-request-params' => true makes a typeDataResolver module not get values from $_REQUEST
         $ignore_params_from_request = $this->getProp($module, $props, 'ignore-request-params');
         if (!is_null($ignore_params_from_request)) {
             $ret['ignore-request-params'] = $ignore_params_from_request;
@@ -154,49 +154,49 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
 
     public function initModelProps(array $module, array &$props)
     {
-        // Set property "succeeding-dataloader" on every module, so they know which is their dataloader, needed to calculate the subcomponent data-fields when using dataloader "*"
-        if ($dataloader_class = $this->getDataloaderClass($module)) {
-            $this->setProp($module, $props, 'succeeding-dataloader', $dataloader_class);
+        // Set property "succeeding-typeDataResolver" on every module, so they know which is their typeDataResolver, needed to calculate the subcomponent data-fields when using typeDataResolver "*"
+        if ($typeDataResolver_class = $this->getDataloaderClass($module)) {
+            $this->setProp($module, $props, 'succeeding-typeDataResolver', $typeDataResolver_class);
         }
         // Get the prop assigned to the module by its ancestor
         else {
-            $dataloader_class = $this->getProp($module, $props, 'succeeding-dataloader');
+            $typeDataResolver_class = $this->getProp($module, $props, 'succeeding-typeDataResolver');
         }
-        if ($dataloader_class) {
-            // Set the property "succeeding-dataloader" on all descendants: the same dataloader for all submodules, and the explicit one (or get the default one for "*") for relational objects
+        if ($typeDataResolver_class) {
+            // Set the property "succeeding-typeDataResolver" on all descendants: the same typeDataResolver for all submodules, and the explicit one (or get the default one for "*") for relational objects
             foreach ($this->getSubmodules($module) as $submodule) {
-                $this->setProp($submodule, $props, 'succeeding-dataloader', $dataloader_class);
+                $this->setProp($submodule, $props, 'succeeding-typeDataResolver', $typeDataResolver_class);
             }
             foreach ($this->getDomainSwitchingSubmodules($module) as $subcomponent_data_field => $subcomponent_dataloader_options) {
                 foreach ($subcomponent_dataloader_options as $subcomponent_dataloader_class => $subcomponent_modules) {
-                    // If the subcomponent dataloader is not explicitly set in `getDomainSwitchingSubmodules`, then retrieve it now from the current dataloader's typeResolver
+                    // If the subcomponent typeDataResolver is not explicitly set in `getDomainSwitchingSubmodules`, then retrieve it now from the current typeDataResolver's typeResolver
                     if ($subcomponent_dataloader_class == POP_CONSTANT_SUBCOMPONENTDATALOADER_DEFAULTFROMFIELD) {
-                        $subcomponent_dataloader_class = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($dataloader_class, $subcomponent_data_field);
+                        $subcomponent_dataloader_class = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($typeDataResolver_class, $subcomponent_data_field);
                     }
                     // If passing a subcomponent fieldname that doesn't exist to the API, then $subcomponent_dataloader_class will be empty
                     if ($subcomponent_dataloader_class) {
                         foreach ($subcomponent_modules as $subcomponent_module) {
-                            $this->setProp($subcomponent_module, $props, 'succeeding-dataloader', $subcomponent_dataloader_class);
+                            $this->setProp($subcomponent_module, $props, 'succeeding-typeDataResolver', $subcomponent_dataloader_class);
                         }
                     }
                 }
             }
             foreach ($this->getConditionalOnDataFieldSubmodules($module) as $conditionDataField => $conditionalSubmodules) {
                 foreach ($conditionalSubmodules as $conditionalSubmodule) {
-                    $this->setProp($conditionalSubmodule, $props, 'succeeding-dataloader', $dataloader_class);
+                    $this->setProp($conditionalSubmodule, $props, 'succeeding-typeDataResolver', $typeDataResolver_class);
                 }
             }
             foreach ($this->getConditionalOnDataFieldDomainSwitchingSubmodules($module) as $conditionDataField => $dataFieldDataloaderOptionsConditionalSubmodules) {
                 foreach ($dataFieldDataloaderOptionsConditionalSubmodules as $conditionalDataField => $dataloaderOptionsConditionalSubmodules) {
                     foreach ($dataloaderOptionsConditionalSubmodules as $subcomponentDataloaderClass => $conditionalSubmodules) {
-                        // If the subcomponent dataloader is not explicitly set in `getConditionalOnDataFieldDomainSwitchingSubmodules`, then retrieve it now from the current dataloader's typeResolver
+                        // If the subcomponent typeDataResolver is not explicitly set in `getConditionalOnDataFieldDomainSwitchingSubmodules`, then retrieve it now from the current typeDataResolver's typeResolver
                         if ($subcomponentDataloaderClass == POP_CONSTANT_SUBCOMPONENTDATALOADER_DEFAULTFROMFIELD) {
-                            $subcomponentDataloaderClass = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($dataloader_class, $conditionalDataField);
+                            $subcomponentDataloaderClass = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($typeDataResolver_class, $conditionalDataField);
                         }
                         // If passing a subcomponent fieldname that doesn't exist to the API, then $subcomponentDataloaderClass will be empty
                         if ($subcomponentDataloaderClass) {
                             foreach ($conditionalSubmodules as $conditionalSubmodule) {
-                                $this->setProp($conditionalSubmodule, $props, 'succeeding-dataloader', $subcomponentDataloaderClass);
+                                $this->setProp($conditionalSubmodule, $props, 'succeeding-typeDataResolver', $subcomponentDataloaderClass);
                             }
                         }
                     }
@@ -482,26 +482,26 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         $ret = array();
 
         $instanceManager = InstanceManagerFacade::getInstance();
-        if ($dataloader_class = $this->getDataloaderClass($module)) {
-            $dataloader = $instanceManager->getInstance($dataloader_class);
+        if ($typeDataResolver_class = $this->getDataloaderClass($module)) {
+            $typeDataResolver = $instanceManager->getInstance($typeDataResolver_class);
 
-            if ($dbkey = $dataloader->getDatabaseKey()) {
+            if ($dbkey = $typeDataResolver->getDatabaseKey()) {
                 // Place it under "id" because it is for fetching the current object from the DB, which is found through dbObject.id
                 $ret['id'] = $dbkey;
             }
         }
 
         // This prop is set for both dataloading and non-dataloading modules
-        if ($dataloader_class = $this->getProp($module, $props, 'succeeding-dataloader')) {
+        if ($typeDataResolver_class = $this->getProp($module, $props, 'succeeding-typeDataResolver')) {
             foreach ($this->getDomainSwitchingSubmodules($module) as $subcomponent_data_field => $subcomponent_dataloader_options) {
                 // Watch out that, if a module has 2 subcomponents on the same data-field but different dataloaders, then
                 // the dataloaders' db-key must be the same! Otherwise, the 2nd one will override the 1st one
                 // Eg: a module using POSTLIST, another one using CONVERTIBLEPOSTLIST, it doesn't conflict since the db-key for both is "posts"
                 $subcomponent_dataloader_classes = array_keys($subcomponent_dataloader_options);
                 foreach ($subcomponent_dataloader_classes as $subcomponent_dataloader_class) {
-                    // If the subcomponent dataloader is not explicitly set in `getDomainSwitchingSubmodules`, then retrieve it now from the current dataloader's typeResolver
+                    // If the subcomponent typeDataResolver is not explicitly set in `getDomainSwitchingSubmodules`, then retrieve it now from the current typeDataResolver's typeResolver
                     if ($subcomponent_dataloader_class == POP_CONSTANT_SUBCOMPONENTDATALOADER_DEFAULTFROMFIELD) {
-                        $subcomponent_dataloader_class = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($dataloader_class, $subcomponent_data_field);
+                        $subcomponent_dataloader_class = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($typeDataResolver_class, $subcomponent_data_field);
                     }
 
                     // If passing a subcomponent fieldname that doesn't exist to the API, then $subcomponent_dataloader_class will be empty
@@ -517,9 +517,9 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                 foreach ($dataFieldDataloaderOptionsConditionalSubmodules as $conditionalDataField => $dataloaderOptionsConditionalSubmodules) {
                     $subcomponentDataloaderClasses = array_keys($dataloaderOptionsConditionalSubmodules);
                     foreach ($subcomponentDataloaderClasses as $subcomponentDataloaderClass) {
-                        // If the subcomponent dataloader is not explicitly set in `getConditionalOnDataFieldDomainSwitchingSubmodules`, then retrieve it now from the current dataloader's typeResolver
+                        // If the subcomponent typeDataResolver is not explicitly set in `getConditionalOnDataFieldDomainSwitchingSubmodules`, then retrieve it now from the current typeDataResolver's typeResolver
                         if ($subcomponentDataloaderClass == POP_CONSTANT_SUBCOMPONENTDATALOADER_DEFAULTFROMFIELD) {
-                            $subcomponentDataloaderClass = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($dataloader_class, $conditionalDataField);
+                            $subcomponentDataloaderClass = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($typeDataResolver_class, $conditionalDataField);
                         }
                         // If passing a subcomponent fieldname that doesn't exist to the API, then $subcomponentDataloaderClass will be empty
                         if ($subcomponentDataloaderClass) {
@@ -574,7 +574,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
             $ret[implode('.', array_merge($path, [$field_outputkey]))] = $dbkey;
         }
 
-        // Propagate to all submodules which have no dataloader
+        // Propagate to all submodules which have no typeDataResolver
         $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
         $moduleFullName = ModuleUtils::getModuleFullName($module);
 
@@ -583,7 +583,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         foreach ($this->getDomainSwitchingSubmodules($module) as $subcomponent_data_field => $subcomponent_dataloader_options) {
             $subcomponent_data_field_outputkey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($subcomponent_data_field);
             foreach ($subcomponent_dataloader_options as $subcomponent_dataloader_class => $subcomponent_modules) {
-                // Only modules without dataloader
+                // Only modules without typeDataResolver
                 $subcomponent_modules = array_filter($subcomponent_modules, array($this, 'hasNoDataloader'));
                 foreach ($subcomponent_modules as $subcomponent_module) {
                     $moduleprocessor_manager->getProcessor($subcomponent_module)->addToDatasetDatabaseKeys($subcomponent_module, $props[$moduleFullName][POP_PROPS_SUBMODULES], array_merge($path, [$subcomponent_data_field_outputkey]), $ret);
@@ -594,7 +594,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
             foreach ($dataFieldDataloaderOptionsConditionalSubmodules as $conditionalDataField => $dataloaderOptionsConditionalSubmodules) {
                 $subcomponent_data_field_outputkey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($conditionalDataField);
                 foreach ($dataloaderOptionsConditionalSubmodules as $subcomponent_dataloader_class => $subcomponent_modules) {
-                    // Only modules without dataloader
+                    // Only modules without typeDataResolver
                     $subcomponent_modules = array_filter($subcomponent_modules, array($this, 'hasNoDataloader'));
                     foreach ($subcomponent_modules as $subcomponent_module) {
                         $moduleprocessor_manager->getProcessor($subcomponent_module)->addToDatasetDatabaseKeys($subcomponent_module, $props[$moduleFullName][POP_PROPS_SUBMODULES], array_merge($path, [$subcomponent_data_field_outputkey]), $ret);
@@ -603,7 +603,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
             }
         }
 
-        // Only modules without dataloader
+        // Only modules without typeDataResolver
         $submodules = array_filter($this->getSubmodules($module), array($this, 'hasNoDataloader'));
         foreach ($submodules as $submodule) {
             $moduleprocessor_manager->getProcessor($submodule)->addToDatasetDatabaseKeys($submodule, $props[$moduleFullName][POP_PROPS_SUBMODULES], $path, $ret);
@@ -684,7 +684,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
     {
         $ret = array();
 
-        // Only if this module has a dataloader => We are at the head nodule of the dataset section
+        // Only if this module has a typeDataResolver => We are at the head nodule of the dataset section
         if ($this->getDataloaderClass($module)) {
             // Load the data-fields from all modules inside this section
             // And then, only for the top node, add its extra properties
@@ -752,7 +752,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
             foreach ($submodules as $submodule) {
                 $submodule_processor = $moduleprocessor_manager->getProcessor($submodule);
 
-                // Propagate only if the submodule doesn't have a dataloader. If it does, this is the end of the data line, and the submodule is the beginning of a new datasetmoduletree
+                // Propagate only if the submodule doesn't have a typeDataResolver. If it does, this is the end of the data line, and the submodule is the beginning of a new datasetmoduletree
                 if (!$submodule_processor->getDataloaderClass($submodule)) {
                     $submodule_processor->addDatasetmoduletreeSectionFlattenedModules($ret, $submodule);
                 }
@@ -768,7 +768,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
     //         foreach ($submodules as $submodule) {
     //             $submodule_processor = $moduleprocessor_manager->getProcessor($submodule);
 
-    //             // Propagate only if the submodule doesn't have a dataloader. If it does, this is the end of the data line, and the submodule is the beginning of a new datasetmoduletree
+    //             // Propagate only if the submodule doesn't have a typeDataResolver. If it does, this is the end of the data line, and the submodule is the beginning of a new datasetmoduletree
     //             if (!$submodule_processor->getDataloaderClass($submodule)) {
     //                 if ($submodule_ret = $submodule_processor->$propagate_fn($submodule)) {
     //                     $ret = array_merge(
@@ -821,7 +821,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
     {
         $ret = array();
 
-        // Only if this module has a dataloader
+        // Only if this module has a typeDataResolver
         if ($this->getDataloaderClass($module)) {
             $properties = $this->getMutableonmodelHeaddatasetmoduleDataProperties($module, $props);
             if ($properties) {
@@ -860,7 +860,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
     {
         $ret = array();
 
-        // Only if this module has a dataloader
+        // Only if this module has a typeDataResolver
         if ($this->getDataloaderClass($module)) {
             // // Load the data-fields from all modules inside this section
             // // And then, only for the top node, add its extra properties
@@ -1126,7 +1126,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                     foreach ($conditionalSubmodules as $submodule) {
                         $submodule_processor = $moduleprocessor_manager->getProcessor($submodule);
 
-                        // Propagate only if the submodule doesn't have a dataloader. If it does, this is the end of the data line, and the submodule is the beginning of a new datasetmoduletree
+                        // Propagate only if the submodule doesn't have a typeDataResolver. If it does, this is the end of the data line, and the submodule is the beginning of a new datasetmoduletree
                         if (!$submodule_processor->getDataloaderClass($submodule, $props[$moduleFullName][POP_PROPS_SUBMODULES])) {
                             if ($submodule_ret = $submodule_processor->$propagate_fn($submodule, $props[$moduleFullName][POP_PROPS_SUBMODULES])) {
 
@@ -1172,7 +1172,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
             foreach ($submodules as $submodule) {
                 $submodule_processor = $moduleprocessor_manager->getProcessor($submodule);
 
-                // Propagate only if the submodule doesn't have a dataloader. If it does, this is the end of the data line, and the submodule is the beginning of a new datasetmoduletree
+                // Propagate only if the submodule doesn't have a typeDataResolver. If it does, this is the end of the data line, and the submodule is the beginning of a new datasetmoduletree
                 if (!$submodule_processor->getDataloaderClass($submodule, $props[$moduleFullName][POP_PROPS_SUBMODULES])) {
                     if ($submodule_ret = $submodule_processor->$propagate_fn($submodule, $props[$moduleFullName][POP_PROPS_SUBMODULES])) {
                         // array_merge_recursive => data-fields from different sidebar-components can be integrated all together

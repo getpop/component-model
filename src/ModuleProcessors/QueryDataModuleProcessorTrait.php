@@ -37,7 +37,7 @@ trait QueryDataModuleProcessorTrait
 
     public function getQueryArgsFilteringModules(array $module, array &$props): array
     {
-        // Attributes overriding the dataloader args, taken from the request
+        // Attributes overriding the typeDataResolver args, taken from the request
         return [
             $module,
         ];
@@ -47,7 +47,7 @@ trait QueryDataModuleProcessorTrait
     {
         $ret = parent::getMutableonmodelHeaddatasetmoduleDataProperties($module, $props);
 
-        // Attributes overriding the dataloader args, taken from the request
+        // Attributes overriding the typeDataResolver args, taken from the request
         if (!$ret[DataloadingConstants::IGNOREREQUESTPARAMS]) {
             $ret[DataloadingConstants::QUERYARGSFILTERINGMODULES] = $this->getQueryArgsFilteringModules($module, $props);
         }
@@ -166,8 +166,8 @@ trait QueryDataModuleProcessorTrait
             $queryhandler->prepareQueryArgs($data_properties[DataloadingConstants::QUERYARGS]);
         }
 
-        $dataloader = $instanceManager->getInstance($this->getDataloaderClass($module));
-        return $dataloader->resolveIDsFromDataProperties($data_properties);
+        $typeDataResolver = $instanceManager->getInstance($this->getDataloaderClass($module));
+        return $typeDataResolver->resolveIDsFromDataProperties($data_properties);
     }
 
     public function getDatasetmeta(array $module, array &$props, array $data_properties, $dataaccess_checkpoint_validation, $actionexecution_checkpoint_validation, $executed, $dbObjectIDOrIDs): array

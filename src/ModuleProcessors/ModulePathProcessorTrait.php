@@ -36,7 +36,7 @@ trait ModulePathProcessorTrait
             }
         }
 
-        // Stop iterating when the submodule starts a new cycle of loading data (i.e. if it has a dataloader)
+        // Stop iterating when the submodule starts a new cycle of loading data (i.e. if it has a typeDataResolver)
         $submodules = array_filter($this->getAllSubmodules($module), array($this, 'hasNoDataloader'));
         $submodules = $modulefilter_manager->removeExcludedSubmodules($module, $submodules);
 
@@ -69,7 +69,7 @@ trait ModulePathProcessorTrait
             $ret = array();
         }
 
-        // Stop iterating when the submodule starts a new cycle of loading data (i.e. if it has a dataloader)
+        // Stop iterating when the submodule starts a new cycle of loading data (i.e. if it has a typeDataResolver)
         $submodules = array_filter($this->getAllSubmodules($module), array($this, 'hasNoDataloader'));
         $submodules = $modulefilter_manager->removeExcludedSubmodules($module, $submodules);
 

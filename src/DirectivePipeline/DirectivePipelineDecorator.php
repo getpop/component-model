@@ -2,7 +2,7 @@
 namespace PoP\ComponentModel\DirectivePipeline;
 use League\Pipeline\PipelineInterface;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
-use PoP\ComponentModel\DataloaderInterface;
+use PoP\ComponentModel\TypeDataResolvers\TypeDataResolverInterface;
 
 class DirectivePipelineDecorator
 {
@@ -11,11 +11,11 @@ class DirectivePipelineDecorator
     {
         $this->pipeline = $pipeline;
     }
-    public function resolveDirectivePipeline(DataloaderInterface $dataloader, TypeResolverInterface $typeResolver, array &$pipelineIDsDataFields, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    public function resolveDirectivePipeline(TypeDataResolverInterface $typeDataResolver, TypeResolverInterface $typeResolver, array &$pipelineIDsDataFields, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         $payload = $this->pipeline->process(
             DirectivePipelineUtils::convertArgumentsToPayload(
-                $dataloader,
+                $typeDataResolver,
                 $typeResolver,
                 $pipelineIDsDataFields,
                 $resultIDItems,
@@ -31,7 +31,7 @@ class DirectivePipelineDecorator
             )
         );
         list(
-            $dataloader,
+            $typeDataResolver,
             $typeResolver,
             $pipelineIDsDataFields,
             $resultIDItems,

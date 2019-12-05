@@ -7,7 +7,7 @@ use PoP\ComponentModel\ErrorUtils;
 use PoP\ComponentModel\Environment;
 use PoP\FieldQuery\FieldQueryUtils;
 use League\Pipeline\PipelineBuilder;
-use PoP\ComponentModel\DataloaderInterface;
+use PoP\ComponentModel\TypeDataResolvers\TypeDataResolverInterface;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\FieldHelpers;
@@ -493,16 +493,16 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return $fieldArgs;
     }
 
-    public function fillResultItems(DataloaderInterface $dataloader, array $ids_data_fields, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    public function fillResultItems(TypeDataResolverInterface $typeDataResolver, array $ids_data_fields, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         $instanceManager = InstanceManagerFacade::getInstance();
 
         // Obtain the data for the required object IDs
         $resultIDItems = [];
         $ids = array_keys($ids_data_fields);
-        $typeResolverClass = $dataloader->getTypeResolverClass();
+        $typeResolverClass = $typeDataResolver->getTypeResolverClass();
         $typeResolver = $instanceManager->getInstance($typeResolverClass);
-        foreach ($dataloader->resolveObjectsFromIDs($ids) as $dataItem) {
+        foreach ($typeDataResolver->resolveObjectsFromIDs($ids) as $dataItem) {
             $resultIDItems[$typeResolver->getId($dataItem)] = $dataItem;
         }
 
@@ -510,7 +510,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $this->enqueueFillingResultItemsFromIDs($ids_data_fields);
 
         // Process them
-        $this->processFillingResultItemsFromIDs($dataloader, $resultIDItems, $dbItems, $previousDBItems, $variables, $messages, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+        $this->processFillingResultItemsFromIDs($typeDataResolver, $resultIDItems, $dbItems, $previousDBItems, $variables, $messages, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations);
     }
 
     /**
@@ -581,7 +581,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         }
     }
 
-    protected function processFillingResultItemsFromIDs(DataloaderInterface $dataloader, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    protected function processFillingResultItemsFromIDs(TypeDataResolverInterface $typeDataResolver, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Iterate while there are directives with data to be processed
         while (!empty($this->fieldDirectiveIDFields)) {
@@ -655,7 +655,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             // We can finally resolve the pipeline, passing along an array with the ID and fields for each directive
             $directivePipeline = $this->getDirectivePipeline($directiveResolverInstances);
             $directivePipeline->resolveDirectivePipeline(
-                $dataloader,
+                $typeDataResolver,
                 $this,
                 $pipelineIDsDataFields,
                 $resultIDItems,

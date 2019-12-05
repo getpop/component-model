@@ -393,7 +393,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         // $pipelineIDsDataFields is an array containing all stages of the pipe
         // The one corresponding to the current stage is at the head. Take it out from there, and keep passing down the rest of the array to the next stages
         list(
-            $dataloader,
+            $typeDataResolver,
             $typeResolver,
             $pipelineIDsDataFields,
             $resultIDItems,
@@ -414,7 +414,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
 
         // // 2. Validate operation
         // $this->validateDirective(
-        //     $dataloader,
+        //     $typeDataResolver,
         //     $typeResolver,
         //     $idsDataFields,
         //     $pipelineIDsDataFields,
@@ -435,7 +435,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         // // For instance, executing ?query=posts.id|title<default,translate(from:en,to:es)> will fail after directive "default", so directive "translate" must not even execute
         // if (!$this->needsIDsDataFieldsToExecute() || $this->hasIDsDataFields($idsDataFields)) {
         $this->resolveDirective(
-            $dataloader,
+            $typeDataResolver,
             $typeResolver,
             $idsDataFields,
             $pipelineIDsDataFields,
@@ -454,7 +454,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
 
         // 3. Re-create the payload from the modified variables
         return DirectivePipelineUtils::convertArgumentsToPayload(
-            $dataloader,
+            $typeDataResolver,
             $typeResolver,
             $pipelineIDsDataFields,
             $resultIDItems,
@@ -470,7 +470,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         );
     }
 
-    // public function validateDirective(DataloaderInterface $dataloader, TypeResolverInterface $typeResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    // public function validateDirective(TypeDataResolverInterface $typeDataResolver, TypeResolverInterface $typeResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     // {
     //     // Check that the directive can be applied to all provided fields
     //     $this->validateAndFilterFieldsForDirective($idsDataFields, $schemaErrors, $schemaWarnings);
