@@ -993,10 +993,10 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     // Add subfield schema if it is deep, and this typeResolver has not been processed yet
                     if ($fieldArgs['deep']) {
                         // If this field is relational, then add its own schema
-                        if ($fieldDataloaderClass = $this->resolveFieldDefaultTypeDataResolverClass($field)) {
+                        if ($fieldTypeDataResolverClass = $this->resolveFieldDefaultTypeDataResolverClass($field)) {
                             // Append subfields' schema
-                            $fieldDataloader = $instanceManager->getInstance($fieldDataloaderClass);
-                            if ($typeResolverClass = $fieldDataloader->getTypeResolverClass()) {
+                            $fieldTypeDataResolver = $instanceManager->getInstance($fieldTypeDataResolverClass);
+                            if ($typeResolverClass = $fieldTypeDataResolver->getTypeResolverClass()) {
                                 $typeResolver = $instanceManager->getInstance($typeResolverClass);
                                 $fieldSchemaDefinition[SchemaDefinition::ARGNAME_RESOLVER] = $typeResolver->getSchemaDefinition($fieldArgs, $options);
                             }

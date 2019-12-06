@@ -736,7 +736,7 @@ class Engine implements EngineInterface
         $this->backgroundload_urls = array();
 
         // Load under global key (shared by all pagesections / blocks)
-        $this->dataloader_ids_data_fields = array();
+        $this->typeDataResolverClass_ids_data_fields = array();
 
         // Allow PoP UserState to add the lazy-loaded userstate data triggers
         HooksAPIFacade::getInstance()->doAction(
@@ -899,10 +899,10 @@ class Engine implements EngineInterface
                     $typeDataResolver_class = $processor->getTypeDataResolverClass($module);
                     $data_fields = $data_properties['data-fields'] ?? array();
                     $conditional_data_fields = $data_properties['conditional-data-fields'] ?? array();
-                    $this->combineIdsDatafields($this->dataloader_ids_data_fields, $typeDataResolver_class, $dbObjectIDs, $data_fields, $conditional_data_fields);
+                    $this->combineIdsDatafields($this->typeDataResolverClass_ids_data_fields, $typeDataResolver_class, $dbObjectIDs, $data_fields, $conditional_data_fields);
 
                     // Add the IDs to the possibly-already produced IDs for this typeDataResolver/pageSection/Block
-                    $this->initializeDataloaderEntry($this->dbdata, $typeDataResolver_class, $module_path_key);
+                    $this->initializeTypeDataResolverEntry($this->dbdata, $typeDataResolver_class, $module_path_key);
                     $this->dbdata[$typeDataResolver_class][$module_path_key]['ids'] = array_merge(
                         $this->dbdata[$typeDataResolver_class][$module_path_key]['ids'],
                         $dbObjectIDs
@@ -913,7 +913,7 @@ class Engine implements EngineInterface
                     // Before checking below if the checkpoint failed or if the block content must not be loaded.
                     // Eg: Locations Map for the Create Individual Profile: it allows to pre-select locations,
                     // these ones must be fetched even if the block has a static typeDataResolver
-                    // If it has extend, add those ids under its dataloader_class
+                    // If it has extend, add those ids under its typeDataResolver_class
                     $dataload_extend_settings = $processor->getModelSupplementaryDbobjectdataModuletree($module, $model_props);
                     if ($datasource == POP_DATALOAD_DATASOURCE_MUTABLEONREQUEST) {
                         $dataload_extend_settings = array_merge_recursive(
@@ -921,16 +921,16 @@ class Engine implements EngineInterface
                             $processor->getMutableonrequestSupplementaryDbobjectdataModuletree($module, $props)
                         );
                     }
-                    foreach ($dataload_extend_settings as $extend_dataloader_class => $extend_data_properties) {
+                    foreach ($dataload_extend_settings as $extend_typeDataResolver_class => $extend_data_properties) {
                          // Get the info for the subcomponent typeDataResolver
                         $extend_data_fields = $extend_data_properties['data-fields'] ? $extend_data_properties['data-fields'] : array();
                         $extend_conditional_data_fields = $extend_data_properties['conditional-data-fields'] ? $extend_data_properties['conditional-data-fields'] : array();
                         $extend_ids = $extend_data_properties['ids'];
 
-                        $this->combineIdsDatafields($this->dataloader_ids_data_fields, $extend_dataloader_class, $extend_ids, $extend_data_fields, $extend_conditional_data_fields);
+                        $this->combineIdsDatafields($this->typeDataResolverClass_ids_data_fields, $extend_typeDataResolver_class, $extend_ids, $extend_data_fields, $extend_conditional_data_fields);
 
                         // This is needed to add the typeDataResolver-extend IDs, for if nobody else creates an entry for this typeDataResolver
-                        $this->initializeDataloaderEntry($this->dbdata, $extend_dataloader_class, $module_path_key);
+                        $this->initializeTypeDataResolverEntry($this->dbdata, $extend_typeDataResolver_class, $module_path_key);
                     }
 
                     // Keep iterating for its subcomponents
@@ -1180,15 +1180,15 @@ class Engine implements EngineInterface
         $messages = [];
 
         // Iterate while there are dataloaders with data to be processed
-        while (!empty($this->dataloader_ids_data_fields)) {
+        while (!empty($this->typeDataResolverClass_ids_data_fields)) {
             // Move the pointer to the first element, and get it
-            reset($this->dataloader_ids_data_fields);
-            $typeDataResolver_class = key($this->dataloader_ids_data_fields);
-            $ids_data_fields = $this->dataloader_ids_data_fields[$typeDataResolver_class];
+            reset($this->typeDataResolverClass_ids_data_fields);
+            $typeDataResolver_class = key($this->typeDataResolverClass_ids_data_fields);
+            $ids_data_fields = $this->typeDataResolverClass_ids_data_fields[$typeDataResolver_class];
 
             // Remove the typeDataResolver element from the array, so it doesn't process it anymore
             // Do it immediately, so that subcomponents can load new IDs for this current typeDataResolver (eg: posts => related)
-            unset($this->dataloader_ids_data_fields[$typeDataResolver_class]);
+            unset($this->typeDataResolverClass_ids_data_fields[$typeDataResolver_class]);
 
             // If no ids to execute, then skip
             if (empty($ids_data_fields)) {
@@ -1205,7 +1205,7 @@ class Engine implements EngineInterface
                 );
             }
 
-            $typeDataResolver = $instanceManager->getInstance($typeDataResolver_class);
+            $typeDataResolver = $instanceManager->getInstance((string)$typeDataResolver_class);
             $database_key = $typeDataResolver->getDatabaseKey();
 
             // Execute the typeDataResolver for all combined ids
@@ -1432,21 +1432,21 @@ class Engine implements EngineInterface
                     $typeDataResolver_ids = $typeDataResolver_data['ids'];
                     foreach ($subcomponents_data_properties as $subcomponent_data_field => $subcomponent_dataloder_data_properties) {
                         $subcomponent_data_field_outputkey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($subcomponent_data_field);
-                        foreach ($subcomponent_dataloder_data_properties as $subcomponent_dataloader_class => $subcomponent_data_properties) {
+                        foreach ($subcomponent_dataloder_data_properties as $subcomponent_typeDataResolver_class => $subcomponent_data_properties) {
                             // If the subcomponent typeDataResolver is not explicitly set in `getDomainSwitchingSubmodules`, then retrieve it now from the current typeDataResolver's typeResolver
-                            if ($subcomponent_dataloader_class == POP_CONSTANT_SUBCOMPONENTDATALOADER_DEFAULTFROMFIELD) {
-                                $subcomponent_dataloader_class = DataloadUtils::getDefaultDataloaderNameFromSubcomponentDataField($typeDataResolver, $subcomponent_data_field);
+                            if ($subcomponent_typeDataResolver_class == POP_CONSTANT_SUBCOMPONENTTYPEDATARESOLVER_DEFAULTFROMFIELD) {
+                                $subcomponent_typeDataResolver_class = DataloadUtils::getDefaultTypeDataResolverNameFromSubcomponentDataField($typeDataResolver, $subcomponent_data_field);
                             }
 
-                            // If passing a subcomponent fieldname that doesn't exist to the API, then $subcomponent_dataloader_class will be empty
-                            if ($subcomponent_dataloader_class) {
+                            // If passing a subcomponent fieldname that doesn't exist to the API, then $subcomponent_typeDataResolver_class will be empty
+                            if ($subcomponent_typeDataResolver_class) {
                                  // The array_merge_recursive when there are at least 2 levels will make the data_fields to be duplicated, so remove duplicates now
                                 $subcomponent_data_fields = array_unique($subcomponent_data_properties['data-fields'] ?? []);
                                 $subcomponent_conditional_data_fields = $subcomponent_data_properties['conditional-data-fields'] ?? [];
                                 if ($subcomponent_data_fields || $subcomponent_conditional_data_fields) {
                                     $subcomponent_already_loaded_ids_data_fields = array();
-                                    if ($already_loaded_ids_data_fields && $already_loaded_ids_data_fields[$subcomponent_dataloader_class]) {
-                                        $subcomponent_already_loaded_ids_data_fields = $already_loaded_ids_data_fields[$subcomponent_dataloader_class];
+                                    if ($already_loaded_ids_data_fields && $already_loaded_ids_data_fields[$subcomponent_typeDataResolver_class]) {
+                                        $subcomponent_already_loaded_ids_data_fields = $already_loaded_ids_data_fields[$subcomponent_typeDataResolver_class];
                                     }
                                     foreach ($typeDataResolver_ids as $id) {
                                         // $databases may contain more the 1 DB shipped by pop-engine/ ("primary"). Eg: PoP User Login adds db "userstate"
@@ -1488,21 +1488,21 @@ class Engine implements EngineInterface
                                                 // Eg: /api/?query=posts(id:1).author.posts.comments.post.author.posts.title
                                                 // In this case, property "title" at the end would not be fetched otherwise (that post was already loaded at the beginning)
                                                 // if ($id_subcomponent_data_fields) {
-                                                $this->combineIdsDatafields($this->dataloader_ids_data_fields, $subcomponent_dataloader_class, array($field_id), $id_subcomponent_data_fields, $id_subcomponent_conditional_data_fields);
+                                                $this->combineIdsDatafields($this->typeDataResolverClass_ids_data_fields, $subcomponent_typeDataResolver_class, array($field_id), $id_subcomponent_data_fields, $id_subcomponent_conditional_data_fields);
                                                 // }
                                             }
-                                            $this->initializeDataloaderEntry($this->dbdata, $subcomponent_dataloader_class, $module_path_key);
-                                            $this->dbdata[$subcomponent_dataloader_class][$module_path_key]['ids'] = array_merge(
-                                                $this->dbdata[$subcomponent_dataloader_class][$module_path_key]['ids'] ?? [],
+                                            $this->initializeTypeDataResolverEntry($this->dbdata, $subcomponent_typeDataResolver_class, $module_path_key);
+                                            $this->dbdata[$subcomponent_typeDataResolver_class][$module_path_key]['ids'] = array_merge(
+                                                $this->dbdata[$subcomponent_typeDataResolver_class][$module_path_key]['ids'] ?? [],
                                                 $field_ids
                                             );
-                                            $this->integrateSubcomponentDataProperties($this->dbdata, $subcomponent_data_properties, $subcomponent_dataloader_class, $module_path_key);
+                                            $this->integrateSubcomponentDataProperties($this->dbdata, $subcomponent_data_properties, $subcomponent_typeDataResolver_class, $module_path_key);
                                         }
                                     }
 
-                                    if ($this->dbdata[$subcomponent_dataloader_class][$module_path_key]) {
-                                        $this->dbdata[$subcomponent_dataloader_class][$module_path_key]['ids'] = array_unique($this->dbdata[$subcomponent_dataloader_class][$module_path_key]['ids']);
-                                        $this->dbdata[$subcomponent_dataloader_class][$module_path_key]['data-fields'] = array_unique($this->dbdata[$subcomponent_dataloader_class][$module_path_key]['data-fields']);
+                                    if ($this->dbdata[$subcomponent_typeDataResolver_class][$module_path_key]) {
+                                        $this->dbdata[$subcomponent_typeDataResolver_class][$module_path_key]['ids'] = array_unique($this->dbdata[$subcomponent_typeDataResolver_class][$module_path_key]['ids']);
+                                        $this->dbdata[$subcomponent_typeDataResolver_class][$module_path_key]['data-fields'] = array_unique($this->dbdata[$subcomponent_typeDataResolver_class][$module_path_key]['data-fields']);
                                     }
                                 }
                             }
@@ -1618,7 +1618,7 @@ class Engine implements EngineInterface
         }
     }
 
-    private function initializeDataloaderEntry(&$dbdata, $typeDataResolver_class, $module_path_key)
+    private function initializeTypeDataResolverEntry(&$dbdata, $typeDataResolver_class, $module_path_key)
     {
         if (is_null($dbdata[$typeDataResolver_class][$module_path_key])) {
             $dbdata[$typeDataResolver_class][$module_path_key] = array(

@@ -33,7 +33,7 @@ class FeedbackMessageStore extends \PoP\FieldQuery\FeedbackMessageStore implemen
 
     public function maybeAddSchemaError(string $dbKey, string $field, string $error)
     {
-        // Avoid adding several times the same error (which happens when calling `getDefaultDataloaderNameFromSubcomponentDataField` from different functions)
+        // Avoid adding several times the same error (which happens when calling `getDefaultTypeDataResolverNameFromSubcomponentDataField` from different functions)
         if (!in_array($error, $this->schemaErrors[$dbKey][$field] ?? [])) {
             $this->schemaErrors[$dbKey][$field][] = $error;
         }

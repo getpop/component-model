@@ -168,7 +168,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldRes
     {
         if ($filterDataloadingModule = $this->getFieldDefaultFilterDataloadingModule($typeResolver, $fieldName, $fieldArgs)) {
             $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
-            $filterqueryargs_modules = $moduleprocessor_manager->getProcessor($filterDataloadingModule)->getDataloadQueryArgsFilteringModules($filterDataloadingModule);
+            $filterqueryargs_modules = $moduleprocessor_manager->getProcessor((array)$filterDataloadingModule)->getDataloadQueryArgsFilteringModules($filterDataloadingModule);
             return GeneralUtils::arrayFlatten(array_map(function($module) use($moduleprocessor_manager) {
                 return $moduleprocessor_manager->getProcessor($module)->getFilterInputSchemaDefinitionItems($module);
             }, $filterqueryargs_modules));
@@ -232,8 +232,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldRes
     protected function getFieldDefaultFilterDataloadingModule(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?array
     {
         $instanceManager = InstanceManagerFacade::getInstance();
-        $dataloaderClass = $this->resolveFieldDefaultTypeDataResolverClass($typeResolver, $fieldName, $fieldArgs);
-        $typeDataResolver = $instanceManager->getInstance($dataloaderClass);
+        $typeDataResolverClass = $this->resolveFieldDefaultTypeDataResolverClass($typeResolver, $fieldName, $fieldArgs);
+        $typeDataResolver = $instanceManager->getInstance((string)$typeDataResolverClass);
         return $typeDataResolver->getFilterDataloadingModule();
     }
 
