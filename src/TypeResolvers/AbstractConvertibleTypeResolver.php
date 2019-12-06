@@ -7,9 +7,16 @@ use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFa
 
 abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver
 {
+    public const DATABASE_KEY = 'convertible';
+
     protected $typeResolverPickers;
 
     abstract protected function getBaseTypeResolverClass(): string;
+
+    public function getDatabaseKey()
+    {
+        return self::DATABASE_KEY;
+    }
 
     public function getFieldNamesToResolve(): array
     {
