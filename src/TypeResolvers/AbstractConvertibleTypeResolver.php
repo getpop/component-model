@@ -13,7 +13,7 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver
 
     abstract protected function getBaseTypeResolverClass(): string;
 
-    public function getDatabaseKey()
+    public function getDatabaseKey(): string
     {
         return self::DATABASE_KEY;
     }

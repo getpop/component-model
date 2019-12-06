@@ -5,7 +5,7 @@ use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 
 abstract class AbstractTypeDataResolver implements TypeDataResolverInterface
 {
-    public function getDatabaseKey()
+    public function getDatabaseKey(): string
     {
         $instanceManager = InstanceManagerFacade::getInstance();
         $typeResolverClass = $this->getTypeResolverClass();

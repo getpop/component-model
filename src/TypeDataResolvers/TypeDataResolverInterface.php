@@ -5,6 +5,6 @@ interface TypeDataResolverInterface
 {
     public function resolveObjectsFromIDs(array $ids): array;
 	public function getTypeResolverClass(): string;
-    public function getDatabaseKey();
+    public function getDatabaseKey(): string;
     public function getDataquery();
 }
