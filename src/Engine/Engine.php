@@ -1295,8 +1295,6 @@ class Engine implements EngineInterface
 
             $typeDataResolver = $instanceManager->getInstance((string)$typeDataResolver_class);
             $database_key = $typeDataResolver->getDatabaseKey();
-            $dbKey = $database_key;
-            $issuesDBKey = $database_key;
             $isConvertibleTypeResolver = false;
 
             // Execute the typeDataResolver for all combined ids
@@ -1340,7 +1338,7 @@ class Engine implements EngineInterface
                     // the modification is done on $previousDBItems, so it carries no risks
                     foreach ($entries as $id => $fieldValues) {
                         foreach (array_keys($fieldValues) as $field) {
-                            $previousDBItems[$dbKey][$id][$field] = &$dbItems[$dbKey][$id][$field];
+                            $previousDBItems[$database_key][$id][$field] = &$dbItems[$database_key][$id][$field];
                         }
                     }
                 }
@@ -1378,8 +1376,8 @@ class Engine implements EngineInterface
                 $iterationSchemaErrors = array_intersect_key($iterationSchemaErrors, array_unique(array_map('serialize', $iterationSchemaErrors)));
                 $dbNameSchemaErrorEntries = $this->moveEntriesUnderDBName($iterationSchemaErrors, false, $typeDataResolver);
                 foreach ($dbNameSchemaErrorEntries as $dbname => $entries) {
-                    $schemaErrors[$dbname][$issuesDBKey] = array_merge(
-                        $schemaErrors[$dbname][$issuesDBKey] ?? [],
+                    $schemaErrors[$dbname][$database_key] = array_merge(
+                        $schemaErrors[$dbname][$database_key] ?? [],
                         $entries
                     );
                 }
@@ -1394,8 +1392,8 @@ class Engine implements EngineInterface
                 $iterationSchemaWarnings = array_intersect_key($iterationSchemaWarnings, array_unique(array_map('serialize', $iterationSchemaWarnings)));
                 $dbNameSchemaWarningEntries = $this->moveEntriesUnderDBName($iterationSchemaWarnings, false, $typeDataResolver);
                 foreach ($dbNameSchemaWarningEntries as $dbname => $entries) {
-                    $schemaWarnings[$dbname][$issuesDBKey] = array_merge(
-                        $schemaWarnings[$dbname][$issuesDBKey] ?? [],
+                    $schemaWarnings[$dbname][$database_key] = array_merge(
+                        $schemaWarnings[$dbname][$database_key] ?? [],
                         $entries
                     );
                 }
@@ -1404,8 +1402,8 @@ class Engine implements EngineInterface
                 $iterationSchemaDeprecations = array_intersect_key($iterationSchemaDeprecations, array_unique(array_map('serialize', $iterationSchemaDeprecations)));
                 $dbNameSchemaDeprecationEntries = $this->moveEntriesUnderDBName($iterationSchemaDeprecations, false, $typeDataResolver);
                 foreach ($dbNameSchemaDeprecationEntries as $dbname => $entries) {
-                    $schemaDeprecations[$dbname][$issuesDBKey] = array_merge(
-                        $schemaDeprecations[$dbname][$issuesDBKey] ?? [],
+                    $schemaDeprecations[$dbname][$database_key] = array_merge(
+                        $schemaDeprecations[$dbname][$database_key] ?? [],
                         $entries
                     );
                 }
@@ -1553,7 +1551,7 @@ class Engine implements EngineInterface
                                         // Comment this!!!!
                                         if ($isConvertibleTypeResolver) {
                                             list(
-                                                $dbKey,
+                                                $database_key,
                                                 $id
                                             ) = ConvertibleTypeHelpers::extractDBKeyAndResultItemID($id);
                                         }
@@ -1561,7 +1559,7 @@ class Engine implements EngineInterface
                                         // Fetch the field_ids from all these DBs
                                         $field_ids = array();
                                         foreach ($databases as $dbname => $database) {
-                                            if ($database_field_ids = $database[$dbKey][(string)$id][$subcomponent_data_field_outputkey]) {
+                                            if ($database_field_ids = $database[$database_key][(string)$id][$subcomponent_data_field_outputkey]) {
                                                 // Comment this!!!!
                                                 if ($subcomponentIsConvertibleTypeResolver) {
                                                     $isArray = is_array($database_field_ids);
@@ -1572,9 +1570,9 @@ class Engine implements EngineInterface
                                                         $isArray ? $database_field_ids : [$database_field_ids]
                                                     );
                                                     if ($isArray) {
-                                                        $convertibleDBKeyIDs[$dbname][$dbKey][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
+                                                        $convertibleDBKeyIDs[$dbname][$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
                                                     } else {
-                                                        $convertibleDBKeyIDs[$dbname][$dbKey][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids[0];
+                                                        $convertibleDBKeyIDs[$dbname][$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids[0];
                                                     }
                                                 }
 
