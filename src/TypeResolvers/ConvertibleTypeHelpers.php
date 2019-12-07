@@ -1,6 +1,7 @@
 <?php
 namespace PoP\ComponentModel\TypeResolvers;
 
+use strpos;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
 class ConvertibleTypeHelpers
@@ -17,6 +18,27 @@ class ConvertibleTypeHelpers
             ConvertibleTypeSymbols::DBKEY_RESULTITEMID_SEPARATOR,
             $composedDBKeyResultItemID
         );
+    }
+
+    /**
+     * If param $maybeComposedDBKeyResultItemID contains a "/" then it's a composition of dbKey/resultItemID
+     * Then, extract them
+     * Otherwise, return the same elements
+     *
+     * @param array $composedDBKeyResultItemID
+     * @return void
+     */
+    public static function maybeExtractDBKeyAndResultItemID(string $dbKey, string $maybeComposedDBKeyResultItemID)
+    {
+        if (is_string($maybeComposedDBKeyResultItemID) && strpos($maybeComposedDBKeyResultItemID, ConvertibleTypeSymbols::DBKEY_RESULTITEMID_SEPARATOR) !== false) {
+            $composedDBKeyResultItemID = $maybeComposedDBKeyResultItemID;
+            return self::extractDBKeyAndResultItemID($composedDBKeyResultItemID);
+        }
+        $resultItemID = $maybeComposedDBKeyResultItemID;
+        return [
+            $dbKey,
+            $resultItemID
+        ];
     }
 
     /**
