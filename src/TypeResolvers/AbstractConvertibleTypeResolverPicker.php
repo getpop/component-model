@@ -10,7 +10,7 @@ abstract class AbstractConvertibleTypeResolverPicker
 
     abstract public function getSchemaDefinitionObjectNature(): string;
 
-    public function process($resultItem): bool
+    public function process($resultItemOrID): bool
     {
         return false;
     }

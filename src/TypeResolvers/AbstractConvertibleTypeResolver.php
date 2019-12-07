@@ -1,21 +1,77 @@
 <?php
 namespace PoP\ComponentModel\TypeResolvers;
+use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
-use PoP\ComponentModel\Schema\SchemaDefinition;
+use PoP\ComponentModel\TypeDataResolvers\TypeDataResolverInterface;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
 
 abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver
 {
-    public const DATABASE_KEY = 'convertible';
-
     protected $typeResolverPickers;
 
     abstract protected function getBaseTypeResolverClass(): string;
 
-    public function getDatabaseKey(): string
+    /**
+     * Remove the type from the ID
+     *
+     * @param array $ids_data_fields
+     * @return void
+     */
+    protected function getIDsToQuery(array $ids_data_fields)
     {
-        return self::DATABASE_KEY;
+        $ids = [];
+        foreach (parent::getIDsToQuery($ids_data_fields) as $id) {
+            list(
+                $dbKey,
+                $id
+            ) = ConvertibleTypeHelpers::extractDBKeyAndResultItemID($id);
+            $ids[] = $id;
+        }
+        return $ids;
+    }
+
+    /**
+     * Add the type to the ID
+     *
+     * @param [type] $resultItem
+     * @return void
+     */
+    public function addTypeToID($resultItemID)
+    {
+        $instanceManager = InstanceManagerFacade::getInstance();
+        $typeResolverClass = $this->getTypeResolverClass($resultItemID);
+        $typeResolver = $instanceManager->getInstance($typeResolverClass);
+        return ConvertibleTypeHelpers::getComposedDBKeyAndResultItemID(
+            $typeResolver,
+            $resultItemID
+        );
+    }
+
+    /**
+     * In order to enable elements from different types (such as posts and users) to have same ID,
+     * add the type to the ID
+     *
+     * @param [type] $resultItem
+     * @return void
+     */
+    public function getId($resultItem)
+    {
+        list(
+            $typeResolver,
+            $fieldresolverpicker
+        ) = $this->getTypeResolverAndPicker($resultItem);
+
+        // Cast object, eg from post to event
+        if ($fieldresolverpicker) {
+            $resultItem = $fieldresolverpicker->cast($resultItem);
+        }
+
+        // return $typeResolver->getId($resultItem);
+        return ConvertibleTypeHelpers::getComposedDBKeyAndResultItemID(
+            $typeResolver,
+            $typeResolver->getId($resultItem)
+        );
     }
 
     public function getFieldNamesToResolve(): array
@@ -119,6 +175,28 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver
 
         // Return all the pickers
         return $pickers;
+    }
+
+    public function getTypeResolverClass($resultItemID)
+    {
+        $instanceManager = InstanceManagerFacade::getInstance();
+        // Among all registered fieldresolvers, check if any is able to process the object, through function `process`
+        // Important: iterate from back to front, because more general components (eg: Users) are defined first,
+        // and dependent components (eg: Communities, Organizations) are defined later
+        // Then, more specific implementations (eg: Organizations) must be queried before more general ones (eg: Communities)
+        // This is not a problem by making the corresponding field processors inherit from each other, so that the more specific object also handles
+        // the fields for the more general ones (eg: TypeResolver_OrganizationUsers extends TypeResolver_CommunityUsers, and TypeResolver_CommunityUsers extends TypeResolver_Users)
+        foreach ($this->getTypeResolverPickers() as $maybePicker) {
+
+            if ($maybePicker->process($resultItemID)) {
+                // Found it!
+                $typeResolverPicker = $maybePicker;
+                return $typeResolverPicker->getTypeResolverClass();
+            }
+        }
+
+        // If none found, use the default one
+        return $this->getBaseTypeResolverClass();
     }
 
     protected function getTypeResolverAndPicker($resultItem)

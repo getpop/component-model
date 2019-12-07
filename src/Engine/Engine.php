@@ -1,30 +1,33 @@
 <?php
 namespace PoP\ComponentModel\Engine;
 
+use Exception;
+use PoP\ComponentModel\Utils;
+use PoP\ComponentModel\Engine_Vars;
+use PoP\ComponentModel\GeneralUtils;
+use PoP\ComponentModel\DataloadUtils;
 use PoP\Hooks\Facades\HooksAPIFacade;
 use PoP\ComponentModel\Modules\ModuleUtils;
+use PoP\ComponentModel\Configuration\Request;
+use PoP\ComponentModel\DataQueryManagerFactory;
 use PoP\Translation\Facades\TranslationAPIFacade;
+use PoP\ComponentModel\Server\Utils as ServerUtils;
+use PoP\ComponentModel\CheckpointProcessorManagerFactory;
 use PoP\ComponentModel\Facades\Cache\PersistentCacheFacade;
+use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
+use PoP\ComponentModel\TypeResolvers\ConvertibleTypeHelpers;
+use PoP\ComponentModel\ModuleProcessors\DataloadingConstants;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
+use PoP\ComponentModel\Facades\ModelInstance\ModelInstanceFacade;
 use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
 use PoP\ComponentModel\Facades\ModulePath\ModulePathHelpersFacade;
 use PoP\ComponentModel\Facades\ModulePath\ModulePathManagerFacade;
-use PoP\ComponentModel\Facades\ModelInstance\ModelInstanceFacade;
-use PoP\ComponentModel\Facades\ModuleFilters\ModuleFilterManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
-use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
+use PoP\ComponentModel\TypeResolvers\AbstractConvertibleTypeResolver;
+use PoP\ComponentModel\Facades\ModuleFilters\ModuleFilterManagerFacade;
 use PoP\ComponentModel\Facades\DataStructure\DataStructureManagerFacade;
-use PoP\ComponentModel\ModuleProcessors\DataloadingConstants;
-use PoP\ComponentModel\Engine_Vars;
 use PoP\ComponentModel\Settings\SiteConfigurationProcessorManagerFactory;
-use PoP\ComponentModel\Server\Utils as ServerUtils;
-use PoP\ComponentModel\DataQueryManagerFactory;
-use PoP\ComponentModel\DataloadUtils;
-use PoP\ComponentModel\Utils;
-use PoP\ComponentModel\GeneralUtils;
-use PoP\ComponentModel\CheckpointProcessorManagerFactory;
-use PoP\ComponentModel\Configuration\Request;
-use Exception;
+use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
 
 class Engine implements EngineInterface
 {
@@ -544,30 +547,90 @@ class Engine implements EngineInterface
         }
     }
 
-    private function addDatasetToDatabase(&$database, $database_key, $dataitems)
+    private function doAddDatasetToDatabase(&$database, $database_key, $dataitems)
+    {
+        // Save in the database under the corresponding database-key (this way, different dataloaders, like 'list-users' and 'author',
+        // can both save their results under database key 'users'
+        if (!$database[$database_key]) {
+            $database[$database_key] = $dataitems;
+        } else {
+            $dbKey = $database_key;
+            // array_merge_recursive doesn't work as expected (it merges 2 hashmap arrays into an array, so then I manually do a foreach instead)
+            foreach ($dataitems as $id => $dbobject_values) {
+                if (!$database[$dbKey][(string)$id]) {
+                    $database[$dbKey][(string)$id] = array();
+                }
+
+                $database[$dbKey][(string)$id] = array_merge(
+                    $database[$dbKey][(string)$id],
+                    $dbobject_values
+                );
+            }
+        }
+    }
+
+    private function addDatasetToDatabase(&$database, TypeResolverInterface $typeResolver, $dataitems)
     {
         // Do not create the database key entry when there are no items, or it produces an error when deep merging the database object in the webplatform with that from the response
         if (!$dataitems) {
             return;
         }
 
-        // Save in the database under the corresponding database-key (this way, different dataloaders, like 'list-users' and 'author',
-        // can both save their results under database key 'users'
-        if (!$database[$database_key]) {
-            $database[$database_key] = $dataitems;
+        $isConvertibleTypeResolver = $typeResolver instanceof AbstractConvertibleTypeResolver;
+        if ($isConvertibleTypeResolver) {
+            $instanceManager = InstanceManagerFacade::getInstance();
+            // Get the actual type for each entity, and add the entry there
+            $convertedTypeResolverClassDataItems = [];
+            foreach ($dataitems as $resultItemID => $resultItem) {
+                // The ID will contain the type. Remove it
+                list(
+                    $dbKey,
+                    $resultItemID
+                ) = ConvertibleTypeHelpers::extractDBKeyAndResultItemID($resultItemID);
+                $convertedTypeResolverClass = $typeResolver->getTypeResolverClass($resultItemID);
+                $convertedTypeResolverClassDataItems[$convertedTypeResolverClass][$resultItemID] = $resultItem;
+            }
+            foreach ($convertedTypeResolverClassDataItems as $convertedTypeResolverClass => $convertedDataItems) {
+                $convertedTypeResolver = $instanceManager->getInstance($convertedTypeResolverClass);
+                $this->addDatasetToDatabase($database, $convertedTypeResolver, $convertedDataItems);
+            }
         } else {
-            // array_merge_recursive doesn't work as expected (it merges 2 hashmap arrays into an array, so then I manually do a foreach instead)
-            foreach ($dataitems as $dbobject_id => $dbobject_values) {
-                if (!$database[$database_key][(string)$dbobject_id]) {
-                    $database[$database_key][(string)$dbobject_id] = array();
-                }
+            $dbKey = $typeResolver->getDatabaseKey();
+            $this->doAddDatasetToDatabase($database, $dbKey, $dataitems);
+        }
+    }
 
-                $database[$database_key][(string)$dbobject_id] = array_merge(
-                    $database[$database_key][(string)$dbobject_id],
-                    $dbobject_values
+    private function getResultItemIDConvertedTypeResolvers(TypeResolverInterface $typeResolver, array $ids): array
+    {
+        if (!$ids) {
+            return [];
+        }
+
+        $resultItemIDConvertedTypeResolvers = [];
+        $isConvertibleTypeResolver = $typeResolver instanceof AbstractConvertibleTypeResolver;
+        if ($isConvertibleTypeResolver) {
+            $instanceManager = InstanceManagerFacade::getInstance();
+            $convertedTypeResolverClassDataItems = [];
+            foreach ($ids as $resultItemID) {
+                $convertedTypeResolverClass = $typeResolver->getTypeResolverClass($resultItemID);
+                $convertedTypeResolverClassDataItems[$convertedTypeResolverClass][] = $resultItemID;
+            }
+            foreach ($convertedTypeResolverClassDataItems as $convertedTypeResolverClass => $resultItemIDs) {
+                $convertedTypeResolver = $instanceManager->getInstance($convertedTypeResolverClass);
+                $convertedResultItemIDConvertedTypeResolvers = $this->getResultItemIDConvertedTypeResolvers(
+                    $convertedTypeResolver,
+                    $resultItemIDs
                 );
+                foreach ($convertedResultItemIDConvertedTypeResolvers as $convertedResultItemID => $convertedTypeResolver) {
+                    $resultItemIDConvertedTypeResolvers[(string)$convertedResultItemID] = $convertedTypeResolver;
+                }
+            }
+        } else {
+            foreach ($ids as $resultItemID) {
+                $resultItemIDConvertedTypeResolvers[(string)$resultItemID] = $typeResolver;
             }
         }
+        return $resultItemIDConvertedTypeResolvers;
     }
 
     protected function getInterreferencedModuleFullpaths(array $module, array &$props)
@@ -710,6 +773,7 @@ class Engine implements EngineInterface
     // This function is not private, so it can be accessed by the automated emails to regenerate the html for each user
     public function getModuleData($root_module, $root_model_props, $root_props)
     {
+        $instanceManager = InstanceManagerFacade::getInstance();
         if ($useCache = ServerUtils::useCache()) {
             $cachemanager = PersistentCacheFacade::getInstance();
             $useCache = !is_null($cachemanager);
@@ -854,8 +918,8 @@ class Engine implements EngineInterface
             $module_path_key = $this->getModulePathKey($module_path, $module);
 
             // If data is not loaded, then an empty array will be saved for the dbobject ids
-            $dataset_meta = $dbObjectIDs = array();
-            $executed = $dbObjectIDOrIDs = null;
+            $dataset_meta = $dbObjectIDs = $typeDBObjectIDs = array();
+            $executed = $dbObjectIDOrIDs = $typeDBObjectIDOrIDs = $typeDataResolver_class = null;
             if ($load_data) {
                 // ------------------------------------------
                 // Action Executers
@@ -888,24 +952,48 @@ class Engine implements EngineInterface
                 // Re-calculate $data_load, it may have been changed by `prepareDataPropertiesAfterActionexecution`
                 $load_data = !$data_properties[DataloadingConstants::SKIPDATALOAD];
                 if ($load_data) {
+                    $typeDataResolver_class = $processor->getTypeDataResolverClass($module);
                     // ------------------------------------------
                     // Data Properties Query Args: add mutableonrequest data
                     // ------------------------------------------
                     // Execute and get the ids and the meta
                     $dbObjectIDOrIDs = $processor->getDBObjectIDOrIDs($module, $module_props, $data_properties);
+                    // If the type is convertible, we must add the type to each object
+                    if (!is_null($dbObjectIDOrIDs)) {
+                        $typeDataResolver = $instanceManager->getInstance((string)$typeDataResolver_class);
+                        $typeResolverClass = $typeDataResolver->getTypeResolverClass();
+                        $typeResolver = $instanceManager->getInstance($typeResolverClass);
+                        $isConvertibleTypeResolver = $typeResolver instanceof AbstractConvertibleTypeResolver;
+                        if ($isConvertibleTypeResolver) {
+                            $resultItemIDConvertedTypeResolvers = $this->getResultItemIDConvertedTypeResolvers($typeResolver, is_array($dbObjectIDOrIDs) ? $dbObjectIDOrIDs : [$dbObjectIDOrIDs]);
+                            $typeDBObjectIDOrIDs = [];
+                            foreach ($resultItemIDConvertedTypeResolvers as $resultItemID => $convertedTypeResolver) {
+                                $typeDBObjectIDOrIDs[] = ConvertibleTypeHelpers::getComposedDBKeyAndResultItemID(
+                                    $convertedTypeResolver,
+                                    $resultItemID
+                                );
+                            }
+                            if (!is_array($dbObjectIDOrIDs)) {
+                                $typeDBObjectIDOrIDs = $typeDBObjectIDOrIDs[0];
+                            }
+                        } else {
+                            $typeDBObjectIDOrIDs = $dbObjectIDOrIDs;
+                        }
+                    }
+
                     $dbObjectIDs = is_array($dbObjectIDOrIDs) ? $dbObjectIDOrIDs : array($dbObjectIDOrIDs);
+                    $typeDBObjectIDs = is_array($typeDBObjectIDOrIDs) ? $typeDBObjectIDOrIDs : array($typeDBObjectIDOrIDs);
 
                     // Store the ids under $data under key dataload_name => id
-                    $typeDataResolver_class = $processor->getTypeDataResolverClass($module);
                     $data_fields = $data_properties['data-fields'] ?? array();
                     $conditional_data_fields = $data_properties['conditional-data-fields'] ?? array();
-                    $this->combineIdsDatafields($this->typeDataResolverClass_ids_data_fields, $typeDataResolver_class, $dbObjectIDs, $data_fields, $conditional_data_fields);
+                    $this->combineIdsDatafields($this->typeDataResolverClass_ids_data_fields, $typeDataResolver_class, $typeDBObjectIDs, $data_fields, $conditional_data_fields);
 
                     // Add the IDs to the possibly-already produced IDs for this typeDataResolver/pageSection/Block
                     $this->initializeTypeDataResolverEntry($this->dbdata, $typeDataResolver_class, $module_path_key);
                     $this->dbdata[$typeDataResolver_class][$module_path_key]['ids'] = array_merge(
                         $this->dbdata[$typeDataResolver_class][$module_path_key]['ids'],
-                        $dbObjectIDs
+                        $typeDBObjectIDs
                     );
 
                     // The supplementary dbobject data is independent of the typeDataResolver of the block.
@@ -962,7 +1050,7 @@ class Engine implements EngineInterface
             // Integrate the dbobjectids into $datasetmoduledata
             // ALWAYS print the $dbobjectids, even if its an empty array. This to indicate that this is a dataloading module, so the application in the webplatform knows if to load a new batch of dbobjectids, or reuse the ones from the previous module when iterating down
             if (!is_null($datasetmoduledata)) {
-                $this->assignValueForModule($datasetmoduledata, $module_path, $module, POP_CONSTANT_DBOBJECTIDS, $dbObjectIDOrIDs);
+                $this->assignValueForModule($datasetmoduledata, $module_path, $module, POP_CONSTANT_DBOBJECTIDS, $typeDBObjectIDOrIDs);
             }
 
             // Save the meta into $datasetmodulemeta
@@ -1164,7 +1252,7 @@ class Engine implements EngineInterface
         $vars = Engine_Vars::getVars();
 
         // Save all database elements here, under typeDataResolver
-        $databases = $previousDBItems = $dbErrors = $dbWarnings = $schemaErrors = $schemaWarnings = $schemaDeprecations = array();
+        $databases = $convertibleDBKeyIDs = $previousDBItems = $dbErrors = $dbWarnings = $schemaErrors = $schemaWarnings = $schemaDeprecations = array();
         $this->nocache_fields = array();
         // $format = $vars['format'];
         // $route = $vars['route'];
@@ -1207,11 +1295,15 @@ class Engine implements EngineInterface
 
             $typeDataResolver = $instanceManager->getInstance((string)$typeDataResolver_class);
             $database_key = $typeDataResolver->getDatabaseKey();
+            $dbKey = $database_key;
+            $issuesDBKey = $database_key;
+            $isConvertibleTypeResolver = false;
 
             // Execute the typeDataResolver for all combined ids
             $iterationDBItems = $iterationDBErrors = $iterationDBWarnings = $iterationSchemaErrors = $iterationSchemaWarnings = $iterationSchemaDeprecations = array();
             if ($typeResolverClass = $typeDataResolver->getTypeResolverClass()) {
                 $typeResolver = $instanceManager->getInstance($typeResolverClass);
+                $isConvertibleTypeResolver = $typeResolver instanceof AbstractConvertibleTypeResolver;
                 $typeResolver->fillResultItems($typeDataResolver, $ids_data_fields, $iterationDBItems, $previousDBItems, $variables, $messages, $iterationDBErrors, $iterationDBWarnings, $iterationSchemaErrors, $iterationSchemaWarnings, $iterationSchemaDeprecations);
             }
 
@@ -1236,9 +1328,11 @@ class Engine implements EngineInterface
                         );
                     }
                 }
+
+                // If the type is convertible, then add the type corresponding to each object on its ID
                 $dbItems = $this->moveEntriesUnderDBName($iterationDBItems, true, $typeDataResolver);
                 foreach ($dbItems as $dbname => $entries) {
-                    $this->addDatasetToDatabase($databases[$dbname], $database_key, $entries);
+                    $this->addDatasetToDatabase($databases[$dbname], $typeResolver, $entries);
 
                     // Populate the $previousDBItems, pointing to the newly fetched dbItems (but without the dbname!)
                     // Save the reference to the values, instead of the values, to save memory
@@ -1246,7 +1340,7 @@ class Engine implements EngineInterface
                     // the modification is done on $previousDBItems, so it carries no risks
                     foreach ($entries as $id => $fieldValues) {
                         foreach (array_keys($fieldValues) as $field) {
-                            $previousDBItems[$database_key][$id][$field] = &$databases[$dbname][$database_key][$id][$field];
+                            $previousDBItems[$dbKey][$id][$field] = &$dbItems[$dbKey][$id][$field];
                         }
                     }
                 }
@@ -1254,13 +1348,13 @@ class Engine implements EngineInterface
             if ($iterationDBErrors) {
                 $dbNameErrorEntries = $this->moveEntriesUnderDBName($iterationDBErrors, true, $typeDataResolver);
                 foreach ($dbNameErrorEntries as $dbname => $entries) {
-                    $this->addDatasetToDatabase($dbErrors[$dbname], $database_key, $entries);
+                    $this->addDatasetToDatabase($dbErrors[$dbname], $typeResolver, $entries);
                 }
             }
             if ($iterationDBWarnings) {
                 $dbNameWarningEntries = $this->moveEntriesUnderDBName($iterationDBWarnings, true, $typeDataResolver);
                 foreach ($dbNameWarningEntries as $dbname => $entries) {
-                    $this->addDatasetToDatabase($dbWarnings[$dbname], $database_key, $entries);
+                    $this->addDatasetToDatabase($dbWarnings[$dbname], $typeResolver, $entries);
                 }
             }
 
@@ -1284,8 +1378,8 @@ class Engine implements EngineInterface
                 $iterationSchemaErrors = array_intersect_key($iterationSchemaErrors, array_unique(array_map('serialize', $iterationSchemaErrors)));
                 $dbNameSchemaErrorEntries = $this->moveEntriesUnderDBName($iterationSchemaErrors, false, $typeDataResolver);
                 foreach ($dbNameSchemaErrorEntries as $dbname => $entries) {
-                    $schemaErrors[$dbname][$database_key] = array_merge(
-                        $schemaErrors[$dbname][$database_key] ?? [],
+                    $schemaErrors[$dbname][$issuesDBKey] = array_merge(
+                        $schemaErrors[$dbname][$issuesDBKey] ?? [],
                         $entries
                     );
                 }
@@ -1300,8 +1394,8 @@ class Engine implements EngineInterface
                 $iterationSchemaWarnings = array_intersect_key($iterationSchemaWarnings, array_unique(array_map('serialize', $iterationSchemaWarnings)));
                 $dbNameSchemaWarningEntries = $this->moveEntriesUnderDBName($iterationSchemaWarnings, false, $typeDataResolver);
                 foreach ($dbNameSchemaWarningEntries as $dbname => $entries) {
-                    $schemaWarnings[$dbname][$database_key] = array_merge(
-                        $schemaWarnings[$dbname][$database_key] ?? [],
+                    $schemaWarnings[$dbname][$issuesDBKey] = array_merge(
+                        $schemaWarnings[$dbname][$issuesDBKey] ?? [],
                         $entries
                     );
                 }
@@ -1310,8 +1404,8 @@ class Engine implements EngineInterface
                 $iterationSchemaDeprecations = array_intersect_key($iterationSchemaDeprecations, array_unique(array_map('serialize', $iterationSchemaDeprecations)));
                 $dbNameSchemaDeprecationEntries = $this->moveEntriesUnderDBName($iterationSchemaDeprecations, false, $typeDataResolver);
                 foreach ($dbNameSchemaDeprecationEntries as $dbname => $entries) {
-                    $schemaDeprecations[$dbname][$database_key] = array_merge(
-                        $schemaDeprecations[$dbname][$database_key] ?? [],
+                    $schemaDeprecations[$dbname][$issuesDBKey] = array_merge(
+                        $schemaDeprecations[$dbname][$issuesDBKey] ?? [],
                         $entries
                     );
                 }
@@ -1440,20 +1534,50 @@ class Engine implements EngineInterface
 
                             // If passing a subcomponent fieldname that doesn't exist to the API, then $subcomponent_typeDataResolver_class will be empty
                             if ($subcomponent_typeDataResolver_class) {
+
                                  // The array_merge_recursive when there are at least 2 levels will make the data_fields to be duplicated, so remove duplicates now
                                 $subcomponent_data_fields = array_unique($subcomponent_data_properties['data-fields'] ?? []);
                                 $subcomponent_conditional_data_fields = $subcomponent_data_properties['conditional-data-fields'] ?? [];
                                 if ($subcomponent_data_fields || $subcomponent_conditional_data_fields) {
+
+                                    $subcomponentTypeDataResolver = $instanceManager->getInstance((string)$subcomponent_typeDataResolver_class);
+                                    $subcomponentTypeResolverClass = $subcomponentTypeDataResolver->getTypeResolverClass();
+                                    $subcomponentTypeResolver = $instanceManager->getInstance($subcomponentTypeResolverClass);
+                                    $subcomponentIsConvertibleTypeResolver = $subcomponentTypeResolver instanceof AbstractConvertibleTypeResolver;
+
                                     $subcomponent_already_loaded_ids_data_fields = array();
                                     if ($already_loaded_ids_data_fields && $already_loaded_ids_data_fields[$subcomponent_typeDataResolver_class]) {
                                         $subcomponent_already_loaded_ids_data_fields = $already_loaded_ids_data_fields[$subcomponent_typeDataResolver_class];
                                     }
                                     foreach ($typeDataResolver_ids as $id) {
+                                        // Comment this!!!!
+                                        if ($isConvertibleTypeResolver) {
+                                            list(
+                                                $dbKey,
+                                                $id
+                                            ) = ConvertibleTypeHelpers::extractDBKeyAndResultItemID($id);
+                                        }
                                         // $databases may contain more the 1 DB shipped by pop-engine/ ("primary"). Eg: PoP User Login adds db "userstate"
                                         // Fetch the field_ids from all these DBs
                                         $field_ids = array();
                                         foreach ($databases as $dbname => $database) {
-                                            if ($database_field_ids = $database[$database_key][(string)$id][$subcomponent_data_field_outputkey]) {
+                                            if ($database_field_ids = $database[$dbKey][(string)$id][$subcomponent_data_field_outputkey]) {
+                                                // Comment this!!!!
+                                                if ($subcomponentIsConvertibleTypeResolver) {
+                                                    $isArray = is_array($database_field_ids);
+                                                    $database_field_ids = array_map(
+                                                        function($id) use($subcomponentTypeResolver) {
+                                                            return $subcomponentTypeResolver->addTypeToID($id);
+                                                        },
+                                                        $isArray ? $database_field_ids : [$database_field_ids]
+                                                    );
+                                                    if ($isArray) {
+                                                        $convertibleDBKeyIDs[$dbname][$dbKey][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
+                                                    } else {
+                                                        $convertibleDBKeyIDs[$dbname][$dbKey][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids[0];
+                                                    }
+                                                }
+
                                                 $field_ids = array_merge(
                                                     $field_ids,
                                                     is_array($database_field_ids) ? $database_field_ids : array($database_field_ids)
@@ -1531,6 +1655,7 @@ class Engine implements EngineInterface
             }
         }
         $this->maybeCombineAndAddDatabaseEntries($ret, 'databases', $databases);
+        $this->maybeCombineAndAddDatabaseEntries($ret, 'convertibleDBKeyIDs', $convertibleDBKeyIDs);
 
         return $ret;
     }

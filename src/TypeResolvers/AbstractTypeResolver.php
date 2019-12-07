@@ -493,13 +493,18 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return $fieldArgs;
     }
 
+    protected function getIDsToQuery(array $ids_data_fields)
+    {
+        return array_keys($ids_data_fields);
+    }
+
     public function fillResultItems(TypeDataResolverInterface $typeDataResolver, array $ids_data_fields, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         $instanceManager = InstanceManagerFacade::getInstance();
 
         // Obtain the data for the required object IDs
         $resultIDItems = [];
-        $ids = array_keys($ids_data_fields);
+        $ids = $this->getIDsToQuery($ids_data_fields);
         $typeResolverClass = $typeDataResolver->getTypeResolverClass();
         $typeResolver = $instanceManager->getInstance($typeResolverClass);
         foreach ($typeDataResolver->resolveObjectsFromIDs($ids) as $dataItem) {
