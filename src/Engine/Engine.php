@@ -770,6 +770,30 @@ class Engine implements EngineInterface
         return $moduleFullName.'-'.implode('.', $module_path);
     }
 
+    protected function getDBObjectIDOrIDsForConvertibleTypeDataResolver(string $typeDataResolverClass, $dbObjectIDOrIDs)
+    {
+        $instanceManager = InstanceManagerFacade::getInstance();
+        $typeDataResolver = $instanceManager->getInstance($typeDataResolverClass);
+        $typeResolverClass = $typeDataResolver->getTypeResolverClass();
+        $typeResolver = $instanceManager->getInstance($typeResolverClass);
+        $isConvertibleTypeResolver = $typeResolver instanceof AbstractConvertibleTypeResolver;
+        if ($isConvertibleTypeResolver) {
+            $resultItemIDConvertedTypeResolvers = $this->getResultItemIDConvertedTypeResolvers($typeResolver, is_array($dbObjectIDOrIDs) ? $dbObjectIDOrIDs : [$dbObjectIDOrIDs]);
+            $typeDBObjectIDOrIDs = [];
+            foreach ($resultItemIDConvertedTypeResolvers as $resultItemID => $convertedTypeResolver) {
+                $typeDBObjectIDOrIDs[] = ConvertibleTypeHelpers::getComposedDBKeyAndResultItemID(
+                    $convertedTypeResolver,
+                    $resultItemID
+                );
+            }
+            if (!is_array($dbObjectIDOrIDs)) {
+                $typeDBObjectIDOrIDs = $typeDBObjectIDOrIDs[0];
+            }
+            return $typeDBObjectIDOrIDs;
+        }
+        return $dbObjectIDOrIDs;
+    }
+
     // This function is not private, so it can be accessed by the automated emails to regenerate the html for each user
     public function getModuleData($root_module, $root_model_props, $root_props)
     {
@@ -960,25 +984,7 @@ class Engine implements EngineInterface
                     $dbObjectIDOrIDs = $processor->getDBObjectIDOrIDs($module, $module_props, $data_properties);
                     // If the type is convertible, we must add the type to each object
                     if (!is_null($dbObjectIDOrIDs)) {
-                        $typeDataResolver = $instanceManager->getInstance((string)$typeDataResolver_class);
-                        $typeResolverClass = $typeDataResolver->getTypeResolverClass();
-                        $typeResolver = $instanceManager->getInstance($typeResolverClass);
-                        $isConvertibleTypeResolver = $typeResolver instanceof AbstractConvertibleTypeResolver;
-                        if ($isConvertibleTypeResolver) {
-                            $resultItemIDConvertedTypeResolvers = $this->getResultItemIDConvertedTypeResolvers($typeResolver, is_array($dbObjectIDOrIDs) ? $dbObjectIDOrIDs : [$dbObjectIDOrIDs]);
-                            $typeDBObjectIDOrIDs = [];
-                            foreach ($resultItemIDConvertedTypeResolvers as $resultItemID => $convertedTypeResolver) {
-                                $typeDBObjectIDOrIDs[] = ConvertibleTypeHelpers::getComposedDBKeyAndResultItemID(
-                                    $convertedTypeResolver,
-                                    $resultItemID
-                                );
-                            }
-                            if (!is_array($dbObjectIDOrIDs)) {
-                                $typeDBObjectIDOrIDs = $typeDBObjectIDOrIDs[0];
-                            }
-                        } else {
-                            $typeDBObjectIDOrIDs = $dbObjectIDOrIDs;
-                        }
+                        $typeDBObjectIDOrIDs = $this->getDBObjectIDOrIDsForConvertibleTypeDataResolver((string)$typeDataResolver_class, $dbObjectIDOrIDs);
                     }
 
                     $dbObjectIDs = is_array($dbObjectIDOrIDs) ? $dbObjectIDOrIDs : array($dbObjectIDOrIDs);
