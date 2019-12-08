@@ -23,7 +23,7 @@ use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
 use PoP\ComponentModel\Facades\ModulePath\ModulePathHelpersFacade;
 use PoP\ComponentModel\Facades\ModulePath\ModulePathManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
-use PoP\ComponentModel\TypeResolvers\AbstractConvertibleTypeResolver;
+use PoP\ComponentModel\TypeResolvers\ConvertibleTypeResolverInterface;
 use PoP\ComponentModel\Facades\ModuleFilters\ModuleFilterManagerFacade;
 use PoP\ComponentModel\Facades\DataStructure\DataStructureManagerFacade;
 use PoP\ComponentModel\Settings\SiteConfigurationProcessorManagerFactory;
@@ -576,7 +576,7 @@ class Engine implements EngineInterface
             return;
         }
 
-        $isConvertibleTypeResolver = $typeResolver instanceof AbstractConvertibleTypeResolver;
+        $isConvertibleTypeResolver = $typeResolver instanceof ConvertibleTypeResolverInterface;
         if ($isConvertibleTypeResolver) {
             $instanceManager = InstanceManagerFacade::getInstance();
             // Get the actual type for each entity, and add the entry there
@@ -607,7 +607,7 @@ class Engine implements EngineInterface
         }
 
         $resultItemIDConvertedTypeResolvers = [];
-        $isConvertibleTypeResolver = $typeResolver instanceof AbstractConvertibleTypeResolver;
+        $isConvertibleTypeResolver = $typeResolver instanceof ConvertibleTypeResolverInterface;
         if ($isConvertibleTypeResolver) {
             $instanceManager = InstanceManagerFacade::getInstance();
             $convertedTypeResolverClassDataItems = [];
@@ -776,7 +776,7 @@ class Engine implements EngineInterface
         $typeDataResolver = $instanceManager->getInstance($typeDataResolverClass);
         $typeResolverClass = $typeDataResolver->getTypeResolverClass();
         $typeResolver = $instanceManager->getInstance($typeResolverClass);
-        $isConvertibleTypeResolver = $typeResolver instanceof AbstractConvertibleTypeResolver;
+        $isConvertibleTypeResolver = $typeResolver instanceof ConvertibleTypeResolverInterface;
         if ($isConvertibleTypeResolver) {
             $resultItemIDConvertedTypeResolvers = $this->getResultItemIDConvertedTypeResolvers($typeResolver, is_array($dbObjectIDOrIDs) ? $dbObjectIDOrIDs : [$dbObjectIDOrIDs]);
             $typeDBObjectIDOrIDs = [];
@@ -1307,7 +1307,7 @@ class Engine implements EngineInterface
             $iterationDBItems = $iterationDBErrors = $iterationDBWarnings = $iterationSchemaErrors = $iterationSchemaWarnings = $iterationSchemaDeprecations = array();
             if ($typeResolverClass = $typeDataResolver->getTypeResolverClass()) {
                 $typeResolver = $instanceManager->getInstance($typeResolverClass);
-                $isConvertibleTypeResolver = $typeResolver instanceof AbstractConvertibleTypeResolver;
+                $isConvertibleTypeResolver = $typeResolver instanceof ConvertibleTypeResolverInterface;
                 $typeResolver->fillResultItems($typeDataResolver, $ids_data_fields, $combinedConvertibleDBKeyIDs, $iterationDBItems, $previousDBItems, $variables, $messages, $iterationDBErrors, $iterationDBWarnings, $iterationSchemaErrors, $iterationSchemaWarnings, $iterationSchemaDeprecations);
             }
 
@@ -1544,7 +1544,7 @@ class Engine implements EngineInterface
                                     $subcomponentTypeDataResolver = $instanceManager->getInstance((string)$subcomponent_typeDataResolver_class);
                                     $subcomponentTypeResolverClass = $subcomponentTypeDataResolver->getTypeResolverClass();
                                     $subcomponentTypeResolver = $instanceManager->getInstance($subcomponentTypeResolverClass);
-                                    $subcomponentIsConvertibleTypeResolver = $subcomponentTypeResolver instanceof AbstractConvertibleTypeResolver;
+                                    $subcomponentIsConvertibleTypeResolver = $subcomponentTypeResolver instanceof ConvertibleTypeResolverInterface;
 
                                     $subcomponent_already_loaded_ids_data_fields = array();
                                     if ($already_loaded_ids_data_fields && $already_loaded_ids_data_fields[$subcomponent_typeDataResolver_class]) {
