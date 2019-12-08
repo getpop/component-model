@@ -498,7 +498,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return array_keys($ids_data_fields);
     }
 
-    public function fillResultItems(TypeDataResolverInterface $typeDataResolver, array $ids_data_fields, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    public function fillResultItems(TypeDataResolverInterface $typeDataResolver, array $ids_data_fields, array &$convertibleDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         $instanceManager = InstanceManagerFacade::getInstance();
 
@@ -515,7 +515,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $this->enqueueFillingResultItemsFromIDs($ids_data_fields);
 
         // Process them
-        $this->processFillingResultItemsFromIDs($typeDataResolver, $resultIDItems, $dbItems, $previousDBItems, $variables, $messages, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+        $this->processFillingResultItemsFromIDs($typeDataResolver, $resultIDItems, $convertibleDBKeyIDs, $dbItems, $previousDBItems, $variables, $messages, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations);
     }
 
     /**
@@ -586,7 +586,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         }
     }
 
-    protected function processFillingResultItemsFromIDs(TypeDataResolverInterface $typeDataResolver, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    protected function processFillingResultItemsFromIDs(TypeDataResolverInterface $typeDataResolver, array &$resultIDItems, array &$convertibleDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Iterate while there are directives with data to be processed
         while (!empty($this->fieldDirectiveIDFields)) {
@@ -664,6 +664,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 $this,
                 $pipelineIDsDataFields,
                 $resultIDItems,
+                $convertibleDBKeyIDs,
                 $dbItems,
                 $previousDBItems,
                 $variables,

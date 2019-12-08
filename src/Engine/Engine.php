@@ -1252,7 +1252,7 @@ class Engine implements EngineInterface
         $vars = Engine_Vars::getVars();
 
         // Save all database elements here, under typeDataResolver
-        $databases = $convertibleDBKeyIDs = $previousDBItems = $dbErrors = $dbWarnings = $schemaErrors = $schemaWarnings = $schemaDeprecations = array();
+        $databases = $convertibleDBKeyIDs = $combinedConvertibleDBKeyIDs = $previousDBItems = $dbErrors = $dbWarnings = $schemaErrors = $schemaWarnings = $schemaDeprecations = array();
         $this->nocache_fields = array();
         // $format = $vars['format'];
         // $route = $vars['route'];
@@ -1302,7 +1302,7 @@ class Engine implements EngineInterface
             if ($typeResolverClass = $typeDataResolver->getTypeResolverClass()) {
                 $typeResolver = $instanceManager->getInstance($typeResolverClass);
                 $isConvertibleTypeResolver = $typeResolver instanceof AbstractConvertibleTypeResolver;
-                $typeResolver->fillResultItems($typeDataResolver, $ids_data_fields, $iterationDBItems, $previousDBItems, $variables, $messages, $iterationDBErrors, $iterationDBWarnings, $iterationSchemaErrors, $iterationSchemaWarnings, $iterationSchemaDeprecations);
+                $typeResolver->fillResultItems($typeDataResolver, $ids_data_fields, $combinedConvertibleDBKeyIDs, $iterationDBItems, $previousDBItems, $variables, $messages, $iterationDBErrors, $iterationDBWarnings, $iterationSchemaErrors, $iterationSchemaWarnings, $iterationSchemaDeprecations);
             }
 
             // Save in the database under the corresponding database-key (this way, different dataloaders, like 'list-users' and 'author',
@@ -1337,8 +1337,8 @@ class Engine implements EngineInterface
                     // Passing $previousDBItems instead of $databases makes it read-only: Directives can only read the values... if they want to modify them,
                     // the modification is done on $previousDBItems, so it carries no risks
                     foreach ($entries as $id => $fieldValues) {
-                        foreach (array_keys($fieldValues) as $field) {
-                            $previousDBItems[$database_key][$id][$field] = &$dbItems[$database_key][$id][$field];
+                        foreach ($fieldValues as $field => &$entryFieldValues) {
+                            $previousDBItems[$database_key][$id][$field] = &$entryFieldValues;
                         }
                     }
                 }
@@ -1355,7 +1355,6 @@ class Engine implements EngineInterface
                     $this->addDatasetToDatabase($dbWarnings[$dbname], $typeResolver, $entries);
                 }
             }
-
 
             $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();
             if ($storeSchemaErrors = $feedbackMessageStore->retrieveAndClearSchemaErrors()) {
@@ -1510,8 +1509,6 @@ class Engine implements EngineInterface
             */
             // ------------------------------------------------------------
 
-
-
             // Important: query like this: obtain keys first instead of iterating directly on array, because it will keep adding elements
             $typeDataResolver_dbdata = $this->dbdata[$typeDataResolver_class];
             foreach (array_keys($typeDataResolver_dbdata) as $module_path_key) {
@@ -1571,8 +1568,10 @@ class Engine implements EngineInterface
                                                     );
                                                     if ($isArray) {
                                                         $convertibleDBKeyIDs[$dbname][$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
+                                                        $combinedConvertibleDBKeyIDs[$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
                                                     } else {
                                                         $convertibleDBKeyIDs[$dbname][$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids[0];
+                                                        $combinedConvertibleDBKeyIDs[$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids[0];
                                                     }
                                                 }
 

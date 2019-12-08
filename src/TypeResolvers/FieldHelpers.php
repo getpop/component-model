@@ -9,7 +9,7 @@ class FieldHelpers
      * @param array $dataFields
      * @return void
      */
-    public static function extractConditionalFields(array $dataFields)
+    public static function extractConditionalFields(array $dataFields): array
     {
         $conditionalFields = [];
         $heap = $dataFields['conditional'];

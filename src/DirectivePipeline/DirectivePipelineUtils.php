@@ -5,13 +5,14 @@ use PoP\ComponentModel\TypeDataResolvers\TypeDataResolverInterface;
 
 class DirectivePipelineUtils
 {
-    public static function convertArgumentsToPayload(TypeDataResolverInterface $typeDataResolver, TypeResolverInterface $typeResolver, array &$pipelineIDsDataFields, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    public static function convertArgumentsToPayload(TypeDataResolverInterface $typeDataResolver, TypeResolverInterface $typeResolver, array &$pipelineIDsDataFields, array &$resultIDItems, array &$convertibleDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         return [
             'typeDataResolver' => &$typeDataResolver,
             'typeResolver' => &$typeResolver,
             'pipelineIDsDataFields' => &$pipelineIDsDataFields,
             'resultIDItems' => &$resultIDItems,
+            'convertibleDBKeyIDs' => &$convertibleDBKeyIDs,
             'dbItems' => &$dbItems,
             'previousDBItems' => &$previousDBItems,
             'variables' => &$variables,
@@ -31,6 +32,7 @@ class DirectivePipelineUtils
             &$payload['typeResolver'],
             &$payload['pipelineIDsDataFields'],
             &$payload['resultIDItems'],
+            &$payload['convertibleDBKeyIDs'],
             &$payload['dbItems'],
             &$payload['previousDBItems'],
             &$payload['variables'],
