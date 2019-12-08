@@ -3,7 +3,6 @@ namespace PoP\ComponentModel\TypeResolvers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
-use PoP\ComponentModel\TypeDataResolvers\TypeDataResolverInterface;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
 
 abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver
@@ -11,6 +10,13 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver
     protected $typeResolverPickers;
 
     abstract protected function getBaseTypeResolverClass(): string;
+
+    abstract protected function getConvertibleDatabaseKeyName(): string;
+
+    final public function getDatabaseKey(): string
+    {
+        return ConvertibleTypeHelpers::getConvertibleDatabaseKey($this->getConvertibleDatabaseKeyName());
+    }
 
     /**
      * Remove the type from the ID

@@ -1,7 +1,8 @@
 <?php
 namespace PoP\ComponentModel\TypeResolvers;
 
-use function strpos;
+use function substr;
+use function explode;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
 class ConvertibleTypeHelpers
@@ -21,24 +22,19 @@ class ConvertibleTypeHelpers
     }
 
     /**
-     * If param $maybeComposedDBKeyResultItemID contains a "/" then it's a composition of dbKey/resultItemID
-     * Then, extract them
-     * Otherwise, return the same elements
+     * If the type data resolver starts with "*" then it's convertible
      *
-     * @param array $composedDBKeyResultItemID
-     * @return void
+     * @param string $dbKey
+     * @return boolean
      */
-    public static function maybeExtractDBKeyAndResultItemID(string $dbKey, string $maybeComposedDBKeyResultItemID)
+    public static function isConvertibleDBKey(string $dbKey): bool
     {
-        if (is_string($maybeComposedDBKeyResultItemID) && strpos($maybeComposedDBKeyResultItemID, ConvertibleTypeSymbols::DBKEY_RESULTITEMID_SEPARATOR) !== false) {
-            $composedDBKeyResultItemID = $maybeComposedDBKeyResultItemID;
-            return self::extractDBKeyAndResultItemID($composedDBKeyResultItemID);
-        }
-        $resultItemID = $maybeComposedDBKeyResultItemID;
-        return [
-            $dbKey,
-            $resultItemID
-        ];
+        return substr($dbKey, 0, strlen(ConvertibleTypeSymbols::DBKEY_NAME_PREFIX)) == ConvertibleTypeSymbols::DBKEY_NAME_PREFIX;
+    }
+
+    public static function getConvertibleDatabaseKey(string $dbKey): string
+    {
+        return ConvertibleTypeSymbols::DBKEY_NAME_PREFIX.$dbKey;
     }
 
     /**
