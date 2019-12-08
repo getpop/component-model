@@ -586,7 +586,7 @@ class Engine implements EngineInterface
                 list(
                     $dbKey,
                     $resultItemID
-                ) = ConvertibleTypeHelpers::extractDBKeyAndResultItemID($resultItemID);
+                ) = ConvertibleTypeHelpers::extractDBObjectTypeAndID($resultItemID);
                 $convertedTypeResolverClass = $typeResolver->getTypeResolverClassForResultItem($resultItemID);
                 $convertedTypeResolverClassDataItems[$convertedTypeResolverClass][$resultItemID] = $resultItem;
                 $convertedTypeResolverClassDBKeys[$convertedTypeResolverClass] = $dbKey;
@@ -782,7 +782,7 @@ class Engine implements EngineInterface
             $resultItemIDConvertedTypeResolvers = $this->getResultItemIDConvertedTypeResolvers($typeResolver, is_array($dbObjectIDOrIDs) ? $dbObjectIDOrIDs : [$dbObjectIDOrIDs]);
             $typeDBObjectIDOrIDs = [];
             foreach ($resultItemIDConvertedTypeResolvers as $resultItemID => $convertedTypeResolver) {
-                $typeDBObjectIDOrIDs[] = ConvertibleTypeHelpers::getComposedDBKeyAndResultItemID(
+                $typeDBObjectIDOrIDs[] = ConvertibleTypeHelpers::getDBObjectComposedTypeAndID(
                     $convertedTypeResolver,
                     $resultItemID
                 );
@@ -1558,7 +1558,7 @@ class Engine implements EngineInterface
                                             list(
                                                 $database_key,
                                                 $id
-                                            ) = ConvertibleTypeHelpers::extractDBKeyAndResultItemID($id);
+                                            ) = ConvertibleTypeHelpers::extractDBObjectTypeAndID($id);
                                         }
                                         // $databases may contain more the 1 DB shipped by pop-engine/ ("primary"). Eg: PoP User Login adds db "userstate"
                                         // Fetch the field_ids from all these DBs

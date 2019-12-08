@@ -27,22 +27,20 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
     }
 
     /**
-     * Remove the type from the ID
+     * Remove the type from the ID to resolve the objects through `resolveObjectsFromIDs` (check parent class)
      *
      * @param array $ids_data_fields
      * @return void
      */
     protected function getIDsToQuery(array $ids_data_fields)
     {
-        $ids = [];
-        foreach (parent::getIDsToQuery($ids_data_fields) as $id) {
-            list(
-                $dbKey,
-                $id
-            ) = ConvertibleTypeHelpers::extractDBKeyAndResultItemID($id);
-            $ids[] = $id;
-        }
-        return $ids;
+        $ids = parent::getIDsToQuery($ids_data_fields);
+
+        // Each ID contains the type (added in function `getId`). Remove it
+        return array_map(
+            [ConvertibleTypeHelpers::class, 'extractDBObjectID'],
+            $ids
+        );
     }
 
     /**
@@ -56,7 +54,7 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         $instanceManager = InstanceManagerFacade::getInstance();
         $resultItemTypeResolverClass = $this->getTypeResolverClassForResultItem($resultItemID);
         $resultItemTypeResolver = $instanceManager->getInstance($resultItemTypeResolverClass);
-        return ConvertibleTypeHelpers::getComposedDBKeyAndResultItemID(
+        return ConvertibleTypeHelpers::getDBObjectComposedTypeAndID(
             $resultItemTypeResolver,
             $resultItemID
         );
@@ -81,8 +79,9 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
             $resultItem = $fieldresolverpicker->cast($resultItem);
         }
 
-        // return $typeResolver->getId($resultItem);
-        return ConvertibleTypeHelpers::getComposedDBKeyAndResultItemID(
+        // Add the type to the ID, so that elements of different types can live side by side
+        // The type will be removed again in `getIDsToQuery`
+        return ConvertibleTypeHelpers::getDBObjectComposedTypeAndID(
             $typeResolver,
             $typeResolver->getId($resultItem)
         );

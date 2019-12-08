@@ -8,20 +8,6 @@ use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 class ConvertibleTypeHelpers
 {
     /**
-     * Extracts the DB key and ID from the resultItem ID
-     *
-     * @param array $composedDBKeyResultItemID
-     * @return void
-     */
-    public static function extractDBKeyAndResultItemID(string $composedDBKeyResultItemID)
-    {
-        return explode(
-            ConvertibleTypeSymbols::DBKEY_RESULTITEMID_SEPARATOR,
-            $composedDBKeyResultItemID
-        );
-    }
-
-    /**
      * If the type data resolver starts with "*" then it's convertible
      *
      * @param string $dbKey
@@ -43,9 +29,40 @@ class ConvertibleTypeHelpers
      * @param array $composedDBKeyResultItemID
      * @return void
      */
-    public static function getComposedDBKeyAndResultItemID(TypeResolverInterface $typeResolver, $id): string
+    public static function extractDBObjectTypeAndID(string $composedDBKeyResultItemID)
     {
-        $dbKey = $typeResolver->getTypeCollectionName();
-        return $dbKey.ConvertibleTypeSymbols::DBKEY_RESULTITEMID_SEPARATOR.$id;
+        return explode(
+            ConvertibleTypeSymbols::DBOBJECT_COMPOSED_TYPE_ID_SEPARATOR,
+            $composedDBKeyResultItemID
+        );
+    }
+
+    /**
+     * Extracts the ID from the resultItem ID
+     *
+     * @param array $composedDBKeyResultItemID
+     * @return void
+     */
+    public static function extractDBObjectID(string $composedDBObjectTypeAndID)
+    {
+        $elements = explode(
+            ConvertibleTypeSymbols::DBOBJECT_COMPOSED_TYPE_ID_SEPARATOR,
+            $composedDBObjectTypeAndID
+        );
+        return $elements[1];
+    }
+
+    /**
+     * Creates a composed string containing the type and ID of the dbObject
+     *
+     * @param array $composedDBKeyResultItemID
+     * @return void
+     */
+    public static function getDBObjectComposedTypeAndID(TypeResolverInterface $typeResolver, $id): string
+    {
+        return
+            $typeResolver->getTypeCollectionName().
+            ConvertibleTypeSymbols::DBOBJECT_COMPOSED_TYPE_ID_SEPARATOR.
+            $id;
     }
 }
