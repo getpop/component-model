@@ -18,6 +18,17 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         return ConvertibleTypeHelpers::getConvertibleDatabaseKey($this->getConvertibleDatabaseKeyName());
     }
 
+    public function getIdFieldTypeDataResolverClass()
+    {
+        $instanceManager = InstanceManagerFacade::getInstance();
+        if ($baseTypeResolverClass = $this->getBaseTypeResolverClass()) {
+            $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+            return $typeResolver->getIdFieldTypeDataResolverClass();
+        }
+
+        return null;
+    }
+
     /**
      * Remove the type from the ID
      *
