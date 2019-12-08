@@ -21,12 +21,9 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
     public function getIdFieldTypeDataResolverClass()
     {
         $instanceManager = InstanceManagerFacade::getInstance();
-        if ($baseTypeResolverClass = $this->getBaseTypeResolverClass()) {
-            $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-            return $typeResolver->getIdFieldTypeDataResolverClass();
-        }
-
-        return null;
+        $baseTypeResolverClass = $this->getBaseTypeResolverClass();
+        $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+        return $typeResolver->getIdFieldTypeDataResolverClass();
     }
 
     /**
@@ -96,23 +93,17 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         $instanceManager = InstanceManagerFacade::getInstance();
         // The only FieldNames we can always guarantee are those from the base class
         // The others depend on the resultItem, to see if they satisfy the specific resolver condition
-        if ($baseTypeResolverClass = $this->getBaseTypeResolverClass()) {
-            $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-            return $typeResolver->getFieldNamesToResolve();
-        }
-
-        return parent::getFieldNamesToResolve();
+        $baseTypeResolverClass = $this->getBaseTypeResolverClass();
+        $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+        return $typeResolver->getFieldNamesToResolve();
     }
 
     public function getDirectiveNameClasses(): array
     {
         $instanceManager = InstanceManagerFacade::getInstance();
-        if ($baseTypeResolverClass = $this->getBaseTypeResolverClass()) {
-            $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-            return $typeResolver->getDirectiveNameClasses();
-        }
-
-        return parent::getFieldNamesToResolve();
+        $baseTypeResolverClass = $this->getBaseTypeResolverClass();
+        $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+        return $typeResolver->getDirectiveNameClasses();
     }
 
     public function hasFieldResolversForField(string $field): bool
@@ -120,12 +111,9 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         $instanceManager = InstanceManagerFacade::getInstance();
         // The only FieldNames we can always guarantee are those from the base class
         // The others depend on the resultItem, to see if they satisfy the specific resolver condition
-        if ($baseTypeResolverClass = $this->getBaseTypeResolverClass()) {
-            $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-            return $typeResolver->hasFieldResolversForField($field);
-        }
-
-        return parent::hasFieldResolversForField($field);
+        $baseTypeResolverClass = $this->getBaseTypeResolverClass();
+        $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+        return $typeResolver->hasFieldResolversForField($field);
     }
 
     public function getSchemaFieldArgs(string $field): array
@@ -133,12 +121,9 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         $instanceManager = InstanceManagerFacade::getInstance();
         // The only FieldNames we can always guarantee are those from the base class
         // The others depend on the resultItem, to see if they satisfy the specific resolver condition
-        if ($baseTypeResolverClass = $this->getBaseTypeResolverClass()) {
-            $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-            return $typeResolver->getSchemaFieldArgs($field);
-        }
-
-        return parent::getSchemaFieldArgs($field);
+        $baseTypeResolverClass = $this->getBaseTypeResolverClass();
+        $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+        return $typeResolver->getSchemaFieldArgs($field);
     }
 
     public function enableOrderedSchemaFieldArgs(string $field): bool
@@ -146,12 +131,9 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         $instanceManager = InstanceManagerFacade::getInstance();
         // The only FieldNames we can always guarantee are those from the base class
         // The others depend on the resultItem, to see if they satisfy the specific resolver condition
-        if ($baseTypeResolverClass = $this->getBaseTypeResolverClass()) {
-            $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-            return $typeResolver->enableOrderedSchemaFieldArgs($field);
-        }
-
-        return parent::enableOrderedSchemaFieldArgs($typeResolver, $field);
+        $baseTypeResolverClass = $this->getBaseTypeResolverClass();
+        $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+        return $typeResolver->enableOrderedSchemaFieldArgs($field);
     }
 
     protected function getTypeResolverPickers()
@@ -267,13 +249,12 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
 
         // Default typeResolver, under "base" condition
         $baseFields = [];
-        if ($baseTypeResolverClass = $this->getBaseTypeResolverClass()) {
-            $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-            $this->schemaDefinition[SchemaDefinition::ARGNAME_BASERESOLVER] = $typeResolver->getSchemaDefinition($fieldArgs, $options);
-            $baseFields = array_map(function($fieldProps) {
-                return $fieldProps[SchemaDefinition::ARGNAME_NAME];
-            }, (array)$this->schemaDefinition[SchemaDefinition::ARGNAME_BASERESOLVER][SchemaDefinition::ARGNAME_FIELDS]);
-        }
+        $baseTypeResolverClass = $this->getBaseTypeResolverClass();
+        $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+        $this->schemaDefinition[SchemaDefinition::ARGNAME_BASERESOLVER] = $typeResolver->getSchemaDefinition($fieldArgs, $options);
+        $baseFields = array_map(function($fieldProps) {
+            return $fieldProps[SchemaDefinition::ARGNAME_NAME];
+        }, (array)$this->schemaDefinition[SchemaDefinition::ARGNAME_BASERESOLVER][SchemaDefinition::ARGNAME_FIELDS]);
 
         // Iterate through the typeResolvers from all the pickers and get their schema definitions, under their object nature
         foreach ($this->getTypeResolverPickers() as $picker) {
@@ -296,11 +277,10 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         $instanceManager = InstanceManagerFacade::getInstance();
 
         // Default typeResolver, under "base" condition
-        if ($baseTypeResolverClass = $this->getBaseTypeResolverClass()) {
-            $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-            if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
-                return $typeResolver->resolveSchemaValidationErrorDescriptions($field, $variables);
-            }
+        $baseTypeResolverClass = $this->getBaseTypeResolverClass();
+        $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+        if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
+            return $typeResolver->resolveSchemaValidationErrorDescriptions($field, $variables);
         }
 
         // Iterate through the typeResolvers from all the pickers and get their docucumentation, under their object nature
@@ -319,11 +299,10 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         $instanceManager = InstanceManagerFacade::getInstance();
 
         // Default typeResolver, under "base" condition
-        if ($baseTypeResolverClass = $this->getBaseTypeResolverClass()) {
-            $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-            if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
-                return $typeResolver->resolveSchemaValidationWarningDescriptions($field, $variables);
-            }
+        $baseTypeResolverClass = $this->getBaseTypeResolverClass();
+        $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+        if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
+            return $typeResolver->resolveSchemaValidationWarningDescriptions($field, $variables);
         }
 
         // Iterate through the typeResolvers from all the pickers and get their docucumentation, under their object nature
@@ -342,11 +321,10 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         $instanceManager = InstanceManagerFacade::getInstance();
 
         // Default typeResolver, under "base" condition
-        if ($baseTypeResolverClass = $this->getBaseTypeResolverClass()) {
-            $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-            if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
-                return $typeResolver->resolveSchemaDeprecationDescriptions($field, $variables);
-            }
+        $baseTypeResolverClass = $this->getBaseTypeResolverClass();
+        $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+        if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
+            return $typeResolver->resolveSchemaDeprecationDescriptions($field, $variables);
         }
 
         // Iterate through the typeResolvers from all the pickers and get their docucumentation, under their object nature
@@ -365,11 +343,10 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         $instanceManager = InstanceManagerFacade::getInstance();
 
         // Default typeResolver, under "base" condition
-        if ($baseTypeResolverClass = $this->getBaseTypeResolverClass()) {
-            $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-            if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
-                return $typeResolver->resolveFieldDefaultTypeDataResolverClass($field);
-            }
+        $baseTypeResolverClass = $this->getBaseTypeResolverClass();
+        $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+        if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
+            return $typeResolver->resolveFieldDefaultTypeDataResolverClass($field);
         }
 
         // Iterate through the typeResolvers from all the pickers and get their docucumentation, under their object nature
