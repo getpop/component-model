@@ -1020,8 +1020,9 @@ class Engine implements EngineInterface
                         $extend_data_fields = $extend_data_properties['data-fields'] ? $extend_data_properties['data-fields'] : array();
                         $extend_conditional_data_fields = $extend_data_properties['conditional-data-fields'] ? $extend_data_properties['conditional-data-fields'] : array();
                         $extend_ids = $extend_data_properties['ids'];
+                        $extendTypeDBObjectIDOrIDs = $this->getDBObjectIDOrIDsForConvertibleTypeDataResolver((string)$extend_typeDataResolver_class, $extend_ids);
 
-                        $this->combineIdsDatafields($this->typeDataResolverClass_ids_data_fields, $extend_typeDataResolver_class, $extend_ids, $extend_data_fields, $extend_conditional_data_fields);
+                        $this->combineIdsDatafields($this->typeDataResolverClass_ids_data_fields, $extend_typeDataResolver_class, $extendTypeDBObjectIDOrIDs, $extend_data_fields, $extend_conditional_data_fields);
 
                         // This is needed to add the typeDataResolver-extend IDs, for if nobody else creates an entry for this typeDataResolver
                         $this->initializeTypeDataResolverEntry($this->dbdata, $extend_typeDataResolver_class, $module_path_key);
