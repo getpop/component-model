@@ -770,7 +770,7 @@ class Engine implements EngineInterface
         return $moduleFullName.'-'.implode('.', $module_path);
     }
 
-    protected function getDBObjectIDOrIDsForConvertibleTypeDataResolver(string $typeDataResolverClass, $dbObjectIDOrIDs)
+    public function maybeGetDBObjectIDOrIDsForConvertibleTypeDataResolver(string $typeDataResolverClass, $dbObjectIDOrIDs)
     {
         $instanceManager = InstanceManagerFacade::getInstance();
         $typeDataResolver = $instanceManager->getInstance($typeDataResolverClass);
@@ -791,7 +791,7 @@ class Engine implements EngineInterface
             }
             return $typeDBObjectIDOrIDs;
         }
-        return $dbObjectIDOrIDs;
+        return null;
     }
 
     // This function is not private, so it can be accessed by the automated emails to regenerate the html for each user
@@ -984,7 +984,7 @@ class Engine implements EngineInterface
                     $dbObjectIDOrIDs = $processor->getDBObjectIDOrIDs($module, $module_props, $data_properties);
                     // If the type is convertible, we must add the type to each object
                     if (!is_null($dbObjectIDOrIDs)) {
-                        $typeDBObjectIDOrIDs = $this->getDBObjectIDOrIDsForConvertibleTypeDataResolver((string)$typeDataResolver_class, $dbObjectIDOrIDs);
+                        $typeDBObjectIDOrIDs = $this->maybeGetDBObjectIDOrIDsForConvertibleTypeDataResolver((string)$typeDataResolver_class, $dbObjectIDOrIDs) ?? $dbObjectIDOrIDs;
                     }
 
                     $dbObjectIDs = is_array($dbObjectIDOrIDs) ? $dbObjectIDOrIDs : array($dbObjectIDOrIDs);
@@ -1020,9 +1020,8 @@ class Engine implements EngineInterface
                         $extend_data_fields = $extend_data_properties['data-fields'] ? $extend_data_properties['data-fields'] : array();
                         $extend_conditional_data_fields = $extend_data_properties['conditional-data-fields'] ? $extend_data_properties['conditional-data-fields'] : array();
                         $extend_ids = $extend_data_properties['ids'];
-                        $extendTypeDBObjectIDOrIDs = $this->getDBObjectIDOrIDsForConvertibleTypeDataResolver((string)$extend_typeDataResolver_class, $extend_ids);
 
-                        $this->combineIdsDatafields($this->typeDataResolverClass_ids_data_fields, $extend_typeDataResolver_class, $extendTypeDBObjectIDOrIDs, $extend_data_fields, $extend_conditional_data_fields);
+                        $this->combineIdsDatafields($this->typeDataResolverClass_ids_data_fields, $extend_typeDataResolver_class, $extend_ids, $extend_data_fields, $extend_conditional_data_fields);
 
                         // This is needed to add the typeDataResolver-extend IDs, for if nobody else creates an entry for this typeDataResolver
                         $this->initializeTypeDataResolverEntry($this->dbdata, $extend_typeDataResolver_class, $module_path_key);
