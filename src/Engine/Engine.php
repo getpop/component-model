@@ -587,7 +587,7 @@ class Engine implements EngineInterface
                     $dbKey,
                     $resultItemID
                 ) = ConvertibleTypeHelpers::extractDBKeyAndResultItemID($resultItemID);
-                $convertedTypeResolverClass = $typeResolver->getTypeResolverClass($resultItemID);
+                $convertedTypeResolverClass = $typeResolver->getTypeResolverClassForResultItem($resultItemID);
                 $convertedTypeResolverClassDataItems[$convertedTypeResolverClass][$resultItemID] = $resultItem;
             }
             foreach ($convertedTypeResolverClassDataItems as $convertedTypeResolverClass => $convertedDataItems) {
@@ -612,7 +612,7 @@ class Engine implements EngineInterface
             $instanceManager = InstanceManagerFacade::getInstance();
             $convertedTypeResolverClassDataItems = [];
             foreach ($ids as $resultItemID) {
-                $convertedTypeResolverClass = $typeResolver->getTypeResolverClass($resultItemID);
+                $convertedTypeResolverClass = $typeResolver->getTypeResolverClassForResultItem($resultItemID);
                 $convertedTypeResolverClassDataItems[$convertedTypeResolverClass][] = $resultItemID;
             }
             foreach ($convertedTypeResolverClassDataItems as $convertedTypeResolverClass => $resultItemIDs) {

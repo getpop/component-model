@@ -5,7 +5,7 @@ use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
 
-abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver
+abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver implements ConvertibleTypeResolverInterface
 {
     protected $typeResolverPickers;
 
@@ -43,13 +43,13 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver
      * @param [type] $resultItem
      * @return void
      */
-    public function addTypeToID($resultItemID)
+    public function addTypeToID($resultItemID): string
     {
         $instanceManager = InstanceManagerFacade::getInstance();
-        $typeResolverClass = $this->getTypeResolverClass($resultItemID);
-        $typeResolver = $instanceManager->getInstance($typeResolverClass);
+        $resultItemTypeResolverClass = $this->getTypeResolverClassForResultItem($resultItemID);
+        $resultItemTypeResolver = $instanceManager->getInstance($resultItemTypeResolverClass);
         return ConvertibleTypeHelpers::getComposedDBKeyAndResultItemID(
-            $typeResolver,
+            $resultItemTypeResolver,
             $resultItemID
         );
     }
@@ -183,7 +183,7 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver
         return $pickers;
     }
 
-    public function getTypeResolverClass($resultItemID)
+    public function getTypeResolverClassForResultItem($resultItemID)
     {
         $instanceManager = InstanceManagerFacade::getInstance();
         // Among all registered fieldresolvers, check if any is able to process the object, through function `process`
