@@ -1551,7 +1551,8 @@ class Engine implements EngineInterface
                                         $subcomponent_already_loaded_ids_data_fields = $already_loaded_ids_data_fields[$subcomponent_typeDataResolver_class];
                                     }
                                     foreach ($typeDataResolver_ids as $id) {
-                                        // Comment this!!!!
+                                        // If the type data resolver is convertible, the dbKey where the value is stored is contained in the ID itself,
+                                        // with format dbKey/ID. We must extract this information: assign the dbKey to $database_key, and remove the dbKey from the ID
                                         if ($isConvertibleTypeResolver) {
                                             list(
                                                 $database_key,
@@ -1563,7 +1564,9 @@ class Engine implements EngineInterface
                                         $field_ids = array();
                                         foreach ($databases as $dbname => $database) {
                                             if ($database_field_ids = $database[$database_key][(string)$id][$subcomponent_data_field_outputkey]) {
-                                                // Comment this!!!!
+                                                // We don't want to store the dbKey/ID inside the relationalID, because that can lead to problems when dealing with the relations in the application (better keep it only to the ID)
+                                                // So, instead, we store the dbKey/ID values in another object "$convertibleDBKeyIDs"
+                                                // Then, whenever it's a convertible type data resolver, we obtain the values for the relationship under this other object
                                                 if ($subcomponentIsConvertibleTypeResolver) {
                                                     $isArray = is_array($database_field_ids);
                                                     $database_field_ids = array_map(
