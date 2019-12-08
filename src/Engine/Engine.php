@@ -569,7 +569,7 @@ class Engine implements EngineInterface
         }
     }
 
-    private function addDatasetToDatabase(&$database, TypeResolverInterface $typeResolver, $dataitems)
+    private function addDatasetToDatabase(&$database, TypeResolverInterface $typeResolver, string $dbKey, $dataitems)
     {
         // Do not create the database key entry when there are no items, or it produces an error when deep merging the database object in the webplatform with that from the response
         if (!$dataitems) {
@@ -580,7 +580,7 @@ class Engine implements EngineInterface
         if ($isConvertibleTypeResolver) {
             $instanceManager = InstanceManagerFacade::getInstance();
             // Get the actual type for each entity, and add the entry there
-            $convertedTypeResolverClassDataItems = [];
+            $convertedTypeResolverClassDataItems = $convertedTypeResolverClassDBKeys = [];
             foreach ($dataitems as $resultItemID => $resultItem) {
                 // The ID will contain the type. Remove it
                 list(
@@ -589,13 +589,14 @@ class Engine implements EngineInterface
                 ) = ConvertibleTypeHelpers::extractDBKeyAndResultItemID($resultItemID);
                 $convertedTypeResolverClass = $typeResolver->getTypeResolverClassForResultItem($resultItemID);
                 $convertedTypeResolverClassDataItems[$convertedTypeResolverClass][$resultItemID] = $resultItem;
+                $convertedTypeResolverClassDBKeys[$convertedTypeResolverClass] = $dbKey;
             }
             foreach ($convertedTypeResolverClassDataItems as $convertedTypeResolverClass => $convertedDataItems) {
                 $convertedTypeResolver = $instanceManager->getInstance($convertedTypeResolverClass);
-                $this->addDatasetToDatabase($database, $convertedTypeResolver, $convertedDataItems);
+                $convertedDBKey = $convertedTypeResolverClassDBKeys[$convertedTypeResolverClass];
+                $this->addDatasetToDatabase($database, $convertedTypeResolver, $convertedDBKey, $convertedDataItems);
             }
         } else {
-            $dbKey = $typeResolver->getTypeCollectionName();
             $this->doAddDatasetToDatabase($database, $dbKey, $dataitems);
         }
     }
@@ -1336,7 +1337,7 @@ class Engine implements EngineInterface
                 // If the type is convertible, then add the type corresponding to each object on its ID
                 $dbItems = $this->moveEntriesUnderDBName($iterationDBItems, true, $typeDataResolver);
                 foreach ($dbItems as $dbname => $entries) {
-                    $this->addDatasetToDatabase($databases[$dbname], $typeResolver, $entries);
+                    $this->addDatasetToDatabase($databases[$dbname], $typeResolver, $database_key, $entries);
 
                     // Populate the $previousDBItems, pointing to the newly fetched dbItems (but without the dbname!)
                     // Save the reference to the values, instead of the values, to save memory
@@ -1352,13 +1353,13 @@ class Engine implements EngineInterface
             if ($iterationDBErrors) {
                 $dbNameErrorEntries = $this->moveEntriesUnderDBName($iterationDBErrors, true, $typeDataResolver);
                 foreach ($dbNameErrorEntries as $dbname => $entries) {
-                    $this->addDatasetToDatabase($dbErrors[$dbname], $typeResolver, $entries);
+                    $this->addDatasetToDatabase($dbErrors[$dbname], $typeResolver, $database_key, $entries);
                 }
             }
             if ($iterationDBWarnings) {
                 $dbNameWarningEntries = $this->moveEntriesUnderDBName($iterationDBWarnings, true, $typeDataResolver);
                 foreach ($dbNameWarningEntries as $dbname => $entries) {
-                    $this->addDatasetToDatabase($dbWarnings[$dbname], $typeResolver, $entries);
+                    $this->addDatasetToDatabase($dbWarnings[$dbname], $typeResolver, $database_key, $entries);
                 }
             }
 

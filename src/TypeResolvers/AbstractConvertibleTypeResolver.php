@@ -13,7 +13,7 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
 
     abstract protected function getConvertibleDatabaseKeyName(): string;
 
-    final public function getDatabaseKey(): string
+    final public function getTypeCollectionName(): string
     {
         return ConvertibleTypeHelpers::getConvertibleDatabaseKey($this->getConvertibleDatabaseKeyName());
     }
@@ -178,7 +178,6 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
 
     public function getTypeResolverClassForResultItem($resultItemID)
     {
-        $instanceManager = InstanceManagerFacade::getInstance();
         // Among all registered fieldresolvers, check if any is able to process the object, through function `process`
         // Important: iterate from back to front, because more general components (eg: Users) are defined first,
         // and dependent components (eg: Communities, Organizations) are defined later
