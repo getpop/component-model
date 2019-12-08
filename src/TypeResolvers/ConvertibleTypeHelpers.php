@@ -1,7 +1,7 @@
 <?php
 namespace PoP\ComponentModel\TypeResolvers;
 
-use strpos;
+use function strpos;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
 class ConvertibleTypeHelpers
