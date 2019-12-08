@@ -11,11 +11,11 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
 
     abstract protected function getBaseTypeResolverClass(): string;
 
-    abstract protected function getConvertibleDatabaseKeyName(): string;
+    abstract protected function getConvertibleTypeCollectionName(): string;
 
     final public function getTypeCollectionName(): string
     {
-        return ConvertibleTypeHelpers::getConvertibleDatabaseKey($this->getConvertibleDatabaseKeyName());
+        return ConvertibleTypeHelpers::getConvertibleTypeCollectionName($this->getConvertibleTypeCollectionName());
     }
 
     public function getIdFieldTypeDataResolverClass(): string

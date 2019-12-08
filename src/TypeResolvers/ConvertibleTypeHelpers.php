@@ -10,17 +10,17 @@ class ConvertibleTypeHelpers
     /**
      * If the type data resolver starts with "*" then it's convertible
      *
-     * @param string $dbKey
+     * @param string $type
      * @return boolean
      */
-    public static function isConvertibleDBKey(string $dbKey): bool
+    public static function isConvertibleType(string $type): bool
     {
-        return substr($dbKey, 0, strlen(ConvertibleTypeSymbols::DBKEY_NAME_PREFIX)) == ConvertibleTypeSymbols::DBKEY_NAME_PREFIX;
+        return substr($type, 0, strlen(ConvertibleTypeSymbols::CONVERTIBLE_TYPE_NAME_PREFIX)) == ConvertibleTypeSymbols::CONVERTIBLE_TYPE_NAME_PREFIX;
     }
 
-    public static function getConvertibleDatabaseKey(string $dbKey): string
+    public static function getConvertibleTypeCollectionName(string $type): string
     {
-        return ConvertibleTypeSymbols::DBKEY_NAME_PREFIX.$dbKey;
+        return ConvertibleTypeSymbols::CONVERTIBLE_TYPE_NAME_PREFIX.$type;
     }
 
     /**
