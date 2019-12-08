@@ -45,7 +45,7 @@ class ConvertibleTypeHelpers
      */
     public static function getComposedDBKeyAndResultItemID(TypeResolverInterface $typeResolver, $id): string
     {
-        $dbKey = $typeResolver->getDatabaseKey();
+        $dbKey = $typeResolver->getTypeCollectionName();
         return $dbKey.ConvertibleTypeSymbols::DBKEY_RESULTITEMID_SEPARATOR.$id;
     }
 }

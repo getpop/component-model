@@ -595,7 +595,7 @@ class Engine implements EngineInterface
                 $this->addDatasetToDatabase($database, $convertedTypeResolver, $convertedDataItems);
             }
         } else {
-            $dbKey = $typeResolver->getDatabaseKey();
+            $dbKey = $typeResolver->getTypeCollectionName();
             $this->doAddDatasetToDatabase($database, $dbKey, $dataitems);
         }
     }
