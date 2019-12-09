@@ -2,7 +2,7 @@
 namespace PoP\ComponentModel\TypeResolvers;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 
-abstract class AbstractConvertibleTypeResolverPicker
+abstract class AbstractTypeResolverPicker
 {
 	use AttachableExtensionTrait;
 
