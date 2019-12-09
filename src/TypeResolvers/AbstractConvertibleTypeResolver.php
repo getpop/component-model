@@ -182,7 +182,7 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         // and dependent components (eg: Communities, Organizations) are defined later
         // Then, more specific implementations (eg: Organizations) must be queried before more general ones (eg: Communities)
         // This is not a problem by making the corresponding field processors inherit from each other, so that the more specific object also handles
-        // the fields for the more general ones (eg: TypeResolver_OrganizationUsers extends TypeResolver_CommunityUsers, and TypeResolver_CommunityUsers extends TypeResolver_Users)
+        // the fields for the more general ones (eg: TypeResolver_OrganizationUsers extends TypeResolver_CommunityUsers, and TypeResolver_CommunityUsers extends UserTypeResolver)
         foreach ($this->getTypeResolverPickers() as $maybePicker) {
 
             if ($maybePicker->process($resultItemID)) {
@@ -204,7 +204,7 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         // and dependent components (eg: Communities, Organizations) are defined later
         // Then, more specific implementations (eg: Organizations) must be queried before more general ones (eg: Communities)
         // This is not a problem by making the corresponding field processors inherit from each other, so that the more specific object also handles
-        // the fields for the more general ones (eg: TypeResolver_OrganizationUsers extends TypeResolver_CommunityUsers, and TypeResolver_CommunityUsers extends TypeResolver_Users)
+        // the fields for the more general ones (eg: TypeResolver_OrganizationUsers extends TypeResolver_CommunityUsers, and TypeResolver_CommunityUsers extends UserTypeResolver)
         foreach ($this->getTypeResolverPickers() as $maybePicker) {
 
             if ($maybePicker->process($resultItem)) {
