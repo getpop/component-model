@@ -1,5 +1,5 @@
 <?php
-namespace PoP\ComponentModel\TypeResolvers;
+namespace PoP\ComponentModel\TypeResolverPickers;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 
 abstract class AbstractTypeResolverPicker
