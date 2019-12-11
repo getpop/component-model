@@ -5,9 +5,12 @@ use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
 
 interface TypeResolverInterface
 {
+    // Only these 3 functions must be implemented by a new Type class...
     public function getId($resultItem);
     public function getTypeName(): string;
     public function getTypeDataLoaderClass(): string;
+
+    // ... because all functions below have already been implemented in the Abstract base class
     public function getIdFieldTypeResolverClass(): string;
     public function getFieldNamesToResolve(): array;
     public function getDirectiveNameClasses(): array;
