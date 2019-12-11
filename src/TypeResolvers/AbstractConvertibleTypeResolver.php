@@ -242,6 +242,8 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
     protected function addSchemaDefinition(array $fieldArgs = [], array $options = [])
     {
         $instanceManager = InstanceManagerFacade::getInstance();
+        $isRoot = $options['is-root'];
+        unset($options['is-root']);
 
         $this->schemaDefinition[SchemaDefinition::ARGNAME_CONVERTIBLE] = true;
 
@@ -259,13 +261,16 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
             $typeResolver = $instanceManager->getInstance($picker->getTypeResolverClass());
             // Do not repeat those fields already present on the base typeResolver
             $deltaFields = $typeResolver->getSchemaDefinition($fieldArgs, $options);
-            $deltaFields[SchemaDefinition::ARGNAME_FIELDS] = array_values(array_filter(
-                $deltaFields[SchemaDefinition::ARGNAME_FIELDS],
-                function($fieldProps) use($baseFields) {
-                    return !in_array($fieldProps[SchemaDefinition::ARGNAME_NAME], $baseFields);
-                }
-            ));
-            $this->schemaDefinition[SchemaDefinition::ARGNAME_RESOLVERSBYOBJECTNATURE][$picker->getSchemaDefinitionObjectNature()] = $deltaFields;
+            // If it is a recursion, this field will not be set
+            if (isset($deltaFields[SchemaDefinition::ARGNAME_FIELDS])) {
+                $deltaFields[SchemaDefinition::ARGNAME_FIELDS] = array_values(array_filter(
+                    $deltaFields[SchemaDefinition::ARGNAME_FIELDS],
+                    function($fieldProps) use($baseFields) {
+                        return !in_array($fieldProps[SchemaDefinition::ARGNAME_NAME], $baseFields);
+                    }
+                ));
+                $this->schemaDefinition[SchemaDefinition::ARGNAME_RESOLVERSBYOBJECTNATURE][$picker->getSchemaDefinitionObjectNature()] = $deltaFields;
+            }
         }
     }
 
