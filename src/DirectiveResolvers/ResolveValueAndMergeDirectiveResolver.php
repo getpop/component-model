@@ -2,7 +2,6 @@
 namespace PoP\ComponentModel\DirectiveResolvers;
 
 use PoP\ComponentModel\GeneralUtils;
-use PoP\ComponentModel\TypeDataLoaders\TypeDataLoaderInterface;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\PipelinePositions;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
@@ -37,15 +36,15 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
         return false;
     }
 
-    public function resolveDirective(TypeDataLoaderInterface $typeDataLoader, TypeResolverInterface $typeResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$resultIDItems, array &$convertibleDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    public function resolveDirective(TypeResolverInterface $typeResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$resultIDItems, array &$convertibleDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Iterate data, extract into final results
         if ($resultIDItems) {
-            $this->resolveValueForResultItems($typeDataLoader, $typeResolver, $resultIDItems, $idsDataFields, $dbItems, $previousDBItems, $variables, $messages, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+            $this->resolveValueForResultItems($typeResolver, $resultIDItems, $idsDataFields, $dbItems, $previousDBItems, $variables, $messages, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations);
         }
     }
 
-    protected function resolveValueForResultItems(TypeDataLoaderInterface $typeDataLoader, TypeResolverInterface $typeResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    protected function resolveValueForResultItems(TypeResolverInterface $typeResolver, array &$resultIDItems, array &$idsDataFields, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
@@ -70,7 +69,7 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
             }
 
             $expressions = $this->getExpressionsForResultItem($id, $variables, $messages);
-            $this->resolveValuesForResultItem($typeDataLoader, $typeResolver, $id, $resultItem, $idsDataFields[(string)$id]['direct'], $dbItems, $previousDBItems, $variables, $expressions, $dbErrors, $dbWarnings);
+            $this->resolveValuesForResultItem($typeResolver, $id, $resultItem, $idsDataFields[(string)$id]['direct'], $dbItems, $previousDBItems, $variables, $expressions, $dbErrors, $dbWarnings);
 
             // Add the conditional data fields
             // If the conditionalDataFields are empty, we already reached the end of the tree. Nothing else to do
@@ -103,21 +102,21 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
         }
     }
 
-    protected function resolveValuesForResultItem(TypeDataLoaderInterface $typeDataLoader, TypeResolverInterface $typeResolver, $id, $resultItem, array $dataFields, array &$dbItems, array &$previousDBItems, array &$variables, array &$expressions, array &$dbErrors, array &$dbWarnings)
+    protected function resolveValuesForResultItem(TypeResolverInterface $typeResolver, $id, $resultItem, array $dataFields, array &$dbItems, array &$previousDBItems, array &$variables, array &$expressions, array &$dbErrors, array &$dbWarnings)
     {
         foreach ($dataFields as $field) {
-            $this->resolveValueForResultItem($typeDataLoader, $typeResolver, $id, $resultItem, $field, $dbItems, $previousDBItems, $variables, $expressions, $dbErrors, $dbWarnings);
+            $this->resolveValueForResultItem($typeResolver, $id, $resultItem, $field, $dbItems, $previousDBItems, $variables, $expressions, $dbErrors, $dbWarnings);
         }
     }
 
-    protected function resolveValueForResultItem(TypeDataLoaderInterface $typeDataLoader, TypeResolverInterface $typeResolver, $id, $resultItem, string $field, array &$dbItems, array &$previousDBItems, array &$variables, array &$expressions, array &$dbErrors, array &$dbWarnings)
+    protected function resolveValueForResultItem(TypeResolverInterface $typeResolver, $id, $resultItem, string $field, array &$dbItems, array &$previousDBItems, array &$variables, array &$expressions, array &$dbErrors, array &$dbWarnings)
     {
         // Get the value, and add it to the database
-        $value = $this->resolveFieldValue($typeDataLoader, $typeResolver, $id, $resultItem, $field, $previousDBItems, $variables, $expressions, $dbWarnings);
+        $value = $this->resolveFieldValue($typeResolver, $id, $resultItem, $field, $previousDBItems, $variables, $expressions, $dbWarnings);
         $this->addValueForResultItem($typeResolver, $id, $field, $value, $dbItems, $dbErrors);
     }
 
-    protected function resolveFieldValue(TypeDataLoaderInterface $typeDataLoader, TypeResolverInterface $typeResolver, $id, $resultItem, string $field, array &$previousDBItems, array &$variables, array &$expressions, array &$dbWarnings)
+    protected function resolveFieldValue(TypeResolverInterface $typeResolver, $id, $resultItem, string $field, array &$previousDBItems, array &$variables, array &$expressions, array &$dbWarnings)
     {
         $value = $typeResolver->resolveValue($resultItem, $field, $variables, $expressions);
         // Merge the dbWarnings, if any

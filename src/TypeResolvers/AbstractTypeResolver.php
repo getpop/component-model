@@ -663,14 +663,9 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 $directiveResolverInstances[] = $directiveResolverInstance;
             }
 
-            $instanceManager = InstanceManagerFacade::getInstance();
-            $typeDataLoaderClass = $this->getTypeDataLoaderClass();
-            $typeDataLoader = $instanceManager->getInstance($typeDataLoaderClass);
-
             // We can finally resolve the pipeline, passing along an array with the ID and fields for each directive
             $directivePipeline = $this->getDirectivePipeline($directiveResolverInstances);
             $directivePipeline->resolveDirectivePipeline(
-                $typeDataLoader,
                 $this,
                 $pipelineIDsDataFields,
                 $resultIDItems,
