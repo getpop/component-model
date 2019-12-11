@@ -1,25 +1,25 @@
 <?php
 namespace PoP\ComponentModel\TypeResolvers;
 
-use PoP\ComponentModel\TypeDataResolvers\TypeDataResolverInterface;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
 
 interface TypeResolverInterface
 {
     public function getId($resultItem);
     public function getTypeName(): string;
-    public function getIdFieldTypeDataResolverClass(): string;
+    public function getTypeDataResolverClass(): string;
+    public function getIdFieldTypeResolverClass(): string;
     public function getFieldNamesToResolve(): array;
     public function getDirectiveNameClasses(): array;
     public function validateFieldArgumentsForSchema(string $field, array $fieldArgs, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array;
     public function enqueueFillingResultItemsFromIDs(array $ids_data_fields);
-    public function fillResultItems(TypeDataResolverInterface $typeDataResolver, array $ids_data_fields, array &$convertibleDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations);
+    public function fillResultItems(array $ids_data_fields, array &$convertibleDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations);
     public function resolveSchemaValidationErrorDescriptions(string $field, array &$variables = null): ?array;
     public function resolveSchemaValidationWarningDescriptions(string $field, array &$variables = null): array;
     public function resolveSchemaDeprecationDescriptions(string $field, array &$variables = null): array;
     public function getSchemaFieldArgs(string $field): array;
     public function enableOrderedSchemaFieldArgs(string $field): bool;
-    public function resolveFieldDefaultTypeDataResolverClass(string $field): ?string;
+    public function resolveFieldTypeResolverClass(string $field): ?string;
     public function resolveValue($resultItem, string $field, ?array $variables = null, ?array $expressions = null, array $options = []);
     public function getSchemaDefinition(array $fieldArgs, array $stackMessages, array &$generalMessages, array $options = []): array;
     public function hasFieldResolversForField(string $field): bool;

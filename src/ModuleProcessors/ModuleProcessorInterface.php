@@ -31,7 +31,7 @@ interface ModuleProcessorInterface
     public function getDatasetDatabaseKeys(array $module, array &$props): array;
     public function getDatasource(array $module, array &$props): string;
     public function getDBObjectIDOrIDs(array $module, array &$props, &$data_properties);
-    public function getTypeDataResolverClass(array $module): ?string;
+    public function getTypeResolverClass(array $module): ?string;
     public function getActionexecuterClass(array $module): ?string;
     public function prepareDataPropertiesAfterActionexecution(array $module, array &$props, &$data_properties);
     public function getDataFields(array $module, array &$props): array;

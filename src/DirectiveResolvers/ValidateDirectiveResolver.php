@@ -1,12 +1,11 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
+
 use PoP\ComponentModel\TypeDataResolvers\TypeDataResolverInterface;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\PipelinePositions;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
-use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\DirectiveResolvers\RemoveIDsDataFieldsDirectiveResolverTrait;
-use PoP\ComponentModel\Feedback\Tokens;
 
 class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
 {

@@ -18,12 +18,12 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         return ConvertibleTypeHelpers::getConvertibleTypeCollectionName($this->getConvertibleTypeCollectionName());
     }
 
-    public function getIdFieldTypeDataResolverClass(): string
+    public function getIdFieldTypeResolverClass(): string
     {
         $instanceManager = InstanceManagerFacade::getInstance();
         $baseTypeResolverClass = $this->getBaseTypeResolverClass();
         $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-        return $typeResolver->getIdFieldTypeDataResolverClass();
+        return $typeResolver->getIdFieldTypeResolverClass();
     }
 
     /**
@@ -340,7 +340,7 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         return parent::resolveSchemaDeprecationDescriptions($field, $variables);
     }
 
-    public function resolveFieldDefaultTypeDataResolverClass(string $field): ?string
+    public function resolveFieldTypeResolverClass(string $field): ?string
     {
         $fieldName = FieldQueryInterpreterFacade::getInstance()->getFieldName($field);
         $instanceManager = InstanceManagerFacade::getInstance();
@@ -349,17 +349,17 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         $baseTypeResolverClass = $this->getBaseTypeResolverClass();
         $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
         if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
-            return $typeResolver->resolveFieldDefaultTypeDataResolverClass($field);
+            return $typeResolver->resolveFieldTypeResolverClass($field);
         }
 
         // Iterate through the typeResolvers from all the pickers and get their docucumentation, under their object nature
         foreach ($this->getTypeResolverPickers() as $picker) {
             $typeResolver = $instanceManager->getInstance($picker->getTypeResolverClass());
             if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
-                return $typeResolver->resolveFieldDefaultTypeDataResolverClass($field);
+                return $typeResolver->resolveFieldTypeResolverClass($field);
             }
         }
 
-        return parent::resolveFieldDefaultTypeDataResolverClass($field);
+        return parent::resolveFieldTypeResolverClass($field);
     }
 }

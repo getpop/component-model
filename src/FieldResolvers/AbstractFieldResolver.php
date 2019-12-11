@@ -140,7 +140,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldRes
                 $schemaDefinition[SchemaDefinition::ARGNAME_ARGS] = $args;
             }
         }
-        if (!is_null($this->resolveFieldDefaultTypeDataResolverClass($typeResolver, $fieldName, $fieldArgs))) {
+        if (!is_null($this->resolveFieldTypeResolverClass($typeResolver, $fieldName, $fieldArgs))) {
             $schemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL] = true;
         }
         $this->addSchemaDefinitionForField($schemaDefinition, $fieldName);
@@ -224,7 +224,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldRes
         return null;
     }
 
-    public function resolveFieldDefaultTypeDataResolverClass(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
+    public function resolveFieldTypeResolverClass(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
     {
         return null;
     }
@@ -232,9 +232,11 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldRes
     protected function getFieldDefaultFilterDataloadingModule(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?array
     {
         $instanceManager = InstanceManagerFacade::getInstance();
-        $typeDataResolverClass = $this->resolveFieldDefaultTypeDataResolverClass($typeResolver, $fieldName, $fieldArgs);
-        $typeDataResolver = $instanceManager->getInstance((string)$typeDataResolverClass);
-        return $typeDataResolver->getFilterDataloadingModule();
+        $fieldTypeResolverClass = $this->resolveFieldTypeResolverClass($typeResolver, $fieldName, $fieldArgs);
+        $fieldTypeResolver = $instanceManager->getInstance((string)$fieldTypeResolverClass);
+        $fieldTypeDataResolverClass = $fieldTypeResolver->getTypeDataResolverClass();
+        $fieldTypeDataResolver = $instanceManager->getInstance((string)$fieldTypeDataResolverClass);
+        return $fieldTypeDataResolver->getFilterDataloadingModule();
     }
 
     protected function addFilterDataloadQueryArgs(array &$options, TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = [])

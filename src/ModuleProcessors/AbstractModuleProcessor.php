@@ -138,7 +138,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
             $ret['skip-data-load'] = $skip_data_load;
         }
 
-        // Property 'ignore-request-params' => true makes a typeDataResolver module not get values from $_REQUEST
+        // Property 'ignore-request-params' => true makes a dataloading module not get values from $_REQUEST
         $ignore_params_from_request = $this->getProp($module, $props, 'ignore-request-params');
         if (!is_null($ignore_params_from_request)) {
             $ret['ignore-request-params'] = $ignore_params_from_request;
@@ -154,49 +154,49 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
 
     public function initModelProps(array $module, array &$props)
     {
-        // Set property "succeeding-typeDataResolver" on every module, so they know which is their typeDataResolver, needed to calculate the subcomponent data-fields when using typeDataResolver "*"
-        if ($typeDataResolver_class = $this->getTypeDataResolverClass($module)) {
-            $this->setProp($module, $props, 'succeeding-typeDataResolver', $typeDataResolver_class);
+        // Set property "succeeding-typeResolver" on every module, so they know which is their typeResolver, needed to calculate the subcomponent data-fields when using typeResolver "*"
+        if ($typeResolver_class = $this->getTypeResolverClass($module)) {
+            $this->setProp($module, $props, 'succeeding-typeResolver', $typeResolver_class);
         }
         // Get the prop assigned to the module by its ancestor
         else {
-            $typeDataResolver_class = $this->getProp($module, $props, 'succeeding-typeDataResolver');
+            $typeResolver_class = $this->getProp($module, $props, 'succeeding-typeResolver');
         }
-        if ($typeDataResolver_class) {
-            // Set the property "succeeding-typeDataResolver" on all descendants: the same typeDataResolver for all submodules, and the explicit one (or get the default one for "*") for relational objects
+        if ($typeResolver_class) {
+            // Set the property "succeeding-typeResolver" on all descendants: the same typeResolver for all submodules, and the explicit one (or get the default one for "*") for relational objects
             foreach ($this->getSubmodules($module) as $submodule) {
-                $this->setProp($submodule, $props, 'succeeding-typeDataResolver', $typeDataResolver_class);
+                $this->setProp($submodule, $props, 'succeeding-typeResolver', $typeResolver_class);
             }
-            foreach ($this->getDomainSwitchingSubmodules($module) as $subcomponent_data_field => $subcomponent_typeDataResolver_options) {
-                foreach ($subcomponent_typeDataResolver_options as $subcomponent_typeDataResolver_class => $subcomponent_modules) {
-                    // If the subcomponent typeDataResolver is not explicitly set in `getDomainSwitchingSubmodules`, then retrieve it now from the current typeDataResolver's typeResolver
-                    if ($subcomponent_typeDataResolver_class == POP_CONSTANT_SUBCOMPONENTTYPEDATARESOLVER_DEFAULTFROMFIELD) {
-                        $subcomponent_typeDataResolver_class = DataloadUtils::getDefaultTypeDataResolverNameFromSubcomponentDataField($typeDataResolver_class, $subcomponent_data_field);
+            foreach ($this->getDomainSwitchingSubmodules($module) as $subcomponent_data_field => $subcomponent_typeResolver_options) {
+                foreach ($subcomponent_typeResolver_options as $subcomponent_typeResolver_class => $subcomponent_modules) {
+                    // If the subcomponent typeResolver is not explicitly set in `getDomainSwitchingSubmodules`, then retrieve it now from the current typeResolver's typeResolver
+                    if ($subcomponent_typeResolver_class == \POP_CONSTANT_SUBCOMPONENTTYPERESOLVER_DEFAULTFROMFIELD) {
+                        $subcomponent_typeResolver_class = DataloadUtils::getTypeResolverClassFromSubcomponentDataField($typeResolver_class, $subcomponent_data_field);
                     }
-                    // If passing a subcomponent fieldname that doesn't exist to the API, then $subcomponent_typeDataResolver_class will be empty
-                    if ($subcomponent_typeDataResolver_class) {
+                    // If passing a subcomponent fieldname that doesn't exist to the API, then $subcomponent_typeResolver_class will be empty
+                    if ($subcomponent_typeResolver_class) {
                         foreach ($subcomponent_modules as $subcomponent_module) {
-                            $this->setProp($subcomponent_module, $props, 'succeeding-typeDataResolver', $subcomponent_typeDataResolver_class);
+                            $this->setProp($subcomponent_module, $props, 'succeeding-typeResolver', $subcomponent_typeResolver_class);
                         }
                     }
                 }
             }
             foreach ($this->getConditionalOnDataFieldSubmodules($module) as $conditionDataField => $conditionalSubmodules) {
                 foreach ($conditionalSubmodules as $conditionalSubmodule) {
-                    $this->setProp($conditionalSubmodule, $props, 'succeeding-typeDataResolver', $typeDataResolver_class);
+                    $this->setProp($conditionalSubmodule, $props, 'succeeding-typeResolver', $typeResolver_class);
                 }
             }
-            foreach ($this->getConditionalOnDataFieldDomainSwitchingSubmodules($module) as $conditionDataField => $dataFieldTypeDataResolverOptionsConditionalSubmodules) {
-                foreach ($dataFieldTypeDataResolverOptionsConditionalSubmodules as $conditionalDataField => $typeDataResolverOptionsConditionalSubmodules) {
-                    foreach ($typeDataResolverOptionsConditionalSubmodules as $subcomponentTypeDataResolverClass => $conditionalSubmodules) {
-                        // If the subcomponent typeDataResolver is not explicitly set in `getConditionalOnDataFieldDomainSwitchingSubmodules`, then retrieve it now from the current typeDataResolver's typeResolver
-                        if ($subcomponentTypeDataResolverClass == POP_CONSTANT_SUBCOMPONENTTYPEDATARESOLVER_DEFAULTFROMFIELD) {
-                            $subcomponentTypeDataResolverClass = DataloadUtils::getDefaultTypeDataResolverNameFromSubcomponentDataField($typeDataResolver_class, $conditionalDataField);
+            foreach ($this->getConditionalOnDataFieldDomainSwitchingSubmodules($module) as $conditionDataField => $dataFieldTypeResolverOptionsConditionalSubmodules) {
+                foreach ($dataFieldTypeResolverOptionsConditionalSubmodules as $conditionalDataField => $typeResolverOptionsConditionalSubmodules) {
+                    foreach ($typeResolverOptionsConditionalSubmodules as $subcomponentTypeResolverClass => $conditionalSubmodules) {
+                        // If the subcomponent typeResolver is not explicitly set in `getConditionalOnDataFieldDomainSwitchingSubmodules`, then retrieve it now from the current typeResolver's typeResolver
+                        if ($subcomponentTypeResolverClass == \POP_CONSTANT_SUBCOMPONENTTYPERESOLVER_DEFAULTFROMFIELD) {
+                            $subcomponentTypeResolverClass = DataloadUtils::getTypeResolverClassFromSubcomponentDataField($typeResolver_class, $conditionalDataField);
                         }
-                        // If passing a subcomponent fieldname that doesn't exist to the API, then $subcomponentTypeDataResolverClass will be empty
-                        if ($subcomponentTypeDataResolverClass) {
+                        // If passing a subcomponent fieldname that doesn't exist to the API, then $subcomponentTypeResolverClass will be empty
+                        if ($subcomponentTypeResolverClass) {
                             foreach ($conditionalSubmodules as $conditionalSubmodule) {
-                                $this->setProp($conditionalSubmodule, $props, 'succeeding-typeDataResolver', $subcomponentTypeDataResolverClass);
+                                $this->setProp($conditionalSubmodule, $props, 'succeeding-typeResolver', $subcomponentTypeResolverClass);
                             }
                         }
                     }
@@ -482,51 +482,50 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         $ret = array();
 
         $instanceManager = InstanceManagerFacade::getInstance();
-        if ($typeDataResolver_class = $this->getTypeDataResolverClass($module)) {
-            $typeDataResolver = $instanceManager->getInstance((string)$typeDataResolver_class);
-
-            if ($dbkey = $typeDataResolver->getDatabaseKey()) {
+        if ($typeResolver_class = $this->getTypeResolverClass($module)) {
+            $typeResolver = $instanceManager->getInstance((string)$typeResolver_class);
+            if ($dbkey = $typeResolver->getTypeName()) {
                 // Place it under "id" because it is for fetching the current object from the DB, which is found through dbObject.id
                 $ret['id'] = $dbkey;
             }
         }
 
         // This prop is set for both dataloading and non-dataloading modules
-        if ($typeDataResolver_class = $this->getProp($module, $props, 'succeeding-typeDataResolver')) {
-            foreach ($this->getDomainSwitchingSubmodules($module) as $subcomponent_data_field => $subcomponent_typeDataResolver_options) {
+        if ($typeResolver_class = $this->getProp($module, $props, 'succeeding-typeResolver')) {
+            foreach ($this->getDomainSwitchingSubmodules($module) as $subcomponent_data_field => $subcomponent_typeResolver_options) {
                 // Watch out that, if a module has 2 subcomponents on the same data-field but different dataloaders, then
                 // the dataloaders' db-key must be the same! Otherwise, the 2nd one will override the 1st one
                 // Eg: a module using POSTLIST, another one using CONVERTIBLEPOSTLIST, it doesn't conflict since the db-key for both is "posts"
-                $subcomponent_typeDataResolver_classes = array_keys($subcomponent_typeDataResolver_options);
-                foreach ($subcomponent_typeDataResolver_classes as $subcomponent_typeDataResolver_class) {
-                    // If the subcomponent typeDataResolver is not explicitly set in `getDomainSwitchingSubmodules`, then retrieve it now from the current typeDataResolver's typeResolver
-                    if ($subcomponent_typeDataResolver_class == POP_CONSTANT_SUBCOMPONENTTYPEDATARESOLVER_DEFAULTFROMFIELD) {
-                        $subcomponent_typeDataResolver_class = DataloadUtils::getDefaultTypeDataResolverNameFromSubcomponentDataField($typeDataResolver_class, $subcomponent_data_field);
+                $subcomponent_typeResolver_classes = array_keys($subcomponent_typeResolver_options);
+                foreach ($subcomponent_typeResolver_classes as $subcomponent_typeResolver_class) {
+                    // If the subcomponent typeResolver is not explicitly set in `getDomainSwitchingSubmodules`, then retrieve it now from the current typeResolver's typeResolver
+                    if ($subcomponent_typeResolver_class == \POP_CONSTANT_SUBCOMPONENTTYPERESOLVER_DEFAULTFROMFIELD) {
+                        $subcomponent_typeResolver_class = DataloadUtils::getTypeResolverClassFromSubcomponentDataField($typeResolver_class, $subcomponent_data_field);
                     }
 
-                    // If passing a subcomponent fieldname that doesn't exist to the API, then $subcomponent_typeDataResolver_class will be empty
-                    if ($subcomponent_typeDataResolver_class) {
-                        $subcomponent_typeDataResolver = $instanceManager->getInstance($subcomponent_typeDataResolver_class);
+                    // If passing a subcomponent fieldname that doesn't exist to the API, then $subcomponent_typeResolver_class will be empty
+                    if ($subcomponent_typeResolver_class) {
+                        $subcomponent_typeResolver = $instanceManager->getInstance($subcomponent_typeResolver_class);
                         // If there is an alias, store the results under this. Otherwise, on the fieldName+fieldArgs
                         $subcomponent_data_field_outputkey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($subcomponent_data_field);
-                        $ret[$subcomponent_data_field_outputkey] = $subcomponent_typeDataResolver->getDatabaseKey();
+                        $ret[$subcomponent_data_field_outputkey] = $subcomponent_typeResolver->getTypeName();
                     }
                 }
             }
-            foreach ($this->getConditionalOnDataFieldDomainSwitchingSubmodules($module) as $conditionDataField => $dataFieldTypeDataResolverOptionsConditionalSubmodules) {
-                foreach ($dataFieldTypeDataResolverOptionsConditionalSubmodules as $conditionalDataField => $typeDataResolverOptionsConditionalSubmodules) {
-                    $subcomponentTypeDataResolverClasses = array_keys($typeDataResolverOptionsConditionalSubmodules);
-                    foreach ($subcomponentTypeDataResolverClasses as $subcomponentTypeDataResolverClass) {
-                        // If the subcomponent typeDataResolver is not explicitly set in `getConditionalOnDataFieldDomainSwitchingSubmodules`, then retrieve it now from the current typeDataResolver's typeResolver
-                        if ($subcomponentTypeDataResolverClass == POP_CONSTANT_SUBCOMPONENTTYPEDATARESOLVER_DEFAULTFROMFIELD) {
-                            $subcomponentTypeDataResolverClass = DataloadUtils::getDefaultTypeDataResolverNameFromSubcomponentDataField($typeDataResolver_class, $conditionalDataField);
+            foreach ($this->getConditionalOnDataFieldDomainSwitchingSubmodules($module) as $conditionDataField => $dataFieldTypeResolverOptionsConditionalSubmodules) {
+                foreach ($dataFieldTypeResolverOptionsConditionalSubmodules as $conditionalDataField => $typeResolverOptionsConditionalSubmodules) {
+                    $subcomponentTypeResolverClasses = array_keys($typeResolverOptionsConditionalSubmodules);
+                    foreach ($subcomponentTypeResolverClasses as $subcomponentTypeResolverClass) {
+                        // If the subcomponent typeResolver is not explicitly set in `getConditionalOnDataFieldDomainSwitchingSubmodules`, then retrieve it now from the current typeResolver's typeResolver
+                        if ($subcomponentTypeResolverClass == \POP_CONSTANT_SUBCOMPONENTTYPERESOLVER_DEFAULTFROMFIELD) {
+                            $subcomponentTypeResolverClass = DataloadUtils::getTypeResolverClassFromSubcomponentDataField($typeResolver_class, $conditionalDataField);
                         }
-                        // If passing a subcomponent fieldname that doesn't exist to the API, then $subcomponentTypeDataResolverClass will be empty
-                        if ($subcomponentTypeDataResolverClass) {
-                            $subcomponent_typeDataResolver = $instanceManager->getInstance($subcomponentTypeDataResolverClass);
+                        // If passing a subcomponent fieldname that doesn't exist to the API, then $subcomponentTypeResolverClass will be empty
+                        if ($subcomponentTypeResolverClass) {
+                            $subcomponent_typeResolver = $instanceManager->getInstance($subcomponentTypeResolverClass);
                             // If there is an alias, store the results under this. Otherwise, on the fieldName+fieldArgs
                             $subcomponent_data_field_outputkey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($conditionalDataField);
-                            $ret[$subcomponent_data_field_outputkey] = $subcomponent_typeDataResolver->getDatabaseKey();
+                            $ret[$subcomponent_data_field_outputkey] = $subcomponent_typeResolver->getTypeName();
                         }
                     }
                 }
@@ -568,15 +567,15 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
             $ret[implode('.', array_merge($path, [$field_outputkey]))] = $dbkey;
         }
 
-        // Propagate to all submodules which have no typeDataResolver
+        // Propagate to all submodules which have no typeResolver
         $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
         $moduleFullName = ModuleUtils::getModuleFullName($module);
 
         $modulefilter_manager = ModuleFilterManagerFacade::getInstance();
         $modulefilter_manager->prepareForPropagation($module, $props);
-        foreach ($this->getDomainSwitchingSubmodules($module) as $subcomponent_data_field => $subcomponent_typeDataResolver_options) {
+        foreach ($this->getDomainSwitchingSubmodules($module) as $subcomponent_data_field => $subcomponent_typeResolver_options) {
             $subcomponent_data_field_outputkey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($subcomponent_data_field);
-            foreach ($subcomponent_typeDataResolver_options as $subcomponent_typeDataResolver_class => $subcomponent_modules) {
+            foreach ($subcomponent_typeResolver_options as $subcomponent_typeResolver_class => $subcomponent_modules) {
                 // Only modules which do not load data
                 $subcomponent_modules = array_filter($subcomponent_modules, function($submodule) use($moduleprocessor_manager) {
                     return !$moduleprocessor_manager->getProcessor($submodule)->startDataloadingSection($submodule);
@@ -586,10 +585,10 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                 }
             }
         }
-        foreach ($this->getConditionalOnDataFieldDomainSwitchingSubmodules($module) as $conditionDataField => $dataFieldTypeDataResolverOptionsConditionalSubmodules) {
-            foreach ($dataFieldTypeDataResolverOptionsConditionalSubmodules as $conditionalDataField => $typeDataResolverOptionsConditionalSubmodules) {
+        foreach ($this->getConditionalOnDataFieldDomainSwitchingSubmodules($module) as $conditionDataField => $dataFieldTypeResolverOptionsConditionalSubmodules) {
+            foreach ($dataFieldTypeResolverOptionsConditionalSubmodules as $conditionalDataField => $typeResolverOptionsConditionalSubmodules) {
                 $subcomponent_data_field_outputkey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($conditionalDataField);
-                foreach ($typeDataResolverOptionsConditionalSubmodules as $subcomponent_typeDataResolver_class => $subcomponent_modules) {
+                foreach ($typeResolverOptionsConditionalSubmodules as $subcomponent_typeResolver_class => $subcomponent_modules) {
                     // Only modules which do not load data
                     $subcomponent_modules = array_filter($subcomponent_modules, function($submodule) use($moduleprocessor_manager) {
                         return !$moduleprocessor_manager->getProcessor($submodule)->startDataloadingSection($submodule);
@@ -634,14 +633,14 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         return array();
     }
 
-    public function getTypeDataResolverClass(array $module): ?string
+    public function getTypeResolverClass(array $module): ?string
     {
         return null;
     }
 
     public function moduleLoadsData(array $module): bool
     {
-        return !is_null($this->getTypeDataResolverClass($module));
+        return !is_null($this->getTypeResolverClass($module));
     }
 
     public function startDataloadingSection(array $module): bool
@@ -778,7 +777,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
     //         foreach ($submodules as $submodule) {
     //             $submodule_processor = $moduleprocessor_manager->getProcessor($submodule);
 
-    //             // Propagate only if the submodule doesn't have a typeDataResolver. If it does, this is the end of the data line, and the submodule is the beginning of a new datasetmoduletree
+    //             // Propagate only if the submodule doesn't have a typeResolver. If it does, this is the end of the data line, and the submodule is the beginning of a new datasetmoduletree
     //             if (!$submodule_processor->startDataloadingSection($submodule)) {
     //                 if ($submodule_ret = $submodule_processor->$propagate_fn($submodule)) {
     //                     $ret = array_merge(
@@ -1209,11 +1208,11 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
 
         // Combine the direct and conditionalOnDataField modules all together to iterate below
         $domainSwitchingSubmodules = $this->getDomainSwitchingSubmodules($module);
-        foreach ($this->getConditionalOnDataFieldDomainSwitchingSubmodules($module) as $conditionDataField => $dataFieldTypeDataResolverOptionsConditionalSubmodules) {
-            foreach ($dataFieldTypeDataResolverOptionsConditionalSubmodules as $conditionalDataField => $typeDataResolverOptionsConditionalSubmodules) {
-                foreach ($typeDataResolverOptionsConditionalSubmodules as $subcomponentTypeDataResolverClass => $conditionalSubmodules) {
-                    $domainSwitchingSubmodules[$conditionalDataField][$subcomponentTypeDataResolverClass] = array_values(array_unique(array_merge(
-                        $conditionalDataField[$conditionalDataField][$subcomponentTypeDataResolverClass] ?? [],
+        foreach ($this->getConditionalOnDataFieldDomainSwitchingSubmodules($module) as $conditionDataField => $dataFieldTypeResolverOptionsConditionalSubmodules) {
+            foreach ($dataFieldTypeResolverOptionsConditionalSubmodules as $conditionalDataField => $typeResolverOptionsConditionalSubmodules) {
+                foreach ($typeResolverOptionsConditionalSubmodules as $subcomponentTypeResolverClass => $conditionalSubmodules) {
+                    $domainSwitchingSubmodules[$conditionalDataField][$subcomponentTypeResolverClass] = array_values(array_unique(array_merge(
+                        $conditionalDataField[$conditionalDataField][$subcomponentTypeResolverClass] ?? [],
                         $conditionalSubmodules
                     )));
                 }
@@ -1223,8 +1222,8 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         // If it has subcomponent modules, integrate them under 'subcomponents'
         $modulefilter_manager = ModuleFilterManagerFacade::getInstance();
         $modulefilter_manager->prepareForPropagation($module, $props);
-        foreach ($domainSwitchingSubmodules as $subcomponent_data_field => $subcomponent_typeDataResolver_options) {
-            foreach ($subcomponent_typeDataResolver_options as $subcomponent_typeDataResolver_class => $subcomponent_modules) {
+        foreach ($domainSwitchingSubmodules as $subcomponent_data_field => $subcomponent_typeResolver_options) {
+            foreach ($subcomponent_typeResolver_options as $subcomponent_typeResolver_class => $subcomponent_modules) {
                 $subcomponent_modules_data_properties = array(
                     'data-fields' => array(),
                     'conditional-data-fields' => array(),
@@ -1240,28 +1239,28 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                     }
                 }
 
-                $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeDataResolver_class] = $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeDataResolver_class] ?? array();
+                $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeResolver_class] = $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeResolver_class] ?? array();
                 if ($subcomponent_modules_data_properties['data-fields']) {
                     $subcomponent_modules_data_properties['data-fields'] = array_unique($subcomponent_modules_data_properties['data-fields']);
-                    $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeDataResolver_class]['data-fields'] = array_values(array_unique(array_merge(
-                            $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeDataResolver_class]['data-fields'] ?? [],
+                    $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeResolver_class]['data-fields'] = array_values(array_unique(array_merge(
+                            $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeResolver_class]['data-fields'] ?? [],
                             $subcomponent_modules_data_properties['data-fields']
                     )));
                 }
                 if ($subcomponent_modules_data_properties['conditional-data-fields']) {
-                    $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeDataResolver_class]['conditional-data-fields'] = $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeDataResolver_class]['conditional-data-fields'] ?? [];
+                    $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeResolver_class]['conditional-data-fields'] = $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeResolver_class]['conditional-data-fields'] ?? [];
                     foreach ($subcomponent_modules_data_properties['conditional-data-fields'] as $conditionDataField => $conditionalDataFields) {
-                        $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeDataResolver_class]['conditional-data-fields'][$conditionDataField] = array_merge_recursive(
-                            $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeDataResolver_class]['conditional-data-fields'][$conditionDataField] ?? [],
+                        $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeResolver_class]['conditional-data-fields'][$conditionDataField] = array_merge_recursive(
+                            $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeResolver_class]['conditional-data-fields'][$conditionDataField] ?? [],
                             $conditionalDataFields
                         );
                     }
                 }
 
                 if ($subcomponent_modules_data_properties['subcomponents']) {
-                    $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeDataResolver_class]['subcomponents'] = $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeDataResolver_class]['subcomponents'] ?? array();
-                    $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeDataResolver_class]['subcomponents'] = array_merge_recursive(
-                        $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeDataResolver_class]['subcomponents'],
+                    $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeResolver_class]['subcomponents'] = $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeResolver_class]['subcomponents'] ?? array();
+                    $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeResolver_class]['subcomponents'] = array_merge_recursive(
+                        $ret['subcomponents'][$subcomponent_data_field][$subcomponent_typeResolver_class]['subcomponents'],
                         $subcomponent_modules_data_properties['subcomponents']
                     );
                 }
@@ -1321,8 +1320,8 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         }
 
         if (in_array(self::MODULECOMPONENT_DOMAINSWITCHINGSUBMODULES, $components)) {
-            foreach ($this->getDomainSwitchingSubmodules($module) as $subcomponent_data_field => $subcomponent_typeDataResolver_options) {
-                foreach ($subcomponent_typeDataResolver_options as $subcomponent_typeDataResolver_class => $subcomponent_modules) {
+            foreach ($this->getDomainSwitchingSubmodules($module) as $subcomponent_data_field => $subcomponent_typeResolver_options) {
+                foreach ($subcomponent_typeResolver_options as $subcomponent_typeResolver_class => $subcomponent_modules) {
                     $ret = array_values(
                         array_unique(
                             array_merge(
@@ -1350,9 +1349,9 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         }
 
         if (in_array(self::MODULECOMPONENT_CONDITIONALONDATAFIELDDOMAINSWITCHINGSUBMODULES, $components)) {
-            foreach ($this->getConditionalOnDataFieldDomainSwitchingSubmodules($module) as $conditionDataField => $dataFieldTypeDataResolverOptionsConditionalSubmodules) {
-                foreach ($dataFieldTypeDataResolverOptionsConditionalSubmodules as $conditionalDataField => $typeDataResolverOptions) {
-                    foreach ($typeDataResolverOptions as $subcomponentTypeDataResolverClass => $subcomponentModules) {
+            foreach ($this->getConditionalOnDataFieldDomainSwitchingSubmodules($module) as $conditionDataField => $dataFieldTypeResolverOptionsConditionalSubmodules) {
+                foreach ($dataFieldTypeResolverOptionsConditionalSubmodules as $conditionalDataField => $typeResolverOptions) {
+                    foreach ($typeResolverOptions as $subcomponentTypeResolverClass => $subcomponentModules) {
                         $ret = array_values(
                             array_unique(
                                 array_merge(

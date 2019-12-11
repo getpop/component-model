@@ -8,7 +8,7 @@ use PoP\ComponentModel\ErrorUtils;
 use PoP\ComponentModel\Environment;
 use PoP\FieldQuery\FieldQueryUtils;
 use League\Pipeline\PipelineBuilder;
-use PoP\ComponentModel\TypeDataResolvers\TypeDataResolverInterface;
+use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\FieldHelpers;
@@ -56,6 +56,11 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             $this->directiveNameClasses = $this->calculateFieldDirectiveNameClasses();
         }
         return $this->directiveNameClasses;
+    }
+
+    public function getIdFieldTypeResolverClass(): string
+    {
+        return get_called_class();
     }
 
     /**
@@ -499,24 +504,24 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return array_keys($ids_data_fields);
     }
 
-    public function fillResultItems(TypeDataResolverInterface $typeDataResolver, array $ids_data_fields, array &$convertibleDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    public function fillResultItems(array $ids_data_fields, array &$convertibleDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         $instanceManager = InstanceManagerFacade::getInstance();
 
         // Obtain the data for the required object IDs
         $resultIDItems = [];
         $ids = $this->getIDsToQuery($ids_data_fields);
-        $typeResolverClass = $typeDataResolver->getTypeResolverClass();
-        $typeResolver = $instanceManager->getInstance($typeResolverClass);
+        $typeDataResolverClass = $this->getTypeDataResolverClass();
+        $typeDataResolver = $instanceManager->getInstance($typeDataResolverClass);
         foreach ($typeDataResolver->resolveObjectsFromIDs($ids) as $dataItem) {
-            $resultIDItems[$typeResolver->getId($dataItem)] = $dataItem;
+            $resultIDItems[$this->getId($dataItem)] = $dataItem;
         }
 
         // Enqueue the items
         $this->enqueueFillingResultItemsFromIDs($ids_data_fields);
 
         // Process them
-        $this->processFillingResultItemsFromIDs($typeDataResolver, $resultIDItems, $convertibleDBKeyIDs, $dbItems, $previousDBItems, $variables, $messages, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+        $this->processFillingResultItemsFromIDs($resultIDItems, $convertibleDBKeyIDs, $dbItems, $previousDBItems, $variables, $messages, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations);
     }
 
     /**
@@ -587,7 +592,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         }
     }
 
-    protected function processFillingResultItemsFromIDs(TypeDataResolverInterface $typeDataResolver, array &$resultIDItems, array &$convertibleDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    protected function processFillingResultItemsFromIDs(array &$resultIDItems, array &$convertibleDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Iterate while there are directives with data to be processed
         while (!empty($this->fieldDirectiveIDFields)) {
@@ -657,6 +662,10 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 $pipelineIDsDataFields[] = $directiveIDFields;
                 $directiveResolverInstances[] = $directiveResolverInstance;
             }
+
+            $instanceManager = InstanceManagerFacade::getInstance();
+            $typeDataResolverClass = $this->getTypeDataResolverClass();
+            $typeDataResolver = $instanceManager->getInstance($typeDataResolverClass);
 
             // We can finally resolve the pipeline, passing along an array with the ID and fields for each directive
             $directivePipeline = $this->getDirectivePipeline($directiveResolverInstances);
@@ -804,7 +813,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return false;
     }
 
-    public function resolveFieldDefaultTypeDataResolverClass(string $field): ?string
+    public function resolveFieldTypeResolverClass(string $field): ?string
     {
         // Get the value from a fieldResolver, from the first one that resolves it
         if ($fieldResolvers = $this->getFieldResolversForField($field)) {
@@ -813,7 +822,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 $fieldName,
                 $fieldArgs,
             ) = $this->dissectFieldForSchema($field);
-            return $fieldResolvers[0]->resolveFieldDefaultTypeDataResolverClass($this, $fieldName, $fieldArgs);
+            return $fieldResolvers[0]->resolveFieldTypeResolverClass($this, $fieldName, $fieldArgs);
         }
 
         return null;
@@ -896,7 +905,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         }
 
         // Return an error to indicate that no fieldResolver processes this field, which is different than returning a null value.
-        // Needed for compatibility with ConvertiblePostTypeDataResolver (so that data-fields aimed for another post_type are not retrieved)
+        // Needed for compatibility with PostConvertibleTypeResolver (so that data-fields aimed for another post_type are not retrieved)
         $fieldName = $fieldQueryInterpreter->getFieldName($field);
         return ErrorUtils::getNoFieldError($fieldName);
     }
@@ -1009,13 +1018,9 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     // Add subfield schema if it is deep, and this typeResolver has not been processed yet
                     if ($fieldArgs['deep']) {
                         // If this field is relational, then add its own schema
-                        if ($fieldTypeDataResolverClass = $this->resolveFieldDefaultTypeDataResolverClass($field)) {
-                            // Append subfields' schema
-                            $fieldTypeDataResolver = $instanceManager->getInstance($fieldTypeDataResolverClass);
-                            if ($typeResolverClass = $fieldTypeDataResolver->getTypeResolverClass()) {
-                                $typeResolver = $instanceManager->getInstance($typeResolverClass);
-                                $fieldSchemaDefinition[SchemaDefinition::ARGNAME_RESOLVER] = $typeResolver->getSchemaDefinition($fieldArgs, $stackMessages, $generalMessages, $options);
-                            }
+                        if ($typeResolverClass = $this->resolveFieldTypeResolverClass($field)) {
+                            $typeResolver = $instanceManager->getInstance($typeResolverClass);
+                            $fieldSchemaDefinition[SchemaDefinition::ARGNAME_RESOLVER] = $typeResolver->getSchemaDefinition($fieldArgs, $stackMessages, $generalMessages, $options);
                         }
                     }
 
