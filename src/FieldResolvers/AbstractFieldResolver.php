@@ -1,12 +1,12 @@
 <?php
 namespace PoP\ComponentModel\FieldResolvers;
+
 use PoP\ComponentModel\GeneralUtils;
 use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\Facades\Engine\EngineFacade;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
-use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
 
@@ -166,14 +166,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldRes
 
     protected function getFieldArgumentsSchemaDefinitions(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): array
     {
-        if ($filterDataloadingModule = $this->getFieldDefaultFilterDataloadingModule($typeResolver, $fieldName, $fieldArgs)) {
-            $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
-            $filterqueryargs_modules = $moduleprocessor_manager->getProcessor((array)$filterDataloadingModule)->getDataloadQueryArgsFilteringModules($filterDataloadingModule);
-            return GeneralUtils::arrayFlatten(array_map(function($module) use($moduleprocessor_manager) {
-                return $moduleprocessor_manager->getProcessor($module)->getFilterInputSchemaDefinitionItems($module);
-            }, $filterqueryargs_modules));
-        }
-
         return [];
     }
 
@@ -227,23 +219,5 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldRes
     public function resolveFieldTypeResolverClass(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
     {
         return null;
-    }
-
-    protected function getFieldDefaultFilterDataloadingModule(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?array
-    {
-        $instanceManager = InstanceManagerFacade::getInstance();
-        $fieldTypeResolverClass = $this->resolveFieldTypeResolverClass($typeResolver, $fieldName, $fieldArgs);
-        $fieldTypeResolver = $instanceManager->getInstance((string)$fieldTypeResolverClass);
-        $fieldTypeDataLoaderClass = $fieldTypeResolver->getTypeDataLoaderClass();
-        $fieldTypeDataLoader = $instanceManager->getInstance((string)$fieldTypeDataLoaderClass);
-        return $fieldTypeDataLoader->getFilterDataloadingModule();
-    }
-
-    protected function addFilterDataloadQueryArgs(array &$options, TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = [])
-    {
-        $options['filter-dataload-query-args'] = [
-            'source' => $fieldArgs,
-            'module' => $this->getFieldDefaultFilterDataloadingModule($typeResolver, $fieldName, $fieldArgs),
-        ];
     }
 }
