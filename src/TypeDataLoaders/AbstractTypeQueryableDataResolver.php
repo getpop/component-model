@@ -35,7 +35,7 @@ abstract class AbstractTypeQueryableDataResolver extends AbstractTypeDataLoader 
         );
     }
 
-    public function resolveIDsFromDataProperties(array $data_properties)
+    public function findIDs(array $data_properties): array
     {
         $query_args = $data_properties[DataloadingConstants::QUERYARGS];
 
@@ -72,7 +72,7 @@ abstract class AbstractTypeQueryableDataResolver extends AbstractTypeDataLoader 
         return array();
     }
 
-    public function resolveObjectsFromIDs(array $ids): array
+    public function getObjects(array $ids): array
     {
         $query = $this->getDataFromIdsQuery($ids);
         return (array)$this->executeQuery($query);

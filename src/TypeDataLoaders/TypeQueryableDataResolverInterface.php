@@ -3,6 +3,6 @@ namespace PoP\ComponentModel\TypeDataLoaders;
 
 interface TypeQueryableDataResolverInterface
 {
-    public function resolveIDsFromDataProperties(array $data_properties);
+    public function findIDs(array $data_properties): array;
     public function getFilterDataloadingModule(): ?array;
 }

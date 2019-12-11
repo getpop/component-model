@@ -170,7 +170,7 @@ trait QueryDataModuleProcessorTrait
         $typeResolver = $instanceManager->getInstance($typeResolverClass);
         $typeDataLoaderClass = $typeResolver->getTypeDataLoaderClass();
         $typeDataLoader = $instanceManager->getInstance($typeDataLoaderClass);
-        return $typeDataLoader->resolveIDsFromDataProperties($data_properties);
+        return $typeDataLoader->findIDs($data_properties);
     }
 
     public function getDatasetmeta(array $module, array &$props, array $data_properties, $dataaccess_checkpoint_validation, $actionexecution_checkpoint_validation, $executed, $dbObjectIDOrIDs): array

@@ -513,7 +513,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $ids = $this->getIDsToQuery($ids_data_fields);
         $typeDataLoaderClass = $this->getTypeDataLoaderClass();
         $typeDataLoader = $instanceManager->getInstance($typeDataLoaderClass);
-        foreach ($typeDataLoader->resolveObjectsFromIDs($ids) as $dataItem) {
+        foreach ($typeDataLoader->getObjects($ids) as $dataItem) {
             $resultIDItems[$this->getId($dataItem)] = $dataItem;
         }
 

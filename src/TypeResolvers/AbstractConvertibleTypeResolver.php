@@ -27,7 +27,7 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
     }
 
     /**
-     * Remove the type from the ID to resolve the objects through `resolveObjectsFromIDs` (check parent class)
+     * Remove the type from the ID to resolve the objects through `getObjects` (check parent class)
      *
      * @param array $ids_data_fields
      * @return void
