@@ -18,6 +18,7 @@ class SchemaDefinition {
     const ARGNAME_BASERESOLVER = 'baseResolver';
     const ARGNAME_RESOLVERID = 'resolverId';
     const ARGNAME_RECURSION = 'recursion';
+    const ARGNAME_REPEATED = 'repeated';
     const ARGNAME_CONVERTIBLE = 'convertible';
     const ARGNAME_RESOLVERSBYOBJECTNATURE = 'resolversByObjectNature';
     const ARGNAME_DIRECTIVES = 'directives';
