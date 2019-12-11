@@ -1,11 +1,11 @@
 <?php
-namespace PoP\ComponentModel\TypeDataResolvers;
+namespace PoP\ComponentModel\TypeDataLoaders;
 
 use PoP\Hooks\Facades\HooksAPIFacade;
 use PoP\ComponentModel\ModuleProcessors\DataloadingConstants;
 use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
 
-abstract class AbstractTypeQueryableDataResolver extends AbstractTypeDataResolver implements TypeQueryableDataResolverInterface
+abstract class AbstractTypeQueryableDataResolver extends AbstractTypeDataLoader implements TypeQueryableDataResolverInterface
 {
     /**
      * Function to override

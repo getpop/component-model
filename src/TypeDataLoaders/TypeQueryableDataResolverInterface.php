@@ -1,5 +1,5 @@
 <?php
-namespace PoP\ComponentModel\TypeDataResolvers;
+namespace PoP\ComponentModel\TypeDataLoaders;
 
 interface TypeQueryableDataResolverInterface
 {

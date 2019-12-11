@@ -234,9 +234,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldRes
         $instanceManager = InstanceManagerFacade::getInstance();
         $fieldTypeResolverClass = $this->resolveFieldTypeResolverClass($typeResolver, $fieldName, $fieldArgs);
         $fieldTypeResolver = $instanceManager->getInstance((string)$fieldTypeResolverClass);
-        $fieldTypeDataResolverClass = $fieldTypeResolver->getTypeDataResolverClass();
-        $fieldTypeDataResolver = $instanceManager->getInstance((string)$fieldTypeDataResolverClass);
-        return $fieldTypeDataResolver->getFilterDataloadingModule();
+        $fieldTypeDataLoaderClass = $fieldTypeResolver->getTypeDataLoaderClass();
+        $fieldTypeDataLoader = $instanceManager->getInstance((string)$fieldTypeDataLoaderClass);
+        return $fieldTypeDataLoader->getFilterDataloadingModule();
     }
 
     protected function addFilterDataloadQueryArgs(array &$options, TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = [])

@@ -1,7 +1,7 @@
 <?php
-namespace PoP\ComponentModel\TypeDataResolvers;
+namespace PoP\ComponentModel\TypeDataLoaders;
 
-interface TypeDataResolverInterface
+interface TypeDataLoaderInterface
 {
 	public function resolveObjectsFromIDs(array $ids): array;
 	public function getDataquery();

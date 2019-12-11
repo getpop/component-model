@@ -7,7 +7,7 @@ interface TypeResolverInterface
 {
     public function getId($resultItem);
     public function getTypeName(): string;
-    public function getTypeDataResolverClass(): string;
+    public function getTypeDataLoaderClass(): string;
     public function getIdFieldTypeResolverClass(): string;
     public function getFieldNamesToResolve(): array;
     public function getDirectiveNameClasses(): array;

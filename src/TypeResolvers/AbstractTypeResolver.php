@@ -511,7 +511,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         // Obtain the data for the required object IDs
         $resultIDItems = [];
         $ids = $this->getIDsToQuery($ids_data_fields);
-        $typeDataResolverClass = $this->getTypeDataResolverClass();
+        $typeDataResolverClass = $this->getTypeDataLoaderClass();
         $typeDataResolver = $instanceManager->getInstance($typeDataResolverClass);
         foreach ($typeDataResolver->resolveObjectsFromIDs($ids) as $dataItem) {
             $resultIDItems[$this->getId($dataItem)] = $dataItem;
@@ -664,7 +664,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             }
 
             $instanceManager = InstanceManagerFacade::getInstance();
-            $typeDataResolverClass = $this->getTypeDataResolverClass();
+            $typeDataResolverClass = $this->getTypeDataLoaderClass();
             $typeDataResolver = $instanceManager->getInstance($typeDataResolverClass);
 
             // We can finally resolve the pipeline, passing along an array with the ID and fields for each directive

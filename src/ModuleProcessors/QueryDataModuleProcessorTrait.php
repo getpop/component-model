@@ -168,7 +168,7 @@ trait QueryDataModuleProcessorTrait
 
         $typeResolverClass = $this->getTypeResolverClass($module);
         $typeResolver = $instanceManager->getInstance($typeResolverClass);
-        $typeDataResolverClass = $typeResolver->getTypeDataResolverClass();
+        $typeDataResolverClass = $typeResolver->getTypeDataLoaderClass();
         $typeDataResolver = $instanceManager->getInstance($typeDataResolverClass);
         return $typeDataResolver->resolveIDsFromDataProperties($data_properties);
     }
