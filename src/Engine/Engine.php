@@ -1414,7 +1414,7 @@ class Engine implements EngineInterface
             // ------------------------------------------------------------
             /*
             // Keep the list of elements that must be retrieved once again from the server
-            if ($dataquery_name = $typeDataResolver->getDataquery()) {
+            if ($dataquery_name = $typeDataLoader->getDataquery()) {
                 $dataquery = $dataquery_manager->get($dataquery_name);
                 $objectid_fieldname = $dataquery->getObjectidFieldname();
 

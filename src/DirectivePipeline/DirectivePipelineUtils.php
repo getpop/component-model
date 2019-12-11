@@ -5,10 +5,10 @@ use PoP\ComponentModel\TypeDataLoaders\TypeDataLoaderInterface;
 
 class DirectivePipelineUtils
 {
-    public static function convertArgumentsToPayload(TypeDataLoaderInterface $typeDataResolver, TypeResolverInterface $typeResolver, array &$pipelineIDsDataFields, array &$resultIDItems, array &$convertibleDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    public static function convertArgumentsToPayload(TypeDataLoaderInterface $typeDataLoader, TypeResolverInterface $typeResolver, array &$pipelineIDsDataFields, array &$resultIDItems, array &$convertibleDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         return [
-            'typeDataResolver' => &$typeDataResolver,
+            'typeDataLoader' => &$typeDataLoader,
             'typeResolver' => &$typeResolver,
             'pipelineIDsDataFields' => &$pipelineIDsDataFields,
             'resultIDItems' => &$resultIDItems,
@@ -28,7 +28,7 @@ class DirectivePipelineUtils
     public static function extractArgumentsFromPayload(array $payload): array
     {
         return [
-            &$payload['typeDataResolver'],
+            &$payload['typeDataLoader'],
             &$payload['typeResolver'],
             &$payload['pipelineIDsDataFields'],
             &$payload['resultIDItems'],

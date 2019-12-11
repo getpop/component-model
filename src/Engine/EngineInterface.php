@@ -19,7 +19,7 @@ interface EngineInterface
     public function getSiteMeta();
     public function validateCheckpoints($checkpoints);
     public function getModuleData($root_module, $root_model_props, $root_props);
-    public function moveEntriesUnderDBName(array $entries, bool $entryHasId, $typeDataResolver): array;
+    public function moveEntriesUnderDBName(array $entries, bool $entryHasId, $typeDataLoader): array;
     public function getDatabases();
     public function maybeGetDBObjectIDOrIDsForConvertibleTypeResolver(string $typeResolverClass, $dbObjectIDOrIDs);
 }
