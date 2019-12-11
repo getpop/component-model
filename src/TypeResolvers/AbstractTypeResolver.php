@@ -925,35 +925,35 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return hash('md5', $class);
     }
 
-    public function getSchemaDefinition(array $fieldArgs, array $options): array
+    public function getSchemaDefinition(array $fieldArgs, array $messages, array $options = []): array
     {
         // Stop recursion
         $class = get_called_class();
-        if (in_array($class, $options['processed'])) {
+        if (in_array($class, $messages['processed'])) {
             return [
                 SchemaDefinition::ARGNAME_RESOLVERID => $this->getTypeResolverSchemaId($class),
                 SchemaDefinition::ARGNAME_RECURSION => true,
             ];
         }
 
-        $options['processed'][] = $class;
+        $messages['processed'][] = $class;
         if (is_null($this->schemaDefinition)) {
             $this->schemaDefinition = [
                 SchemaDefinition::ARGNAME_RESOLVERID => $this->getTypeResolverSchemaId($class),
             ];
-            $this->addSchemaDefinition($fieldArgs, $options);
+            $this->addSchemaDefinition($fieldArgs, $messages, $options);
         }
 
         return $this->schemaDefinition;
     }
 
-    protected function addSchemaDefinition(array $schemaFieldArgs, array $options)
+    protected function addSchemaDefinition(array $schemaFieldArgs, array $messages, array $options = [])
     {
         $instanceManager = InstanceManagerFacade::getInstance();
 
         // Only in the root we output the operators and helpers
-        $isRoot = $options['is-root'];
-        unset($options['is-root']);
+        $isRoot = $messages['is-root'];
+        unset($messages['is-root']);
 
         // Add the directives
         $this->schemaDefinition[SchemaDefinition::ARGNAME_DIRECTIVES] = [];
@@ -1005,7 +1005,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                             $fieldTypeDataResolver = $instanceManager->getInstance($fieldTypeDataResolverClass);
                             if ($typeResolverClass = $fieldTypeDataResolver->getTypeResolverClass()) {
                                 $typeResolver = $instanceManager->getInstance($typeResolverClass);
-                                $fieldSchemaDefinition[SchemaDefinition::ARGNAME_RESOLVER] = $typeResolver->getSchemaDefinition($fieldArgs, $options);
+                                $fieldSchemaDefinition[SchemaDefinition::ARGNAME_RESOLVER] = $typeResolver->getSchemaDefinition($fieldArgs, $messages, $options);
                             }
                         }
                     }
