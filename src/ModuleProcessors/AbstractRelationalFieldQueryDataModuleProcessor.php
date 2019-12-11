@@ -137,13 +137,11 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
         // Create a "virtual" module with the fields corresponding to the next level module
         foreach ($fieldNestedFields as $field => $nestedFields) {
             $ret[$field] = array(
-                \POP_CONSTANT_SUBCOMPONENTTYPERESOLVER_DEFAULTFROMFIELD => array(
-                    [
-                        $module[0],
-                        $module[1],
-                        ['fields' => $nestedFields]
-                    ],
-                ),
+                [
+                    $module[0],
+                    $module[1],
+                    ['fields' => $nestedFields]
+                ],
             );
         }
         return $ret;
@@ -205,13 +203,11 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
             $conditionField = $this->getNotIsEmptyConditionField($field);
             $conditionalField = $fieldQueryInterpreter->removeSkipOuputIfNullFromField($field);
             $ret[$conditionField][$conditionalField] = array(
-                \POP_CONSTANT_SUBCOMPONENTTYPERESOLVER_DEFAULTFROMFIELD => array(
-                    [
-                        $module[0],
-                        $module[1],
-                        ['fields' => $nestedFields]
-                    ],
-                ),
+                [
+                    $module[0],
+                    $module[1],
+                    ['fields' => $nestedFields]
+                ],
             );
         }
 
