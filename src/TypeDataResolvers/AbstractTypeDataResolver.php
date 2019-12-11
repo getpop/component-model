@@ -10,7 +10,7 @@ abstract class AbstractTypeDataResolver implements TypeDataResolverInterface
         $instanceManager = InstanceManagerFacade::getInstance();
         $typeResolverClass = $this->getTypeResolverClass();
         $typeResolver = $instanceManager->getInstance($typeResolverClass);
-        return $typeResolver->getTypeCollectionName();
+        return $typeResolver->getTypeName();
     }
 
     public function getDataquery()

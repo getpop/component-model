@@ -1,5 +1,6 @@
 <?php
 namespace PoP\ComponentModel\TypeResolvers;
+
 use PoP\FieldQuery\QueryUtils;
 use PoP\FieldQuery\QuerySyntax;
 use PoP\FieldQuery\QueryHelpers;
@@ -19,7 +20,6 @@ use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
 use PoP\ComponentModel\Feedback\Tokens;
-use PoP\Posts\TypeDataResolvers\ConvertiblePostTypeDataResolver;
 
 abstract class AbstractTypeResolver implements TypeResolverInterface
 {

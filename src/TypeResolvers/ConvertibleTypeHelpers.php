@@ -61,7 +61,7 @@ class ConvertibleTypeHelpers
     public static function getDBObjectComposedTypeAndID(TypeResolverInterface $typeResolver, $id): string
     {
         return
-            $typeResolver->getTypeCollectionName().
+            $typeResolver->getTypeName().
             ConvertibleTypeSymbols::DBOBJECT_COMPOSED_TYPE_ID_SEPARATOR.
             $id;
     }
