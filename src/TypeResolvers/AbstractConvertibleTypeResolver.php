@@ -239,7 +239,7 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         return $typeResolver->resolveValue($resultItem, $field, $variables, $expressions, $options);
     }
 
-    protected function addSchemaDefinition(array $fieldArgs = [], array $options = [])
+    protected function addSchemaDefinition(array $fieldArgs, array $options)
     {
         $instanceManager = InstanceManagerFacade::getInstance();
         $isRoot = $options['is-root'];

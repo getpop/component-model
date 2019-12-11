@@ -925,7 +925,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return hash('md5', $class);
     }
 
-    public function getSchemaDefinition(array $fieldArgs = [], array $options = []): array
+    public function getSchemaDefinition(array $fieldArgs, array $options): array
     {
         // Stop recursion
         $class = get_called_class();
@@ -947,7 +947,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return $this->schemaDefinition;
     }
 
-    protected function addSchemaDefinition(array $schemaFieldArgs = [], array $options = [])
+    protected function addSchemaDefinition(array $schemaFieldArgs, array $options)
     {
         $instanceManager = InstanceManagerFacade::getInstance();
 
