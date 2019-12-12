@@ -30,6 +30,9 @@ class SchemaDefinition {
     const ARGNAME_DIRECTIVE_LIMITED_TO_FIELDS = 'limitedToFields';
     const ARGNAME_DIRECTIVE_EXPRESSIONS = 'expressions';
 
+    const ARGVALUE_SCHEMA_SHAPE_FLAT = 'flat';
+    const ARGVALUE_SCHEMA_SHAPE_NESTED = 'nested';
+
     // Field/Directive Argument Types
     const TYPE_MIXED = 'mixed';
     const TYPE_ID = 'id';
