@@ -47,29 +47,38 @@ class SchemaHelpers
      */
     public static function getTypeToOutputInSchema(TypeResolverInterface $typeResolver, string $fieldName, string $type)
     {
+        $convertedType = $type;
+
         // Replace all instances of "array:" with wrapping the type with "[]"
         $arrayInstances = 0;
-        while ($type && TypeCastingHelpers::getTypeCombinationCurrentElement($type) == SchemaDefinition::TYPE_ARRAY) {
+        while ($convertedType && TypeCastingHelpers::getTypeCombinationCurrentElement($convertedType) == SchemaDefinition::TYPE_ARRAY) {
             $arrayInstances++;
-            $type = TypeCastingHelpers::getTypeCombinationNestedElements($type);
+            $convertedType = TypeCastingHelpers::getTypeCombinationNestedElements($convertedType);
+        }
+
+        // If the type was actually only "array", without indicating its type, by now $type will be null
+        // In that case, just return the type as it was: "array" (this is better than "[]")
+        if (!$convertedType) {
+            return $type;
         }
 
         // If the type is an ID, replace it with the actual type the ID references
-        if ($type == SchemaDefinition::TYPE_ID) {
+        if ($convertedType == SchemaDefinition::TYPE_ID) {
             $instanceManager = InstanceManagerFacade::getInstance();
-            // The type may not be implemented yet (eg: Category), then skip
+            // The convertedType may not be implemented yet (eg: Category), then skip
             if ($fieldTypeResolverClass = DataloadUtils::getTypeResolverClassFromSubcomponentDataField($typeResolver, $fieldName)) {
                 $fieldTypeResolver = $instanceManager->getInstance((string)$fieldTypeResolverClass);
-                $type = $fieldTypeResolver->getTypeName();
+                $convertedType = $fieldTypeResolver->getTypeName();
             }
         }
 
+        // Wrap the type with the array brackets
         for ($i=0; $i<$arrayInstances; $i++) {
-            $type = sprintf(
+            $convertedType = sprintf(
                 '[%s]',
-                $type
+                $convertedType
             );
         }
-        return $type;
+        return $convertedType;
     }
 }
