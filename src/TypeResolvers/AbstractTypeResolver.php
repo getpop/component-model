@@ -24,6 +24,7 @@ use PoP\ComponentModel\Feedback\Tokens;
 abstract class AbstractTypeResolver implements TypeResolverInterface
 {
     public const OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM = 'validateSchemaOnResultItem';
+    protected const ARGNAME_TYPENAMES = 'typeNames';
 
     /**
      * Cache of which fieldResolvers will process the given field
@@ -953,8 +954,8 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                             );
 
                             // Replace the information with only the names of the types
-                            $nestedField[SchemaDefinition::ARGNAME_TYPES] = $nestedField['typeNames'];
-                            unset($nestedField['typeNames']);
+                            $nestedField[SchemaDefinition::ARGNAME_TYPES] = $nestedField[self::ARGNAME_TYPENAMES];
+                            unset($nestedField[self::ARGNAME_TYPENAMES]);
                         }
                     }
                 }
@@ -1019,7 +1020,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                         $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPES] = $fieldTypeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options);
                         if ($isFlatShape) {
                             // Store the type names before they are all mixed up in `getSchemaDefinition` when moving them one level up
-                            $fieldSchemaDefinition['typeNames'] = [$fieldTypeResolver->getTypeName()];
+                            $fieldSchemaDefinition[self::ARGNAME_TYPENAMES] = [$fieldTypeResolver->getTypeName()];
                         }
                     }
                 }
