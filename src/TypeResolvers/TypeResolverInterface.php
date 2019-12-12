@@ -24,7 +24,7 @@ interface TypeResolverInterface
     public function enableOrderedSchemaFieldArgs(string $field): bool;
     public function resolveFieldTypeResolverClass(string $field): ?string;
     public function resolveValue($resultItem, string $field, ?array $variables = null, ?array $expressions = null, array $options = []);
-    public function getSchemaDefinition(array $fieldArgs, array $stackMessages, array &$generalMessages, array $options = []): array;
+    public function getSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = []): array;
     public function hasFieldResolversForField(string $field): bool;
     /**
      * Validate and resolve the fieldDirectives into an array, each item containing:

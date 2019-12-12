@@ -239,7 +239,7 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         return $typeResolver->resolveValue($resultItem, $field, $variables, $expressions, $options);
     }
 
-    protected function addSchemaDefinition(array $fieldArgs, array $stackMessages, array &$generalMessages, array $options = [])
+    protected function addSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = [])
     {
         $instanceManager = InstanceManagerFacade::getInstance();
         $isRoot = $stackMessages['is-root'];
@@ -251,7 +251,7 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         $baseFields = [];
         $baseTypeResolverClass = $this->getBaseTypeResolverClass();
         $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-        $this->schemaDefinition[SchemaDefinition::ARGNAME_BASERESOLVER] = $typeResolver->getSchemaDefinition($fieldArgs, $stackMessages, $generalMessages, $options);
+        $this->schemaDefinition[SchemaDefinition::ARGNAME_BASERESOLVER] = $typeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options);
         $baseFields = array_map(function($fieldProps) {
             return $fieldProps[SchemaDefinition::ARGNAME_NAME];
         }, (array)$this->schemaDefinition[SchemaDefinition::ARGNAME_BASERESOLVER][SchemaDefinition::ARGNAME_FIELDS]);
@@ -260,7 +260,7 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         foreach ($this->getTypeResolverPickers() as $picker) {
             $typeResolver = $instanceManager->getInstance($picker->getTypeResolverClass());
             // Do not repeat those fields already present on the base typeResolver
-            $deltaFields = $typeResolver->getSchemaDefinition($fieldArgs, $stackMessages, $generalMessages, $options);
+            $deltaFields = $typeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options);
             // If it is a recursion, this field will not be set
             if (isset($deltaFields[SchemaDefinition::ARGNAME_FIELDS])) {
                 $deltaFields[SchemaDefinition::ARGNAME_FIELDS] = array_values(array_filter(

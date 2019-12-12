@@ -929,7 +929,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return hash('md5', $class);
     }
 
-    public function getSchemaDefinition(array $fieldArgs, array $stackMessages, array &$generalMessages, array $options = []): array
+    public function getSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = []): array
     {
         // Stop recursion
         $class = get_called_class();
@@ -954,13 +954,13 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             $this->schemaDefinition = [
                 SchemaDefinition::ARGNAME_RESOLVERID => $this->getTypeResolverSchemaId($class),
             ];
-            $this->addSchemaDefinition($fieldArgs, $stackMessages, $generalMessages, $options);
+            $this->addSchemaDefinition($stackMessages, $generalMessages, $options);
         }
 
         return $this->schemaDefinition;
     }
 
-    protected function addSchemaDefinition(array $fieldArgs, array $stackMessages, array &$generalMessages, array $options = [])
+    protected function addSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = [])
     {
         $instanceManager = InstanceManagerFacade::getInstance();
 
@@ -998,14 +998,15 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             $fieldResolver = $fieldResolvers[0];
             $isOperatorOrHelper = $fieldResolver->isOperatorOrHelper($this, $fieldName);
             if (!$isOperatorOrHelper || ($isOperatorOrHelper && $isRoot)) {
-                $fieldSchemaDefinition = $fieldResolver->getSchemaDefinitionForField($this, $fieldName, $fieldArgs);
+                // Watch out! We are passing empty $fieldArgs to generate the schema!
+                $fieldSchemaDefinition = $fieldResolver->getSchemaDefinitionForField($this, $fieldName, []);
                 // Add subfield schema if it is deep, and this typeResolver has not been processed yet
                 if ($options['deep']) {
                     // If this field is relational, then add its own schema
                     if ($typeResolverClass = $this->resolveFieldTypeResolverClass($fieldName)) {
                         $typeResolver = $instanceManager->getInstance($typeResolverClass);
                         $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPES] = [
-                            $typeResolver->getTypeName() => $typeResolver->getSchemaDefinition($fieldArgs, $stackMessages, $generalMessages, $options),
+                            $typeResolver->getTypeName() => $typeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options),
                         ];
                     }
                 }

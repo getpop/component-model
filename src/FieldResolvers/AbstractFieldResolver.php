@@ -125,7 +125,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldRes
         $schemaDefinition = [
             SchemaDefinition::ARGNAME_NAME => $fieldName,
         ];
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver, $fieldName, $fieldArgs)) {
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
             if ($type = $schemaDefinitionResolver->getSchemaFieldType($typeResolver, $fieldName)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_TYPE] = $type;
             }
