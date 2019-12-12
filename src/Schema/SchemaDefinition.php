@@ -15,9 +15,7 @@ class SchemaDefinition {
     const ARGNAME_FIELDS = 'fields';
     const ARGNAME_OPERATORS_AND_HELPERS = 'operatorsAndHelpers';
     const ARGNAME_TYPES = 'types';
-    const ARGNAME_RESOLVER = 'resolver';
     const ARGNAME_BASERESOLVER = 'baseResolver';
-    const ARGNAME_RESOLVERID = 'resolverId';
     const ARGNAME_RECURSION = 'recursion';
     const ARGNAME_REPEATED = 'repeated';
     const ARGNAME_CONVERTIBLE = 'convertible';

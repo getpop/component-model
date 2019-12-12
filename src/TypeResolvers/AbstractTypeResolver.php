@@ -39,7 +39,6 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     private $fieldDirectiveIDFields = [];
     private $fieldDirectivesFromFieldCache = [];
     private $dissectedFieldForSchemaCache = [];
-    private $typeResolverSchemaIdsCache = [];
     private $directiveResolverInstanceCache = [];
 
     public function getFieldNamesToResolve(): array
@@ -905,30 +904,6 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return ErrorUtils::getNoFieldError($fieldName);
     }
 
-    protected function getTypeResolverSchemaId(string $class): string
-    {
-        if (!isset($this->typeResolverSchemaIdsCache[$class])) {
-            $this->typeResolverSchemaIdsCache[$class] = $this->doGetTypeResolverSchemaId($class);
-
-            // Log how the hash and the class are related
-            $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();
-            $translationAPI = TranslationAPIFacade::getInstance();
-            $feedbackMessageStore->maybeAddLogEntry(
-                sprintf(
-                    $translationAPI->__('Field resolver with ID \'%s\' corresponds to class \'%s\'', 'pop-component-model'),
-                    $this->typeResolverSchemaIdsCache[$class],
-                    $class
-                )
-            );
-        }
-        return $this->typeResolverSchemaIdsCache[$class];
-    }
-
-    protected function doGetTypeResolverSchemaId(string $class): string
-    {
-        return hash('md5', $class);
-    }
-
     public function getSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = []): array
     {
         $typeName = $this->getTypeName();
@@ -938,7 +913,6 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         if (in_array($class, $stackMessages['processed'])) {
             return [
                 $typeName => [
-                    SchemaDefinition::ARGNAME_RESOLVERID => $this->getTypeResolverSchemaId($class),
                     SchemaDefinition::ARGNAME_RECURSION => true,
                 ]
             ];
@@ -950,7 +924,6 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         if (($isFlatShape || $options['compressed']) && in_array($class, $generalMessages['processed'])) {
             return [
                 $typeName => [
-                    SchemaDefinition::ARGNAME_RESOLVERID => $this->getTypeResolverSchemaId($class),
                     SchemaDefinition::ARGNAME_REPEATED => true,
                 ]
             ];
@@ -959,11 +932,6 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $stackMessages['processed'][] = $class;
         $generalMessages['processed'][] = $class;
         if (is_null($this->schemaDefinition)) {
-            $this->schemaDefinition = [
-                $typeName => [
-                    SchemaDefinition::ARGNAME_RESOLVERID => $this->getTypeResolverSchemaId($class),
-                ],
-            ];
             $this->addSchemaDefinition($stackMessages, $generalMessages, $options);
             // If it is a flat shape, move the nested types to this same level
             if ($isFlatShape) {
