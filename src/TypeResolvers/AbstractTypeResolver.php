@@ -8,10 +8,12 @@ use PoP\ComponentModel\ErrorUtils;
 use PoP\ComponentModel\Environment;
 use PoP\FieldQuery\FieldQueryUtils;
 use League\Pipeline\PipelineBuilder;
-use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
+use PoP\ComponentModel\Feedback\Tokens;
+use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\FieldHelpers;
+use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\Facades\Engine\DataloadingEngineFacade;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
@@ -19,7 +21,6 @@ use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
-use PoP\ComponentModel\Feedback\Tokens;
 
 abstract class AbstractTypeResolver implements TypeResolverInterface
 {
@@ -1023,6 +1024,10 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                             $fieldSchemaDefinition[self::ARGNAME_TYPENAMES] = [$fieldTypeResolver->getTypeName()];
                         }
                     }
+                }
+                // Convert the field type from its internal representation (eg: "array:id") to the GraphQL standard representation (eg: "[Post]")
+                if ($type = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE]) {
+                    // $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE] = SchemaHelpers::getTypeToOutputInSchema($this, $fieldName, $type);
                 }
                 if ($isOperatorOrHelper) {
                     $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_OPERATORS_AND_HELPERS][] = $fieldSchemaDefinition;
