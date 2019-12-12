@@ -941,7 +941,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         }
 
         // If "compressed" and the resolver has already been added to the schema, then skip it
-        if ($fieldArgs['compressed'] && in_array($class, $generalMessages['processed'])) {
+        if ($options['compressed'] && in_array($class, $generalMessages['processed'])) {
             return [
                 SchemaDefinition::ARGNAME_RESOLVERID => $this->getTypeResolverSchemaId($class),
                 SchemaDefinition::ARGNAME_REPEATED => true,
@@ -960,7 +960,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return $this->schemaDefinition;
     }
 
-    protected function addSchemaDefinition(array $schemaFieldArgs, array $stackMessages, array &$generalMessages, array $options = [])
+    protected function addSchemaDefinition(array $fieldArgs, array $stackMessages, array &$generalMessages, array $options = [])
     {
         $instanceManager = InstanceManagerFacade::getInstance();
 
@@ -992,62 +992,51 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
         // Remove all fields which are not resolved by any unit
         $this->schemaDefinition[SchemaDefinition::ARGNAME_FIELDS] = [];
-        $this->calculateAllFieldResolvers();
-        foreach (array_filter($this->fieldResolvers) as $field => $fieldResolvers) {
-            // Copy the properties from the schemaFieldArgs to the fieldArgs, in particular "deep"
-            list(
-                $field,
-                $fieldName,
-                $fieldArgs,
-            ) = $this->dissectFieldForSchema($field);
-            if (!is_null($field)) {
-                // Get the documentation from the first element
-                $fieldResolver = $fieldResolvers[0];
-                $isOperatorOrHelper = $fieldResolver->isOperatorOrHelper($this, $fieldName);
-                if (!$isOperatorOrHelper || ($isOperatorOrHelper && $isRoot)) {
-                    $fieldArgs = array_merge(
-                        $schemaFieldArgs,
-                        $fieldArgs
-                    );
-                    $fieldSchemaDefinition = $fieldResolver->getSchemaDefinitionForField($this, $fieldName, $fieldArgs);
-                    // Add subfield schema if it is deep, and this typeResolver has not been processed yet
-                    if ($fieldArgs['deep']) {
-                        // If this field is relational, then add its own schema
-                        if ($typeResolverClass = $this->resolveFieldTypeResolverClass($field)) {
-                            $typeResolver = $instanceManager->getInstance($typeResolverClass);
-                            $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE] = [
-                                $typeResolver->getTypeName() => $typeResolver->getSchemaDefinition($fieldArgs, $stackMessages, $generalMessages, $options),
-                            ];
-                        }
+        $schemaFieldResolvers = $this->calculateAllFieldResolvers();
+        foreach ($schemaFieldResolvers as $fieldName => $fieldResolvers) {
+            // Get the documentation from the first element
+            $fieldResolver = $fieldResolvers[0];
+            $isOperatorOrHelper = $fieldResolver->isOperatorOrHelper($this, $fieldName);
+            if (!$isOperatorOrHelper || ($isOperatorOrHelper && $isRoot)) {
+                $fieldSchemaDefinition = $fieldResolver->getSchemaDefinitionForField($this, $fieldName, $fieldArgs);
+                // Add subfield schema if it is deep, and this typeResolver has not been processed yet
+                if ($options['deep']) {
+                    // If this field is relational, then add its own schema
+                    if ($typeResolverClass = $this->resolveFieldTypeResolverClass($fieldName)) {
+                        $typeResolver = $instanceManager->getInstance($typeResolverClass);
+                        $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPES] = [
+                            $typeResolver->getTypeName() => $typeResolver->getSchemaDefinition($fieldArgs, $stackMessages, $generalMessages, $options),
+                        ];
                     }
-
-                    if ($isOperatorOrHelper) {
-                        $this->schemaDefinition[SchemaDefinition::ARGNAME_OPERATORS_AND_HELPERS][] = $fieldSchemaDefinition;
-                    } else {
-                        $this->schemaDefinition[SchemaDefinition::ARGNAME_FIELDS][] = $fieldSchemaDefinition;
-                    }
+                }
+                if ($isOperatorOrHelper) {
+                    $this->schemaDefinition[SchemaDefinition::ARGNAME_OPERATORS_AND_HELPERS][] = $fieldSchemaDefinition;
+                } else {
+                    $this->schemaDefinition[SchemaDefinition::ARGNAME_FIELDS][] = $fieldSchemaDefinition;
                 }
             }
         }
     }
 
-    protected function calculateAllFieldResolvers()
+    protected function calculateAllFieldResolvers(): array
     {
-        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         $attachableExtensionManager = AttachableExtensionManagerFacade::getInstance();
+        $schemaFieldResolvers = [];
 
         // Iterate classes from the current class towards the parent classes until finding typeResolver that satisfies processing this field
         $class = get_called_class();
         do {
             foreach ($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDRESOLVERS) as $extensionClass => $extensionPriority) {
                 // Process the fields which have not been processed yet
-                foreach (array_diff($extensionClass::getFieldNamesToResolve(), array_unique(array_map([$fieldQueryInterpreter, 'getFieldName'], array_keys($this->fieldResolvers)))) as $fieldName) {
+                foreach (array_diff($extensionClass::getFieldNamesToResolve(), array_keys($schemaFieldResolvers)) as $fieldName) {
                     // Watch out here: no fieldArgs!!!! So this deals with the base case (static), not with all cases (runtime)
-                    $this->getFieldResolversForField($fieldName);
+                    $schemaFieldResolvers[$fieldName] = $this->getFieldResolversForField($fieldName);
                 }
             }
             // Otherwise, continue iterating for the class parents
         } while ($class = get_parent_class($class));
+
+        return $schemaFieldResolvers;
     }
 
     protected function getFieldResolversForField(string $field): array
