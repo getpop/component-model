@@ -931,20 +931,25 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
     public function getSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = []): array
     {
+        $typeName = $this->getTypeName();
         // Stop recursion
         $class = get_called_class();
         if (in_array($class, $stackMessages['processed'])) {
             return [
-                SchemaDefinition::ARGNAME_RESOLVERID => $this->getTypeResolverSchemaId($class),
-                SchemaDefinition::ARGNAME_RECURSION => true,
+                $typeName => [
+                    SchemaDefinition::ARGNAME_RESOLVERID => $this->getTypeResolverSchemaId($class),
+                    SchemaDefinition::ARGNAME_RECURSION => true,
+                ]
             ];
         }
 
         // If "compressed" and the resolver has already been added to the schema, then skip it
         if ($options['compressed'] && in_array($class, $generalMessages['processed'])) {
             return [
-                SchemaDefinition::ARGNAME_RESOLVERID => $this->getTypeResolverSchemaId($class),
-                SchemaDefinition::ARGNAME_REPEATED => true,
+                $typeName => [
+                    SchemaDefinition::ARGNAME_RESOLVERID => $this->getTypeResolverSchemaId($class),
+                    SchemaDefinition::ARGNAME_REPEATED => true,
+                ]
             ];
         }
 
@@ -952,7 +957,9 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $generalMessages['processed'][] = $class;
         if (is_null($this->schemaDefinition)) {
             $this->schemaDefinition = [
-                SchemaDefinition::ARGNAME_RESOLVERID => $this->getTypeResolverSchemaId($class),
+                $typeName => [
+                    SchemaDefinition::ARGNAME_RESOLVERID => $this->getTypeResolverSchemaId($class),
+                ],
             ];
             $this->addSchemaDefinition($stackMessages, $generalMessages, $options);
         }
@@ -963,6 +970,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     protected function addSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = [])
     {
         $instanceManager = InstanceManagerFacade::getInstance();
+        $typeName = $this->getTypeName();
 
         // Only in the root we output the operators and helpers
         $isRoot = $stackMessages['is-root'];
@@ -982,16 +990,16 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 if (!$isGlobal || ($isGlobal && $isRoot)) {
                     $directiveSchemaDefinition = $directiveResolverInstance->getSchemaDefinitionForDirective($this);
                     if ($isGlobal) {
-                        $this->schemaDefinition[SchemaDefinition::ARGNAME_GLOBAL_DIRECTIVES][] = $directiveSchemaDefinition;
+                        $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_GLOBAL_DIRECTIVES][] = $directiveSchemaDefinition;
                     } else {
-                        $this->schemaDefinition[SchemaDefinition::ARGNAME_DIRECTIVES][] = $directiveSchemaDefinition;
+                        $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DIRECTIVES][] = $directiveSchemaDefinition;
                     }
                 }
             }
         }
 
         // Remove all fields which are not resolved by any unit
-        $this->schemaDefinition[SchemaDefinition::ARGNAME_FIELDS] = [];
+        $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_FIELDS] = [];
         $schemaFieldResolvers = $this->calculateAllFieldResolvers();
         foreach ($schemaFieldResolvers as $fieldName => $fieldResolvers) {
             // Get the documentation from the first element
@@ -1003,17 +1011,15 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 // Add subfield schema if it is deep, and this typeResolver has not been processed yet
                 if ($options['deep']) {
                     // If this field is relational, then add its own schema
-                    if ($typeResolverClass = $this->resolveFieldTypeResolverClass($fieldName)) {
-                        $typeResolver = $instanceManager->getInstance($typeResolverClass);
-                        $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPES] = [
-                            $typeResolver->getTypeName() => $typeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options),
-                        ];
+                    if ($fieldTypeResolverClass = $this->resolveFieldTypeResolverClass($fieldName)) {
+                        $fieldTypeResolver = $instanceManager->getInstance($fieldTypeResolverClass);
+                        $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPES] = $fieldTypeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options);
                     }
                 }
                 if ($isOperatorOrHelper) {
-                    $this->schemaDefinition[SchemaDefinition::ARGNAME_OPERATORS_AND_HELPERS][] = $fieldSchemaDefinition;
+                    $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_OPERATORS_AND_HELPERS][] = $fieldSchemaDefinition;
                 } else {
-                    $this->schemaDefinition[SchemaDefinition::ARGNAME_FIELDS][] = $fieldSchemaDefinition;
+                    $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_FIELDS][] = $fieldSchemaDefinition;
                 }
             }
         }
