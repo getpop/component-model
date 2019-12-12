@@ -590,7 +590,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         $directiveArgNameTypes = [];
         if ($directiveSchemaDefinitionArgs = $directiveResolver->getSchemaDirectiveArgs($typeResolver)) {
             foreach ($directiveSchemaDefinitionArgs as $directiveSchemaDefinitionArg) {
-                $directiveArgNameTypes[$directiveSchemaDefinitionArg['name']] = $directiveSchemaDefinitionArg['type'];
+                $directiveArgNameTypes[$directiveSchemaDefinitionArg[SchemaDefinition::ARGNAME_NAME]] = $directiveSchemaDefinitionArg[SchemaDefinition::ARGNAME_TYPE];
             }
         }
         return $directiveArgNameTypes;
@@ -610,7 +610,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         $fieldArgNameTypes = [];
         if ($fieldSchemaDefinitionArgs = $typeResolver->getSchemaFieldArgs($field)) {
             foreach ($fieldSchemaDefinitionArgs as $fieldSchemaDefinitionArg) {
-                $fieldArgNameTypes[$fieldSchemaDefinitionArg['name']] = $fieldSchemaDefinitionArg['type'];
+                $fieldArgNameTypes[$fieldSchemaDefinitionArg[SchemaDefinition::ARGNAME_NAME]] = $fieldSchemaDefinitionArg[SchemaDefinition::ARGNAME_TYPE];
             }
         }
         return $fieldArgNameTypes;

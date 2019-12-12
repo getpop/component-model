@@ -1,14 +1,12 @@
 <?php
 namespace PoP\ComponentModel\FieldResolvers;
 
-use PoP\ComponentModel\GeneralUtils;
 use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\Facades\Engine\EngineFacade;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
-use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
 
 abstract class AbstractFieldResolver implements FieldResolverInterface, FieldResolverSchemaInterface
 {
