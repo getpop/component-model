@@ -932,9 +932,16 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     public function getSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = []): array
     {
         $typeName = $this->getTypeName();
+
+        // If it is flat shape and this resolver has already been added to the schema, can then exit
+        $isFlatShape = $options['shape'] == SchemaDefinition::ARGVALUE_SCHEMA_SHAPE_FLAT;
+
         // Stop recursion
         $class = get_called_class();
         if (in_array($class, $stackMessages['processed'])) {
+            if ($isFlatShape) {
+                return [];
+            }
             return [
                 $typeName => [
                     SchemaDefinition::ARGNAME_RESOLVERID => $this->getTypeResolverSchemaId($class),
@@ -944,13 +951,18 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         }
 
         // If "compressed" and the resolver has already been added to the schema, then skip it
-        if ($options['compressed'] && in_array($class, $generalMessages['processed'])) {
-            return [
-                $typeName => [
-                    SchemaDefinition::ARGNAME_RESOLVERID => $this->getTypeResolverSchemaId($class),
-                    SchemaDefinition::ARGNAME_REPEATED => true,
-                ]
-            ];
+        if (in_array($class, $generalMessages['processed'])) {
+            if ($isFlatShape) {
+                return [];
+            }
+            if ($options['compressed']) {
+                return [
+                    $typeName => [
+                        SchemaDefinition::ARGNAME_RESOLVERID => $this->getTypeResolverSchemaId($class),
+                        SchemaDefinition::ARGNAME_REPEATED => true,
+                    ]
+                ];
+            }
         }
 
         $stackMessages['processed'][] = $class;
@@ -962,6 +974,21 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 ],
             ];
             $this->addSchemaDefinition($stackMessages, $generalMessages, $options);
+            // If it is a flat shape, move the nested types to this same level
+            if ($isFlatShape) {
+                // var_dump($typeName, $this->schemaDefinition[$typeName]);
+                if ($nestedFields = &$this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_FIELDS]) {
+                    foreach ($nestedFields as &$nestedField) {
+                        if (isset($nestedField[SchemaDefinition::ARGNAME_TYPES])) {
+                            $this->schemaDefinition = array_merge(
+                                $this->schemaDefinition,
+                                (array)$nestedField[SchemaDefinition::ARGNAME_TYPES]
+                            );
+                            unset($nestedField[SchemaDefinition::ARGNAME_TYPES]);
+                        }
+                    }
+                }
+            }
         }
 
         return $this->schemaDefinition;
@@ -977,7 +1004,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         unset($stackMessages['is-root']);
 
         // Add the directives
-        $this->schemaDefinition[SchemaDefinition::ARGNAME_DIRECTIVES] = [];
+        $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DIRECTIVES] = [];
         $directiveNameClasses = $this->getDirectiveNameClasses();
         foreach ($directiveNameClasses as $directiveName => $directiveClasses) {
             foreach ($directiveClasses as $directiveClass) {
