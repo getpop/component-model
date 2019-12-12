@@ -944,8 +944,10 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             ];
         }
 
-        // If "compressed" and the resolver has already been added to the schema, then skip it
-        if ($options['compressed'] && in_array($class, $generalMessages['processed'])) {
+        $isFlatShape = $options['shape'] == SchemaDefinition::ARGVALUE_SCHEMA_SHAPE_FLAT;
+
+        // If "compressed" or printing a flat shape, and the resolver has already been added to the schema, then skip it
+        if (($isFlatShape || $options['compressed']) && in_array($class, $generalMessages['processed'])) {
             return [
                 $typeName => [
                     SchemaDefinition::ARGNAME_RESOLVERID => $this->getTypeResolverSchemaId($class),
@@ -964,7 +966,6 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             ];
             $this->addSchemaDefinition($stackMessages, $generalMessages, $options);
             // If it is a flat shape, move the nested types to this same level
-            $isFlatShape = $options['shape'] == SchemaDefinition::ARGVALUE_SCHEMA_SHAPE_FLAT;
             if ($isFlatShape) {
                 if ($nestedFields = &$this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_FIELDS]) {
                     foreach ($nestedFields as &$nestedField) {
