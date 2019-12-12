@@ -1015,7 +1015,9 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                         // If this field is relational, then add its own schema
                         if ($typeResolverClass = $this->resolveFieldTypeResolverClass($field)) {
                             $typeResolver = $instanceManager->getInstance($typeResolverClass);
-                            $fieldSchemaDefinition[SchemaDefinition::ARGNAME_RESOLVER] = $typeResolver->getSchemaDefinition($fieldArgs, $stackMessages, $generalMessages, $options);
+                            $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE] = [
+                                $typeResolver->getTypeName() => $typeResolver->getSchemaDefinition($fieldArgs, $stackMessages, $generalMessages, $options),
+                            ];
                         }
                     }
 
