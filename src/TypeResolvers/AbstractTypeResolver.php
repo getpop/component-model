@@ -933,15 +933,9 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     {
         $typeName = $this->getTypeName();
 
-        // If it is flat shape and this resolver has already been added to the schema, can then exit
-        $isFlatShape = $options['shape'] == SchemaDefinition::ARGVALUE_SCHEMA_SHAPE_FLAT;
-
         // Stop recursion
         $class = get_called_class();
         if (in_array($class, $stackMessages['processed'])) {
-            if ($isFlatShape) {
-                return [];
-            }
             return [
                 $typeName => [
                     SchemaDefinition::ARGNAME_RESOLVERID => $this->getTypeResolverSchemaId($class),
@@ -951,18 +945,13 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         }
 
         // If "compressed" and the resolver has already been added to the schema, then skip it
-        if (in_array($class, $generalMessages['processed'])) {
-            if ($isFlatShape) {
-                return [];
-            }
-            if ($options['compressed']) {
-                return [
-                    $typeName => [
-                        SchemaDefinition::ARGNAME_RESOLVERID => $this->getTypeResolverSchemaId($class),
-                        SchemaDefinition::ARGNAME_REPEATED => true,
-                    ]
-                ];
-            }
+        if ($options['compressed'] && in_array($class, $generalMessages['processed'])) {
+            return [
+                $typeName => [
+                    SchemaDefinition::ARGNAME_RESOLVERID => $this->getTypeResolverSchemaId($class),
+                    SchemaDefinition::ARGNAME_REPEATED => true,
+                ]
+            ];
         }
 
         $stackMessages['processed'][] = $class;
@@ -975,16 +964,23 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             ];
             $this->addSchemaDefinition($stackMessages, $generalMessages, $options);
             // If it is a flat shape, move the nested types to this same level
+            $isFlatShape = $options['shape'] == SchemaDefinition::ARGVALUE_SCHEMA_SHAPE_FLAT;
             if ($isFlatShape) {
-                // var_dump($typeName, $this->schemaDefinition[$typeName]);
                 if ($nestedFields = &$this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_FIELDS]) {
                     foreach ($nestedFields as &$nestedField) {
                         if (isset($nestedField[SchemaDefinition::ARGNAME_TYPES])) {
+                            $nestedFieldTypes = (array)$nestedField[SchemaDefinition::ARGNAME_TYPES];
+
+                            // Move the type data one level up.
+                            // Important: do the merge in this order, because this typeResolver contains its own data, but when it appears within nestedFields, it does not
                             $this->schemaDefinition = array_merge(
-                                $this->schemaDefinition,
-                                (array)$nestedField[SchemaDefinition::ARGNAME_TYPES]
+                                $nestedFieldTypes,
+                                $this->schemaDefinition
                             );
-                            unset($nestedField[SchemaDefinition::ARGNAME_TYPES]);
+
+                            // Replace the information with only the names of the types
+                            $nestedField[SchemaDefinition::ARGNAME_TYPES] = $nestedField['typeNames'];
+                            unset($nestedField['typeNames']);
                         }
                     }
                 }
@@ -998,6 +994,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     {
         $instanceManager = InstanceManagerFacade::getInstance();
         $typeName = $this->getTypeName();
+        $isFlatShape = $options['shape'] == SchemaDefinition::ARGVALUE_SCHEMA_SHAPE_FLAT;
 
         // Only in the root we output the operators and helpers
         $isRoot = $stackMessages['is-root'];
@@ -1041,6 +1038,10 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     if ($fieldTypeResolverClass = $this->resolveFieldTypeResolverClass($fieldName)) {
                         $fieldTypeResolver = $instanceManager->getInstance($fieldTypeResolverClass);
                         $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPES] = $fieldTypeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options);
+                        if ($isFlatShape) {
+                            // Store the type names before they are all mixed up in `getSchemaDefinition` when moving them one level up
+                            $fieldSchemaDefinition['typeNames'] = [$fieldTypeResolver->getTypeName()];
+                        }
                     }
                 }
                 if ($isOperatorOrHelper) {
