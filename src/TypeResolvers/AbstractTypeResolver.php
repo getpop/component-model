@@ -49,6 +49,11 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return $this->fieldNamesToResolve;
     }
 
+    public function getSchemaTypeDescription(): ?string
+    {
+        return null;
+    }
+
     public function getDirectiveNameClasses(): array
     {
         if (is_null($this->directiveNameClasses)) {
@@ -968,6 +973,11 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         // Only in the root we output the operators and helpers
         $isRoot = $stackMessages['is-root'];
         unset($stackMessages['is-root']);
+
+        // Properties
+        if ($description = $this->getSchemaTypeDescription()) {
+            $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
+        }
 
         // Add the directives
         $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DIRECTIVES] = [];
