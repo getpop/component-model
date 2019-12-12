@@ -1359,13 +1359,8 @@ class Engine implements EngineInterface
             }
 
             $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();
-            if ($storeSchemaErrors = $feedbackMessageStore->retrieveAndClearSchemaErrors()) {
-                $iterationSchemaErrors = array_merge(
-                    $iterationSchemaErrors ?? [],
-                    $storeSchemaErrors
-                );
-            }
-            if ($iterationSchemaErrors) {
+            $storeSchemaErrors = $feedbackMessageStore->retrieveAndClearSchemaErrors();
+            if (!empty($iterationSchemaErrors) || !empty($storeSchemaErrors)) {
                 // Executing the following query will produce duplicates on SchemaWarnings:
                 // ?query=posts(limit:3.5).title,posts(limit:extract(posts(limit:4.5),saraza)).title
                 // This is unavoidable, since add schemaWarnings (and, correspondingly, errors and deprecations) in functions
@@ -1374,7 +1369,6 @@ class Engine implements EngineInterface
                 // However, when doing nested fields, the warnings are caught only in `resolveValue`, hence we need to add it there too
                 // Then, we will certainly have duplicates. Remove them now
                 // Because these are arrays of arrays, we use the method taken from https://stackoverflow.com/a/2561283
-                $iterationSchemaErrors = array_intersect_key($iterationSchemaErrors, array_unique(array_map('serialize', $iterationSchemaErrors)));
                 $dbNameSchemaErrorEntries = $this->moveEntriesUnderDBName($iterationSchemaErrors, false, $typeResolver);
                 foreach ($dbNameSchemaErrorEntries as $dbname => $entries) {
                     $schemaErrors[$dbname][$database_key] = array_merge(
@@ -1382,6 +1376,12 @@ class Engine implements EngineInterface
                         $entries
                     );
                 }
+                $dbNameStoreSchemaErrors = $this->moveEntriesUnderDBName($storeSchemaErrors, false, $typeResolver);
+                $schemaErrors = array_merge_recursive(
+                    $schemaErrors,
+                    $dbNameStoreSchemaErrors
+                );
+                $schemaErrors = array_intersect_key($schemaErrors, array_unique(array_map('serialize', $schemaErrors)));
             }
             if ($storeSchemaWarnings = $feedbackMessageStore->retrieveAndClearSchemaWarnings()) {
                 $iterationSchemaWarnings = array_merge(

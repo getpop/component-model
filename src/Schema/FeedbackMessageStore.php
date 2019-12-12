@@ -1,6 +1,8 @@
 <?php
 namespace PoP\ComponentModel\Schema;
 
+use PoP\ComponentModel\Feedback\Tokens;
+
 class FeedbackMessageStore extends \PoP\FieldQuery\FeedbackMessageStore implements FeedbackMessageStoreInterface
 {
     protected $schemaWarnings = [];
@@ -33,10 +35,10 @@ class FeedbackMessageStore extends \PoP\FieldQuery\FeedbackMessageStore implemen
 
     public function maybeAddSchemaError(string $dbKey, string $field, string $error)
     {
-        // Avoid adding several times the same error (which happens when calling `getTypeResolverClassFromSubcomponentDataField` from different functions)
-        if (!in_array($error, $this->schemaErrors[$dbKey][$field] ?? [])) {
-            $this->schemaErrors[$dbKey][$field][] = $error;
-        }
+        $this->schemaErrors[$dbKey][] = [
+            Tokens::PATH => [$field],
+            Tokens::MESSAGE => $error,
+        ];
     }
     public function retrieveAndClearSchemaErrors(): array
     {
