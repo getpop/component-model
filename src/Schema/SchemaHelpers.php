@@ -66,7 +66,7 @@ class SchemaHelpers
         if ($convertedType == SchemaDefinition::TYPE_ID) {
             $instanceManager = InstanceManagerFacade::getInstance();
             // The convertedType may not be implemented yet (eg: Category), then skip
-            if ($fieldTypeResolverClass = DataloadUtils::getTypeResolverClassFromSubcomponentDataField($typeResolver, $fieldName)) {
+            if ($fieldTypeResolverClass = $typeResolver->resolveFieldTypeResolverClass($fieldName)) {
                 $fieldTypeResolver = $instanceManager->getInstance((string)$fieldTypeResolverClass);
                 $convertedType = $fieldTypeResolver->getTypeName();
             }
