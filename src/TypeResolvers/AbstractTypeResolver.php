@@ -1043,7 +1043,9 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     if ($isConnection) {
                         $entry = SchemaDefinition::ARGNAME_GLOBAL_CONNECTIONS;
                         // Remove attrs "types" and "typeNames"
-                        unset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPES]);
+                        if ($options['typeAsSDL']) {
+                            unset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPES]);
+                        }
                         unset($fieldSchemaDefinition[self::ARGNAME_TYPENAMES]);
                     } else {
                         // If it has arguments, it is an operator. Otherwise, it is a helper
