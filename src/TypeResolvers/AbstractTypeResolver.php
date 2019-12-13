@@ -940,30 +940,29 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $generalMessages['processed'][] = $class;
         if (is_null($this->schemaDefinition)) {
             $this->addSchemaDefinition($stackMessages, $generalMessages, $options);
-            // If it is a flat shape, move the nested types to this same level
+            // If it is a flat shape, move the connections to this same level
             if ($isFlatShape) {
-                if ($nestedFields = &$this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_FIELDS]) {
-                    foreach ($nestedFields as &$nestedField) {
-                        if (isset($nestedField[SchemaDefinition::ARGNAME_TYPES])) {
-                            $nestedFieldTypes = (array)$nestedField[SchemaDefinition::ARGNAME_TYPES];
+                if ($connections = &$this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_CONNECTIONS]) {
+                    foreach ($connections as &$connection) {
+                        if (isset($connection[SchemaDefinition::ARGNAME_TYPES])) {
+                            $connectionTypes = (array)$connection[SchemaDefinition::ARGNAME_TYPES];
 
                             // Move the type data one level up.
-                            // Important: do the merge in this order, because this typeResolver contains its own data, but when it appears within nestedFields, it does not
+                            // Important: do the merge in this order, because this typeResolver contains its own data, but when it appears within connections, it does not
                             $this->schemaDefinition = array_merge(
-                                $nestedFieldTypes,
+                                $connectionTypes,
                                 $this->schemaDefinition
                             );
 
-                            // If the output uses SDL notation, can also remove entries "relational" and "types"
+                            // If the output uses SDL notation, can remove "types"
                             if ($options['typeAsSDL']) {
-                                unset($nestedField[SchemaDefinition::ARGNAME_TYPES]);
-                                unset($nestedField[SchemaDefinition::ARGNAME_RELATIONAL]);
+                                unset($connection[SchemaDefinition::ARGNAME_TYPES]);
                             } else {
-                                // Replace the information with only the names of the types
-                                $nestedField[SchemaDefinition::ARGNAME_TYPES] = $nestedField[self::ARGNAME_TYPENAMES];
+                                // Otherwise, replace the information with only the names of the types
+                                $connection[SchemaDefinition::ARGNAME_TYPES] = $connection[self::ARGNAME_TYPENAMES];
                             }
                             // Remove the temporary attribute "typeNames"
-                            unset($nestedField[self::ARGNAME_TYPENAMES]);
+                            unset($connection[self::ARGNAME_TYPENAMES]);
                         }
                     }
                 }
@@ -1039,10 +1038,19 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     }
                 }
                 if ($isOperatorOrHelper) {
-                    $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_OPERATORS_AND_HELPERS][] = $fieldSchemaDefinition;
+                    $entry = SchemaDefinition::ARGNAME_OPERATORS_AND_HELPERS;
                 } else {
-                    $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_FIELDS][] = $fieldSchemaDefinition;
+                    // Split the results into "fields" and "connections"
+                    $isConnection = isset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL]) && $fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL];
+                    $entry = $isConnection ?
+                        SchemaDefinition::ARGNAME_CONNECTIONS :
+                        SchemaDefinition::ARGNAME_FIELDS;
+                    // Can remove attribute "relational"
+                    if ($isConnection) {
+                        unset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL]);
+                    }
                 }
+                $this->schemaDefinition[$typeName][$entry][] = $fieldSchemaDefinition;
             }
         }
     }
