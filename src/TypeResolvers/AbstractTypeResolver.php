@@ -954,8 +954,15 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                                 $this->schemaDefinition
                             );
 
-                            // Replace the information with only the names of the types
-                            $nestedField[SchemaDefinition::ARGNAME_TYPES] = $nestedField[self::ARGNAME_TYPENAMES];
+                            // If the output uses SDL notation, can also remove entries "relational" and "types"
+                            if ($options['typeAsSDL']) {
+                                unset($nestedField[SchemaDefinition::ARGNAME_TYPES]);
+                                unset($nestedField[SchemaDefinition::ARGNAME_RELATIONAL]);
+                            } else {
+                                // Replace the information with only the names of the types
+                                $nestedField[SchemaDefinition::ARGNAME_TYPES] = $nestedField[self::ARGNAME_TYPENAMES];
+                            }
+                            // Remove the temporary attribute "typeNames"
                             unset($nestedField[self::ARGNAME_TYPENAMES]);
                         }
                     }
@@ -1026,8 +1033,10 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     }
                 }
                 // Convert the field type from its internal representation (eg: "array:id") to the GraphQL standard representation (eg: "[Post]")
-                if ($type = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE]) {
-                    $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE] = SchemaHelpers::getTypeToOutputInSchema($this, $fieldName, $type);
+                if ($options['typeAsSDL']) {
+                    if ($type = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE]) {
+                        $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE] = SchemaHelpers::getTypeToOutputInSchema($this, $fieldName, $type);
+                    }
                 }
                 if ($isOperatorOrHelper) {
                     $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_OPERATORS_AND_HELPERS][] = $fieldSchemaDefinition;
