@@ -6,6 +6,11 @@ class TypeCastingHelpers
     public static function combineTypes(...$types) {
         return implode(':', $types);
     }
+
+    public static function makeArray(string $type) {
+        return self::combineTypes(SchemaDefinition::TYPE_ARRAY, $type);
+    }
+
     /**
      * Return the current type combination element, which is simply the first element, always
      * Eg: if passing "string", it is "string"; for "array:string", it is "array";
