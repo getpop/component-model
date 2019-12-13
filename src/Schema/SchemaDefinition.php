@@ -15,7 +15,8 @@ class SchemaDefinition {
     const ARGNAME_RELATIONAL = 'relational';
     const ARGNAME_FIELDS = 'fields';
     const ARGNAME_CONNECTIONS = 'connections';
-    const ARGNAME_OPERATORS_AND_HELPERS = 'operatorsAndHelpers';
+    const ARGNAME_OPERATORS = 'operators';
+    const ARGNAME_HELPERS = 'helpers';
     const ARGNAME_TYPES = 'types';
     const ARGNAME_BASERESOLVER = 'baseResolver';
     const ARGNAME_RECURSION = 'recursion';
