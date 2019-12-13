@@ -1037,22 +1037,30 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                         $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE] = SchemaHelpers::getTypeToOutputInSchema($this, $fieldName, $type);
                     }
                 }
+                $isConnection = isset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL]) && $fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL];
                 if ($isOperatorOrHelper) {
-                    // If it has arguments, it is an operator. Otherwise, it is a helper
-                    $hasArgs = isset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) && $fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS];
-                    $entry = $hasArgs ?
-                        SchemaDefinition::ARGNAME_FUNCTIONS :
-                        SchemaDefinition::ARGNAME_HELPERS;
+                    // If it is relational, it is a global connection
+                    if ($isConnection) {
+                        $entry = SchemaDefinition::ARGNAME_GLOBAL_CONNECTIONS;
+                        // Remove attrs "types" and "typeNames"
+                        unset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPES]);
+                        unset($fieldSchemaDefinition[self::ARGNAME_TYPENAMES]);
+                    } else {
+                        // If it has arguments, it is an operator. Otherwise, it is a helper
+                        $hasArgs = isset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) && $fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS];
+                        $entry = $hasArgs ?
+                            SchemaDefinition::ARGNAME_FUNCTIONS :
+                            SchemaDefinition::ARGNAME_HELPERS;
+                    }
                 } else {
                     // Split the results into "fields" and "connections"
-                    $isConnection = isset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL]) && $fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL];
                     $entry = $isConnection ?
                         SchemaDefinition::ARGNAME_CONNECTIONS :
                         SchemaDefinition::ARGNAME_FIELDS;
-                    // Can remove attribute "relational"
-                    if ($isConnection) {
-                        unset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL]);
-                    }
+                }
+                // Can remove attribute "relational"
+                if ($isConnection) {
+                    unset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL]);
                 }
                 $this->schemaDefinition[$typeName][$entry][] = $fieldSchemaDefinition;
             }
