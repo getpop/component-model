@@ -33,7 +33,7 @@ class FeedbackMessageStore extends \PoP\FieldQuery\FeedbackMessageStore implemen
         return $resultItemDBWarnings;
     }
 
-    public function maybeAddSchemaError(string $dbKey, string $field, string $error)
+    public function addSchemaError(string $dbKey, string $field, string $error)
     {
         $this->schemaErrors[$dbKey][] = [
             Tokens::PATH => [$field],
