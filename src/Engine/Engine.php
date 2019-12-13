@@ -1651,7 +1651,7 @@ class Engine implements EngineInterface
                 $ret['logEntries'] = $feedbackMessageStore->getLogEntries();
             }
         }
-        $this->maybeCombineAndAddDatabaseEntries($ret, 'databases', $databases);
+        $this->maybeCombineAndAddDatabaseEntries($ret, 'dbData', $databases);
         $this->maybeCombineAndAddDatabaseEntries($ret, 'convertibleDBKeyIDs', $convertibleDBKeyIDs);
 
         return $ret;
