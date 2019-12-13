@@ -1361,14 +1361,6 @@ class Engine implements EngineInterface
             $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();
             $storeSchemaErrors = $feedbackMessageStore->retrieveAndClearSchemaErrors();
             if (!empty($iterationSchemaErrors) || !empty($storeSchemaErrors)) {
-                // Executing the following query will produce duplicates on SchemaWarnings:
-                // ?query=posts(limit:3.5).title,posts(limit:extract(posts(limit:4.5),saraza)).title
-                // This is unavoidable, since add schemaWarnings (and, correspondingly, errors and deprecations) in functions
-                // `resolveSchemaValidationWarningDescriptions` and `resolveValue` from the AbstractTypeResolver
-                // Ideally, doing it in `resolveValue` is not needed, since it already went through the validation in `resolveSchemaValidationWarningDescriptions`, so it's a duplication
-                // However, when doing nested fields, the warnings are caught only in `resolveValue`, hence we need to add it there too
-                // Then, we will certainly have duplicates. Remove them now
-                // Because these are arrays of arrays, we use the method taken from https://stackoverflow.com/a/2561283
                 $dbNameSchemaErrorEntries = $this->moveEntriesUnderDBName($iterationSchemaErrors, false, $typeResolver);
                 foreach ($dbNameSchemaErrorEntries as $dbname => $entries) {
                     $schemaErrors[$dbname][$database_key] = array_merge(
@@ -1381,7 +1373,6 @@ class Engine implements EngineInterface
                     $schemaErrors,
                     $dbNameStoreSchemaErrors
                 );
-                $schemaErrors = array_intersect_key($schemaErrors, array_unique(array_map('serialize', $schemaErrors)));
             }
             if ($storeSchemaWarnings = $feedbackMessageStore->retrieveAndClearSchemaWarnings()) {
                 $iterationSchemaWarnings = array_merge(
@@ -1630,6 +1621,20 @@ class Engine implements EngineInterface
         }
 
         $ret = array();
+
+        // Executing the following query will produce duplicates on SchemaWarnings:
+        // ?query=posts(limit:3.5).title,posts(limit:extract(posts(limit:4.5),saraza)).title
+        // This is unavoidable, since add schemaWarnings (and, correspondingly, errors and deprecations) in functions
+        // `resolveSchemaValidationWarningDescriptions` and `resolveValue` from the AbstractTypeResolver
+        // Ideally, doing it in `resolveValue` is not needed, since it already went through the validation in `resolveSchemaValidationWarningDescriptions`, so it's a duplication
+        // However, when doing nested fields, the warnings are caught only in `resolveValue`, hence we need to add it there too
+        // Then, we will certainly have duplicates. Remove them now
+        // Because these are arrays of arrays, we use the method taken from https://stackoverflow.com/a/2561283
+        foreach ($schemaErrors as $dbname => &$entries) {
+            foreach ($entries as $dbKey => $errors) {
+                $entries[$dbKey] = array_intersect_key($errors, array_unique(array_map('serialize', $errors)));
+            }
+        }
 
         // Add the feedback (errors, warnings, deprecations) into the output
         $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();
