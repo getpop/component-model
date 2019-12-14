@@ -5,7 +5,7 @@ use PoP\Hooks\Facades\HooksAPIFacade;
 use PoP\ComponentModel\ModuleProcessors\DataloadingConstants;
 use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
 
-abstract class AbstractTypeQueryableDataResolver extends AbstractTypeDataLoader implements TypeQueryableDataResolverInterface
+abstract class AbstractTypeQueryableDataLoader extends AbstractTypeDataLoader implements TypeQueryableDataLoaderInterface
 {
     /**
      * Function to override
