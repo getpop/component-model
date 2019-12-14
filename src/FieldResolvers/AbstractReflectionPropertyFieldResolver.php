@@ -97,9 +97,18 @@ abstract class AbstractReflectionPropertyFieldResolver extends AbstractDBDataFie
         return self::$reflectionDocComments;
     }
 
+    public static function getPropertiesToExclude(): array
+    {
+        return [];
+    }
+
     public static function getFieldNamesToResolve(): array
     {
-        return self::getReflectionFieldNames();
+        $class = get_called_class();
+        return array_diff(
+            self::getReflectionFieldNames(),
+            $class::getPropertiesToExclude()
+        );
     }
 
     public function getSchemaFieldType(TypeResolverInterface $typeResolver, string $fieldName): ?string
