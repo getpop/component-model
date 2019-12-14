@@ -102,9 +102,19 @@ abstract class AbstractReflectionPropertyFieldResolver extends AbstractDBDataFie
         return [];
     }
 
+    public static function getPropertiesToInclude(): array
+    {
+        return [];
+    }
+
     public static function getFieldNamesToResolve(): array
     {
+        // If explicitly stating what properties to include, then already use those
         $class = get_called_class();
+        if ($propertiesToInclude = $class::getPropertiesToInclude()) {
+            return $propertiesToInclude;
+        }
+        // Otherwise, get all properties from the class, possibly excluding the forbidden ones (eg: user's "password" property)
         return array_diff(
             self::getReflectionFieldNames(),
             $class::getPropertiesToExclude()
@@ -113,8 +123,7 @@ abstract class AbstractReflectionPropertyFieldResolver extends AbstractDBDataFie
 
     public function getSchemaFieldType(TypeResolverInterface $typeResolver, string $fieldName): ?string
     {
-        // TODO: If we are running PHP 7.4, the properties may be typed, so we can already get the type through reflection
-        // Implement this!
+        // TODO: If we are running PHP 7.4, the properties may be typed, so we can already get the type through reflection. Implement this!
         return parent::getSchemaFieldType($typeResolver, $fieldName);
     }
 
