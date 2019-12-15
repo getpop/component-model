@@ -19,6 +19,7 @@ class SchemaDefinition {
     const ARGNAME_FUNCTIONS = 'functions';
     const ARGNAME_GLOBAL_FIELDS = 'globalFields';
     const ARGNAME_TYPES = 'types';
+    const ARGNAME_TYPE_SCHEMA = 'typeSchema';
     const ARGNAME_UNION_TYPES = 'unionTypes';
     const ARGNAME_BASERESOLVER = 'baseResolver';
     const ARGNAME_RECURSION = 'recursion';

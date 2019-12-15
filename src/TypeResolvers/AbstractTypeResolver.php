@@ -980,8 +980,8 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             if ($isFlatShape) {
                 if ($connections = &$this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_CONNECTIONS]) {
                     foreach ($connections as &$connection) {
-                        if (isset($connection[SchemaDefinition::ARGNAME_TYPES])) {
-                            $connectionTypes = (array)$connection[SchemaDefinition::ARGNAME_TYPES];
+                        if (isset($connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA])) {
+                            $connectionTypes = (array)$connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA];
 
                             // Move the type data one level up.
                             // Important: do the merge in this order, because this typeResolver contains its own data, but when it appears within connections, it does not
@@ -992,10 +992,10 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
                             // If the output uses SDL notation, can remove "types"
                             if ($options['typeAsSDL']) {
-                                unset($connection[SchemaDefinition::ARGNAME_TYPES]);
+                                unset($connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA]);
                             } else {
                                 // Otherwise, replace the information with only the names of the types
-                                $connection[SchemaDefinition::ARGNAME_TYPES] = $connection[self::ARGNAME_TYPENAMES];
+                                $connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA] = $connection[self::ARGNAME_TYPENAMES];
                             }
                             // Remove the temporary attribute "typeNames"
                             unset($connection[self::ARGNAME_TYPENAMES]);
@@ -1090,7 +1090,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             // If this field is relational, then add its own schema
             if ($fieldTypeResolverClass = $this->resolveFieldTypeResolverClass($fieldName)) {
                 $fieldTypeResolver = $instanceManager->getInstance($fieldTypeResolverClass);
-                $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPES] = $fieldTypeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options);
+                $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE_SCHEMA] = $fieldTypeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options);
                 if ($isFlatShape) {
                     // Store the type names before they are all mixed up in `getSchemaDefinition` when moving them one level up
                     $fieldSchemaDefinition[self::ARGNAME_TYPENAMES] = [$fieldTypeResolver->getTypeName()];
@@ -1112,7 +1112,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 $entry = SchemaDefinition::ARGNAME_GLOBAL_CONNECTIONS;
                 // Remove attrs "types" and "typeNames"
                 if ($options['typeAsSDL']) {
-                    unset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPES]);
+                    unset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE_SCHEMA]);
                 }
                 unset($fieldSchemaDefinition[self::ARGNAME_TYPENAMES]);
             } else {
