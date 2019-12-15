@@ -2,7 +2,7 @@
 namespace PoP\ComponentModel\FieldResolvers;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
-abstract class AbstractSchemaFieldResolver extends AbstractFieldResolver implements FieldResolverSchemaInterface
+abstract class AbstractSchemaFieldResolver extends AbstractFieldResolver implements FieldSchemaDefinitionResolverInterface
 {
     /**
      * The object resolves its own schema definition
@@ -12,7 +12,7 @@ abstract class AbstractSchemaFieldResolver extends AbstractFieldResolver impleme
      * @param array $fieldArgs
      * @return void
      */
-    public function getSchemaDefinitionResolver(TypeResolverInterface $typeResolver): ?FieldResolverSchemaInterface
+    public function getSchemaDefinitionResolver(TypeResolverInterface $typeResolver): ?FieldSchemaDefinitionResolverInterface
     {
         return $this;
     }

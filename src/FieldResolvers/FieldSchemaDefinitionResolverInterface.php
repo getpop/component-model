@@ -2,7 +2,7 @@
 namespace PoP\ComponentModel\FieldResolvers;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
-interface FieldResolverSchemaInterface
+interface FieldSchemaDefinitionResolverInterface
 {
     public function getSchemaFieldType(TypeResolverInterface $typeResolver, string $fieldName): ?string;
     public function getSchemaFieldDescription(TypeResolverInterface $typeResolver, string $fieldName): ?string;
