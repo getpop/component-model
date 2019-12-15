@@ -1000,6 +1000,16 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                         }
                     }
                 }
+                // Also UnionTypeResolver's types, move up
+                if ($this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_CONVERTIBLE]) {
+                    $unionTypes = $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_UNION_TYPES];
+                    $this->schemaDefinition = array_merge(
+                        $this->schemaDefinition,
+                        $unionTypes
+                    );
+                    // Replace the information with only the names of the types
+                    $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_UNION_TYPES] = array_keys($unionTypes);
+                }
             }
         }
 

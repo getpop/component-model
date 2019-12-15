@@ -219,41 +219,25 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         return $typeResolver->resolveValue($resultItem, $field, $variables, $expressions, $options);
     }
 
-    // protected function addSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = [])
-    // {
-    //     $instanceManager = InstanceManagerFacade::getInstance();
-    //     $typeName = $this->getTypeName();
-    //     $isRoot = $stackMessages['is-root'];
-    //     unset($stackMessages['is-root']);
+    protected function addSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = [])
+    {
+        $instanceManager = InstanceManagerFacade::getInstance();
+        $typeName = $this->getTypeName();
 
-    //     $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_CONVERTIBLE] = true;
+        // Properties
+        if ($description = $this->getSchemaTypeDescription()) {
+            $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
+        }
+        $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_CONVERTIBLE] = true;
 
-    //     // Default typeResolver, under "base" condition
-    //     $baseFields = [];
-    //     $baseTypeResolverClass = $this->getBaseTypeResolverClass();
-    //     $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-    //     $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_BASERESOLVER] = $typeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options);
-    //     $baseFields = array_map(function($fieldProps) {
-    //         return $fieldProps[SchemaDefinition::ARGNAME_NAME];
-    //     }, (array)$this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_BASERESOLVER][SchemaDefinition::ARGNAME_FIELDS]);
-
-    //     // Iterate through the typeResolvers from all the pickers and get their schema definitions, under their object nature
-    //     foreach ($this->getTypeResolverPickers() as $picker) {
-    //         $typeResolver = $instanceManager->getInstance($picker->getTypeResolverClass());
-    //         // Do not repeat those fields already present on the base typeResolver
-    //         $deltaFields = $typeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options);
-    //         // If it is a recursion, this field will not be set
-    //         if (isset($deltaFields[SchemaDefinition::ARGNAME_FIELDS])) {
-    //             $deltaFields[SchemaDefinition::ARGNAME_FIELDS] = array_values(array_filter(
-    //                 $deltaFields[SchemaDefinition::ARGNAME_FIELDS],
-    //                 function($fieldProps) use($baseFields) {
-    //                     return !in_array($fieldProps[SchemaDefinition::ARGNAME_NAME], $baseFields);
-    //                 }
-    //             ));
-    //             $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_RESOLVERSBYOBJECTNATURE][$picker->getSchemaDefinitionObjectNature()] = $deltaFields;
-    //         }
-    //     }
-    // }
+        // Iterate through the typeResolvers from all the pickers and get their schema definitions
+        foreach ($this->getTypeResolverPickers() as $picker) {
+            $pickerTypeResolver = $instanceManager->getInstance($picker->getTypeResolverClass());
+            $pickerTypeSchemaDefinition = $pickerTypeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options);
+            $pickerTypeName = $pickerTypeResolver->getTypeName();
+            $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_UNION_TYPES][$pickerTypeName] = $pickerTypeSchemaDefinition[$pickerTypeName];
+        }
+    }
 
     /**
      * Because the UnionTypeResolver doesn't know yet which TypeResolver will be used (that depends on each resultItem), it can't resolve error validation
