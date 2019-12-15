@@ -1070,7 +1070,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         foreach ($this->getAllFieldResolvers() as $fieldName => $fieldResolvers) {
             // Get the documentation from the first element
             $fieldResolver = $fieldResolvers[0];
-            $isGlobal = $fieldResolver->isOperatorOrHelper($this, $fieldName);
+            $isGlobal = $fieldResolver->isGlobal($this, $fieldName);
             if (($global && $isGlobal) || (!$global && !$isGlobal)) {
                 $schemaFieldResolvers[$fieldName] =  $fieldResolver;
             }
@@ -1084,7 +1084,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $typeName = $this->getTypeName();
         $isFlatShape = $options['shape'] == SchemaDefinition::ARGVALUE_SCHEMA_SHAPE_FLAT;
         $fieldSchemaDefinitionResolver = $fieldResolver->getSchemaDefinitionResolver($this);
-        $isOperatorOrHelper = $fieldSchemaDefinitionResolver->isOperatorOrHelper($this, $fieldName);
+        $isGlobal = $fieldSchemaDefinitionResolver->isGlobal($this, $fieldName);
 
         // Watch out! We are passing empty $fieldArgs to generate the schema!
         $fieldSchemaDefinition = $fieldResolver->getSchemaDefinitionForField($this, $fieldName, []);
@@ -1107,7 +1107,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             }
         }
         $isConnection = isset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL]) && $fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL];
-        if ($isOperatorOrHelper) {
+        if ($isGlobal) {
             // If it is relational, it is a global connection
             if ($isConnection) {
                 $entry = SchemaDefinition::ARGNAME_GLOBAL_CONNECTIONS;

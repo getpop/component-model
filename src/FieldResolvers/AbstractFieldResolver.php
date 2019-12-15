@@ -106,10 +106,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         return null;
     }
 
-    public function isOperatorOrHelper(TypeResolverInterface $typeResolver, string $fieldName): bool
+    public function isGlobal(TypeResolverInterface $typeResolver, string $fieldName): bool
     {
         if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
-            return $schemaDefinitionResolver->isOperatorOrHelper($typeResolver, $fieldName);
+            return $schemaDefinitionResolver->isGlobal($typeResolver, $fieldName);
         }
         return false;
     }

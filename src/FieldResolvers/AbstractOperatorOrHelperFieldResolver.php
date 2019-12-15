@@ -13,7 +13,7 @@ abstract class AbstractOperatorOrHelperFieldResolver extends AbstractDBDataField
         ];
     }
 
-    public function isOperatorOrHelper(TypeResolverInterface $typeResolver, string $fieldName): bool
+    public function isGlobal(TypeResolverInterface $typeResolver, string $fieldName): bool
     {
         return true;
     }

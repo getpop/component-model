@@ -37,7 +37,7 @@ abstract class AbstractSchemaFieldResolver extends AbstractFieldResolver impleme
         return null;
     }
 
-    public function isOperatorOrHelper(TypeResolverInterface $typeResolver, string $fieldName): bool
+    public function isGlobal(TypeResolverInterface $typeResolver, string $fieldName): bool
     {
         return false;
     }
