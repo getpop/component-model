@@ -1116,11 +1116,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 }
                 unset($fieldSchemaDefinition[self::ARGNAME_TYPENAMES]);
             } else {
-                // If it has arguments, it is an operator. Otherwise, it is a helper
-                $hasArgs = isset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) && $fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS];
-                $entry = $hasArgs ?
-                    SchemaDefinition::ARGNAME_FUNCTIONS :
-                    SchemaDefinition::ARGNAME_HELPERS;
+                $entry = SchemaDefinition::ARGNAME_FUNCTIONS;
             }
         } else {
             // Split the results into "fields" and "connections"
