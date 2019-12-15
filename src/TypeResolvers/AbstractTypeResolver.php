@@ -1116,7 +1116,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 }
                 unset($fieldSchemaDefinition[self::ARGNAME_TYPENAMES]);
             } else {
-                $entry = SchemaDefinition::ARGNAME_FUNCTIONS;
+                $entry = SchemaDefinition::ARGNAME_GLOBAL_FIELDS;
             }
         } else {
             // Split the results into "fields" and "connections"
