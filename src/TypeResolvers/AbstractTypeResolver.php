@@ -1020,7 +1020,6 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
     protected function addSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = [])
     {
-        $instanceManager = InstanceManagerFacade::getInstance();
         $typeName = $this->getTypeName();
 
         // Properties
@@ -1030,26 +1029,21 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
         // Add the directives (non-global)
         $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DIRECTIVES] = [];
-        $directiveResolverInstances = $this->getDirectiveResolvers(false);
+        $directiveResolverInstances = $this->getSchemaDirectiveResolvers(false);
         foreach ($directiveResolverInstances as $directiveResolverInstance) {
             $directiveSchemaDefinition = $directiveResolverInstance->getSchemaDefinitionForDirective($this);
             $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DIRECTIVES][] = $directiveSchemaDefinition;
         }
 
-        // Remove all fields which are not resolved by any unit
+        // Add the fields (non-global)
         $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_FIELDS] = [];
-        $schemaFieldResolvers = $this->getAllFieldResolvers();
-        foreach ($schemaFieldResolvers as $fieldName => $fieldResolvers) {
-            // Get the documentation from the first element
-            $fieldResolver = $fieldResolvers[0];
-            $isOperatorOrHelper = $fieldResolver->isOperatorOrHelper($this, $fieldName);
-            if (!$isOperatorOrHelper) {
-                $this->addFieldSchemaDefinition($fieldResolver, $fieldName, $stackMessages, $generalMessages, $options);
-            }
+        $schemaFieldResolvers = $this->getSchemaFieldResolvers(false);
+        foreach ($schemaFieldResolvers as $fieldName => $fieldResolver) {
+            $this->addFieldSchemaDefinition($fieldResolver, $fieldName, $stackMessages, $generalMessages, $options);
         }
     }
 
-    protected function getDirectiveResolvers(bool $global): array
+    protected function getSchemaDirectiveResolvers(bool $global): array
     {
         $instanceManager = InstanceManagerFacade::getInstance();
         $directiveResolverInstances = [];
@@ -1068,6 +1062,20 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             }
         }
         return $directiveResolverInstances;
+    }
+
+    protected function getSchemaFieldResolvers(bool $global): array
+    {
+        $schemaFieldResolvers = [];
+        foreach ($this->getAllFieldResolvers() as $fieldName => $fieldResolvers) {
+            // Get the documentation from the first element
+            $fieldResolver = $fieldResolvers[0];
+            $isGlobal = $fieldResolver->isOperatorOrHelper($this, $fieldName);
+            if (($global && $isGlobal) || (!$global && !$isGlobal)) {
+                $schemaFieldResolvers[$fieldName] =  $fieldResolver;
+            }
+        }
+        return $schemaFieldResolvers;
     }
 
     protected function addFieldSchemaDefinition(FieldResolverInterface $fieldResolver, string $fieldName, array $stackMessages, array &$generalMessages, array $options = [])
