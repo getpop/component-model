@@ -1028,22 +1028,12 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
         }
 
-        // Add the directives
+        // Add the directives (non-global)
         $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DIRECTIVES] = [];
-        $directiveNameClasses = $this->getDirectiveNameClasses();
-        foreach ($directiveNameClasses as $directiveName => $directiveClasses) {
-            foreach ($directiveClasses as $directiveClass) {
-                $directiveResolverInstance = $instanceManager->getInstance($directiveClass);
-                // A directive can decide to not be added to the schema, eg: when it is repeated/implemented several times
-                if ($directiveResolverInstance->skipAddingToSchemaDefinition()) {
-                    continue;
-                }
-                $isGlobal = $directiveResolverInstance->isGlobal($this);
-                if (!$isGlobal) {
-                    $directiveSchemaDefinition = $directiveResolverInstance->getSchemaDefinitionForDirective($this);
-                    $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DIRECTIVES][] = $directiveSchemaDefinition;
-                }
-            }
+        $directiveResolverInstances = $this->getDirectiveResolvers(false);
+        foreach ($directiveResolverInstances as $directiveResolverInstance) {
+            $directiveSchemaDefinition = $directiveResolverInstance->getSchemaDefinitionForDirective($this);
+            $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DIRECTIVES][] = $directiveSchemaDefinition;
         }
 
         // Remove all fields which are not resolved by any unit
@@ -1057,6 +1047,27 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 $this->addFieldSchemaDefinition($fieldResolver, $fieldName, $stackMessages, $generalMessages, $options);
             }
         }
+    }
+
+    protected function getDirectiveResolvers(bool $global): array
+    {
+        $instanceManager = InstanceManagerFacade::getInstance();
+        $directiveResolverInstances = [];
+        $directiveNameClasses = $this->getDirectiveNameClasses();
+        foreach ($directiveNameClasses as $directiveName => $directiveClasses) {
+            foreach ($directiveClasses as $directiveClass) {
+                $directiveResolverInstance = $instanceManager->getInstance($directiveClass);
+                // A directive can decide to not be added to the schema, eg: when it is repeated/implemented several times
+                if ($directiveResolverInstance->skipAddingToSchemaDefinition()) {
+                    continue;
+                }
+                $isGlobal = $directiveResolverInstance->isGlobal($this);
+                if (($global && $isGlobal) || (!$global && !$isGlobal)) {
+                    $directiveResolverInstances[] = $directiveResolverInstance;
+                }
+            }
+        }
+        return $directiveResolverInstances;
     }
 
     protected function addFieldSchemaDefinition(FieldResolverInterface $fieldResolver, string $fieldName, array $stackMessages, array &$generalMessages, array $options = [])
