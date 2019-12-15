@@ -1,6 +1,7 @@
 <?php
 namespace PoP\ComponentModel\FieldResolvers;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
+use PoP\ComponentModel\FieldResolvers\FieldResolverSchemaInterface;
 
 interface FieldResolverInterface
 {
@@ -18,7 +19,7 @@ interface FieldResolverInterface
      * @param array $fieldArgs
      * @return void
      */
-    public function getSchemaDefinitionResolver(TypeResolverInterface $typeResolver);
+    public function getSchemaDefinitionResolver(TypeResolverInterface $typeResolver): ?FieldResolverSchemaInterface;
     public function getSchemaDefinitionForField(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): array;
 
     /**

@@ -6,6 +6,7 @@ use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\Facades\Engine\EngineFacade;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
+use PoP\ComponentModel\FieldResolvers\FieldResolverSchemaInterface;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 
 abstract class AbstractFieldResolver implements FieldResolverInterface, FieldResolverSchemaInterface
@@ -68,7 +69,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldRes
      *
      * @return void
      */
-    public function getSchemaDefinitionResolver(TypeResolverInterface $typeResolver)
+    public function getSchemaDefinitionResolver(TypeResolverInterface $typeResolver): ?FieldResolverSchemaInterface
     {
         return null;
     }

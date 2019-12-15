@@ -12,7 +12,7 @@ abstract class AbstractSchemaFieldResolver extends AbstractFieldResolver impleme
      * @param array $fieldArgs
      * @return void
      */
-    public function getSchemaDefinitionResolver(TypeResolverInterface $typeResolver)
+    public function getSchemaDefinitionResolver(TypeResolverInterface $typeResolver): ?FieldResolverSchemaInterface
     {
         return $this;
     }

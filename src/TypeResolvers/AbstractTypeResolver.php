@@ -1,10 +1,10 @@
 <?php
 namespace PoP\ComponentModel\TypeResolvers;
 
+use PoP\ComponentModel\Error;
 use PoP\FieldQuery\QueryUtils;
 use PoP\FieldQuery\QuerySyntax;
 use PoP\FieldQuery\QueryHelpers;
-use PoP\ComponentModel\Error;
 use PoP\ComponentModel\ErrorUtils;
 use PoP\ComponentModel\Environment;
 use PoP\FieldQuery\FieldQueryUtils;
@@ -15,6 +15,7 @@ use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\FieldHelpers;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
+use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\Facades\Engine\DataloadingEngineFacade;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
@@ -1061,56 +1062,67 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             $fieldResolver = $fieldResolvers[0];
             $isOperatorOrHelper = $fieldResolver->isOperatorOrHelper($this, $fieldName);
             if (!$isOperatorOrHelper || ($isOperatorOrHelper && $isRoot)) {
-                // Watch out! We are passing empty $fieldArgs to generate the schema!
-                $fieldSchemaDefinition = $fieldResolver->getSchemaDefinitionForField($this, $fieldName, []);
-                // Add subfield schema if it is deep, and this typeResolver has not been processed yet
-                if ($options['deep']) {
-                    // If this field is relational, then add its own schema
-                    if ($fieldTypeResolverClass = $this->resolveFieldTypeResolverClass($fieldName)) {
-                        $fieldTypeResolver = $instanceManager->getInstance($fieldTypeResolverClass);
-                        $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPES] = $fieldTypeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options);
-                        if ($isFlatShape) {
-                            // Store the type names before they are all mixed up in `getSchemaDefinition` when moving them one level up
-                            $fieldSchemaDefinition[self::ARGNAME_TYPENAMES] = [$fieldTypeResolver->getTypeName()];
-                        }
-                    }
-                }
-                // Convert the field type from its internal representation (eg: "array:id") to the GraphQL standard representation (eg: "[Post]")
-                if ($options['typeAsSDL']) {
-                    if ($type = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE]) {
-                        $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE] = SchemaHelpers::getTypeToOutputInSchema($this, $fieldName, $type);
-                    }
-                }
-                $isConnection = isset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL]) && $fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL];
-                if ($isOperatorOrHelper) {
-                    // If it is relational, it is a global connection
-                    if ($isConnection) {
-                        $entry = SchemaDefinition::ARGNAME_GLOBAL_CONNECTIONS;
-                        // Remove attrs "types" and "typeNames"
-                        if ($options['typeAsSDL']) {
-                            unset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPES]);
-                        }
-                        unset($fieldSchemaDefinition[self::ARGNAME_TYPENAMES]);
-                    } else {
-                        // If it has arguments, it is an operator. Otherwise, it is a helper
-                        $hasArgs = isset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) && $fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS];
-                        $entry = $hasArgs ?
-                            SchemaDefinition::ARGNAME_FUNCTIONS :
-                            SchemaDefinition::ARGNAME_HELPERS;
-                    }
-                } else {
-                    // Split the results into "fields" and "connections"
-                    $entry = $isConnection ?
-                        SchemaDefinition::ARGNAME_CONNECTIONS :
-                        SchemaDefinition::ARGNAME_FIELDS;
-                }
-                // Can remove attribute "relational"
-                if ($isConnection) {
-                    unset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL]);
-                }
-                $this->schemaDefinition[$typeName][$entry][] = $fieldSchemaDefinition;
+                $this->addFieldSchemaDefinition($fieldResolver, $fieldName, $stackMessages, $generalMessages, $options);
             }
         }
+    }
+
+    protected function addFieldSchemaDefinition(FieldResolverInterface $fieldResolver, string $fieldName, array $stackMessages, array &$generalMessages, array $options = [])
+    {
+        $instanceManager = InstanceManagerFacade::getInstance();
+        $typeName = $this->getTypeName();
+        $isFlatShape = $options['shape'] == SchemaDefinition::ARGVALUE_SCHEMA_SHAPE_FLAT;
+        $fieldSchemaDefinitionResolver = $fieldResolver->getSchemaDefinitionResolver($this);
+        $isOperatorOrHelper = $fieldSchemaDefinitionResolver->isOperatorOrHelper($this, $fieldName);
+
+        // Watch out! We are passing empty $fieldArgs to generate the schema!
+        $fieldSchemaDefinition = $fieldResolver->getSchemaDefinitionForField($this, $fieldName, []);
+        // Add subfield schema if it is deep, and this typeResolver has not been processed yet
+        if ($options['deep']) {
+            // If this field is relational, then add its own schema
+            if ($fieldTypeResolverClass = $this->resolveFieldTypeResolverClass($fieldName)) {
+                $fieldTypeResolver = $instanceManager->getInstance($fieldTypeResolverClass);
+                $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPES] = $fieldTypeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options);
+                if ($isFlatShape) {
+                    // Store the type names before they are all mixed up in `getSchemaDefinition` when moving them one level up
+                    $fieldSchemaDefinition[self::ARGNAME_TYPENAMES] = [$fieldTypeResolver->getTypeName()];
+                }
+            }
+        }
+        // Convert the field type from its internal representation (eg: "array:id") to the GraphQL standard representation (eg: "[Post]")
+        if ($options['typeAsSDL']) {
+            if ($type = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE]) {
+                $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE] = SchemaHelpers::getTypeToOutputInSchema($this, $fieldName, $type);
+            }
+        }
+        $isConnection = isset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL]) && $fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL];
+        if ($isOperatorOrHelper) {
+            // If it is relational, it is a global connection
+            if ($isConnection) {
+                $entry = SchemaDefinition::ARGNAME_GLOBAL_CONNECTIONS;
+                // Remove attrs "types" and "typeNames"
+                if ($options['typeAsSDL']) {
+                    unset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPES]);
+                }
+                unset($fieldSchemaDefinition[self::ARGNAME_TYPENAMES]);
+            } else {
+                // If it has arguments, it is an operator. Otherwise, it is a helper
+                $hasArgs = isset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) && $fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS];
+                $entry = $hasArgs ?
+                    SchemaDefinition::ARGNAME_FUNCTIONS :
+                    SchemaDefinition::ARGNAME_HELPERS;
+            }
+        } else {
+            // Split the results into "fields" and "connections"
+            $entry = $isConnection ?
+                SchemaDefinition::ARGNAME_CONNECTIONS :
+                SchemaDefinition::ARGNAME_FIELDS;
+        }
+        // Can remove attribute "relational"
+        if ($isConnection) {
+            unset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL]);
+        }
+        $this->schemaDefinition[$typeName][$entry][] = $fieldSchemaDefinition;
     }
 
     protected function calculateAllFieldResolvers(): array
