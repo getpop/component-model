@@ -39,6 +39,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     // protected $fieldNamesToResolve;
     protected $directiveNameClasses;
     protected $safeVars;
+    protected $schemaFieldResolvers;
 
     private $fieldDirectiveIDFields = [];
     private $fieldDirectivesFromFieldCache = [];
@@ -1021,11 +1022,6 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     {
         $instanceManager = InstanceManagerFacade::getInstance();
         $typeName = $this->getTypeName();
-        $isFlatShape = $options['shape'] == SchemaDefinition::ARGVALUE_SCHEMA_SHAPE_FLAT;
-
-        // Only in the root we output the operators and helpers
-        $isRoot = $stackMessages['is-root'];
-        unset($stackMessages['is-root']);
 
         // Properties
         if ($description = $this->getSchemaTypeDescription()) {
@@ -1043,25 +1039,21 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     continue;
                 }
                 $isGlobal = $directiveResolverInstance->isGlobal($this);
-                if (!$isGlobal || ($isGlobal && $isRoot)) {
+                if (!$isGlobal) {
                     $directiveSchemaDefinition = $directiveResolverInstance->getSchemaDefinitionForDirective($this);
-                    if ($isGlobal) {
-                        $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_GLOBAL_DIRECTIVES][] = $directiveSchemaDefinition;
-                    } else {
-                        $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DIRECTIVES][] = $directiveSchemaDefinition;
-                    }
+                    $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DIRECTIVES][] = $directiveSchemaDefinition;
                 }
             }
         }
 
         // Remove all fields which are not resolved by any unit
         $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_FIELDS] = [];
-        $schemaFieldResolvers = $this->calculateAllFieldResolvers();
+        $schemaFieldResolvers = $this->getAllFieldResolvers();
         foreach ($schemaFieldResolvers as $fieldName => $fieldResolvers) {
             // Get the documentation from the first element
             $fieldResolver = $fieldResolvers[0];
             $isOperatorOrHelper = $fieldResolver->isOperatorOrHelper($this, $fieldName);
-            if (!$isOperatorOrHelper || ($isOperatorOrHelper && $isRoot)) {
+            if (!$isOperatorOrHelper) {
                 $this->addFieldSchemaDefinition($fieldResolver, $fieldName, $stackMessages, $generalMessages, $options);
             }
         }
@@ -1123,6 +1115,14 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             unset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL]);
         }
         $this->schemaDefinition[$typeName][$entry][] = $fieldSchemaDefinition;
+    }
+
+    protected function getAllFieldResolvers(): array
+    {
+        if (is_null($this->schemaFieldResolvers)) {
+            $this->schemaFieldResolvers = $this->calculateAllFieldResolvers();
+        }
+        return $this->schemaFieldResolvers;
     }
 
     protected function calculateAllFieldResolvers(): array
