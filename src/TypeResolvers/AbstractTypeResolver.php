@@ -4,6 +4,7 @@ namespace PoP\ComponentModel\TypeResolvers;
 use PoP\FieldQuery\QueryUtils;
 use PoP\FieldQuery\QuerySyntax;
 use PoP\FieldQuery\QueryHelpers;
+use PoP\ComponentModel\Error;
 use PoP\ComponentModel\ErrorUtils;
 use PoP\ComponentModel\Environment;
 use PoP\FieldQuery\FieldQueryUtils;
@@ -34,7 +35,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
      */
     protected $fieldResolvers = [];
     protected $schemaDefinition;
-    protected $fieldNamesToResolve;
+    // protected $fieldNamesToResolve;
     protected $directiveNameClasses;
     protected $safeVars;
 
@@ -43,13 +44,13 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     private $dissectedFieldForSchemaCache = [];
     private $directiveResolverInstanceCache = [];
 
-    public function getFieldNamesToResolve(): array
-    {
-        if (is_null($this->fieldNamesToResolve)) {
-            $this->fieldNamesToResolve = $this->calculateFieldNamesToResolve();
-        }
-        return $this->fieldNamesToResolve;
-    }
+    // public function getFieldNamesToResolve(): array
+    // {
+    //     if (is_null($this->fieldNamesToResolve)) {
+    //         $this->fieldNamesToResolve = $this->calculateFieldNamesToResolve();
+    //     }
+    //     return $this->fieldNamesToResolve;
+    // }
 
     public function getSchemaTypeDescription(): ?string
     {
@@ -510,17 +511,50 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return array_keys($ids_data_fields);
     }
 
+    protected function getUnresolvedResultItemIDError($resultItemID)
+    {
+        $translationAPI = TranslationAPIFacade::getInstance();
+        return new Error(
+            'unresolved-resultitem-id',
+            sprintf(
+                $translationAPI->__('The DataLoader can\'t load data for object with ID \'%s\'', 'pop-component-model'),
+                $resultItemID
+            )
+        );
+    }
+
     public function fillResultItems(array $ids_data_fields, array &$convertibleDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         $instanceManager = InstanceManagerFacade::getInstance();
+        $translationAPI = TranslationAPIFacade::getInstance();
 
         // Obtain the data for the required object IDs
         $resultIDItems = [];
         $ids = $this->getIDsToQuery($ids_data_fields);
         $typeDataLoaderClass = $this->getTypeDataLoaderClass();
         $typeDataLoader = $instanceManager->getInstance($typeDataLoaderClass);
-        foreach ($typeDataLoader->getObjects($ids) as $dataItem) {
-            $resultIDItems[$this->getId($dataItem)] = $dataItem;
+        foreach ($typeDataLoader->getObjects($ids) as $resultItem) {
+            $resultItemID = $this->getId($resultItem);
+            // If the UnionTypeResolver doesn't have a TypeResolver to process this element, the ID will be null, and an error will be show below
+            if (is_null($resultItemID)) {
+                continue;
+            }
+            $resultIDItems[$resultItemID] = $resultItem;
+        }
+
+        // Show an error for all resultItems that couldn't be processed
+        $resolvedResultItemIDs = $this->getIDsToQuery($resultIDItems);
+        foreach (array_diff($ids, $resolvedResultItemIDs) as $unresolvedResultItemID) {
+            $error = $this->getUnresolvedResultItemIDError($unresolvedResultItemID);
+            $failedFields = $ids_data_fields[$unresolvedResultItemID]['direct'];
+            // Add in $schemaErrors instead of $dbErrors because in the latter one it will attempt to fetch the ID from the object, which it can't do
+            $schemaErrors[] = [
+                Tokens::PATH => [implode($translationAPI->__('\', \''), $failedFields)],
+                Tokens::MESSAGE => $error->getErrorMessage(),
+            ];
+
+            // Remove it from the elements to process, so it doesn't show a "Corrupted Data" error
+            unset($ids_data_fields[$unresolvedResultItemID]);
         }
 
         // Enqueue the items

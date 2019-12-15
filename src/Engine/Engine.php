@@ -569,7 +569,7 @@ class Engine implements EngineInterface
         }
     }
 
-    private function addDatasetToDatabase(&$database, TypeResolverInterface $typeResolver, string $dbKey, $dataitems)
+    private function addDatasetToDatabase(&$database, TypeResolverInterface $typeResolver, string $dbKey, $dataitems, bool $addEntryIfError = false)
     {
         // Do not create the database key entry when there are no items, or it produces an error when deep merging the database object in the webplatform with that from the response
         if (!$dataitems) {
@@ -581,20 +581,29 @@ class Engine implements EngineInterface
             $instanceManager = InstanceManagerFacade::getInstance();
             // Get the actual type for each entity, and add the entry there
             $convertedTypeResolverClassDataItems = $convertedTypeResolverClassDBKeys = [];
+            $noTypeResolverDataItems = [];
             foreach ($dataitems as $resultItemID => $resultItem) {
                 // The ID will contain the type. Remove it
                 list(
-                    $dbKey,
+                    $resultItemDBKey,
                     $resultItemID
                 ) = ConvertibleTypeHelpers::extractDBObjectTypeAndID($resultItemID);
-                $convertedTypeResolverClass = $typeResolver->getTypeResolverClassForResultItem($resultItemID);
-                $convertedTypeResolverClassDataItems[$convertedTypeResolverClass][$resultItemID] = $resultItem;
-                $convertedTypeResolverClassDBKeys[$convertedTypeResolverClass] = $dbKey;
+                if ($convertedTypeResolverClass = $typeResolver->getTypeResolverClassForResultItem($resultItemID)) {
+                    $convertedTypeResolverClassDataItems[$convertedTypeResolverClass][$resultItemID] = $resultItem;
+                    $convertedTypeResolverClassDBKeys[$convertedTypeResolverClass] = $resultItemDBKey;
+                } elseif ($addEntryIfError) {
+                    // If the UnionTypeResolver doesn't have a type to process the resultItem, show the error under its own ID
+                    $noTypeResolverDataItems[$resultItemID] = $resultItem;
+                }
             }
             foreach ($convertedTypeResolverClassDataItems as $convertedTypeResolverClass => $convertedDataItems) {
                 $convertedTypeResolver = $instanceManager->getInstance($convertedTypeResolverClass);
                 $convertedDBKey = $convertedTypeResolverClassDBKeys[$convertedTypeResolverClass];
-                $this->addDatasetToDatabase($database, $convertedTypeResolver, $convertedDBKey, $convertedDataItems);
+                $this->addDatasetToDatabase($database, $convertedTypeResolver, $convertedDBKey, $convertedDataItems, $addEntryIfError);
+            }
+            // Add the errors under the UnionTypeResolver key
+            if ($noTypeResolverDataItems) {
+                $this->doAddDatasetToDatabase($database, $dbKey, $noTypeResolverDataItems);
             }
         } else {
             $this->doAddDatasetToDatabase($database, $dbKey, $dataitems);
@@ -613,8 +622,9 @@ class Engine implements EngineInterface
             $instanceManager = InstanceManagerFacade::getInstance();
             $convertedTypeResolverClassDataItems = [];
             foreach ($ids as $resultItemID) {
-                $convertedTypeResolverClass = $typeResolver->getTypeResolverClassForResultItem($resultItemID);
-                $convertedTypeResolverClassDataItems[$convertedTypeResolverClass][] = $resultItemID;
+                if ($convertedTypeResolverClass = $typeResolver->getTypeResolverClassForResultItem($resultItemID)) {
+                    $convertedTypeResolverClassDataItems[$convertedTypeResolverClass][] = $resultItemID;
+                }
             }
             foreach ($convertedTypeResolverClassDataItems as $convertedTypeResolverClass => $resultItemIDs) {
                 $convertedTypeResolver = $instanceManager->getInstance($convertedTypeResolverClass);
@@ -1348,13 +1358,13 @@ class Engine implements EngineInterface
             if ($iterationDBErrors) {
                 $dbNameErrorEntries = $this->moveEntriesUnderDBName($iterationDBErrors, true, $typeResolver);
                 foreach ($dbNameErrorEntries as $dbname => $entries) {
-                    $this->addDatasetToDatabase($dbErrors[$dbname], $typeResolver, $database_key, $entries);
+                    $this->addDatasetToDatabase($dbErrors[$dbname], $typeResolver, $database_key, $entries, true);
                 }
             }
             if ($iterationDBWarnings) {
                 $dbNameWarningEntries = $this->moveEntriesUnderDBName($iterationDBWarnings, true, $typeResolver);
                 foreach ($dbNameWarningEntries as $dbname => $entries) {
-                    $this->addDatasetToDatabase($dbWarnings[$dbname], $typeResolver, $database_key, $entries);
+                    $this->addDatasetToDatabase($dbWarnings[$dbname], $typeResolver, $database_key, $entries, true);
                 }
             }
 

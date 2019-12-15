@@ -49,7 +49,9 @@ class ConvertibleTypeHelpers
             ConvertibleTypeSymbols::DBOBJECT_COMPOSED_TYPE_ID_SEPARATOR,
             $composedDBObjectTypeAndID
         );
-        return $elements[1];
+        // If the UnionTypeResolver didn't have a TypeResolver to process the passed object, the Type will not be added
+        // In that case, the ID will be on the first position
+        return count($elements) == 1 ? $elements[0] : $elements[1];
     }
 
     /**

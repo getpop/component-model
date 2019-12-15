@@ -1,15 +1,18 @@
 <?php
 namespace PoP\ComponentModel\TypeResolvers;
+
 use PoP\ComponentModel\Schema\SchemaDefinition;
+use PoP\Translation\Facades\TranslationAPIFacade;
+// use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
-use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
+use PoP\ComponentModel\Error;
 
 abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver implements ConvertibleTypeResolverInterface
 {
     protected $typeResolverPickers;
 
-    abstract protected function getBaseTypeResolverClass(): string;
+    // abstract protected function getBaseTypeResolverClass(): string;
 
     abstract protected function getConvertibleTypeCollectionName(): string;
 
@@ -18,13 +21,13 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         return ConvertibleTypeHelpers::getConvertibleTypeCollectionName($this->getConvertibleTypeCollectionName());
     }
 
-    public function getIdFieldTypeResolverClass(): string
-    {
-        $instanceManager = InstanceManagerFacade::getInstance();
-        $baseTypeResolverClass = $this->getBaseTypeResolverClass();
-        $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-        return $typeResolver->getIdFieldTypeResolverClass();
-    }
+    // public function getIdFieldTypeResolverClass(): string
+    // {
+    //     $instanceManager = InstanceManagerFacade::getInstance();
+    //     $baseTypeResolverClass = $this->getBaseTypeResolverClass();
+    //     $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+    //     return $typeResolver->getIdFieldTypeResolverClass();
+    // }
 
     /**
      * Remove the type from the ID to resolve the objects through `getObjects` (check parent class)
@@ -52,12 +55,14 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
     public function addTypeToID($resultItemID): string
     {
         $instanceManager = InstanceManagerFacade::getInstance();
-        $resultItemTypeResolverClass = $this->getTypeResolverClassForResultItem($resultItemID);
-        $resultItemTypeResolver = $instanceManager->getInstance($resultItemTypeResolverClass);
-        return ConvertibleTypeHelpers::getDBObjectComposedTypeAndID(
-            $resultItemTypeResolver,
-            $resultItemID
-        );
+        if ($resultItemTypeResolverClass = $this->getTypeResolverClassForResultItem($resultItemID)) {
+            $resultItemTypeResolver = $instanceManager->getInstance($resultItemTypeResolverClass);
+            return ConvertibleTypeHelpers::getDBObjectComposedTypeAndID(
+                $resultItemTypeResolver,
+                $resultItemID
+            );
+        }
+        return (string)$resultItemID;
     }
 
     /**
@@ -69,10 +74,15 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
      */
     public function getId($resultItem)
     {
+        $typeResolverAndPicker = $this->getTypeResolverAndPicker($resultItem);
+        if (is_null($typeResolverAndPicker)) {
+            return null;
+        }
+
         list(
             $typeResolver,
             $fieldresolverpicker
-        ) = $this->getTypeResolverAndPicker($resultItem);
+        ) = $typeResolverAndPicker;
 
         // Cast object, eg from post to event
         if ($fieldresolverpicker) {
@@ -87,53 +97,53 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         );
     }
 
-    public function getFieldNamesToResolve(): array
-    {
-        $instanceManager = InstanceManagerFacade::getInstance();
-        // The only FieldNames we can always guarantee are those from the base class
-        // The others depend on the resultItem, to see if they satisfy the specific resolver condition
-        $baseTypeResolverClass = $this->getBaseTypeResolverClass();
-        $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-        return $typeResolver->getFieldNamesToResolve();
-    }
+    // public function getFieldNamesToResolve(): array
+    // {
+    //     $instanceManager = InstanceManagerFacade::getInstance();
+    //     // The only FieldNames we can always guarantee are those from the base class
+    //     // The others depend on the resultItem, to see if they satisfy the specific resolver condition
+    //     $baseTypeResolverClass = $this->getBaseTypeResolverClass();
+    //     $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+    //     return $typeResolver->getFieldNamesToResolve();
+    // }
 
-    public function getDirectiveNameClasses(): array
-    {
-        $instanceManager = InstanceManagerFacade::getInstance();
-        $baseTypeResolverClass = $this->getBaseTypeResolverClass();
-        $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-        return $typeResolver->getDirectiveNameClasses();
-    }
+    // public function getDirectiveNameClasses(): array
+    // {
+    //     $instanceManager = InstanceManagerFacade::getInstance();
+    //     $baseTypeResolverClass = $this->getBaseTypeResolverClass();
+    //     $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+    //     return $typeResolver->getDirectiveNameClasses();
+    // }
 
-    public function hasFieldResolversForField(string $field): bool
-    {
-        $instanceManager = InstanceManagerFacade::getInstance();
-        // The only FieldNames we can always guarantee are those from the base class
-        // The others depend on the resultItem, to see if they satisfy the specific resolver condition
-        $baseTypeResolverClass = $this->getBaseTypeResolverClass();
-        $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-        return $typeResolver->hasFieldResolversForField($field);
-    }
+    // public function hasFieldResolversForField(string $field): bool
+    // {
+    //     $instanceManager = InstanceManagerFacade::getInstance();
+    //     // The only FieldNames we can always guarantee are those from the base class
+    //     // The others depend on the resultItem, to see if they satisfy the specific resolver condition
+    //     $baseTypeResolverClass = $this->getBaseTypeResolverClass();
+    //     $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+    //     return $typeResolver->hasFieldResolversForField($field);
+    // }
 
-    public function getSchemaFieldArgs(string $field): array
-    {
-        $instanceManager = InstanceManagerFacade::getInstance();
-        // The only FieldNames we can always guarantee are those from the base class
-        // The others depend on the resultItem, to see if they satisfy the specific resolver condition
-        $baseTypeResolverClass = $this->getBaseTypeResolverClass();
-        $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-        return $typeResolver->getSchemaFieldArgs($field);
-    }
+    // public function getSchemaFieldArgs(string $field): array
+    // {
+    //     $instanceManager = InstanceManagerFacade::getInstance();
+    //     // The only FieldNames we can always guarantee are those from the base class
+    //     // The others depend on the resultItem, to see if they satisfy the specific resolver condition
+    //     $baseTypeResolverClass = $this->getBaseTypeResolverClass();
+    //     $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+    //     return $typeResolver->getSchemaFieldArgs($field);
+    // }
 
-    public function enableOrderedSchemaFieldArgs(string $field): bool
-    {
-        $instanceManager = InstanceManagerFacade::getInstance();
-        // The only FieldNames we can always guarantee are those from the base class
-        // The others depend on the resultItem, to see if they satisfy the specific resolver condition
-        $baseTypeResolverClass = $this->getBaseTypeResolverClass();
-        $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-        return $typeResolver->enableOrderedSchemaFieldArgs($field);
-    }
+    // public function enableOrderedSchemaFieldArgs(string $field): bool
+    // {
+    //     $instanceManager = InstanceManagerFacade::getInstance();
+    //     // The only FieldNames we can always guarantee are those from the base class
+    //     // The others depend on the resultItem, to see if they satisfy the specific resolver condition
+    //     $baseTypeResolverClass = $this->getBaseTypeResolverClass();
+    //     $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+    //     return $typeResolver->enableOrderedSchemaFieldArgs($field);
+    // }
 
     protected function getTypeResolverPickers()
     {
@@ -192,8 +202,9 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
             }
         }
 
-        // If none found, use the default one
-        return $this->getBaseTypeResolverClass();
+        return null;
+        // // If none found, use the default one
+        // return $this->getBaseTypeResolverClass();
     }
 
     protected function getTypeResolverAndPicker($resultItem)
@@ -215,20 +226,52 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
             }
         }
 
-        // If none found, use the default one
-        $typeResolverClass = $typeResolverClass ?? $this->getBaseTypeResolverClass();
+        // // If none found, use the default one
+        // $typeResolverClass = $typeResolverClass ?? $this->getBaseTypeResolverClass();
+        if ($typeResolverClass) {
 
-        // From the typeResolver name, return the object
-        $typeResolver = $instanceManager->getInstance($typeResolverClass);
+            // From the typeResolver name, return the object
+            $typeResolver = $instanceManager->getInstance($typeResolverClass);
 
-        // Return also the resolver, as to cast the object
-        return array($typeResolver, $typeResolverPicker);
+            // Return also the resolver, as to cast the object
+            return array($typeResolver, $typeResolverPicker);
+        }
+        return null;
+    }
+
+    protected function getUnresolvedResultItemIDError($resultItemID)
+    {
+        $translationAPI = TranslationAPIFacade::getInstance();
+        return new Error(
+            'unresolved-resultitem-id',
+            sprintf(
+                $translationAPI->__('Either the DataLoader can\'t load data, or no TypeResolver resolves, object with ID \'%s\'', 'pop-component-model'),
+                $resultItemID
+            )
+        );
+    }
+
+    protected function getUnresolvedResultItemError($resultItem)
+    {
+        $translationAPI = TranslationAPIFacade::getInstance();
+        return new Error(
+            'unresolved-resultitem',
+            sprintf(
+                $translationAPI->__('No TypeResolver resolves object \'%s\'', 'pop-component-model'),
+                json_encode($resultItem)
+            )
+        );
     }
 
     public function resolveValue($resultItem, string $field, ?array $variables = null, ?array $expressions = null, array $options = [])
     {
+        // Check that a typeResolver from this Union can process this resultItem, or return an arror
+        $typeResolverAndPicker = $this->getTypeResolverAndPicker($resultItem);
+        if (is_null($typeResolverAndPicker)) {
+            return self::getUnresolvedResultItemError($resultItem);
+        }
         // Delegate to the TypeResolver corresponding to this object
-        list($typeResolver, $fieldresolverpicker) = $this->getTypeResolverAndPicker($resultItem);
+        list($typeResolver, $fieldresolverpicker) = $typeResolverAndPicker;
 
         // Cast object, eg from post to event
         if ($fieldresolverpicker) {
@@ -239,128 +282,132 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         return $typeResolver->resolveValue($resultItem, $field, $variables, $expressions, $options);
     }
 
-    protected function addSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = [])
-    {
-        $instanceManager = InstanceManagerFacade::getInstance();
-        $typeName = $this->getTypeName();
-        $isRoot = $stackMessages['is-root'];
-        unset($stackMessages['is-root']);
+    // protected function addSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = [])
+    // {
+    //     $instanceManager = InstanceManagerFacade::getInstance();
+    //     $typeName = $this->getTypeName();
+    //     $isRoot = $stackMessages['is-root'];
+    //     unset($stackMessages['is-root']);
 
-        $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_CONVERTIBLE] = true;
+    //     $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_CONVERTIBLE] = true;
 
-        // Default typeResolver, under "base" condition
-        $baseFields = [];
-        $baseTypeResolverClass = $this->getBaseTypeResolverClass();
-        $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-        $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_BASERESOLVER] = $typeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options);
-        $baseFields = array_map(function($fieldProps) {
-            return $fieldProps[SchemaDefinition::ARGNAME_NAME];
-        }, (array)$this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_BASERESOLVER][SchemaDefinition::ARGNAME_FIELDS]);
+    //     // Default typeResolver, under "base" condition
+    //     $baseFields = [];
+    //     $baseTypeResolverClass = $this->getBaseTypeResolverClass();
+    //     $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+    //     $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_BASERESOLVER] = $typeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options);
+    //     $baseFields = array_map(function($fieldProps) {
+    //         return $fieldProps[SchemaDefinition::ARGNAME_NAME];
+    //     }, (array)$this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_BASERESOLVER][SchemaDefinition::ARGNAME_FIELDS]);
 
-        // Iterate through the typeResolvers from all the pickers and get their schema definitions, under their object nature
-        foreach ($this->getTypeResolverPickers() as $picker) {
-            $typeResolver = $instanceManager->getInstance($picker->getTypeResolverClass());
-            // Do not repeat those fields already present on the base typeResolver
-            $deltaFields = $typeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options);
-            // If it is a recursion, this field will not be set
-            if (isset($deltaFields[SchemaDefinition::ARGNAME_FIELDS])) {
-                $deltaFields[SchemaDefinition::ARGNAME_FIELDS] = array_values(array_filter(
-                    $deltaFields[SchemaDefinition::ARGNAME_FIELDS],
-                    function($fieldProps) use($baseFields) {
-                        return !in_array($fieldProps[SchemaDefinition::ARGNAME_NAME], $baseFields);
-                    }
-                ));
-                $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_RESOLVERSBYOBJECTNATURE][$picker->getSchemaDefinitionObjectNature()] = $deltaFields;
-            }
-        }
-    }
+    //     // Iterate through the typeResolvers from all the pickers and get their schema definitions, under their object nature
+    //     foreach ($this->getTypeResolverPickers() as $picker) {
+    //         $typeResolver = $instanceManager->getInstance($picker->getTypeResolverClass());
+    //         // Do not repeat those fields already present on the base typeResolver
+    //         $deltaFields = $typeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options);
+    //         // If it is a recursion, this field will not be set
+    //         if (isset($deltaFields[SchemaDefinition::ARGNAME_FIELDS])) {
+    //             $deltaFields[SchemaDefinition::ARGNAME_FIELDS] = array_values(array_filter(
+    //                 $deltaFields[SchemaDefinition::ARGNAME_FIELDS],
+    //                 function($fieldProps) use($baseFields) {
+    //                     return !in_array($fieldProps[SchemaDefinition::ARGNAME_NAME], $baseFields);
+    //                 }
+    //             ));
+    //             $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_RESOLVERSBYOBJECTNATURE][$picker->getSchemaDefinitionObjectNature()] = $deltaFields;
+    //         }
+    //     }
+    // }
 
     public function resolveSchemaValidationErrorDescriptions(string $field, array &$variables = null): ?array
     {
-        $fieldName = FieldQueryInterpreterFacade::getInstance()->getFieldName($field);
-        $instanceManager = InstanceManagerFacade::getInstance();
+        return null;
+        // $fieldName = FieldQueryInterpreterFacade::getInstance()->getFieldName($field);
+        // $instanceManager = InstanceManagerFacade::getInstance();
 
-        // Default typeResolver, under "base" condition
-        $baseTypeResolverClass = $this->getBaseTypeResolverClass();
-        $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-        if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
-            return $typeResolver->resolveSchemaValidationErrorDescriptions($field, $variables);
-        }
+        // // Default typeResolver, under "base" condition
+        // $baseTypeResolverClass = $this->getBaseTypeResolverClass();
+        // $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+        // if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
+        //     return $typeResolver->resolveSchemaValidationErrorDescriptions($field, $variables);
+        // }
 
-        // Iterate through the typeResolvers from all the pickers and get their docucumentation, under their object nature
-        foreach ($this->getTypeResolverPickers() as $picker) {
-            $typeResolver = $instanceManager->getInstance($picker->getTypeResolverClass());
-            if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
-                return $typeResolver->resolveSchemaValidationErrorDescriptions($field, $variables);
-            }
-        }
-        return parent::resolveSchemaValidationErrorDescriptions($field, $variables);
+        // // Iterate through the typeResolvers from all the pickers and get their documentation, under their object nature
+        // foreach ($this->getTypeResolverPickers() as $picker) {
+        //     $typeResolver = $instanceManager->getInstance($picker->getTypeResolverClass());
+        //     if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
+        //         return $typeResolver->resolveSchemaValidationErrorDescriptions($field, $variables);
+        //     }
+        // }
+        // return parent::resolveSchemaValidationErrorDescriptions($field, $variables);
     }
 
     public function resolveSchemaValidationWarningDescriptions(string $field, array &$variables = null): array
     {
-        $fieldName = FieldQueryInterpreterFacade::getInstance()->getFieldName($field);
-        $instanceManager = InstanceManagerFacade::getInstance();
+        return [];
+        // $fieldName = FieldQueryInterpreterFacade::getInstance()->getFieldName($field);
+        // $instanceManager = InstanceManagerFacade::getInstance();
 
-        // Default typeResolver, under "base" condition
-        $baseTypeResolverClass = $this->getBaseTypeResolverClass();
-        $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-        if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
-            return $typeResolver->resolveSchemaValidationWarningDescriptions($field, $variables);
-        }
+        // // Default typeResolver, under "base" condition
+        // $baseTypeResolverClass = $this->getBaseTypeResolverClass();
+        // $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+        // if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
+        //     return $typeResolver->resolveSchemaValidationWarningDescriptions($field, $variables);
+        // }
 
-        // Iterate through the typeResolvers from all the pickers and get their docucumentation, under their object nature
-        foreach ($this->getTypeResolverPickers() as $picker) {
-            $typeResolver = $instanceManager->getInstance($picker->getTypeResolverClass());
-            if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
-                return $typeResolver->resolveSchemaValidationWarningDescriptions($field, $variables);
-            }
-        }
-        return parent::resolveSchemaValidationWarningDescriptions($field, $variables);
+        // // Iterate through the typeResolvers from all the pickers and get their documentation, under their object nature
+        // foreach ($this->getTypeResolverPickers() as $picker) {
+        //     $typeResolver = $instanceManager->getInstance($picker->getTypeResolverClass());
+        //     if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
+        //         return $typeResolver->resolveSchemaValidationWarningDescriptions($field, $variables);
+        //     }
+        // }
+        // return parent::resolveSchemaValidationWarningDescriptions($field, $variables);
     }
 
     public function resolveSchemaDeprecationDescriptions(string $field, array &$variables = null): array
     {
-        $fieldName = FieldQueryInterpreterFacade::getInstance()->getFieldName($field);
-        $instanceManager = InstanceManagerFacade::getInstance();
+        return [];
+        // $fieldName = FieldQueryInterpreterFacade::getInstance()->getFieldName($field);
+        // $instanceManager = InstanceManagerFacade::getInstance();
 
-        // Default typeResolver, under "base" condition
-        $baseTypeResolverClass = $this->getBaseTypeResolverClass();
-        $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-        if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
-            return $typeResolver->resolveSchemaDeprecationDescriptions($field, $variables);
-        }
+        // // Default typeResolver, under "base" condition
+        // $baseTypeResolverClass = $this->getBaseTypeResolverClass();
+        // $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+        // if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
+        //     return $typeResolver->resolveSchemaDeprecationDescriptions($field, $variables);
+        // }
 
-        // Iterate through the typeResolvers from all the pickers and get their docucumentation, under their object nature
-        foreach ($this->getTypeResolverPickers() as $picker) {
-            $typeResolver = $instanceManager->getInstance($picker->getTypeResolverClass());
-            if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
-                return $typeResolver->resolveSchemaDeprecationDescriptions($field, $variables);
-            }
-        }
-        return parent::resolveSchemaDeprecationDescriptions($field, $variables);
+        // // Iterate through the typeResolvers from all the pickers and get their documentation, under their object nature
+        // foreach ($this->getTypeResolverPickers() as $picker) {
+        //     $typeResolver = $instanceManager->getInstance($picker->getTypeResolverClass());
+        //     if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
+        //         return $typeResolver->resolveSchemaDeprecationDescriptions($field, $variables);
+        //     }
+        // }
+        // return parent::resolveSchemaDeprecationDescriptions($field, $variables);
     }
 
     public function resolveFieldTypeResolverClass(string $field): ?string
     {
-        $fieldName = FieldQueryInterpreterFacade::getInstance()->getFieldName($field);
-        $instanceManager = InstanceManagerFacade::getInstance();
+        return null;
+        // $fieldName = FieldQueryInterpreterFacade::getInstance()->getFieldName($field);
+        // $instanceManager = InstanceManagerFacade::getInstance();
 
-        // Default typeResolver, under "base" condition
-        $baseTypeResolverClass = $this->getBaseTypeResolverClass();
-        $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
-        if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
-            return $typeResolver->resolveFieldTypeResolverClass($field);
-        }
+        // // Default typeResolver, under "base" condition
+        // $baseTypeResolverClass = $this->getBaseTypeResolverClass();
+        // $typeResolver = $instanceManager->getInstance($baseTypeResolverClass);
+        // if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
+        //     return $typeResolver->resolveFieldTypeResolverClass($field);
+        // }
 
-        // Iterate through the typeResolvers from all the pickers and get their docucumentation, under their object nature
-        foreach ($this->getTypeResolverPickers() as $picker) {
-            $typeResolver = $instanceManager->getInstance($picker->getTypeResolverClass());
-            if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
-                return $typeResolver->resolveFieldTypeResolverClass($field);
-            }
-        }
+        // // Iterate through the typeResolvers from all the pickers and get their documentation, under their object nature
+        // foreach ($this->getTypeResolverPickers() as $picker) {
+        //     $typeResolver = $instanceManager->getInstance($picker->getTypeResolverClass());
+        //     if (in_array($fieldName, $typeResolver->getFieldNamesToResolve())) {
+        //         return $typeResolver->resolveFieldTypeResolverClass($field);
+        //     }
+        // }
 
-        return parent::resolveFieldTypeResolverClass($field);
+        // return parent::resolveFieldTypeResolverClass($field);
     }
 }
