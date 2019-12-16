@@ -3,7 +3,6 @@ namespace PoP\ComponentModel\TypeResolvers;
 
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
-// use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
 use PoP\ComponentModel\Error;
