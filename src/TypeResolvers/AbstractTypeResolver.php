@@ -975,21 +975,14 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $stackMessages['processed'][] = $class;
         $generalMessages['processed'][] = $class;
         if (is_null($this->schemaDefinition)) {
+            // Important: This line stops the recursion when a type reference each other circularly, so do not remove it!
+            $this->schemaDefinition = [];
             $this->addSchemaDefinition($stackMessages, $generalMessages, $options);
             // If it is a flat shape, move the connections to this same level
             if ($isFlatShape) {
                 if ($connections = &$this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_CONNECTIONS]) {
                     foreach ($connections as &$connection) {
                         if (isset($connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA])) {
-                            $connectionTypes = (array)$connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA];
-
-                            // Move the type data one level up.
-                            // Important: do the merge in this order, because this typeResolver contains its own data, but when it appears within connections, it does not
-                            $this->schemaDefinition = array_merge(
-                                $connectionTypes,
-                                $this->schemaDefinition
-                            );
-
                             // If the output uses SDL notation, can remove "types"
                             if ($options['typeAsSDL']) {
                                 unset($connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA]);
@@ -1005,13 +998,13 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 // Also UnionTypeResolver's types, move up
                 if ($this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_CONVERTIBLE]) {
                     $unionTypes = $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_UNION_TYPES];
-                    $this->schemaDefinition = array_merge(
-                        $this->schemaDefinition,
-                        $unionTypes
-                    );
+
                     // Replace the information with only the names of the types
                     $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_UNION_TYPES] = array_keys($unionTypes);
                 }
+
+                // Add the type to the list of all types, displayed when doing "shape=>flat"
+                $generalMessages[SchemaDefinition::ARGNAME_TYPES][$typeName] = $this->schemaDefinition[$typeName];
             }
         }
 
