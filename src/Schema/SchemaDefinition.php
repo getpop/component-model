@@ -18,6 +18,7 @@ class SchemaDefinition {
     const ARGNAME_GLOBAL_CONNECTIONS = 'globalConnections';
     const ARGNAME_FUNCTIONS = 'functions';
     const ARGNAME_GLOBAL_FIELDS = 'globalFields';
+    const ARGNAME_QUERY_TYPE = 'queryType';
     const ARGNAME_TYPES = 'types';
     const ARGNAME_TYPE_SCHEMA = 'typeSchema';
     const ARGNAME_UNION_TYPES = 'unionTypes';
