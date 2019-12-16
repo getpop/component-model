@@ -27,7 +27,6 @@ class SchemaDefinition {
     const ARGNAME_RECURSION = 'recursion';
     const ARGNAME_REPEATED = 'repeated';
     const ARGNAME_IS_UNION = 'isUnion';
-    const ARGNAME_RESOLVERSBYOBJECTNATURE = 'resolversByObjectNature';
     const ARGNAME_DIRECTIVES = 'directives';
     const ARGNAME_GLOBAL_DIRECTIVES = 'globalDirectives';
     const ARGNAME_DIRECTIVE_PIPELINE_POSITION = 'pipelinePosition';

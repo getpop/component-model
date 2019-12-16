@@ -8,8 +8,6 @@ abstract class AbstractTypeResolverPicker
 
     abstract public function getTypeResolverClass(): string;
 
-    abstract public function getSchemaDefinitionObjectNature(): string;
-
     public function process($resultItemOrID): bool
     {
         return false;
