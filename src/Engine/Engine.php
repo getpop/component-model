@@ -991,7 +991,7 @@ class Engine implements EngineInterface
                     // ------------------------------------------
                     // Execute and get the ids and the meta
                     $dbObjectIDOrIDs = $processor->getDBObjectIDOrIDs($module, $module_props, $data_properties);
-                    // If the type is convertible, we must add the type to each object
+                    // If the type is union, we must add the type to each object
                     if (!is_null($dbObjectIDOrIDs)) {
                         $typeDBObjectIDOrIDs = $this->maybeGetDBObjectIDOrIDsForUnionTypeResolver((string)$typeResolver_class, $dbObjectIDOrIDs) ?? $dbObjectIDOrIDs;
                     }
@@ -1267,7 +1267,7 @@ class Engine implements EngineInterface
         $vars = Engine_Vars::getVars();
 
         // Save all database elements here, under typeResolver
-        $databases = $convertibleDBKeyIDs = $combinedUnionDBKeyIDs = $previousDBItems = $dbErrors = $dbWarnings = $schemaErrors = $schemaWarnings = $schemaDeprecations = array();
+        $databases = $unionDBKeyIDs = $combinedUnionDBKeyIDs = $previousDBItems = $dbErrors = $dbWarnings = $schemaErrors = $schemaWarnings = $schemaDeprecations = array();
         $this->nocache_fields = array();
         // $format = $vars['format'];
         // $route = $vars['route'];
@@ -1339,7 +1339,7 @@ class Engine implements EngineInterface
                     }
                 }
 
-                // If the type is convertible, then add the type corresponding to each object on its ID
+                // If the type is union, then add the type corresponding to each object on its ID
                 $dbItems = $this->moveEntriesUnderDBName($iterationDBItems, true, $typeResolver);
                 foreach ($dbItems as $dbname => $entries) {
                     $this->addDatasetToDatabase($databases[$dbname], $typeResolver, $database_key, $entries);
@@ -1539,7 +1539,7 @@ class Engine implements EngineInterface
                                     $subcomponent_already_loaded_ids_data_fields = $already_loaded_ids_data_fields[$subcomponent_typeResolver_class];
                                 }
                                 foreach ($typeResolver_ids as $id) {
-                                    // If the type data resolver is convertible, the dbKey where the value is stored is contained in the ID itself,
+                                    // If the type data resolver is union, the dbKey where the value is stored is contained in the ID itself,
                                     // with format dbKey/ID. We must extract this information: assign the dbKey to $database_key, and remove the dbKey from the ID
                                     if ($isUnionTypeResolver) {
                                         list(
@@ -1553,8 +1553,8 @@ class Engine implements EngineInterface
                                     foreach ($databases as $dbname => $database) {
                                         if ($database_field_ids = $database[$database_key][(string)$id][$subcomponent_data_field_outputkey]) {
                                             // We don't want to store the dbKey/ID inside the relationalID, because that can lead to problems when dealing with the relations in the application (better keep it only to the ID)
-                                            // So, instead, we store the dbKey/ID values in another object "$convertibleDBKeyIDs"
-                                            // Then, whenever it's a convertible type data resolver, we obtain the values for the relationship under this other object
+                                            // So, instead, we store the dbKey/ID values in another object "$unionDBKeyIDs"
+                                            // Then, whenever it's a union type data resolver, we obtain the values for the relationship under this other object
                                             if ($subcomponentIsUnionTypeResolver) {
                                                 $isArray = is_array($database_field_ids);
                                                 $database_field_ids = array_map(
@@ -1564,10 +1564,10 @@ class Engine implements EngineInterface
                                                     $isArray ? $database_field_ids : [$database_field_ids]
                                                 );
                                                 if ($isArray) {
-                                                    $convertibleDBKeyIDs[$dbname][$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
+                                                    $unionDBKeyIDs[$dbname][$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
                                                     $combinedUnionDBKeyIDs[$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
                                                 } else {
-                                                    $convertibleDBKeyIDs[$dbname][$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids[0];
+                                                    $unionDBKeyIDs[$dbname][$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids[0];
                                                     $combinedUnionDBKeyIDs[$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids[0];
                                                 }
                                             }
@@ -1662,7 +1662,7 @@ class Engine implements EngineInterface
             }
         }
         $this->maybeCombineAndAddDatabaseEntries($ret, 'dbData', $databases);
-        $this->maybeCombineAndAddDatabaseEntries($ret, 'convertibleDBKeyIDs', $convertibleDBKeyIDs);
+        $this->maybeCombineAndAddDatabaseEntries($ret, 'unionDBKeyIDs', $unionDBKeyIDs);
 
         return $ret;
     }

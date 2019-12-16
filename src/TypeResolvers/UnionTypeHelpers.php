@@ -8,19 +8,19 @@ use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 class UnionTypeHelpers
 {
     /**
-     * If the type data resolver starts with "*" then it's convertible
+     * If the type data resolver starts with "*" then it's union
      *
      * @param string $type
      * @return boolean
      */
     public static function isUnionType(string $type): bool
     {
-        return substr($type, 0, strlen(UnionTypeSymbols::CONVERTIBLE_TYPE_NAME_PREFIX)) == UnionTypeSymbols::CONVERTIBLE_TYPE_NAME_PREFIX;
+        return substr($type, 0, strlen(UnionTypeSymbols::UNION_TYPE_NAME_PREFIX)) == UnionTypeSymbols::UNION_TYPE_NAME_PREFIX;
     }
 
     public static function getUnionTypeCollectionName(string $type): string
     {
-        return UnionTypeSymbols::CONVERTIBLE_TYPE_NAME_PREFIX.$type;
+        return UnionTypeSymbols::UNION_TYPE_NAME_PREFIX.$type;
     }
 
     /**
