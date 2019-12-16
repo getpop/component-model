@@ -245,13 +245,11 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
 
         $typeName = $this->getTypeName();
 
-        // By now, we have the schema definition
-        $typeSchemaDefinition = &$this->schemaDefinition[$typeName];
-
         // Replace the UnionTypeResolver's types with their typeNames
-        if ($typeSchemaDefinition[SchemaDefinition::ARGNAME_CONVERTIBLE]) {
-            $unionTypes = $typeSchemaDefinition[SchemaDefinition::ARGNAME_UNION_TYPES];
-            $typeSchemaDefinition[SchemaDefinition::ARGNAME_UNION_TYPES] = array_keys($unionTypes);
+        if ($this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_CONVERTIBLE]) {
+            $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_UNION_TYPES] = array_keys(
+                $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_UNION_TYPES]
+            );
         }
     }
 

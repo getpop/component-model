@@ -951,8 +951,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $typeName = $this->getTypeName();
 
         // By now, we have the schema definition
-        $typeSchemaDefinition = &$this->schemaDefinition[$typeName];
-        if ($connections = &$typeSchemaDefinition[SchemaDefinition::ARGNAME_CONNECTIONS]) {
+        if ($connections = &$this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_CONNECTIONS]) {
             foreach ($connections as &$connection) {
                 // If it is a recursion or repeated there will be no schema
                 if (isset($connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA])) {
