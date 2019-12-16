@@ -7,13 +7,13 @@ use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
 use PoP\ComponentModel\Error;
 
-abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver implements ConvertibleTypeResolverInterface
+abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements UnionTypeResolverInterface
 {
     protected $typeResolverPickers;
 
     final public function getTypeOutputName(): string
     {
-        return ConvertibleTypeHelpers::getConvertibleTypeCollectionName(parent::getTypeOutputName());
+        return UnionTypeHelpers::getUnionTypeCollectionName(parent::getTypeOutputName());
     }
 
     /**
@@ -28,7 +28,7 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
 
         // Each ID contains the type (added in function `getId`). Remove it
         return array_map(
-            [ConvertibleTypeHelpers::class, 'extractDBObjectID'],
+            [UnionTypeHelpers::class, 'extractDBObjectID'],
             $ids
         );
     }
@@ -44,7 +44,7 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         $instanceManager = InstanceManagerFacade::getInstance();
         if ($resultItemTypeResolverClass = $this->getTypeResolverClassForResultItem($resultItemID)) {
             $resultItemTypeResolver = $instanceManager->getInstance($resultItemTypeResolverClass);
-            return ConvertibleTypeHelpers::getDBObjectComposedTypeAndID(
+            return UnionTypeHelpers::getDBObjectComposedTypeAndID(
                 $resultItemTypeResolver,
                 $resultItemID
             );
@@ -78,7 +78,7 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
 
         // Add the type to the ID, so that elements of different types can live side by side
         // The type will be removed again in `getIDsToQuery`
-        return ConvertibleTypeHelpers::getDBObjectComposedTypeAndID(
+        return UnionTypeHelpers::getDBObjectComposedTypeAndID(
             $typeResolver,
             $typeResolver->getId($resultItem)
         );

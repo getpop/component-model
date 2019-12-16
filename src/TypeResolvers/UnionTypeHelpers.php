@@ -5,7 +5,7 @@ use function substr;
 use function explode;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
-class ConvertibleTypeHelpers
+class UnionTypeHelpers
 {
     /**
      * If the type data resolver starts with "*" then it's convertible
@@ -13,14 +13,14 @@ class ConvertibleTypeHelpers
      * @param string $type
      * @return boolean
      */
-    public static function isConvertibleType(string $type): bool
+    public static function isUnionType(string $type): bool
     {
-        return substr($type, 0, strlen(ConvertibleTypeSymbols::CONVERTIBLE_TYPE_NAME_PREFIX)) == ConvertibleTypeSymbols::CONVERTIBLE_TYPE_NAME_PREFIX;
+        return substr($type, 0, strlen(UnionTypeSymbols::CONVERTIBLE_TYPE_NAME_PREFIX)) == UnionTypeSymbols::CONVERTIBLE_TYPE_NAME_PREFIX;
     }
 
-    public static function getConvertibleTypeCollectionName(string $type): string
+    public static function getUnionTypeCollectionName(string $type): string
     {
-        return ConvertibleTypeSymbols::CONVERTIBLE_TYPE_NAME_PREFIX.$type;
+        return UnionTypeSymbols::CONVERTIBLE_TYPE_NAME_PREFIX.$type;
     }
 
     /**
@@ -32,7 +32,7 @@ class ConvertibleTypeHelpers
     public static function extractDBObjectTypeAndID(string $composedDBKeyResultItemID)
     {
         return explode(
-            ConvertibleTypeSymbols::DBOBJECT_COMPOSED_TYPE_ID_SEPARATOR,
+            UnionTypeSymbols::DBOBJECT_COMPOSED_TYPE_ID_SEPARATOR,
             $composedDBKeyResultItemID
         );
     }
@@ -46,7 +46,7 @@ class ConvertibleTypeHelpers
     public static function extractDBObjectID(string $composedDBObjectTypeAndID)
     {
         $elements = explode(
-            ConvertibleTypeSymbols::DBOBJECT_COMPOSED_TYPE_ID_SEPARATOR,
+            UnionTypeSymbols::DBOBJECT_COMPOSED_TYPE_ID_SEPARATOR,
             $composedDBObjectTypeAndID
         );
         // If the UnionTypeResolver didn't have a TypeResolver to process the passed object, the Type will not be added
@@ -64,7 +64,7 @@ class ConvertibleTypeHelpers
     {
         return
             $typeResolver->getTypeOutputName().
-            ConvertibleTypeSymbols::DBOBJECT_COMPOSED_TYPE_ID_SEPARATOR.
+            UnionTypeSymbols::DBOBJECT_COMPOSED_TYPE_ID_SEPARATOR.
             $id;
     }
 }

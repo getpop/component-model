@@ -15,7 +15,7 @@ use PoP\ComponentModel\Server\Utils as ServerUtils;
 use PoP\ComponentModel\CheckpointProcessorManagerFactory;
 use PoP\ComponentModel\Facades\Cache\PersistentCacheFacade;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
-use PoP\ComponentModel\TypeResolvers\ConvertibleTypeHelpers;
+use PoP\ComponentModel\TypeResolvers\UnionTypeHelpers;
 use PoP\ComponentModel\ModuleProcessors\DataloadingConstants;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\ModelInstance\ModelInstanceFacade;
@@ -23,7 +23,7 @@ use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
 use PoP\ComponentModel\Facades\ModulePath\ModulePathHelpersFacade;
 use PoP\ComponentModel\Facades\ModulePath\ModulePathManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
-use PoP\ComponentModel\TypeResolvers\ConvertibleTypeResolverInterface;
+use PoP\ComponentModel\TypeResolvers\UnionTypeResolverInterface;
 use PoP\ComponentModel\Facades\ModuleFilters\ModuleFilterManagerFacade;
 use PoP\ComponentModel\Facades\DataStructure\DataStructureManagerFacade;
 use PoP\ComponentModel\Settings\SiteConfigurationProcessorManagerFactory;
@@ -576,8 +576,8 @@ class Engine implements EngineInterface
             return;
         }
 
-        $isConvertibleTypeResolver = $typeResolver instanceof ConvertibleTypeResolverInterface;
-        if ($isConvertibleTypeResolver) {
+        $isUnionTypeResolver = $typeResolver instanceof UnionTypeResolverInterface;
+        if ($isUnionTypeResolver) {
             $instanceManager = InstanceManagerFacade::getInstance();
             // Get the actual type for each entity, and add the entry there
             $convertedTypeResolverClassDataItems = $convertedTypeResolverClassDBKeys = [];
@@ -587,7 +587,7 @@ class Engine implements EngineInterface
                 list(
                     $resultItemDBKey,
                     $resultItemID
-                ) = ConvertibleTypeHelpers::extractDBObjectTypeAndID($resultItemID);
+                ) = UnionTypeHelpers::extractDBObjectTypeAndID($resultItemID);
                 if ($convertedTypeResolverClass = $typeResolver->getTypeResolverClassForResultItem($resultItemID)) {
                     $convertedTypeResolverClassDataItems[$convertedTypeResolverClass][$resultItemID] = $resultItem;
                     $convertedTypeResolverClassDBKeys[$convertedTypeResolverClass] = $resultItemDBKey;
@@ -617,8 +617,8 @@ class Engine implements EngineInterface
         }
 
         $resultItemIDConvertedTypeResolvers = [];
-        $isConvertibleTypeResolver = $typeResolver instanceof ConvertibleTypeResolverInterface;
-        if ($isConvertibleTypeResolver) {
+        $isUnionTypeResolver = $typeResolver instanceof UnionTypeResolverInterface;
+        if ($isUnionTypeResolver) {
             $instanceManager = InstanceManagerFacade::getInstance();
             $convertedTypeResolverClassDataItems = [];
             foreach ($ids as $resultItemID) {
@@ -781,16 +781,16 @@ class Engine implements EngineInterface
         return $moduleFullName.'-'.implode('.', $module_path);
     }
 
-    public function maybeGetDBObjectIDOrIDsForConvertibleTypeResolver(string $typeResolverClass, $dbObjectIDOrIDs)
+    public function maybeGetDBObjectIDOrIDsForUnionTypeResolver(string $typeResolverClass, $dbObjectIDOrIDs)
     {
         $instanceManager = InstanceManagerFacade::getInstance();
         $typeResolver = $instanceManager->getInstance($typeResolverClass);
-        $isConvertibleTypeResolver = $typeResolver instanceof ConvertibleTypeResolverInterface;
-        if ($isConvertibleTypeResolver) {
+        $isUnionTypeResolver = $typeResolver instanceof UnionTypeResolverInterface;
+        if ($isUnionTypeResolver) {
             $resultItemIDConvertedTypeResolvers = $this->getResultItemIDConvertedTypeResolvers($typeResolver, is_array($dbObjectIDOrIDs) ? $dbObjectIDOrIDs : [$dbObjectIDOrIDs]);
             $typeDBObjectIDOrIDs = [];
             foreach ($resultItemIDConvertedTypeResolvers as $resultItemID => $convertedTypeResolver) {
-                $typeDBObjectIDOrIDs[] = ConvertibleTypeHelpers::getDBObjectComposedTypeAndID(
+                $typeDBObjectIDOrIDs[] = UnionTypeHelpers::getDBObjectComposedTypeAndID(
                     $convertedTypeResolver,
                     $resultItemID
                 );
@@ -993,7 +993,7 @@ class Engine implements EngineInterface
                     $dbObjectIDOrIDs = $processor->getDBObjectIDOrIDs($module, $module_props, $data_properties);
                     // If the type is convertible, we must add the type to each object
                     if (!is_null($dbObjectIDOrIDs)) {
-                        $typeDBObjectIDOrIDs = $this->maybeGetDBObjectIDOrIDsForConvertibleTypeResolver((string)$typeResolver_class, $dbObjectIDOrIDs) ?? $dbObjectIDOrIDs;
+                        $typeDBObjectIDOrIDs = $this->maybeGetDBObjectIDOrIDsForUnionTypeResolver((string)$typeResolver_class, $dbObjectIDOrIDs) ?? $dbObjectIDOrIDs;
                     }
 
                     $dbObjectIDs = is_array($dbObjectIDOrIDs) ? $dbObjectIDOrIDs : array($dbObjectIDOrIDs);
@@ -1267,7 +1267,7 @@ class Engine implements EngineInterface
         $vars = Engine_Vars::getVars();
 
         // Save all database elements here, under typeResolver
-        $databases = $convertibleDBKeyIDs = $combinedConvertibleDBKeyIDs = $previousDBItems = $dbErrors = $dbWarnings = $schemaErrors = $schemaWarnings = $schemaDeprecations = array();
+        $databases = $convertibleDBKeyIDs = $combinedUnionDBKeyIDs = $previousDBItems = $dbErrors = $dbWarnings = $schemaErrors = $schemaWarnings = $schemaDeprecations = array();
         $this->nocache_fields = array();
         // $format = $vars['format'];
         // $route = $vars['route'];
@@ -1310,12 +1310,12 @@ class Engine implements EngineInterface
 
             $typeResolver = $instanceManager->getInstance((string)$typeResolver_class);
             $database_key = $typeResolver->getTypeOutputName();
-            $isConvertibleTypeResolver = false;
+            $isUnionTypeResolver = false;
 
             // Execute the typeResolver for all combined ids
             $iterationDBItems = $iterationDBErrors = $iterationDBWarnings = $iterationSchemaErrors = $iterationSchemaWarnings = $iterationSchemaDeprecations = array();
-            $isConvertibleTypeResolver = $typeResolver instanceof ConvertibleTypeResolverInterface;
-            $typeResolver->fillResultItems($ids_data_fields, $combinedConvertibleDBKeyIDs, $iterationDBItems, $previousDBItems, $variables, $messages, $iterationDBErrors, $iterationDBWarnings, $iterationSchemaErrors, $iterationSchemaWarnings, $iterationSchemaDeprecations);
+            $isUnionTypeResolver = $typeResolver instanceof UnionTypeResolverInterface;
+            $typeResolver->fillResultItems($ids_data_fields, $combinedUnionDBKeyIDs, $iterationDBItems, $previousDBItems, $variables, $messages, $iterationDBErrors, $iterationDBWarnings, $iterationSchemaErrors, $iterationSchemaWarnings, $iterationSchemaDeprecations);
 
             // Save in the database under the corresponding database-key (this way, different dataloaders, like 'list-users' and 'author',
             // can both save their results under database key 'users'
@@ -1532,7 +1532,7 @@ class Engine implements EngineInterface
                             if ($subcomponent_data_fields || $subcomponent_conditional_data_fields) {
 
                                 $subcomponentTypeResolver = $instanceManager->getInstance($subcomponent_typeResolver_class);
-                                $subcomponentIsConvertibleTypeResolver = $subcomponentTypeResolver instanceof ConvertibleTypeResolverInterface;
+                                $subcomponentIsUnionTypeResolver = $subcomponentTypeResolver instanceof UnionTypeResolverInterface;
 
                                 $subcomponent_already_loaded_ids_data_fields = array();
                                 if ($already_loaded_ids_data_fields && $already_loaded_ids_data_fields[$subcomponent_typeResolver_class]) {
@@ -1541,11 +1541,11 @@ class Engine implements EngineInterface
                                 foreach ($typeResolver_ids as $id) {
                                     // If the type data resolver is convertible, the dbKey where the value is stored is contained in the ID itself,
                                     // with format dbKey/ID. We must extract this information: assign the dbKey to $database_key, and remove the dbKey from the ID
-                                    if ($isConvertibleTypeResolver) {
+                                    if ($isUnionTypeResolver) {
                                         list(
                                             $database_key,
                                             $id
-                                        ) = ConvertibleTypeHelpers::extractDBObjectTypeAndID($id);
+                                        ) = UnionTypeHelpers::extractDBObjectTypeAndID($id);
                                     }
                                     // $databases may contain more the 1 DB shipped by pop-engine/ ("primary"). Eg: PoP User Login adds db "userstate"
                                     // Fetch the field_ids from all these DBs
@@ -1555,7 +1555,7 @@ class Engine implements EngineInterface
                                             // We don't want to store the dbKey/ID inside the relationalID, because that can lead to problems when dealing with the relations in the application (better keep it only to the ID)
                                             // So, instead, we store the dbKey/ID values in another object "$convertibleDBKeyIDs"
                                             // Then, whenever it's a convertible type data resolver, we obtain the values for the relationship under this other object
-                                            if ($subcomponentIsConvertibleTypeResolver) {
+                                            if ($subcomponentIsUnionTypeResolver) {
                                                 $isArray = is_array($database_field_ids);
                                                 $database_field_ids = array_map(
                                                     function($id) use($subcomponentTypeResolver) {
@@ -1565,10 +1565,10 @@ class Engine implements EngineInterface
                                                 );
                                                 if ($isArray) {
                                                     $convertibleDBKeyIDs[$dbname][$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
-                                                    $combinedConvertibleDBKeyIDs[$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
+                                                    $combinedUnionDBKeyIDs[$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
                                                 } else {
                                                     $convertibleDBKeyIDs[$dbname][$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids[0];
-                                                    $combinedConvertibleDBKeyIDs[$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids[0];
+                                                    $combinedUnionDBKeyIDs[$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids[0];
                                                 }
                                             }
 
