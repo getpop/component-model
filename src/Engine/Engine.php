@@ -1309,7 +1309,7 @@ class Engine implements EngineInterface
             }
 
             $typeResolver = $instanceManager->getInstance((string)$typeResolver_class);
-            $database_key = $typeResolver->getTypeName();
+            $database_key = $typeResolver->getTypeOutputName();
             $isConvertibleTypeResolver = false;
 
             // Execute the typeResolver for all combined ids

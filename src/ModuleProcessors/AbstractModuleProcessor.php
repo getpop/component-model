@@ -473,7 +473,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         $instanceManager = InstanceManagerFacade::getInstance();
         if ($typeResolver_class = $this->getTypeResolverClass($module)) {
             $typeResolver = $instanceManager->getInstance((string)$typeResolver_class);
-            if ($dbkey = $typeResolver->getTypeName()) {
+            if ($dbkey = $typeResolver->getTypeOutputName()) {
                 // Place it under "id" because it is for fetching the current object from the DB, which is found through dbObject.id
                 $ret['id'] = $dbkey;
             }
@@ -488,7 +488,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                     $subcomponent_typeResolver = $instanceManager->getInstance($subcomponent_typeResolver_class);
                     // If there is an alias, store the results under this. Otherwise, on the fieldName+fieldArgs
                     $subcomponent_data_field_outputkey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($subcomponent_data_field);
-                    $ret[$subcomponent_data_field_outputkey] = $subcomponent_typeResolver->getTypeName();
+                    $ret[$subcomponent_data_field_outputkey] = $subcomponent_typeResolver->getTypeOutputName();
                 }
             }
             foreach ($this->getConditionalOnDataFieldDomainSwitchingSubmodules($module) as $conditionDataField => $dataFieldTypeResolverOptionsConditionalSubmodules) {
@@ -498,7 +498,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                         $subcomponent_typeResolver = $instanceManager->getInstance($subcomponentTypeResolverClass);
                         // If there is an alias, store the results under this. Otherwise, on the fieldName+fieldArgs
                         $subcomponent_data_field_outputkey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($conditionalDataField);
-                        $ret[$subcomponent_data_field_outputkey] = $subcomponent_typeResolver->getTypeName();
+                        $ret[$subcomponent_data_field_outputkey] = $subcomponent_typeResolver->getTypeOutputName();
                     }
                 }
             }

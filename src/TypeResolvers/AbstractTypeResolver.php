@@ -53,6 +53,12 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     //     return $this->fieldNamesToResolve;
     // }
 
+    public function getTypeOutputName(): string
+    {
+        // First letter lowercase
+        return lcfirst($this->getTypeName());
+    }
+
     public function getSchemaTypeDescription(): ?string
     {
         return null;

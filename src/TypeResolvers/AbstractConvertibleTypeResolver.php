@@ -11,11 +11,9 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
 {
     protected $typeResolverPickers;
 
-    abstract protected function getConvertibleTypeCollectionName(): string;
-
-    final public function getTypeName(): string
+    final public function getTypeOutputName(): string
     {
-        return ConvertibleTypeHelpers::getConvertibleTypeCollectionName($this->getConvertibleTypeCollectionName());
+        return ConvertibleTypeHelpers::getConvertibleTypeCollectionName(parent::getTypeOutputName());
     }
 
     /**
