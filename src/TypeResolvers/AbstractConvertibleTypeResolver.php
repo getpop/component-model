@@ -227,7 +227,7 @@ abstract class AbstractConvertibleTypeResolver extends AbstractTypeResolver impl
         if ($description = $this->getSchemaTypeDescription()) {
             $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
         }
-        $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_CONVERTIBLE] = true;
+        $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_IS_UNION] = true;
 
         // Iterate through the typeResolvers from all the pickers and get their schema definitions
         foreach ($this->getTypeResolverPickers() as $picker) {
