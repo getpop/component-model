@@ -27,7 +27,6 @@ use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFa
 abstract class AbstractTypeResolver implements TypeResolverInterface
 {
     public const OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM = 'validateSchemaOnResultItem';
-    protected const ARGNAME_TYPENAMES = 'typeNames';
 
     /**
      * Cache of which fieldResolvers will process the given field
@@ -988,10 +987,8 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                                 unset($connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA]);
                             } else {
                                 // Otherwise, replace the information with only the names of the types
-                                $connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA] = $connection[self::ARGNAME_TYPENAMES];
+                                $connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA] = array_keys($connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA]);
                             }
-                            // Remove the temporary attribute "typeNames"
-                            unset($connection[self::ARGNAME_TYPENAMES]);
                         }
                     }
                 }
@@ -1084,10 +1081,6 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             if ($fieldTypeResolverClass = $this->resolveFieldTypeResolverClass($fieldName)) {
                 $fieldTypeResolver = $instanceManager->getInstance($fieldTypeResolverClass);
                 $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE_SCHEMA] = $fieldTypeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options);
-                if ($isFlatShape) {
-                    // Store the type names before they are all mixed up in `getSchemaDefinition` when moving them one level up
-                    $fieldSchemaDefinition[self::ARGNAME_TYPENAMES] = [$fieldTypeResolver->getTypeName()];
-                }
             }
         }
         // Convert the field type from its internal representation (eg: "array:id") to the GraphQL standard representation (eg: "[Post]")
@@ -1107,7 +1100,6 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 if ($options['typeAsSDL']) {
                     unset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE_SCHEMA]);
                 }
-                unset($fieldSchemaDefinition[self::ARGNAME_TYPENAMES]);
             } else {
                 $entry = SchemaDefinition::ARGNAME_GLOBAL_FIELDS;
             }
