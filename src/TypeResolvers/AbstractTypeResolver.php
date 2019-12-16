@@ -744,7 +744,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return $fieldQueryInterpreter->extractFieldArgumentsForSchema($this, $field);
     }
 
-    public function resolveSchemaValidationErrorDescriptions(string $field, array &$variables = null): ?array
+    public function resolveSchemaValidationErrorDescriptions(string $field, array &$variables = null): array
     {
         // Get the value from a fieldResolver, from the first one that resolves it
         // $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();

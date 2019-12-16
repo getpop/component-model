@@ -253,10 +253,10 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
      *
      * @param string $field
      * @param array $variables
-     * @return array|null
+     * @return array
      */
-    public function resolveSchemaValidationErrorDescriptions(string $field, array &$variables = null): ?array
+    public function resolveSchemaValidationErrorDescriptions(string $field, array &$variables = null): array
     {
-        return null;
+        return [];
     }
 }

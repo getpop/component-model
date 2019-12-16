@@ -966,8 +966,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             // }
 
             // If it reached here, it's a field! Validate it, or show an error
-            $schemaErrors = $typeResolver->resolveSchemaValidationErrorDescriptions($fieldArgValue, $variables);
-            return $schemaErrors ?? [];
+            return $typeResolver->resolveSchemaValidationErrorDescriptions($fieldArgValue, $variables);
         }
 
         return [];
