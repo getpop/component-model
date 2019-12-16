@@ -4,7 +4,7 @@ namespace PoP\ComponentModel\FieldResolvers;
 use PoP\ComponentModel\TypeResolvers\AbstractTypeResolver;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
-abstract class AbstractOperatorOrHelperFieldResolver extends AbstractDBDataFieldResolver
+abstract class AbstractGlobalFieldResolver extends AbstractDBDataFieldResolver
 {
     public static function getClassesToAttachTo(): array
     {
