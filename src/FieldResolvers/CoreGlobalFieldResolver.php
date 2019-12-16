@@ -12,7 +12,6 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
     {
         return [
             'id',
-            'self',
             '__typename',
             'isInstanceOfType',
         ];
@@ -22,7 +21,6 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
     {
         $types = [
             'id' => SchemaDefinition::TYPE_ID,
-            'self' => SchemaDefinition::TYPE_ID,
             '__typename' => SchemaDefinition::TYPE_STRING,
             'isInstanceOfType' => SchemaDefinition::TYPE_BOOL,
         ];
@@ -34,7 +32,6 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
         $translationAPI = TranslationAPIFacade::getInstance();
         $descriptions = [
             'id' => $translationAPI->__('The object ID', 'pop-component-model'),
-            'self' => $translationAPI->__('The same object', 'pop-component-model'),
             '__typename' => $translationAPI->__('The object\'s type', 'pop-component-model'),
             'isInstanceOfType' => $translationAPI->__('Indicate if the object\'s is of a given type', 'pop-component-model'),
         ];
@@ -63,7 +60,6 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
     {
         switch ($fieldName) {
             case 'id':
-            case 'self':
                 return $typeResolver->getId($resultItem);
             case '__typename':
                 return $typeResolver->getTypeName();
@@ -73,14 +69,5 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
         }
 
         return parent::resolveValue($typeResolver, $resultItem, $fieldName, $fieldArgs, $variables, $expressions, $options);
-    }
-
-    public function resolveFieldTypeResolverClass(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
-    {
-        switch ($fieldName) {
-            case 'self':
-                return $typeResolver->getIdFieldTypeResolverClass();
-        }
-        return parent::resolveFieldTypeResolverClass($typeResolver, $fieldName, $fieldArgs);
     }
 }
