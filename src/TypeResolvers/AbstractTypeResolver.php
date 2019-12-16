@@ -1069,7 +1069,6 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     protected function addFieldSchemaDefinition(FieldResolverInterface $fieldResolver, string $fieldName, array $stackMessages, array &$generalMessages, array $options = [])
     {
         $instanceManager = InstanceManagerFacade::getInstance();
-        $isFlatShape = $options['shape'] == SchemaDefinition::ARGVALUE_SCHEMA_SHAPE_FLAT;
 
         // Watch out! We are passing empty $fieldArgs to generate the schema!
         $fieldSchemaDefinition = $fieldResolver->getSchemaDefinitionForField($this, $fieldName, []);
@@ -1100,7 +1099,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             // If it is relational, it is a global connection
             if ($isConnection) {
                 $entry = SchemaDefinition::ARGNAME_GLOBAL_CONNECTIONS;
-                // Remove attrs "types" and "typeNames"
+                // Remove the "types"
                 if ($options['typeAsSDL']) {
                     unset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE_SCHEMA]);
                 }
