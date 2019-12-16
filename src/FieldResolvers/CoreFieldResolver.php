@@ -19,6 +19,7 @@ class CoreFieldResolver extends AbstractDBDataFieldResolver
         return [
             'id',
             'self',
+            '__typename',
         ];
     }
 
@@ -27,6 +28,7 @@ class CoreFieldResolver extends AbstractDBDataFieldResolver
         $types = [
             'id' => SchemaDefinition::TYPE_ID,
             'self' => SchemaDefinition::TYPE_ID,
+            '__typename' => SchemaDefinition::TYPE_STRING,
         ];
         return $types[$fieldName] ?? parent::getSchemaFieldType($typeResolver, $fieldName);
     }
@@ -37,6 +39,7 @@ class CoreFieldResolver extends AbstractDBDataFieldResolver
         $descriptions = [
             'id' => $translationAPI->__('The object ID', 'pop-component-model'),
             'self' => $translationAPI->__('The same object', 'pop-component-model'),
+            '__typename' => $translationAPI->__('The object\'s type', 'pop-component-model'),
         ];
         return $descriptions[$fieldName] ?? parent::getSchemaFieldDescription($typeResolver, $fieldName);
     }
@@ -47,6 +50,8 @@ class CoreFieldResolver extends AbstractDBDataFieldResolver
             case 'id':
             case 'self':
                 return $typeResolver->getId($resultItem);
+            case '__typename':
+                return $typeResolver->getTypeName();
         }
 
         return parent::resolveValue($typeResolver, $resultItem, $fieldName, $fieldArgs, $variables, $expressions, $options);
