@@ -946,6 +946,27 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return ErrorUtils::getNoFieldError($fieldName);
     }
 
+    protected function processFlatShapeSchemaDefinition(array $options = [])
+    {
+        $typeName = $this->getTypeName();
+
+        // By now, we have the schema definition
+        $typeSchemaDefinition = &$this->schemaDefinition[$typeName];
+        if ($connections = &$typeSchemaDefinition[SchemaDefinition::ARGNAME_CONNECTIONS]) {
+            foreach ($connections as &$connection) {
+                if (isset($connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA])) {
+                    // If the output uses SDL notation, can remove "types"
+                    if ($options['typeAsSDL']) {
+                        unset($connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA]);
+                    } else {
+                        // Otherwise, replace the information with only the names of the types
+                        $connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA] = array_keys($connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA]);
+                    }
+                }
+            }
+        }
+    }
+
     public function getSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = []): array
     {
         $typeName = $this->getTypeName();
@@ -977,29 +998,9 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             // Important: This line stops the recursion when a type reference each other circularly, so do not remove it!
             $this->schemaDefinition = [];
             $this->addSchemaDefinition($stackMessages, $generalMessages, $options);
-            // If it is a flat shape, move the connections to this same level
+            // If it is a flat shape, we can remove the nested connections, replace them only with the type name
             if ($isFlatShape) {
-                if ($connections = &$this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_CONNECTIONS]) {
-                    foreach ($connections as &$connection) {
-                        if (isset($connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA])) {
-                            // If the output uses SDL notation, can remove "types"
-                            if ($options['typeAsSDL']) {
-                                unset($connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA]);
-                            } else {
-                                // Otherwise, replace the information with only the names of the types
-                                $connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA] = array_keys($connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA]);
-                            }
-                        }
-                    }
-                }
-                // Also UnionTypeResolver's types, move up
-                if ($this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_CONVERTIBLE]) {
-                    $unionTypes = $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_UNION_TYPES];
-
-                    // Replace the information with only the names of the types
-                    $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_UNION_TYPES] = array_keys($unionTypes);
-                }
-
+                $this->processFlatShapeSchemaDefinition($options);
                 // Add the type to the list of all types, displayed when doing "shape=>flat"
                 $generalMessages[SchemaDefinition::ARGNAME_TYPES][$typeName] = $this->schemaDefinition[$typeName];
             }
