@@ -5,6 +5,7 @@ class SchemaDefinition {
     // Field/Directive Argument Names
     const ARGNAME_NAME = 'name';
     const ARGNAME_TYPE = 'type';
+    const ARGNAME_REFERENCED_TYPE = 'referencedType';
     const ARGNAME_DESCRIPTION = 'description';
     const ARGNAME_MANDATORY = 'mandatory';
     const ARGNAME_ENUMVALUES = 'enumValues';

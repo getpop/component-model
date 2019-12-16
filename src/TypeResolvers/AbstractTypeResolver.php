@@ -956,13 +956,9 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             foreach ($connections as &$connection) {
                 // If it is a recursion or repeated there will be no schema
                 if (isset($connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA])) {
-                    // If the output uses SDL notation, can remove "types"
-                    if ($options['typeAsSDL']) {
-                        unset($connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA]);
-                    } else {
-                        // Otherwise, replace the information with only the names of the types
-                        $connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA] = array_keys($connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA]);
-                    }
+
+                    // Remove the typeSchema entry
+                    unset($connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA]);
                 }
             }
         }
@@ -1089,6 +1085,12 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         if ($options['typeAsSDL']) {
             if ($type = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE]) {
                 $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE] = SchemaHelpers::getTypeToOutputInSchema($this, $fieldName, $type);
+            }
+        } else {
+            // If the output does not use SDL notation, then display the type under entry "referencedType"
+            if ($types = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE_SCHEMA]) {
+                $typeNames = array_keys($types);
+                $fieldSchemaDefinition[SchemaDefinition::ARGNAME_REFERENCED_TYPE] = $typeNames[0];
             }
         }
         $fieldSchemaDefinitionResolver = $fieldResolver->getSchemaDefinitionResolver($this);
