@@ -35,7 +35,6 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
      */
     protected $fieldResolvers = [];
     protected $schemaDefinition;
-    // protected $fieldNamesToResolve;
     protected $directiveNameClasses;
     protected $safeVars;
     protected $schemaFieldResolvers;
@@ -44,14 +43,6 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     private $fieldDirectivesFromFieldCache = [];
     private $dissectedFieldForSchemaCache = [];
     private $directiveResolverInstanceCache = [];
-
-    // public function getFieldNamesToResolve(): array
-    // {
-    //     if (is_null($this->fieldNamesToResolve)) {
-    //         $this->fieldNamesToResolve = $this->calculateFieldNamesToResolve();
-    //     }
-    //     return $this->fieldNamesToResolve;
-    // }
 
     public function getTypeOutputName(): string
     {
