@@ -35,11 +35,11 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
 
     public function getQualifiedDBObjectIDOrIDs($dbObjectIDOrIDs)
     {
-        $resultItemIDConvertedTypeResolvers = $this->getResultItemIDConvertedTypeResolvers($typeResolver, is_array($dbObjectIDOrIDs) ? $dbObjectIDOrIDs : [$dbObjectIDOrIDs]);
+        $resultItemIDTargetTypeResolvers = $this->getResultItemIDTargetTypeResolvers($this, is_array($dbObjectIDOrIDs) ? $dbObjectIDOrIDs : [$dbObjectIDOrIDs]);
         $typeDBObjectIDOrIDs = [];
-        foreach ($resultItemIDConvertedTypeResolvers as $resultItemID => $convertedTypeResolver) {
+        foreach ($resultItemIDTargetTypeResolvers as $resultItemID => $targetTypeResolver) {
             $typeDBObjectIDOrIDs[] = UnionTypeHelpers::getDBObjectComposedTypeAndID(
-                $convertedTypeResolver,
+                $targetTypeResolver,
                 $resultItemID
             );
         }
@@ -49,38 +49,38 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         return $typeDBObjectIDOrIDs;
     }
 
-    private function getResultItemIDConvertedTypeResolvers(TypeResolverInterface $typeResolver, array $ids): array
+    private function getResultItemIDTargetTypeResolvers(TypeResolverInterface $typeResolver, array $ids): array
     {
         if (!$ids) {
             return [];
         }
 
-        $resultItemIDConvertedTypeResolvers = [];
+        $resultItemIDTargetTypeResolvers = [];
         $isUnionTypeResolver = $typeResolver instanceof UnionTypeResolverInterface;
         if ($isUnionTypeResolver) {
             $instanceManager = InstanceManagerFacade::getInstance();
-            $convertedTypeResolverClassDataItems = [];
+            $targetTypeResolverClassDataItems = [];
             foreach ($ids as $resultItemID) {
-                if ($convertedTypeResolverClass = $typeResolver->getTypeResolverClassForResultItem($resultItemID)) {
-                    $convertedTypeResolverClassDataItems[$convertedTypeResolverClass][] = $resultItemID;
+                if ($targetTypeResolverClass = $typeResolver->getTypeResolverClassForResultItem($resultItemID)) {
+                    $targetTypeResolverClassDataItems[$targetTypeResolverClass][] = $resultItemID;
                 }
             }
-            foreach ($convertedTypeResolverClassDataItems as $convertedTypeResolverClass => $resultItemIDs) {
-                $convertedTypeResolver = $instanceManager->getInstance($convertedTypeResolverClass);
-                $convertedResultItemIDConvertedTypeResolvers = $this->getResultItemIDConvertedTypeResolvers(
-                    $convertedTypeResolver,
+            foreach ($targetTypeResolverClassDataItems as $targetTypeResolverClass => $resultItemIDs) {
+                $targetTypeResolver = $instanceManager->getInstance($targetTypeResolverClass);
+                $targetResultItemIDTargetTypeResolvers = $this->getResultItemIDTargetTypeResolvers(
+                    $targetTypeResolver,
                     $resultItemIDs
                 );
-                foreach ($convertedResultItemIDConvertedTypeResolvers as $convertedResultItemID => $convertedTypeResolver) {
-                    $resultItemIDConvertedTypeResolvers[(string)$convertedResultItemID] = $convertedTypeResolver;
+                foreach ($targetResultItemIDTargetTypeResolvers as $targetResultItemID => $targetTypeResolver) {
+                    $resultItemIDTargetTypeResolvers[(string)$targetResultItemID] = $targetTypeResolver;
                 }
             }
         } else {
             foreach ($ids as $resultItemID) {
-                $resultItemIDConvertedTypeResolvers[(string)$resultItemID] = $typeResolver;
+                $resultItemIDTargetTypeResolvers[(string)$resultItemID] = $typeResolver;
             }
         }
-        return $resultItemIDConvertedTypeResolvers;
+        return $resultItemIDTargetTypeResolvers;
     }
 
     /**
