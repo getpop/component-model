@@ -68,13 +68,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
 
         list(
             $typeResolver,
-            $fieldresolverpicker
         ) = $typeResolverAndPicker;
-
-        // Cast object, eg from post to event
-        if ($fieldresolverpicker) {
-            $resultItem = $fieldresolverpicker->cast($resultItem);
-        }
 
         // Add the type to the ID, so that elements of different types can live side by side
         // The type will be removed again in `getIDsToQuery`
@@ -144,7 +138,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         return null;
     }
 
-    protected function getTypeResolverAndPicker($resultItem)
+    public function getTypeResolverAndPicker($resultItem)
     {
         $instanceManager = InstanceManagerFacade::getInstance();
         // Among all registered fieldresolvers, check if any is able to process the object, through function `process`
@@ -205,12 +199,9 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
             return self::getUnresolvedResultItemError($resultItem);
         }
         // Delegate to the TypeResolver corresponding to this object
-        list($typeResolver, $fieldresolverpicker) = $typeResolverAndPicker;
-
-        // Cast object, eg from post to event
-        if ($fieldresolverpicker) {
-            $resultItem = $fieldresolverpicker->cast($resultItem);
-        }
+        list(
+            $typeResolver,
+        ) = $typeResolverAndPicker;
 
         // Delegate to that typeResolver to obtain the value
         return $typeResolver->resolveValue($resultItem, $field, $variables, $expressions, $options);
