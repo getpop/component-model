@@ -622,40 +622,6 @@ class Engine implements EngineInterface
         }
     }
 
-    private function getResultItemIDConvertedTypeResolvers(TypeResolverInterface $typeResolver, array $ids): array
-    {
-        if (!$ids) {
-            return [];
-        }
-
-        $resultItemIDConvertedTypeResolvers = [];
-        $isUnionTypeResolver = $typeResolver instanceof UnionTypeResolverInterface;
-        if ($isUnionTypeResolver) {
-            $instanceManager = InstanceManagerFacade::getInstance();
-            $convertedTypeResolverClassDataItems = [];
-            foreach ($ids as $resultItemID) {
-                if ($convertedTypeResolverClass = $typeResolver->getTypeResolverClassForResultItem($resultItemID)) {
-                    $convertedTypeResolverClassDataItems[$convertedTypeResolverClass][] = $resultItemID;
-                }
-            }
-            foreach ($convertedTypeResolverClassDataItems as $convertedTypeResolverClass => $resultItemIDs) {
-                $convertedTypeResolver = $instanceManager->getInstance($convertedTypeResolverClass);
-                $convertedResultItemIDConvertedTypeResolvers = $this->getResultItemIDConvertedTypeResolvers(
-                    $convertedTypeResolver,
-                    $resultItemIDs
-                );
-                foreach ($convertedResultItemIDConvertedTypeResolvers as $convertedResultItemID => $convertedTypeResolver) {
-                    $resultItemIDConvertedTypeResolvers[(string)$convertedResultItemID] = $convertedTypeResolver;
-                }
-            }
-        } else {
-            foreach ($ids as $resultItemID) {
-                $resultItemIDConvertedTypeResolvers[(string)$resultItemID] = $typeResolver;
-            }
-        }
-        return $resultItemIDConvertedTypeResolvers;
-    }
-
     protected function getInterreferencedModuleFullpaths(array $module, array &$props)
     {
         $paths = array();
@@ -791,28 +757,6 @@ class Engine implements EngineInterface
     {
         $moduleFullName = ModuleUtils::getModuleFullName($module);
         return $moduleFullName.'-'.implode('.', $module_path);
-    }
-
-    public function maybeGetDBObjectIDOrIDsForUnionTypeResolver(string $typeResolverClass, $dbObjectIDOrIDs)
-    {
-        $instanceManager = InstanceManagerFacade::getInstance();
-        $typeResolver = $instanceManager->getInstance($typeResolverClass);
-        $isUnionTypeResolver = $typeResolver instanceof UnionTypeResolverInterface;
-        if ($isUnionTypeResolver) {
-            $resultItemIDConvertedTypeResolvers = $this->getResultItemIDConvertedTypeResolvers($typeResolver, is_array($dbObjectIDOrIDs) ? $dbObjectIDOrIDs : [$dbObjectIDOrIDs]);
-            $typeDBObjectIDOrIDs = [];
-            foreach ($resultItemIDConvertedTypeResolvers as $resultItemID => $convertedTypeResolver) {
-                $typeDBObjectIDOrIDs[] = UnionTypeHelpers::getDBObjectComposedTypeAndID(
-                    $convertedTypeResolver,
-                    $resultItemID
-                );
-            }
-            if (!is_array($dbObjectIDOrIDs)) {
-                $typeDBObjectIDOrIDs = $typeDBObjectIDOrIDs[0];
-            }
-            return $typeDBObjectIDOrIDs;
-        }
-        return null;
     }
 
     // This function is not private, so it can be accessed by the automated emails to regenerate the html for each user
@@ -998,6 +942,7 @@ class Engine implements EngineInterface
                 $load_data = !$data_properties[DataloadingConstants::SKIPDATALOAD];
                 if ($load_data) {
                     $typeResolver_class = $processor->getTypeResolverClass($module);
+                    $typeResolver = $instanceManager->getInstance((string)$typeResolver_class);
                     // ------------------------------------------
                     // Data Properties Query Args: add mutableonrequest data
                     // ------------------------------------------
@@ -1005,7 +950,7 @@ class Engine implements EngineInterface
                     $dbObjectIDOrIDs = $processor->getDBObjectIDOrIDs($module, $module_props, $data_properties);
                     // If the type is union, we must add the type to each object
                     if (!is_null($dbObjectIDOrIDs)) {
-                        $typeDBObjectIDOrIDs = $this->maybeGetDBObjectIDOrIDsForUnionTypeResolver((string)$typeResolver_class, $dbObjectIDOrIDs) ?? $dbObjectIDOrIDs;
+                        $typeDBObjectIDOrIDs = $typeResolver->getQualifiedDBObjectIDOrIDs($dbObjectIDOrIDs);
                     }
 
                     $dbObjectIDs = is_array($dbObjectIDOrIDs) ? $dbObjectIDOrIDs : array($dbObjectIDOrIDs);

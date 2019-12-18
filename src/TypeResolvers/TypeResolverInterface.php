@@ -13,6 +13,7 @@ interface TypeResolverInterface
     public function getSchemaTypeDescription(): ?string;
 
     // ... because all functions below have already been implemented in the Abstract base class
+    public function getQualifiedDBObjectIDOrIDs($dbObjectIDOrIDs);
     public function getIdFieldTypeResolverClass(): string;
     public function getDirectiveNameClasses(): array;
     public function validateFieldArgumentsForSchema(string $field, array $fieldArgs, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array;

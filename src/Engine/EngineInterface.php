@@ -21,5 +21,4 @@ interface EngineInterface
     public function getModuleData($root_module, $root_model_props, $root_props);
     public function moveEntriesUnderDBName(array $entries, bool $entryHasId, $typeResolver): array;
     public function getDatabases();
-    public function maybeGetDBObjectIDOrIDsForUnionTypeResolver(string $typeResolverClass, $dbObjectIDOrIDs);
 }

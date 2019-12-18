@@ -68,6 +68,11 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return get_called_class();
     }
 
+    public function getQualifiedDBObjectIDOrIDs($dbObjectIDOrIDs)
+    {
+        return $dbObjectIDOrIDs;
+    }
+
     /**
     * By default, the pipeline must always have directives:
     * 1. Validate: to validate that the schema, fieldNames, etc are supported, and filter them out if not
