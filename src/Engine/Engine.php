@@ -1267,7 +1267,6 @@ class Engine implements EngineInterface
 
             $typeResolver = $instanceManager->getInstance((string)$typeResolver_class);
             $database_key = $typeResolver->getTypeOutputName();
-            $isUnionTypeResolver = false;
 
             // Execute the typeResolver for all combined ids
             $iterationDBItems = $iterationDBErrors = $iterationDBWarnings = $iterationSchemaErrors = $iterationSchemaWarnings = $iterationSchemaDeprecations = array();
