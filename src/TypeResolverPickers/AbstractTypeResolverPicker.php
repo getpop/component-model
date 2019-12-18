@@ -5,5 +5,10 @@ use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 
 abstract class AbstractTypeResolverPicker implements TypeResolverPickerInterface
 {
-	use AttachableExtensionTrait;
+    use AttachableExtensionTrait;
+
+    public function isIDOfType($resultItemID): bool
+    {
+        return true;
+    }
 }

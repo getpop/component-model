@@ -127,8 +127,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         // This is not a problem by making the corresponding field processors inherit from each other, so that the more specific object also handles
         // the fields for the more general ones (eg: TypeResolver_OrganizationUsers extends TypeResolver_CommunityUsers, and TypeResolver_CommunityUsers extends UserTypeResolver)
         foreach ($this->getTypeResolverPickers() as $maybePicker) {
-
-            if ($maybePicker->process($resultItemID)) {
+            if ($maybePicker->isIDOfType($resultItemID)) {
                 // Found it!
                 $typeResolverPicker = $maybePicker;
                 return $typeResolverPicker->getTypeResolverClass();
@@ -138,7 +137,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         return null;
     }
 
-    public function getTypeResolverAndPicker($resultItem)
+    public function getTypeResolverAndPicker($resultItem): ?array
     {
         $instanceManager = InstanceManagerFacade::getInstance();
         // Among all registered fieldresolvers, check if any is able to process the object, through function `process`
@@ -149,7 +148,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         // the fields for the more general ones (eg: TypeResolver_OrganizationUsers extends TypeResolver_CommunityUsers, and TypeResolver_CommunityUsers extends UserTypeResolver)
         foreach ($this->getTypeResolverPickers() as $maybePicker) {
 
-            if ($maybePicker->process($resultItem)) {
+            if ($maybePicker->isInstanceOfType($resultItem)) {
                 // Found it!
                 $typeResolverPicker = $maybePicker;
                 $typeResolverClass = $typeResolverPicker->getTypeResolverClass();
