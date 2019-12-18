@@ -544,7 +544,8 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $resolvedResultItemIDs = $this->getIDsToQuery($resultIDItems);
         foreach (array_diff($ids, $resolvedResultItemIDs) as $unresolvedResultItemID) {
             $error = $this->getUnresolvedResultItemIDError($unresolvedResultItemID);
-            $failedFields = $ids_data_fields[$unresolvedResultItemID]['direct'];
+            // If a UnionTypeResolver fails to load an object, the fields will be NULL
+            $failedFields = $ids_data_fields[$unresolvedResultItemID]['direct'] ?? [];
             // Add in $schemaErrors instead of $dbErrors because in the latter one it will attempt to fetch the ID from the object, which it can't do
             $schemaErrors[] = [
                 Tokens::PATH => [implode($translationAPI->__('\', \''), $failedFields)],
