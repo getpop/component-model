@@ -521,7 +521,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         );
     }
 
-    public function fillResultItems(array $ids_data_fields, array &$unionDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    public function fillResultItems(array $ids_data_fields, array &$unionDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         $instanceManager = InstanceManagerFacade::getInstance();
         $translationAPI = TranslationAPIFacade::getInstance();
@@ -561,6 +561,8 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
         // Process them
         $this->processFillingResultItemsFromIDs($resultIDItems, $unionDBKeyIDs, $dbItems, $previousDBItems, $variables, $messages, $dbErrors, $dbWarnings, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+
+        return $resultIDItems;
     }
 
     /**
