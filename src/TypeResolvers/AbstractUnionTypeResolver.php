@@ -88,24 +88,24 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         return $resultItemIDTargetTypeResolvers;
     }
 
-    /**
-     * Add the type to the ID
-     *
-     * @param [type] $resultItem
-     * @return void
-     */
-    public function addTypeToID($resultItemID): string
-    {
-        $instanceManager = InstanceManagerFacade::getInstance();
-        if ($resultItemTypeResolverClass = $this->getTypeResolverClassForResultItem($resultItemID)) {
-            $resultItemTypeResolver = $instanceManager->getInstance($resultItemTypeResolverClass);
-            return UnionTypeHelpers::getDBObjectComposedTypeAndID(
-                $resultItemTypeResolver,
-                $resultItemID
-            );
-        }
-        return (string)$resultItemID;
-    }
+    // /**
+    //  * Add the type to the ID
+    //  *
+    //  * @param [type] $resultItem
+    //  * @return void
+    //  */
+    // public function addTypeToID($resultItemID): string
+    // {
+    //     $instanceManager = InstanceManagerFacade::getInstance();
+    //     if ($resultItemTypeResolverClass = $this->getTypeResolverClassForResultItem($resultItemID)) {
+    //         $resultItemTypeResolver = $instanceManager->getInstance($resultItemTypeResolverClass);
+    //         return UnionTypeHelpers::getDBObjectComposedTypeAndID(
+    //             $resultItemTypeResolver,
+    //             $resultItemID
+    //         );
+    //     }
+    //     return (string)$resultItemID;
+    // }
 
     /**
      * In order to enable elements from different types (such as posts and users) to have same ID,

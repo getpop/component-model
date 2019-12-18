@@ -1512,20 +1512,9 @@ class Engine implements EngineInterface
                                             // So, instead, we store the dbKey/ID values in another object "$unionDBKeyIDs"
                                             // Then, whenever it's a union type data resolver, we obtain the values for the relationship under this other object
                                             if ($subcomponentIsUnionTypeResolver) {
-                                                $isArray = is_array($database_field_ids);
-                                                $database_field_ids = array_map(
-                                                    function($id) use($subcomponentTypeResolver) {
-                                                        return $subcomponentTypeResolver->addTypeToID($id);
-                                                    },
-                                                    $isArray ? $database_field_ids : [$database_field_ids]
-                                                );
-                                                if ($isArray) {
-                                                    $unionDBKeyIDs[$dbname][$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
-                                                    $combinedUnionDBKeyIDs[$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
-                                                } else {
-                                                    $unionDBKeyIDs[$dbname][$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids[0];
-                                                    $combinedUnionDBKeyIDs[$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids[0];
-                                                }
+                                                $database_field_ids = $subcomponentTypeResolver->getQualifiedDBObjectIDOrIDs($database_field_ids);
+                                                $unionDBKeyIDs[$dbname][$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
+                                                $combinedUnionDBKeyIDs[$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
                                             }
 
                                             $field_ids = array_merge(
