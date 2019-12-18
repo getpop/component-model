@@ -1491,7 +1491,7 @@ class Engine implements EngineInterface
                                 if ($already_loaded_ids_data_fields && $already_loaded_ids_data_fields[$subcomponent_typeResolver_class]) {
                                     $subcomponent_already_loaded_ids_data_fields = $already_loaded_ids_data_fields[$subcomponent_typeResolver_class];
                                 }
-                                $field_ids = [];
+                                $subcomponentIDs = [];
                                 foreach ($typeResolver_ids as $id) {
                                     // If the type data resolver is union, the dbKey where the value is stored is contained in the ID itself,
                                     // with format dbKey/ID. We must extract this information: assign the dbKey to $database_key, and remove the dbKey from the ID
@@ -1505,15 +1505,47 @@ class Engine implements EngineInterface
                                     // Fetch the field_ids from all these DBs
                                     foreach ($databases as $dbname => $database) {
                                         if ($database_field_ids = $database[$database_key][(string)$id][$subcomponent_data_field_outputkey]) {
-                                            // We don't want to store the dbKey/ID inside the relationalID, because that can lead to problems when dealing with the relations in the application (better keep it only to the ID)
-                                            // So, instead, we store the dbKey/ID values in another object "$unionDBKeyIDs"
-                                            // Then, whenever it's a union type data resolver, we obtain the values for the relationship under this other object
+                                            $subcomponentIDs[$dbname][$database_key][$id] = array_merge(
+                                                $subcomponentIDs[$dbname][$database_key][$id] ?? [],
+                                                is_array($database_field_ids) ? $database_field_ids : array($database_field_ids)
+                                            );
+                                        }
+                                    }
+                                }
+                                // We don't want to store the dbKey/ID inside the relationalID, because that can lead to problems when dealing with the relations in the application (better keep it only to the ID)
+                                // So, instead, we store the dbKey/ID values in another object "$unionDBKeyIDs"
+                                // Then, whenever it's a union type data resolver, we obtain the values for the relationship under this other object
+                                $typedSubcomponentIDs = [];
+                                if ($subcomponentIsUnionTypeResolver) {
+                                    // Get the types for all of the IDs all at once. Flatten 3 levels: dbname => dbkey => id => ...
+                                    $allSubcomponentIDs = array_values(array_unique(
+                                        GeneralUtils::arrayFlatten(GeneralUtils::arrayFlatten(GeneralUtils::arrayFlatten($subcomponentIDs)))
+                                    ));
+                                    $qualifiedSubcomponentIDs = $subcomponentTypeResolver->getQualifiedDBObjectIDOrIDs($allSubcomponentIDs);
+                                    // Create a map, from ID to TypedID
+                                    for ($i=0; $i<count($allSubcomponentIDs); $i++) {
+                                        $typedSubcomponentIDs[$allSubcomponentIDs[$i]] = $qualifiedSubcomponentIDs[$i];
+                                    }
+                                }
+
+                                $field_ids = [];
+                                foreach ($subcomponentIDs as $dbname => $dbkey_id_database_field_ids) {
+                                    foreach ($dbkey_id_database_field_ids as $database_key => $id_database_field_ids) {
+                                        foreach ($id_database_field_ids as $id => $database_field_ids) {
                                             if ($subcomponentIsUnionTypeResolver) {
-                                                $database_field_ids = $subcomponentTypeResolver->getQualifiedDBObjectIDOrIDs($database_field_ids);
+                                                // Transform the IDs, adding their type
+                                                $database_field_ids = array_map(
+                                                    function($field_id) use($typedSubcomponentIDs) {
+                                                        return $typedSubcomponentIDs[$field_id];
+                                                    },
+                                                    $database_field_ids
+                                                );
+
+                                                // Set on the `unionDBKeyIDs` output entry
                                                 $unionDBKeyIDs[$dbname][$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
                                                 $combinedUnionDBKeyIDs[$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
                                             }
-
+                                            // Merge, after adding their type!
                                             $field_ids = array_merge(
                                                 $field_ids,
                                                 is_array($database_field_ids) ? $database_field_ids : array($database_field_ids)
