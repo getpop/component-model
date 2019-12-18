@@ -1491,6 +1491,7 @@ class Engine implements EngineInterface
                                 if ($already_loaded_ids_data_fields && $already_loaded_ids_data_fields[$subcomponent_typeResolver_class]) {
                                     $subcomponent_already_loaded_ids_data_fields = $already_loaded_ids_data_fields[$subcomponent_typeResolver_class];
                                 }
+                                $field_ids = [];
                                 foreach ($typeResolver_ids as $id) {
                                     // If the type data resolver is union, the dbKey where the value is stored is contained in the ID itself,
                                     // with format dbKey/ID. We must extract this information: assign the dbKey to $database_key, and remove the dbKey from the ID
@@ -1502,7 +1503,6 @@ class Engine implements EngineInterface
                                     }
                                     // $databases may contain more the 1 DB shipped by pop-engine/ ("primary"). Eg: PoP User Login adds db "userstate"
                                     // Fetch the field_ids from all these DBs
-                                    $field_ids = array();
                                     foreach ($databases as $dbname => $database) {
                                         if ($database_field_ids = $database[$database_key][(string)$id][$subcomponent_data_field_outputkey]) {
                                             // We don't want to store the dbKey/ID inside the relationalID, because that can lead to problems when dealing with the relations in the application (better keep it only to the ID)
@@ -1520,44 +1520,44 @@ class Engine implements EngineInterface
                                             );
                                         }
                                     }
-                                    if ($field_ids) {
-                                        foreach ($field_ids as $field_id) {
-                                            // Do not add again the IDs/Fields already loaded
-                                            if ($subcomponent_already_loaded_data_fields = $subcomponent_already_loaded_ids_data_fields[$field_id]) {
-                                                $id_subcomponent_data_fields = array_values(
+                                }
+                                if ($field_ids) {
+                                    foreach ($field_ids as $field_id) {
+                                        // Do not add again the IDs/Fields already loaded
+                                        if ($subcomponent_already_loaded_data_fields = $subcomponent_already_loaded_ids_data_fields[$field_id]) {
+                                            $id_subcomponent_data_fields = array_values(
+                                                array_diff(
+                                                    $subcomponent_data_fields,
+                                                    $subcomponent_already_loaded_data_fields
+                                                )
+                                            );
+                                            $id_subcomponent_conditional_data_fields = [];
+                                            foreach ($subcomponent_conditional_data_fields as $conditionField => $conditionalFields) {
+                                                $id_subcomponent_conditional_data_fields[$conditionField] = array_values(
                                                     array_diff(
-                                                        $subcomponent_data_fields,
+                                                        $conditionalFields,
                                                         $subcomponent_already_loaded_data_fields
                                                     )
                                                 );
-                                                $id_subcomponent_conditional_data_fields = [];
-                                                foreach ($subcomponent_conditional_data_fields as $conditionField => $conditionalFields) {
-                                                    $id_subcomponent_conditional_data_fields[$conditionField] = array_values(
-                                                        array_diff(
-                                                            $conditionalFields,
-                                                            $subcomponent_already_loaded_data_fields
-                                                        )
-                                                    );
-                                                }
-                                            } else {
-                                                $id_subcomponent_data_fields = $subcomponent_data_fields;
-                                                $id_subcomponent_conditional_data_fields = $subcomponent_conditional_data_fields;
                                             }
-                                            // Important: do ALWAYS execute the lines below, even if $id_subcomponent_data_fields is empty
-                                            // That is because we can load additional data for an object that was already loaded in a previous iteration
-                                            // Eg: /api/?query=posts(id:1).author.posts.comments.post.author.posts.title
-                                            // In this case, property "title" at the end would not be fetched otherwise (that post was already loaded at the beginning)
-                                            // if ($id_subcomponent_data_fields) {
-                                            $this->combineIdsDatafields($this->typeResolverClass_ids_data_fields, $subcomponent_typeResolver_class, array($field_id), $id_subcomponent_data_fields, $id_subcomponent_conditional_data_fields);
-                                            // }
+                                        } else {
+                                            $id_subcomponent_data_fields = $subcomponent_data_fields;
+                                            $id_subcomponent_conditional_data_fields = $subcomponent_conditional_data_fields;
                                         }
-                                        $this->initializeTypeResolverEntry($this->dbdata, $subcomponent_typeResolver_class, $module_path_key);
-                                        $this->dbdata[$subcomponent_typeResolver_class][$module_path_key]['ids'] = array_merge(
-                                            $this->dbdata[$subcomponent_typeResolver_class][$module_path_key]['ids'] ?? [],
-                                            $field_ids
-                                        );
-                                        $this->integrateSubcomponentDataProperties($this->dbdata, $subcomponent_data_properties, $subcomponent_typeResolver_class, $module_path_key);
+                                        // Important: do ALWAYS execute the lines below, even if $id_subcomponent_data_fields is empty
+                                        // That is because we can load additional data for an object that was already loaded in a previous iteration
+                                        // Eg: /api/?query=posts(id:1).author.posts.comments.post.author.posts.title
+                                        // In this case, property "title" at the end would not be fetched otherwise (that post was already loaded at the beginning)
+                                        // if ($id_subcomponent_data_fields) {
+                                        $this->combineIdsDatafields($this->typeResolverClass_ids_data_fields, $subcomponent_typeResolver_class, array($field_id), $id_subcomponent_data_fields, $id_subcomponent_conditional_data_fields);
+                                        // }
                                     }
+                                    $this->initializeTypeResolverEntry($this->dbdata, $subcomponent_typeResolver_class, $module_path_key);
+                                    $this->dbdata[$subcomponent_typeResolver_class][$module_path_key]['ids'] = array_merge(
+                                        $this->dbdata[$subcomponent_typeResolver_class][$module_path_key]['ids'] ?? [],
+                                        $field_ids
+                                    );
+                                    $this->integrateSubcomponentDataProperties($this->dbdata, $subcomponent_data_properties, $subcomponent_typeResolver_class, $module_path_key);
                                 }
 
                                 if ($this->dbdata[$subcomponent_typeResolver_class][$module_path_key]) {
