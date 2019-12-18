@@ -1,9 +1,13 @@
 <?php
 namespace PoP\ComponentModel\TypeResolvers;
 
+use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
+use PoP\ComponentModel\TypeResolverPickers\TypeResolverPickerInterface;
+
 interface UnionTypeResolverInterface
 {
     // public function addTypeToID($resultItemID): string;
     public function getTypeResolverClassForResultItem($resultItemID);
-    public function getTypeResolverAndPicker($resultItem): ?array;
+    public function getTargetTypeResolverPicker($resultItem): ?TypeResolverPickerInterface;
+    public function getTargetTypeResolver($resultItem): ?TypeResolverInterface;
 }

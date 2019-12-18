@@ -586,8 +586,8 @@ class Engine implements EngineInterface
                 // Obtain the type of the object
                 $exists = false;
                 if ($resultItem = $resultIDItems[$resultItemID]) {
-                    $typeResolverAndPicker = $typeResolver->getTypeResolverAndPicker($resultItem);
-                    if (!is_null($typeResolverAndPicker)) {
+                    $targetTypeResolver = $typeResolver->getTargetTypeResolver($resultItem);
+                    if (!is_null($targetTypeResolver)) {
                         $exists = true;
                         // The ID will contain the type. Remove it
                         list(
@@ -595,10 +595,7 @@ class Engine implements EngineInterface
                             $resultItemID
                         ) = UnionTypeHelpers::extractDBObjectTypeAndID($resultItemID);
 
-                        list(
-                            $convertedTypeResolver,
-                        ) = $typeResolverAndPicker;
-                        $convertedTypeResolverClass = get_class($convertedTypeResolver);
+                        $convertedTypeResolverClass = get_class($targetTypeResolver);
                         $convertedTypeResolverClassDataItems[$convertedTypeResolverClass][$resultItemID] = $dataItem;
                         $convertedTypeResolverClassDBKeys[$convertedTypeResolverClass] = $resultItemDBKey;
                     }

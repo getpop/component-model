@@ -1,11 +1,13 @@
 <?php
 namespace PoP\ComponentModel\TypeResolvers;
 
+use PoP\ComponentModel\Error;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
+use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
+use PoP\ComponentModel\TypeResolverPickers\TypeResolverPickerInterface;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
-use PoP\ComponentModel\Error;
 
 abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements UnionTypeResolverInterface
 {
@@ -116,20 +118,16 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
      */
     public function getId($resultItem)
     {
-        $typeResolverAndPicker = $this->getTypeResolverAndPicker($resultItem);
-        if (is_null($typeResolverAndPicker)) {
+        $targetTypeResolver = $this->getTargetTypeResolver($resultItem);
+        if (is_null($targetTypeResolver)) {
             return null;
         }
-
-        list(
-            $typeResolver,
-        ) = $typeResolverAndPicker;
 
         // Add the type to the ID, so that elements of different types can live side by side
         // The type will be removed again in `getIDsToQuery`
         return UnionTypeHelpers::getDBObjectComposedTypeAndID(
-            $typeResolver,
-            $typeResolver->getId($resultItem)
+            $targetTypeResolver,
+            $targetTypeResolver->getId($resultItem)
         );
     }
 
@@ -192,9 +190,8 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         return null;
     }
 
-    public function getTypeResolverAndPicker($resultItem): ?array
+    public function getTargetTypeResolverPicker($resultItem): ?TypeResolverPickerInterface
     {
-        $instanceManager = InstanceManagerFacade::getInstance();
         // Among all registered fieldresolvers, check if any is able to process the object, through function `process`
         // Important: iterate from back to front, because more general components (eg: Users) are defined first,
         // and dependent components (eg: Communities, Organizations) are defined later
@@ -205,18 +202,19 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
 
             if ($maybePicker->isInstanceOfType($resultItem)) {
                 // Found it!
-                $typeResolverPicker = $maybePicker;
-                $typeResolverClass = $typeResolverPicker->getTypeResolverClass();
-                break;
+                return $maybePicker;
             }
         }
+        return null;
+    }
 
-        if ($typeResolverClass) {
-            // From the typeResolver name, return the object
+    public function getTargetTypeResolver($resultItem): ?TypeResolverInterface
+    {
+        if ($typeResolverPicker = $this->getTargetTypeResolverPicker($resultItem)) {
+            $instanceManager = InstanceManagerFacade::getInstance();
+            $typeResolverClass = $typeResolverPicker->getTypeResolverClass();
             $typeResolver = $instanceManager->getInstance($typeResolverClass);
-
-            // Return also the resolver, as to cast the object
-            return array($typeResolver, $typeResolverPicker);
+            return $typeResolver;
         }
         return null;
     }
@@ -248,17 +246,12 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
     public function resolveValue($resultItem, string $field, ?array $variables = null, ?array $expressions = null, array $options = [])
     {
         // Check that a typeResolver from this Union can process this resultItem, or return an arror
-        $typeResolverAndPicker = $this->getTypeResolverAndPicker($resultItem);
-        if (is_null($typeResolverAndPicker)) {
+        $targetTypeResolver = $this->getTargetTypeResolver($resultItem);
+        if (is_null($targetTypeResolver)) {
             return self::getUnresolvedResultItemError($resultItem);
         }
-        // Delegate to the TypeResolver corresponding to this object
-        list(
-            $typeResolver,
-        ) = $typeResolverAndPicker;
-
         // Delegate to that typeResolver to obtain the value
-        return $typeResolver->resolveValue($resultItem, $field, $variables, $expressions, $options);
+        return $targetTypeResolver->resolveValue($resultItem, $field, $variables, $expressions, $options);
     }
 
     protected function addSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = [])
