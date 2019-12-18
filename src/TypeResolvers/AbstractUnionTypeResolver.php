@@ -54,25 +54,25 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         return $this->recursiveGetResultItemIDTargetTypeResolvers($this, $ids);
     }
 
-    protected function recursiveGetResultItemIDTargetTypeResolvers(TypeResolverInterface $typeResolver, array $ids): array
+    protected function recursiveGetResultItemIDTargetTypeResolvers(TypeResolverInterface $currentLevelTypeResolver, array $ids): array
     {
         if (!$ids) {
             return [];
         }
 
         $resultItemIDTargetTypeResolvers = [];
-        $isUnionTypeResolver = $typeResolver instanceof UnionTypeResolverInterface;
+        $isUnionTypeResolver = $currentLevelTypeResolver instanceof UnionTypeResolverInterface;
         if ($isUnionTypeResolver) {
             $instanceManager = InstanceManagerFacade::getInstance();
             $targetTypeResolverClassDataItems = [];
             foreach ($ids as $resultItemID) {
-                if ($targetTypeResolverClass = $typeResolver->getTypeResolverClassForResultItem($resultItemID)) {
+                if ($targetTypeResolverClass = $currentLevelTypeResolver->getTypeResolverClassForResultItem($resultItemID)) {
                     $targetTypeResolverClassDataItems[$targetTypeResolverClass][] = $resultItemID;
                 }
             }
             foreach ($targetTypeResolverClassDataItems as $targetTypeResolverClass => $resultItemIDs) {
                 $targetTypeResolver = $instanceManager->getInstance($targetTypeResolverClass);
-                $targetResultItemIDTargetTypeResolvers = $this->getResultItemIDTargetTypeResolvers(
+                $targetResultItemIDTargetTypeResolvers = $this->recursiveGetResultItemIDTargetTypeResolvers(
                     $targetTypeResolver,
                     $resultItemIDs
                 );
@@ -82,7 +82,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
             }
         } else {
             foreach ($ids as $resultItemID) {
-                $resultItemIDTargetTypeResolvers[(string)$resultItemID] = $typeResolver;
+                $resultItemIDTargetTypeResolvers[(string)$resultItemID] = $currentLevelTypeResolver;
             }
         }
         return $resultItemIDTargetTypeResolvers;
