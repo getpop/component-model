@@ -38,6 +38,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     protected $directiveNameClasses;
     protected $safeVars;
     protected $schemaFieldResolvers;
+    protected $interfaceClasses;
 
     private $fieldDirectiveIDFields = [];
     private $fieldDirectivesFromFieldCache = [];
@@ -1155,6 +1156,35 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         } while ($class = get_parent_class($class));
 
         return $schemaFieldResolvers;
+    }
+
+    public function getAllImplementedInterfaceClasses(): array
+    {
+        if (is_null($this->interfaceClasses)) {
+            $this->interfaceClasses = $this->calculateAllImplementedInterfaceClasses();
+        }
+        return $this->interfaceClasses;
+    }
+
+    protected function calculateAllImplementedInterfaceClasses(): array
+    {
+        $interfaceClasses = [];
+        $processedFieldResolverClasses = [];
+
+        foreach ($this->getAllFieldResolvers() as $fieldName => $fieldResolvers) {
+            foreach ($fieldResolvers as $fieldResolver) {
+                $fieldResolverClass = get_class($fieldResolver);
+                if (!in_array($fieldResolverClass, $processedFieldResolverClasses)) {
+                    $processedFieldResolverClasses[] = $fieldResolverClass;
+                    $interfaceClasses = array_merge(
+                        $interfaceClasses,
+                        $fieldResolver::getImplementedInterfaceClasses()
+                    );
+                }
+            }
+        }
+
+        return array_values(array_unique($interfaceClasses));
     }
 
     protected function getFieldResolversForField(string $field): array
