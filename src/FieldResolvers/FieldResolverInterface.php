@@ -12,6 +12,18 @@ interface FieldResolverInterface
      */
     public static function getFieldNamesToResolve(): array;
     /**
+     * A list of classes of all the (GraphQL-style) interfaces the fieldResolver implements
+     *
+     * @return array
+     */
+    public static function getImplementedInterfaceClasses(): array;
+    /**
+     * Obtain the fieldNames from all implemented interfaces
+     *
+     * @return array
+     */
+    public static function getFieldNamesFromInterfaces(): array;
+    /**
      * Get an instance of the object defining the schema for this fieldResolver
      *
      * @param TypeResolverInterface $typeResolver

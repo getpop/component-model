@@ -6,8 +6,10 @@ use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\Facades\Engine\EngineFacade;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
-use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverInterface;
+use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
+use PoP\ComponentModel\FieldResolvers\SchemaDefinitionResolverTrait;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
+use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverInterface;
 
 abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSchemaDefinitionResolverInterface
 {
@@ -15,6 +17,54 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
      * This class is attached to a TypeResolver
      */
     use AttachableExtensionTrait;
+    use SchemaDefinitionResolverTrait;
+
+    public static function getImplementedInterfaceClasses(): array
+    {
+        return [];
+    }
+
+    /**
+     * Implement all the fieldNames defined in the interfaces
+     *
+     * @return array
+     */
+    public static function getFieldNamesFromInterfaces(): array
+    {
+        $fieldNames = [];
+
+        // Iterate classes from the current class towards the parent classes until finding typeResolver that satisfies processing this field
+        foreach (self::getInterfaceClasses() as $interfaceClass) {
+            $fieldNames = array_merge(
+                $fieldNames,
+                $interfaceClass::getFieldNamesToImplement()
+            );
+        }
+
+        return array_values(array_unique($fieldNames));
+    }
+
+    /**
+     * Implement all the fieldNames defined in the interfaces
+     *
+     * @return array
+     */
+    public static function getInterfaceClasses(): array
+    {
+        $interfaces = [];
+
+        // Iterate classes from the current class towards the parent classes until finding typeResolver that satisfies processing this field
+        $class = get_called_class();
+        do {
+            $interfaces = array_merge(
+                $interfaces,
+                $class::getImplementedInterfaceClasses()
+            );
+            // Otherwise, continue iterating for the class parents
+        } while ($class = get_parent_class($class));
+
+        return array_values(array_unique($interfaces));
+    }
 
     /**
      * Indicates if the fieldResolver can process this combination of fieldName and fieldArgs
@@ -65,56 +115,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
     }
 
     /**
-     * Return the object implementing the schema definition for this fieldResolver
-     *
-     * @return void
-     */
-    public function getSchemaDefinitionResolver(TypeResolverInterface $typeResolver): ?FieldSchemaDefinitionResolverInterface
-    {
-        return null;
-    }
-
-    public function getSchemaFieldType(TypeResolverInterface $typeResolver, string $fieldName): ?string
-    {
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
-            return $schemaDefinitionResolver->getSchemaFieldType($typeResolver, $fieldName);
-        }
-        return null;
-    }
-
-    public function getSchemaFieldDescription(TypeResolverInterface $typeResolver, string $fieldName): ?string
-    {
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
-            return $schemaDefinitionResolver->getSchemaFieldDescription($typeResolver, $fieldName);
-        }
-        return null;
-    }
-
-    public function getSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): array
-    {
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
-            return $schemaDefinitionResolver->getSchemaFieldArgs($typeResolver, $fieldName);
-        }
-        return [];
-    }
-
-    public function getSchemaFieldDeprecationDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
-    {
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
-            return $schemaDefinitionResolver->getSchemaFieldDeprecationDescription($typeResolver, $fieldName, $fieldArgs);
-        }
-        return null;
-    }
-
-    public function isGlobal(TypeResolverInterface $typeResolver, string $fieldName): bool
-    {
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
-            return $schemaDefinitionResolver->isGlobal($typeResolver, $fieldName);
-        }
-        return false;
-    }
-
-    /**
      * Get the "schema" properties as for the fieldName
      *
      * @return array
@@ -124,7 +124,24 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         $schemaDefinition = [
             SchemaDefinition::ARGNAME_NAME => $fieldName,
         ];
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
+        // Find which is the $schemaDefinitionResolver that will satisfy this schema definition
+        // First try the one declared by the fieldResolver
+        $maybeSchemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver);
+        if (!is_null($maybeSchemaDefinitionResolver) && in_array($fieldName, $maybeSchemaDefinitionResolver::getFieldNamesToResolve())) {
+            $schemaDefinitionResolver = $maybeSchemaDefinitionResolver;
+        } else {
+            // Otherwise, try through all of its interfaces
+            $instanceManager = InstanceManagerFacade::getInstance();
+            foreach (self::getInterfaceClasses() as $interfaceClass) {
+                if (in_array($fieldName, $interfaceClass::getFieldNamesToImplement())) {
+                    $schemaDefinitionResolver = $instanceManager->getInstance($interfaceClass);
+                    break;
+                }
+            }
+        }
+
+        // If we found a resolver for this fieldName, get all its properties from it
+        if ($schemaDefinitionResolver) {
             if ($type = $schemaDefinitionResolver->getSchemaFieldType($typeResolver, $fieldName)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_TYPE] = $type;
             }

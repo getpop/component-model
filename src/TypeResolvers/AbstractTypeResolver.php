@@ -1143,7 +1143,11 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         do {
             foreach ($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDRESOLVERS) as $extensionClass => $extensionPriority) {
                 // Process the fields which have not been processed yet
-                foreach (array_diff($extensionClass::getFieldNamesToResolve(), array_keys($schemaFieldResolvers)) as $fieldName) {
+                $extensionClassFieldNames = array_merge(
+                    $extensionClass::getFieldNamesToResolve(),
+                    $extensionClass::getFieldNamesFromInterfaces()
+                );
+                foreach (array_diff($extensionClassFieldNames, array_keys($schemaFieldResolvers)) as $fieldName) {
                     // Watch out here: no fieldArgs!!!! So this deals with the base case (static), not with all cases (runtime)
                     $schemaFieldResolvers[$fieldName] = $this->getFieldResolversForField($fieldName);
                 }
@@ -1187,7 +1191,6 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
         $instanceManager = InstanceManagerFacade::getInstance();
         $attachableExtensionManager = AttachableExtensionManagerFacade::getInstance();
-
         // Iterate classes from the current class towards the parent classes until finding typeResolver that satisfies processing this field
         $class = get_called_class();
         $fieldResolvers = [];
@@ -1199,7 +1202,11 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             // Important: do array_reverse to enable more specific hooks, which are initialized later on in the project, to be the chosen ones (if their priority is the same)
             foreach (array_reverse($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDRESOLVERS)) as $extensionClass => $extensionPriority) {
                 // Check if this fieldResolver can process this field, and if its priority is bigger than the previous found instance attached to the same class
-                if (in_array($fieldName, $extensionClass::getFieldNamesToResolve())) {
+                $extensionClassFieldNames = array_merge(
+                    $extensionClass::getFieldNamesToResolve(),
+                    $extensionClass::getFieldNamesFromInterfaces()
+                );
+                if (in_array($fieldName, $extensionClassFieldNames)) {
                     // Check that the fieldResolver can handle the field based on other parameters (eg: "version" in the fieldArgs)
                     $fieldResolver = $instanceManager->getInstance($extensionClass);
                     if ($fieldResolver->resolveCanProcess($this, $fieldName, $fieldArgs)) {
@@ -1258,9 +1265,13 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $class = get_called_class();
         do {
             foreach ($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDRESOLVERS) as $extensionClass => $extensionPriority) {
+                $extensionClassFieldNames = array_merge(
+                    $extensionClass::getFieldNamesToResolve(),
+                    $extensionClass::getFieldNamesFromInterfaces()
+                );
                 $ret = array_merge(
                     $ret,
-                    $extensionClass::getFieldNamesToResolve()
+                    $extensionClassFieldNames
                 );
             }
             // Continue iterating for the class parents
