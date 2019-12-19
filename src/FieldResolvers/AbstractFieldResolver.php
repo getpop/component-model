@@ -160,11 +160,11 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             if ($args = $schemaDefinitionResolver->getSchemaFieldArgs($typeResolver, $fieldName)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_ARGS] = $args;
             }
+            $schemaDefinitionResolver->addSchemaDefinitionForField($schemaDefinition, $typeResolver, $fieldName);
         }
         if (!is_null($this->resolveFieldTypeResolverClass($typeResolver, $fieldName, $fieldArgs))) {
             $schemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL] = true;
         }
-        $this->addSchemaDefinitionForField($schemaDefinition, $fieldName);
         return $schemaDefinition;
     }
 
@@ -176,13 +176,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
     public function resolveSchemaValidationWarningDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
     {
         return null;
-    }
-
-    /**
-     * Function to override
-     */
-    protected function addSchemaDefinitionForField(array &$schemaDefinition, string $fieldName)
-    {
     }
 
     protected function getFieldArgumentsSchemaDefinitions(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): array

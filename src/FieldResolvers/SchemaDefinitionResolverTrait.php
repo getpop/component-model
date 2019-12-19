@@ -47,4 +47,11 @@ trait SchemaDefinitionResolverTrait
         }
         return null;
     }
+
+    public function addSchemaDefinitionForField(array &$schemaDefinition, TypeResolverInterface $typeResolver, string $fieldName): void
+    {
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
+            $schemaDefinitionResolver->addSchemaDefinitionForField($schemaDefinition, $typeResolver, $fieldName);
+        }
+    }
 }

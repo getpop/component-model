@@ -38,4 +38,8 @@ trait SelfSchemaDefinitionResolverTrait
     {
         return null;
     }
+
+    public function addSchemaDefinitionForField(array &$schemaDefinition, TypeResolverInterface $typeResolver, string $fieldName): void
+    {
+    }
 }
