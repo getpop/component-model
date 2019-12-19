@@ -38,9 +38,4 @@ trait SelfSchemaDefinitionResolverTrait
     {
         return null;
     }
-
-    public function isGlobal(TypeResolverInterface $typeResolver, string $fieldName): bool
-    {
-        return false;
-    }
 }

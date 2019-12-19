@@ -44,6 +44,11 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         return array_values(array_unique($fieldNames));
     }
 
+    public function isGlobal(TypeResolverInterface $typeResolver, string $fieldName): bool
+    {
+        return false;
+    }
+
     /**
      * Implement all the fieldNames defined in the interfaces
      *

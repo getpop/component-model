@@ -1097,8 +1097,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 $fieldSchemaDefinition[SchemaDefinition::ARGNAME_REFERENCED_TYPE] = $typeNames[0];
             }
         }
-        $fieldSchemaDefinitionResolver = $fieldResolver->getSchemaDefinitionResolver($this);
-        $isGlobal = $fieldSchemaDefinitionResolver->isGlobal($this, $fieldName);
+        $isGlobal = $fieldResolver->isGlobal($this, $fieldName);
         $isConnection = isset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL]) && $fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL];
         if ($isGlobal) {
             // If it is relational, it is a global connection

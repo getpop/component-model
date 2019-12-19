@@ -33,6 +33,14 @@ interface FieldResolverInterface
      */
     public function getSchemaDefinitionResolver(TypeResolverInterface $typeResolver): ?FieldSchemaDefinitionResolverInterface;
     public function getSchemaDefinitionForField(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): array;
+    /**
+     * Indicate if the fields are global (i.e. they apply to all typeResolvers)
+     *
+     * @param TypeResolverInterface $typeResolver
+     * @param string $fieldName
+     * @return boolean
+     */
+    public function isGlobal(TypeResolverInterface $typeResolver, string $fieldName): bool;
 
     /**
      * Indicates if the fieldResolver can process this combination of fieldName and fieldArgs

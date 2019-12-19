@@ -47,12 +47,4 @@ trait SchemaDefinitionResolverTrait
         }
         return null;
     }
-
-    public function isGlobal(TypeResolverInterface $typeResolver, string $fieldName): bool
-    {
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
-            return $schemaDefinitionResolver->isGlobal($typeResolver, $fieldName);
-        }
-        return false;
-    }
 }
