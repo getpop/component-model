@@ -13,7 +13,7 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
         return [
             'id',
             '__typename',
-            'isInstanceOfType',
+            'isType',
         ];
     }
 
@@ -22,7 +22,7 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
         $types = [
             'id' => SchemaDefinition::TYPE_ID,
             '__typename' => SchemaDefinition::TYPE_STRING,
-            'isInstanceOfType' => SchemaDefinition::TYPE_BOOL,
+            'isType' => SchemaDefinition::TYPE_BOOL,
         ];
         return $types[$fieldName] ?? parent::getSchemaFieldType($typeResolver, $fieldName);
     }
@@ -33,7 +33,7 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
         $descriptions = [
             'id' => $translationAPI->__('The object ID', 'pop-component-model'),
             '__typename' => $translationAPI->__('The object\'s type', 'pop-component-model'),
-            'isInstanceOfType' => $translationAPI->__('Indicate if the object\'s is of a given type', 'pop-component-model'),
+            'isType' => $translationAPI->__('Indicate if the object\'s is of a given type', 'pop-component-model'),
         ];
         return $descriptions[$fieldName] ?? parent::getSchemaFieldDescription($typeResolver, $fieldName);
     }
@@ -42,7 +42,7 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         switch ($fieldName) {
-            case 'isInstanceOfType':
+            case 'isType':
                 return [
                     [
                         SchemaDefinition::ARGNAME_NAME => 'type',
@@ -63,7 +63,7 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
                 return $typeResolver->getId($resultItem);
             case '__typename':
                 return $typeResolver->getTypeName();
-            case 'isInstanceOfType':
+            case 'isType':
                 $typeName = $fieldArgs['type'];
                 return strtolower($typeName) == strtolower($typeResolver->getTypeName());
         }
