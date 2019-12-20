@@ -27,11 +27,31 @@ class SchemaHelpers
         );
     }
 
+    public static function getSchemaEnumTypeFieldArgs(array $schemaFieldArgs)
+    {
+        return array_filter(
+            $schemaFieldArgs,
+            function($schemaFieldArg) {
+                return isset($schemaFieldArg[SchemaDefinition::ARGNAME_TYPE]) && $schemaFieldArg[SchemaDefinition::ARGNAME_TYPE] == SchemaDefinition::TYPE_ENUM;
+            }
+        );
+    }
+
     public static function getSchemaFieldArgNames(array $schemaFieldArgs)
     {
         return array_map(
             function($schemaFieldArg) {
                 return $schemaFieldArg[SchemaDefinition::ARGNAME_NAME];
+            },
+            $schemaFieldArgs
+        );
+    }
+
+    public static function getSchemaFieldArgEnumValues(array $schemaFieldArgs)
+    {
+        return array_map(
+            function($schemaFieldArg) {
+                return $schemaFieldArg[SchemaDefinition::ARGNAME_ENUMVALUES];
             },
             $schemaFieldArgs
         );

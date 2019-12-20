@@ -1,6 +1,7 @@
 <?php
 namespace PoP\ComponentModel\FieldResolvers;
 
+use PoP\FieldQuery\FieldQueryUtils;
 use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
@@ -85,9 +86,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
     }
     public function resolveSchemaValidationErrorDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
     {
-        // Iterate all the mandatory fieldArgs and, if they are not present, throw an error
         $fieldSchemaDefinition = $this->getSchemaDefinitionForField($typeResolver, $fieldName, $fieldArgs);
         if ($schemaFieldArgs = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) {
+            // Iterate all the mandatory fieldArgs and, if they are not present, throw an error
             if ($mandatoryArgs = SchemaHelpers::getSchemaMandatoryFieldArgs($schemaFieldArgs)) {
                 if ($maybeError = $this->validateNotMissingFieldArguments(
                     SchemaHelpers::getSchemaFieldArgNames($mandatoryArgs),
@@ -95,6 +96,23 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                     $fieldArgs
                 )) {
                     return $maybeError;
+                }
+            }
+
+            // Important: The validations below can only be done if no fieldArg contains a field!
+            // That is because this is a schema error, so we still don't have the $resultItem against which to resolve the field
+            // For instance, this doesn't work: /?query=arrayItem(posts(),3)
+            // In that case, the validation will be done inside ->resolveValue(), and will be treated as a $dbError, not a $schemaError
+            if (!FieldQueryUtils::isAnyFieldArgumentValueAField($schemaFieldArgs)) {
+                // Iterate all the enum types and check that the provided values is one of them, or throw an error
+                if ($enumArgs = SchemaHelpers::getSchemaEnumTypeFieldArgs($schemaFieldArgs)) {
+                    if ($maybeError = $this->validateEnumFieldArguments(
+                        $enumArgs,
+                        $fieldName,
+                        $fieldArgs
+                    )) {
+                        return $maybeError;
+                    }
                 }
             }
         }
@@ -116,6 +134,33 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                     implode($translationAPI->__('\', \''), $missing),
                     $fieldName
                 );
+        }
+        return null;
+    }
+
+    protected function validateEnumFieldArguments(array $enumArgs, string $fieldName, array $fieldArgs = []): ?string
+    {
+        $translationAPI = TranslationAPIFacade::getInstance();
+        $errors = [];
+        $fieldArgumentNames = SchemaHelpers::getSchemaFieldArgNames($enumArgs);
+        $fieldArgumentEnumValues = SchemaHelpers::getSchemaFieldArgEnumValues($enumArgs);
+        for ($i=0; $i<count($fieldArgumentNames); $i++) {
+            $fieldArgumentName = $fieldArgumentNames[$i];
+            $fieldArgumentEnumValues = $fieldArgumentEnumValues[$i];
+            $fieldArgumentValue = $fieldArgs[$fieldArgumentName];
+            // If the field is mandatory and not set, the "mandatory" validation above will fail.
+            // Here only validate if the field value is provided
+            if (!is_null($fieldArgumentValue) && !in_array($fieldArgumentValue, $fieldArgumentEnumValues)) {
+                $errors[] = sprintf(
+                    $translationAPI->__('Value \'%s\' for argument \'%s\' is not allowed (the only allowed values are: \'%s\')', 'component-model'),
+                    $fieldArgumentValue,
+                    $fieldArgumentName,
+                    implode($translationAPI->__('\', \''), $fieldArgumentEnumValues)
+                );
+            }
+        }
+        if ($errors) {
+            return implode($translationAPI->__('. '), $errors);
         }
         return null;
     }
