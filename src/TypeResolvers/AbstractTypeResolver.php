@@ -817,12 +817,13 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 $schemaWarnings,
                 $schemaDeprecations,
             ) = $this->dissectFieldForSchema($field);
-            if ($maybeDeprecation = $fieldResolvers[0]->getSchemaFieldDeprecationDescription($this, $fieldName, $fieldArgs)) {
+            $fieldSchemaDefinition = $fieldResolvers[0]->getSchemaDefinitionForField($this, $fieldName, $fieldArgs);
+            if ($fieldSchemaDefinition[SchemaDefinition::ARGNAME_DEPRECATED]) {
                 // $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
                 // $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
                 $schemaDeprecations[] = [
                     Tokens::PATH => [$field],
-                    Tokens::MESSAGE => $maybeDeprecation,
+                    Tokens::MESSAGE => $fieldSchemaDefinition[SchemaDefinition::ARGNAME_DEPRECATEDDESCRIPTION],
                 ];
             }
             return $schemaDeprecations;
@@ -837,7 +838,9 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         if ($fieldResolvers = $this->getFieldResolversForField($field)) {
             $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
             $fieldName = $fieldQueryInterpreter->getFieldName($field);
-            return $fieldResolvers[0]->getSchemaFieldArgs($this, $fieldName);
+            $fieldArgs = $fieldQueryInterpreter->extractStaticFieldArguments($field);
+            $fieldSchemaDefinition = $fieldResolvers[0]->getSchemaDefinitionForField($this, $fieldName, $fieldArgs);
+            return $fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS] ?? [];
         }
 
         return [];
