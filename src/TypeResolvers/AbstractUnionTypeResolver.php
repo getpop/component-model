@@ -251,6 +251,8 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
             return self::getUnresolvedResultItemError($resultItem);
         }
         // Delegate to that typeResolver to obtain the value
+        // Because the schema validation cannot be performed through the UnionTypeResolver, since it depends on each dbObject, indicate that it must be done in resolveValue
+        $options[self::OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM] = true;
         return $targetTypeResolver->resolveValue($resultItem, $field, $variables, $expressions, $options);
     }
 
