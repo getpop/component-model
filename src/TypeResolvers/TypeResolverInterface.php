@@ -6,7 +6,7 @@ use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
 interface TypeResolverInterface
 {
     // Only these 4 functions must be implemented by a new Type class...
-    public function getId($resultItem);
+    public function getID($resultItem);
     public function getTypeName(): string;
     public function getTypeOutputName(): string;
     public function getTypeDataLoaderClass(): string;

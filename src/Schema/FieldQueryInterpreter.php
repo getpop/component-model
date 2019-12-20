@@ -401,7 +401,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         $resultItemDBWarnings = [];
         $fieldArgs = $this->castAndValidateFieldArgumentsForResultItem($typeResolver, $field, $fieldArgs, $resultItemDBWarnings);
         if ($resultItemDBWarnings) {
-            $id = $typeResolver->getId($resultItem);
+            $id = $typeResolver->getID($resultItem);
             $dbWarnings[(string)$id] = array_merge(
                 $dbWarnings[(string)$id] ?? [],
                 $resultItemDBWarnings
@@ -437,7 +437,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         $resultItemDBWarnings = [];
         $directiveArgs = $this->castAndValidateDirectiveArgumentsForResultItem($directiveResolver, $typeResolver, $fieldDirective, $directiveArgs, $resultItemDBWarnings);
         if ($resultItemDBWarnings) {
-            $id = $typeResolver->getId($resultItem);
+            $id = $typeResolver->getID($resultItem);
             $dbWarnings[(string)$id] = array_merge(
                 $dbWarnings[(string)$id] ?? [],
                 $resultItemDBWarnings
@@ -468,7 +468,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                 $fieldOrDirectiveArgs
             )
         )) {
-            $id = $typeResolver->getId($resultItem);
+            $id = $typeResolver->getID($resultItem);
             foreach ($fieldOrDirectiveArgs as $directiveArgName => $directiveArgValue) {
                 $directiveArgValue = $this->maybeResolveFieldArgumentValueForResultItem($typeResolver, $resultItem, $directiveArgValue, $variables, $expressions);
                 // Validate it

@@ -538,7 +538,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $typeDataLoaderClass = $this->getTypeDataLoaderClass();
         $typeDataLoader = $instanceManager->getInstance($typeDataLoaderClass);
         foreach ($typeDataLoader->getObjects($ids) as $resultItem) {
-            $resultItemID = $this->getId($resultItem);
+            $resultItemID = $this->getID($resultItem);
             // If the UnionTypeResolver doesn't have a TypeResolver to process this element, the ID will be null, and an error will be show below
             if (is_null($resultItemID)) {
                 continue;
@@ -946,7 +946,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     return $fieldResolver->resolveValue($this, $resultItem, $fieldName, $fieldArgs, $variables, $expressions, $options);
                 }
             }
-            return ErrorUtils::getNoFieldResolverProcessesFieldError($this->getId($resultItem), $fieldName, $fieldArgs);
+            return ErrorUtils::getNoFieldResolverProcessesFieldError($this->getID($resultItem), $fieldName, $fieldArgs);
         }
 
         // Return an error to indicate that no fieldResolver processes this field, which is different than returning a null value.

@@ -184,7 +184,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         ) = $fieldQueryInterpreter->extractDirectiveArgumentsForResultItem($this, $typeResolver, $resultItem, $this->directive, $variables, $expressions);
 
         // Store the args, they may be used in `resolveDirective`
-        $this->directiveArgsForResultItems[$typeResolver->getId($resultItem)] = $directiveArgs;
+        $this->directiveArgsForResultItems[$typeResolver->getID($resultItem)] = $directiveArgs;
 
         if ($nestedDBWarnings || $nestedDBErrors) {
             foreach ($nestedDBErrors as $id => $fieldOutputKeyErrorMessages) {

@@ -28,7 +28,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
     {
         $ids = parent::getIDsToQuery($ids_data_fields);
 
-        // Each ID contains the type (added in function `getId`). Remove it
+        // Each ID contains the type (added in function `getID`). Remove it
         return array_map(
             [UnionTypeHelpers::class, 'extractDBObjectID'],
             $ids
@@ -116,7 +116,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
      * @param [type] $resultItem
      * @return void
      */
-    public function getId($resultItem)
+    public function getID($resultItem)
     {
         $targetTypeResolver = $this->getTargetTypeResolver($resultItem);
         if (is_null($targetTypeResolver)) {
@@ -127,7 +127,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         // The type will be removed again in `getIDsToQuery`
         return UnionTypeHelpers::getDBObjectComposedTypeAndID(
             $targetTypeResolver,
-            $targetTypeResolver->getId($resultItem)
+            $targetTypeResolver->getID($resultItem)
         );
     }
 

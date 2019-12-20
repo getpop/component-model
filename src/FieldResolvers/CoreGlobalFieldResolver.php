@@ -72,7 +72,7 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
     {
         switch ($fieldName) {
             case 'id':
-                return $typeResolver->getId($resultItem);
+                return $typeResolver->getID($resultItem);
             case '__typename':
                 return $typeResolver->getTypeName();
             case 'isType':

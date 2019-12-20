@@ -44,7 +44,7 @@ class CoreFieldResolver extends AbstractDBDataFieldResolver
     {
         switch ($fieldName) {
             case 'self':
-                return $typeResolver->getId($resultItem);
+                return $typeResolver->getID($resultItem);
         }
 
         return parent::resolveValue($typeResolver, $resultItem, $fieldName, $fieldArgs, $variables, $expressions, $options);
