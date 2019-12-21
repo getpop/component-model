@@ -5,6 +5,7 @@ use function substr;
 use function explode;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
+use PoP\ComponentModel\TypeResolvers\UnionTypeResolverInterface;
 
 class UnionTypeHelpers
 {
@@ -69,19 +70,19 @@ class UnionTypeHelpers
             $id;
     }
 
-    public static function getResultItemIDTargetTypeResolvers(TypeResolverInterface $currentLevelTypeResolver, array $ids): array
+    public static function getResultItemIDTargetTypeResolvers(TypeResolverInterface $typeResolver, array $ids): array
     {
         if (!$ids) {
             return [];
         }
 
         $resultItemIDTargetTypeResolvers = [];
-        $isUnionTypeResolver = $currentLevelTypeResolver instanceof UnionTypeResolverInterface;
+        $isUnionTypeResolver = $typeResolver instanceof UnionTypeResolverInterface;
         if ($isUnionTypeResolver) {
             $instanceManager = InstanceManagerFacade::getInstance();
             $targetTypeResolverClassDataItems = [];
             foreach ($ids as $resultItemID) {
-                if ($targetTypeResolverClass = $currentLevelTypeResolver->getTypeResolverClassForResultItem($resultItemID)) {
+                if ($targetTypeResolverClass = $typeResolver->getTypeResolverClassForResultItem($resultItemID)) {
                     $targetTypeResolverClassDataItems[$targetTypeResolverClass][] = $resultItemID;
                 }
             }
@@ -97,9 +98,25 @@ class UnionTypeHelpers
             }
         } else {
             foreach ($ids as $resultItemID) {
-                $resultItemIDTargetTypeResolvers[(string)$resultItemID] = $currentLevelTypeResolver;
+                $resultItemIDTargetTypeResolvers[(string)$resultItemID] = $typeResolver;
             }
         }
         return $resultItemIDTargetTypeResolvers;
+    }
+
+    public static function getUnionOrTargetTypeResolverClass(string $unionTypeResolverClass): ?string
+    {
+        $instanceManager = InstanceManagerFacade::getInstance();
+        // If there is more than 1 target type resolver for the Union, return the Union
+        // If there is only one target, return that one directly and not the Union (since it's more efficient)
+        // If there are none, return null
+        $unionTypeResolver = $instanceManager->getInstance($unionTypeResolverClass);
+        $targetTypeResolverClasses = $unionTypeResolver->getTargetTypeResolverClasses();
+        if ($targetTypeResolverClasses) {
+            return count($targetTypeResolverClasses) == 1 ?
+                $targetTypeResolverClasses[0] :
+                $unionTypeResolverClass;
+        }
+        return null;
     }
 }

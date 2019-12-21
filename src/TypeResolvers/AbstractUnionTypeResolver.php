@@ -98,6 +98,17 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         );
     }
 
+    public function getTargetTypeResolverClasses(): array
+    {
+        $typeResolverPickers = $this->getTypeResolverPickers();
+        return array_map(
+            function($typeResolverPicker) {
+                return $typeResolverPicker->getTypeResolverClass();
+            },
+            $typeResolverPickers
+        );
+    }
+
     protected function getTypeResolverPickers()
     {
         if (is_null($this->typeResolverPickers)) {
