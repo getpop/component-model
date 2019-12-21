@@ -1,6 +1,7 @@
 <?php
 namespace PoP\ComponentModel\TypeResolvers;
 
+use Exception;
 use PoP\ComponentModel\Error;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
@@ -149,6 +150,11 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
     public function getTargetTypeResolverClasses(): array
     {
         $typeResolverPickers = $this->getTypeResolverPickers();
+        return $this->getTypeResolverClassesFromPickers($typeResolverPickers);
+    }
+
+    protected function getTypeResolverClassesFromPickers(array $typeResolverPickers): array
+    {
         return array_map(
             function($typeResolverPicker) {
                 return $typeResolverPicker->getTypeResolverClass();
@@ -172,7 +178,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
 
         // Iterate classes from the current class towards the parent classes until finding typeResolver that satisfies processing this field
         $class = get_called_class();
-        $pickers = [];
+        $typeResolverPickers = [];
         do {
             // All the pickers and their priorities for this class level
             // Important: do array_reverse to enable more specific hooks, which are initialized later on in the project, to be the chosen ones (if their priority is the same)
@@ -186,15 +192,53 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
             // Sort the found pickers by their priority, and then add to the stack of all pickers, for all classes
             // Higher priority means they execute first!
             array_multisort($classPickerPriorities, SORT_DESC, SORT_NUMERIC, $classPickers);
-            $pickers = array_merge(
-                $pickers,
+            $typeResolverPickers = array_merge(
+                $typeResolverPickers,
                 $classPickers
             );
             // Continue iterating for the class parents
         } while ($class = get_parent_class($class));
 
+        // Validate that all typeResolvers implement the required interface
+        if ($typeInterfaceClass = $this->getSchemaTypeInterfaceClass()) {
+            $typeResolverClasses = $this->getTypeResolverClassesFromPickers($typeResolverPickers);
+            $notImplementingInterfaceTypeResolverClasses = array_filter(
+                $typeResolverClasses,
+                function($typeResolverClass) use($typeInterfaceClass, $instanceManager) {
+                    $typeResolver = $instanceManager->getInstance($typeResolverClass);
+                    return !in_array($typeInterfaceClass, $typeResolver->getAllImplementedInterfaceClasses());
+                }
+            );
+            if ($notImplementingInterfaceTypeResolverClasses) {
+                $translationAPI = TranslationAPIFacade::getInstance();
+                throw new Exception(
+                    sprintf(
+                        $translationAPI->__('UnionTypeResolver \'%s\' (\'%s\') must return results implementing interface \'%s\' (\'%s\'), however its following member TypeResolvers do not: \'%s\'', 'component-model'),
+                        $this->getTypeName(),
+                        get_called_class(),
+                        $typeInterfaceClass::getInterfaceName(),
+                        $typeInterfaceClass,
+                        implode(
+                            $translationAPI->__('\', \''),
+                            array_map(
+                                function($typeResolverClass) use($instanceManager, $translationAPI) {
+                                    $typeResolver = $instanceManager->getInstance($typeResolverClass);
+                                    return sprintf(
+                                        $translationAPI->__('%s (%s)'),
+                                        $typeResolver->getTypeName(),
+                                        $typeResolverClass
+                                    );
+                                },
+                                $notImplementingInterfaceTypeResolverClasses
+                            )
+                        )
+                    )
+                );
+            }
+        }
+
         // Return all the pickers
-        return $pickers;
+        return $typeResolverPickers;
     }
 
     public function getTypeResolverClassForResultItem($resultItemID)
