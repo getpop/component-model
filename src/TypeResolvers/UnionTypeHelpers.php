@@ -4,6 +4,7 @@ namespace PoP\ComponentModel\TypeResolvers;
 use function substr;
 use function explode;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
+use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 
 class UnionTypeHelpers
 {
@@ -66,5 +67,39 @@ class UnionTypeHelpers
             $typeResolver->getTypeOutputName().
             UnionTypeSymbols::DBOBJECT_COMPOSED_TYPE_ID_SEPARATOR.
             $id;
+    }
+
+    public static function getResultItemIDTargetTypeResolvers(TypeResolverInterface $currentLevelTypeResolver, array $ids): array
+    {
+        if (!$ids) {
+            return [];
+        }
+
+        $resultItemIDTargetTypeResolvers = [];
+        $isUnionTypeResolver = $currentLevelTypeResolver instanceof UnionTypeResolverInterface;
+        if ($isUnionTypeResolver) {
+            $instanceManager = InstanceManagerFacade::getInstance();
+            $targetTypeResolverClassDataItems = [];
+            foreach ($ids as $resultItemID) {
+                if ($targetTypeResolverClass = $currentLevelTypeResolver->getTypeResolverClassForResultItem($resultItemID)) {
+                    $targetTypeResolverClassDataItems[$targetTypeResolverClass][] = $resultItemID;
+                }
+            }
+            foreach ($targetTypeResolverClassDataItems as $targetTypeResolverClass => $resultItemIDs) {
+                $targetTypeResolver = $instanceManager->getInstance($targetTypeResolverClass);
+                $targetResultItemIDTargetTypeResolvers = self::getResultItemIDTargetTypeResolvers(
+                    $targetTypeResolver,
+                    $resultItemIDs
+                );
+                foreach ($targetResultItemIDTargetTypeResolvers as $targetResultItemID => $targetTypeResolver) {
+                    $resultItemIDTargetTypeResolvers[(string)$targetResultItemID] = $targetTypeResolver;
+                }
+            }
+        } else {
+            foreach ($ids as $resultItemID) {
+                $resultItemIDTargetTypeResolvers[(string)$resultItemID] = $currentLevelTypeResolver;
+            }
+        }
+        return $resultItemIDTargetTypeResolvers;
     }
 }

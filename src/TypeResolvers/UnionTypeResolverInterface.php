@@ -10,4 +10,5 @@ interface UnionTypeResolverInterface
     public function getTypeResolverClassForResultItem($resultItemID);
     public function getTargetTypeResolverPicker($resultItem): ?TypeResolverPickerInterface;
     public function getTargetTypeResolver($resultItem): ?TypeResolverInterface;
+    public function getResultItemIDTargetTypeResolvers(array $ids): array;
 }

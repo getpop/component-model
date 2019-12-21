@@ -4,6 +4,7 @@ namespace PoP\ComponentModel\TypeResolvers;
 use PoP\ComponentModel\Error;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
+use PoP\ComponentModel\TypeResolvers\UnionTypeHelpers;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\TypeResolverPickers\TypeResolverPickerInterface;
@@ -51,43 +52,9 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         return $typeDBObjectIDOrIDs;
     }
 
-    protected function getResultItemIDTargetTypeResolvers(array $ids): array
+    public function getResultItemIDTargetTypeResolvers(array $ids): array
     {
-        return $this->recursiveGetResultItemIDTargetTypeResolvers($this, $ids);
-    }
-
-    protected function recursiveGetResultItemIDTargetTypeResolvers(TypeResolverInterface $currentLevelTypeResolver, array $ids): array
-    {
-        if (!$ids) {
-            return [];
-        }
-
-        $resultItemIDTargetTypeResolvers = [];
-        $isUnionTypeResolver = $currentLevelTypeResolver instanceof UnionTypeResolverInterface;
-        if ($isUnionTypeResolver) {
-            $instanceManager = InstanceManagerFacade::getInstance();
-            $targetTypeResolverClassDataItems = [];
-            foreach ($ids as $resultItemID) {
-                if ($targetTypeResolverClass = $currentLevelTypeResolver->getTypeResolverClassForResultItem($resultItemID)) {
-                    $targetTypeResolverClassDataItems[$targetTypeResolverClass][] = $resultItemID;
-                }
-            }
-            foreach ($targetTypeResolverClassDataItems as $targetTypeResolverClass => $resultItemIDs) {
-                $targetTypeResolver = $instanceManager->getInstance($targetTypeResolverClass);
-                $targetResultItemIDTargetTypeResolvers = $this->recursiveGetResultItemIDTargetTypeResolvers(
-                    $targetTypeResolver,
-                    $resultItemIDs
-                );
-                foreach ($targetResultItemIDTargetTypeResolvers as $targetResultItemID => $targetTypeResolver) {
-                    $resultItemIDTargetTypeResolvers[(string)$targetResultItemID] = $targetTypeResolver;
-                }
-            }
-        } else {
-            foreach ($ids as $resultItemID) {
-                $resultItemIDTargetTypeResolvers[(string)$resultItemID] = $currentLevelTypeResolver;
-            }
-        }
-        return $resultItemIDTargetTypeResolvers;
+        return UnionTypeHelpers::getResultItemIDTargetTypeResolvers($this, $ids);
     }
 
     // /**
