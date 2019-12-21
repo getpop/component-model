@@ -70,42 +70,6 @@ class UnionTypeHelpers
             $id;
     }
 
-    public static function getResultItemIDTargetTypeResolvers(TypeResolverInterface $typeResolver, array $ids): array
-    {
-        if (!$ids) {
-            return [];
-        }
-
-        $resultItemIDTargetTypeResolvers = [];
-        $isUnionTypeResolver = $typeResolver instanceof UnionTypeResolverInterface;
-        if ($isUnionTypeResolver) {
-            $instanceManager = InstanceManagerFacade::getInstance();
-            $targetTypeResolverClassDataItems = [];
-            foreach ($ids as $resultItemID) {
-                if ($targetTypeResolverClass = $typeResolver->getTypeResolverClassForResultItem($resultItemID)) {
-                    $targetTypeResolverClassDataItems[$targetTypeResolverClass][] = $resultItemID;
-                } else {
-                    $resultItemIDTargetTypeResolvers[(string)$resultItemID] = null;
-                }
-            }
-            foreach ($targetTypeResolverClassDataItems as $targetTypeResolverClass => $resultItemIDs) {
-                $targetTypeResolver = $instanceManager->getInstance($targetTypeResolverClass);
-                $targetResultItemIDTargetTypeResolvers = self::getResultItemIDTargetTypeResolvers(
-                    $targetTypeResolver,
-                    $resultItemIDs
-                );
-                foreach ($targetResultItemIDTargetTypeResolvers as $targetResultItemID => $targetTypeResolver) {
-                    $resultItemIDTargetTypeResolvers[(string)$targetResultItemID] = $targetTypeResolver;
-                }
-            }
-        } else {
-            foreach ($ids as $resultItemID) {
-                $resultItemIDTargetTypeResolvers[(string)$resultItemID] = $typeResolver;
-            }
-        }
-        return $resultItemIDTargetTypeResolvers;
-    }
-
     public static function getUnionOrTargetTypeResolverClass(string $unionTypeResolverClass): ?string
     {
         $instanceManager = InstanceManagerFacade::getInstance();

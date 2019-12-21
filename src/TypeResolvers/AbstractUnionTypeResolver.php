@@ -61,7 +61,43 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
 
     public function getResultItemIDTargetTypeResolvers(array $ids): array
     {
-        return UnionTypeHelpers::getResultItemIDTargetTypeResolvers($this, $ids);
+        return $this->recursiveGetResultItemIDTargetTypeResolvers($this, $ids);
+    }
+
+    private function recursiveGetResultItemIDTargetTypeResolvers(TypeResolverInterface $typeResolver, array $ids): array
+    {
+        if (!$ids) {
+            return [];
+        }
+
+        $resultItemIDTargetTypeResolvers = [];
+        $isUnionTypeResolver = $typeResolver instanceof UnionTypeResolverInterface;
+        if ($isUnionTypeResolver) {
+            $instanceManager = InstanceManagerFacade::getInstance();
+            $targetTypeResolverClassDataItems = [];
+            foreach ($ids as $resultItemID) {
+                if ($targetTypeResolverClass = $typeResolver->getTypeResolverClassForResultItem($resultItemID)) {
+                    $targetTypeResolverClassDataItems[$targetTypeResolverClass][] = $resultItemID;
+                } else {
+                    $resultItemIDTargetTypeResolvers[(string)$resultItemID] = null;
+                }
+            }
+            foreach ($targetTypeResolverClassDataItems as $targetTypeResolverClass => $resultItemIDs) {
+                $targetTypeResolver = $instanceManager->getInstance($targetTypeResolverClass);
+                $targetResultItemIDTargetTypeResolvers = $this->recursiveGetResultItemIDTargetTypeResolvers(
+                    $targetTypeResolver,
+                    $resultItemIDs
+                );
+                foreach ($targetResultItemIDTargetTypeResolvers as $targetResultItemID => $targetTypeResolver) {
+                    $resultItemIDTargetTypeResolvers[(string)$targetResultItemID] = $targetTypeResolver;
+                }
+            }
+        } else {
+            foreach ($ids as $resultItemID) {
+                $resultItemIDTargetTypeResolvers[(string)$resultItemID] = $typeResolver;
+            }
+        }
+        return $resultItemIDTargetTypeResolvers;
     }
 
     // /**
