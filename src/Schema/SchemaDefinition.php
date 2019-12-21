@@ -13,6 +13,7 @@ class SchemaDefinition {
     const ARGNAME_DEPRECATEDDESCRIPTION = 'deprecatedDescription';
     const ARGNAME_DEFAULT_VALUE = 'defaultValue';
     const ARGNAME_ARGS = 'args';
+    const ARGNAME_RESULTS_IMPLEMENT_INTERFACE = 'resultsImplementInterface';
     const ARGNAME_INTERFACES = 'interfaces';
     const ARGNAME_RELATIONAL = 'relational';
     const ARGNAME_FIELDS = 'fields';

@@ -19,6 +19,11 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         return UnionTypeHelpers::getUnionTypeCollectionName(parent::getTypeOutputName());
     }
 
+    public function getSchemaTypeInterfaceClass(): ?string
+    {
+        return null;
+    }
+
     /**
      * Remove the type from the ID to resolve the objects through `getObjects` (check parent class)
      *
@@ -287,6 +292,11 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
             $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
         }
         $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_IS_UNION] = true;
+
+        // If it returns an interface as type, add it to the schemaDefinition
+        if ($typeInterfaceClass = $this->getSchemaTypeInterfaceClass()) {
+            $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_RESULTS_IMPLEMENT_INTERFACE] = $typeInterfaceClass::getInterfaceName();
+        }
 
         // Iterate through the typeResolvers from all the pickers and get their schema definitions
         foreach ($this->getTypeResolverPickers() as $picker) {
