@@ -84,6 +84,8 @@ class UnionTypeHelpers
             foreach ($ids as $resultItemID) {
                 if ($targetTypeResolverClass = $typeResolver->getTypeResolverClassForResultItem($resultItemID)) {
                     $targetTypeResolverClassDataItems[$targetTypeResolverClass][] = $resultItemID;
+                } else {
+                    $resultItemIDTargetTypeResolvers[(string)$resultItemID] = null;
                 }
             }
             foreach ($targetTypeResolverClassDataItems as $targetTypeResolverClass => $resultItemIDs) {

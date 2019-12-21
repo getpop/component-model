@@ -38,16 +38,23 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
 
     public function getQualifiedDBObjectIDOrIDs($dbObjectIDOrIDs)
     {
-        $resultItemIDTargetTypeResolvers = $this->getResultItemIDTargetTypeResolvers(is_array($dbObjectIDOrIDs) ? $dbObjectIDOrIDs : [$dbObjectIDOrIDs]);
+        $dbObjectIDs = is_array($dbObjectIDOrIDs) ? $dbObjectIDOrIDs : [$dbObjectIDOrIDs];
+        $resultItemIDTargetTypeResolvers = $this->getResultItemIDTargetTypeResolvers($dbObjectIDs);
         $typeDBObjectIDOrIDs = [];
-        foreach ($resultItemIDTargetTypeResolvers as $resultItemID => $targetTypeResolver) {
-            $typeDBObjectIDOrIDs[] = UnionTypeHelpers::getDBObjectComposedTypeAndID(
-                $targetTypeResolver,
-                $resultItemID
-            );
+        foreach ($dbObjectIDs as $resultItemID) {
+            // Make sure there is a resolver for this resultItem. If there is none, return the same ID
+            $targetTypeResolver = $resultItemIDTargetTypeResolvers[$resultItemID];
+            if (!is_null($targetTypeResolver)) {
+                $typeDBObjectIDOrIDs[] = UnionTypeHelpers::getDBObjectComposedTypeAndID(
+                    $targetTypeResolver,
+                    $resultItemID
+                );
+            } else {
+                $typeDBObjectIDOrIDs[] = $resultItemID;
+            }
         }
         if (!is_array($dbObjectIDOrIDs)) {
-            $typeDBObjectIDOrIDs = $typeDBObjectIDOrIDs[0];
+            return $typeDBObjectIDOrIDs[0];
         }
         return $typeDBObjectIDOrIDs;
     }
