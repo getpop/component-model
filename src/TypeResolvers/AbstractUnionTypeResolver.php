@@ -163,7 +163,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         );
     }
 
-    protected function getTypeResolverPickers()
+    public function getTypeResolverPickers(): array
     {
         if (is_null($this->typeResolverPickers)) {
             $this->typeResolverPickers = $this->calculateTypeResolverPickers();
