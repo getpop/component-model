@@ -1162,22 +1162,33 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $attachableExtensionManager = AttachableExtensionManagerFacade::getInstance();
         $schemaFieldResolvers = [];
 
-        // Iterate classes from the current class towards the parent classes until finding typeResolver that satisfies processing this field
-        $class = get_called_class();
-        do {
-            foreach ($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDRESOLVERS) as $extensionClass => $extensionPriority) {
-                // Process the fields which have not been processed yet
-                $extensionClassFieldNames = array_merge(
-                    $extensionClass::getFieldNamesToResolve(),
-                    $extensionClass::getFieldNamesFromInterfaces()
-                );
-                foreach (array_diff($extensionClassFieldNames, array_keys($schemaFieldResolvers)) as $fieldName) {
-                    // Watch out here: no fieldArgs!!!! So this deals with the base case (static), not with all cases (runtime)
-                    $schemaFieldResolvers[$fieldName] = $this->getFieldResolversForField($fieldName);
+        // Get the fieldResolvers attached to this typeResolver and to all the interfaces it implements
+        $classStack = [
+            get_called_class(),
+        ];
+        while (!empty($classStack)) {
+            $class = array_shift($classStack);
+            // Iterate classes from the current class towards the parent classes until finding typeResolver that satisfies processing this field
+            do {
+                foreach ($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDRESOLVERS) as $extensionClass => $extensionPriority) {
+                    // Process the fields which have not been processed yet
+                    $extensionClassFieldNames = array_merge(
+                        $extensionClass::getFieldNamesToResolve(),
+                        $extensionClass::getFieldNamesFromInterfaces()
+                    );
+                    foreach (array_diff($extensionClassFieldNames, array_keys($schemaFieldResolvers)) as $fieldName) {
+                        // Watch out here: no fieldArgs!!!! So this deals with the base case (static), not with all cases (runtime)
+                        $schemaFieldResolvers[$fieldName] = $this->getFieldResolversForField($fieldName);
+                    }
+                    // The interfaces implemented by the FieldResolver can have, themselves, fieldResolvers attached to them
+                    $classStack = array_values(array_unique(array_merge(
+                        $classStack,
+                        $extensionClass::getImplementedInterfaceClasses()
+                    )));
                 }
-            }
-            // Otherwise, continue iterating for the class parents
-        } while ($class = get_parent_class($class));
+                // Otherwise, continue iterating for the class parents
+            } while ($class = get_parent_class($class));
+        }
 
         return $schemaFieldResolvers;
     }
@@ -1244,39 +1255,50 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
         $instanceManager = InstanceManagerFacade::getInstance();
         $attachableExtensionManager = AttachableExtensionManagerFacade::getInstance();
-        // Iterate classes from the current class towards the parent classes until finding typeResolver that satisfies processing this field
-        $class = get_called_class();
         $fieldResolvers = [];
-        do {
-            // All the Units and their priorities for this class level
-            $classTypeResolverPriorities = [];
-            $classFieldResolvers = [];
+        // Get the fieldResolvers attached to this typeResolver and to all the interfaces it implements
+        $classStack = [
+            get_called_class(),
+        ];
+        while (!empty($classStack)) {
+            $class = array_shift($classStack);
+            // Iterate classes from the current class towards the parent classes until finding typeResolver that satisfies processing this field
+            do {
+                // All the Units and their priorities for this class level
+                $classTypeResolverPriorities = [];
+                $classFieldResolvers = [];
 
-            // Important: do array_reverse to enable more specific hooks, which are initialized later on in the project, to be the chosen ones (if their priority is the same)
-            foreach (array_reverse($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDRESOLVERS)) as $extensionClass => $extensionPriority) {
-                // Check if this fieldResolver can process this field, and if its priority is bigger than the previous found instance attached to the same class
-                $extensionClassFieldNames = array_merge(
-                    $extensionClass::getFieldNamesToResolve(),
-                    $extensionClass::getFieldNamesFromInterfaces()
-                );
-                if (in_array($fieldName, $extensionClassFieldNames)) {
-                    // Check that the fieldResolver can handle the field based on other parameters (eg: "version" in the fieldArgs)
-                    $fieldResolver = $instanceManager->getInstance($extensionClass);
-                    if ($fieldResolver->resolveCanProcess($this, $fieldName, $fieldArgs)) {
-                        $classTypeResolverPriorities[] = $extensionPriority;
-                        $classFieldResolvers[] = $fieldResolver;
+                // Important: do array_reverse to enable more specific hooks, which are initialized later on in the project, to be the chosen ones (if their priority is the same)
+                foreach (array_reverse($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDRESOLVERS)) as $extensionClass => $extensionPriority) {
+                    // Check if this fieldResolver can process this field, and if its priority is bigger than the previous found instance attached to the same class
+                    $extensionClassFieldNames = array_merge(
+                        $extensionClass::getFieldNamesToResolve(),
+                        $extensionClass::getFieldNamesFromInterfaces()
+                    );
+                    if (in_array($fieldName, $extensionClassFieldNames)) {
+                        // Check that the fieldResolver can handle the field based on other parameters (eg: "version" in the fieldArgs)
+                        $fieldResolver = $instanceManager->getInstance($extensionClass);
+                        if ($fieldResolver->resolveCanProcess($this, $fieldName, $fieldArgs)) {
+                            $classTypeResolverPriorities[] = $extensionPriority;
+                            $classFieldResolvers[] = $fieldResolver;
+                        }
                     }
+                    // The interfaces implemented by the FieldResolver can have, themselves, fieldResolvers attached to them
+                    $classStack = array_values(array_unique(array_merge(
+                        $classStack,
+                        $extensionClass::getImplementedInterfaceClasses()
+                    )));
                 }
-            }
-            // Sort the found units by their priority, and then add to the stack of all units, for all classes
-            // Higher priority means they execute first!
-            array_multisort($classTypeResolverPriorities, SORT_DESC, SORT_NUMERIC, $classFieldResolvers);
-            $fieldResolvers = array_merge(
-                $fieldResolvers,
-                $classFieldResolvers
-            );
-            // Continue iterating for the class parents
-        } while ($class = get_parent_class($class));
+                // Sort the found units by their priority, and then add to the stack of all units, for all classes
+                // Higher priority means they execute first!
+                array_multisort($classTypeResolverPriorities, SORT_DESC, SORT_NUMERIC, $classFieldResolvers);
+                $fieldResolvers = array_merge(
+                    $fieldResolvers,
+                    $classFieldResolvers
+                );
+                // Continue iterating for the class parents
+            } while ($class = get_parent_class($class));
+        }
 
         // Return all the units that resolve the fieldName
         return $fieldResolvers;
@@ -1285,11 +1307,10 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     protected function calculateFieldDirectiveNameClasses(): array
     {
         $attachableExtensionManager = AttachableExtensionManagerFacade::getInstance();
-
         $directiveNameClasses = [];
 
-        // Iterate classes from the current class towards the parent classes until finding typeResolver that satisfies processing this field
         $class = get_called_class();
+        // Iterate classes from the current class towards the parent classes until finding typeResolver that satisfies processing this field
         do {
             // Important: do array_reverse to enable more specific hooks, which are initialized later on in the project, to be the chosen ones (if their priority is the same)
             $extensionClassPriorities = array_reverse($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::DIRECTIVERESOLVERS));
