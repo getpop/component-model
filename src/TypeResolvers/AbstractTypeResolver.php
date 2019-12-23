@@ -1309,22 +1309,30 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $attachableExtensionManager = AttachableExtensionManagerFacade::getInstance();
         $directiveNameClasses = [];
 
-        $class = get_called_class();
-        // Iterate classes from the current class towards the parent classes until finding typeResolver that satisfies processing this field
-        do {
-            // Important: do array_reverse to enable more specific hooks, which are initialized later on in the project, to be the chosen ones (if their priority is the same)
-            $extensionClassPriorities = array_reverse($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::DIRECTIVERESOLVERS));
-            // Order them by priority: higher priority are evaluated first
-            $extensionClasses = array_keys($extensionClassPriorities);
-            $extensionPriorities = array_values($extensionClassPriorities);
-            array_multisort($extensionPriorities, SORT_DESC, SORT_NUMERIC, $extensionClasses);
-            // Add them to the results. We keep the list of all resolvers, so that if the first one cannot process the directive (eg: through `resolveCanProcess`, the next one can do it)
-            foreach ($extensionClasses as $extensionClass) {
-                $directiveName = $extensionClass::getDirectiveName();
-                $directiveNameClasses[$directiveName][] = $extensionClass;
-            }
-            // Continue iterating for the class parents
-        } while ($class = get_parent_class($class));
+        // Directives can also be attached to the interface implemented by this typeResolver
+        $classes = array_merge(
+            [
+                get_called_class(),
+            ],
+            $this->getAllImplementedInterfaceClasses()
+        );
+        foreach ($classes as $class) {
+            // Iterate classes from the current class towards the parent classes until finding typeResolver that satisfies processing this field
+            do {
+                // Important: do array_reverse to enable more specific hooks, which are initialized later on in the project, to be the chosen ones (if their priority is the same)
+                $extensionClassPriorities = array_reverse($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::DIRECTIVERESOLVERS));
+                // Order them by priority: higher priority are evaluated first
+                $extensionClasses = array_keys($extensionClassPriorities);
+                $extensionPriorities = array_values($extensionClassPriorities);
+                array_multisort($extensionPriorities, SORT_DESC, SORT_NUMERIC, $extensionClasses);
+                // Add them to the results. We keep the list of all resolvers, so that if the first one cannot process the directive (eg: through `resolveCanProcess`, the next one can do it)
+                foreach ($extensionClasses as $extensionClass) {
+                    $directiveName = $extensionClass::getDirectiveName();
+                    $directiveNameClasses[$directiveName][] = $extensionClass;
+                }
+                // Continue iterating for the class parents
+            } while ($class = get_parent_class($class));
+        }
 
         return $directiveNameClasses;
     }
