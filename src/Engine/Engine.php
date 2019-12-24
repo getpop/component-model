@@ -1500,10 +1500,10 @@ class Engine implements EngineInterface
                         }
                         foreach ($iterationTypeResolverIDs as $targetTypeResolverClass => $targetIDs) {
                             $targetTypeResolver = $instanceManager->getInstance($targetTypeResolverClass);
-                            $this->processSubcomponentData($targetTypeResolver, $targetIDs, $module_path_key, $databases, $subcomponents_data_properties, $already_loaded_ids_data_fields, $unionDBKeyIDs, $combinedUnionDBKeyIDs);
+                            $this->processSubcomponentData($typeResolver, $targetTypeResolver, $targetIDs, $module_path_key, $databases, $subcomponents_data_properties, $already_loaded_ids_data_fields, $unionDBKeyIDs, $combinedUnionDBKeyIDs);
                         }
                     } else {
-                        $this->processSubcomponentData($typeResolver, $typeResolver_ids, $module_path_key, $databases, $subcomponents_data_properties, $already_loaded_ids_data_fields, $unionDBKeyIDs, $combinedUnionDBKeyIDs);
+                        $this->processSubcomponentData($typeResolver, $typeResolver, $typeResolver_ids, $module_path_key, $databases, $subcomponents_data_properties, $already_loaded_ids_data_fields, $unionDBKeyIDs, $combinedUnionDBKeyIDs);
                     }
                 }
             }
@@ -1547,19 +1547,26 @@ class Engine implements EngineInterface
         return $ret;
     }
 
-    protected function processSubcomponentData($typeResolver, $typeResolver_ids, $module_path_key, array &$databases, array &$subcomponents_data_properties, array &$already_loaded_ids_data_fields, array &$unionDBKeyIDs, array &$combinedUnionDBKeyIDs)
+    protected function processSubcomponentData($typeResolver, $targetTypeResolver, $typeResolver_ids, $module_path_key, array &$databases, array &$subcomponents_data_properties, array &$already_loaded_ids_data_fields, array &$unionDBKeyIDs, array &$combinedUnionDBKeyIDs)
     {
         $instanceManager = InstanceManagerFacade::getInstance();
-        $database_key = $typeResolver->getTypeOutputName();
+        $database_key = $targetTypeResolver->getTypeOutputName();
         foreach ($subcomponents_data_properties as $subcomponent_data_field => $subcomponent_data_properties) {
             // Retrieve the subcomponent typeResolver from the current typeResolver
-            if ($subcomponent_typeResolver_class = DataloadUtils::getTypeResolverClassFromSubcomponentDataField($typeResolver, $subcomponent_data_field)) {
+            // Watch out! When dealing with the UnionDataLoader, we attempt to get the subcomponentType for that field twice: first from the UnionTypeResolver and, if it doesn't handle it, only then from the TargetTypeResolver
+            // This is for the very specific use of the "self" field: When referencing "self" from a UnionTypeResolver, we don't know what type it's going to be the result, hence we need to add the type to entry "unionDBKeyIDs"
+            // However, for the targetTypeResolver, "self" is processed by itself, not by a UnionTypeResolver, hence it would never add the type under entry "unionDBKeyIDs".
+            // The UnionTypeResolver should only handle 2 connection fields: "id" and "self"
+            $subcomponent_typeResolver_class = DataloadUtils::getTypeResolverClassFromSubcomponentDataField($typeResolver, $subcomponent_data_field);
+            if (!$subcomponent_typeResolver_class && $typeResolver != $targetTypeResolver) {
+                $subcomponent_typeResolver_class = DataloadUtils::getTypeResolverClassFromSubcomponentDataField($targetTypeResolver, $subcomponent_data_field);
+            }
+            if ($subcomponent_typeResolver_class) {
                 $subcomponent_data_field_outputkey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($subcomponent_data_field);
                 // The array_merge_recursive when there are at least 2 levels will make the data_fields to be duplicated, so remove duplicates now
                 $subcomponent_data_fields = array_unique($subcomponent_data_properties['data-fields'] ?? []);
                 $subcomponent_conditional_data_fields = $subcomponent_data_properties['conditional-data-fields'] ?? [];
                 if ($subcomponent_data_fields || $subcomponent_conditional_data_fields) {
-
                     $subcomponentTypeResolver = $instanceManager->getInstance($subcomponent_typeResolver_class);
                     $subcomponentIsUnionTypeResolver = $subcomponentTypeResolver instanceof UnionTypeResolverInterface;
 
@@ -1573,8 +1580,8 @@ class Engine implements EngineInterface
                         // Fetch the field_ids from all these DBs
                         foreach ($databases as $dbname => $database) {
                             if ($database_field_ids = $database[$database_key][(string)$id][$subcomponent_data_field_outputkey]) {
-                                $subcomponentIDs[$dbname][$database_key][$id] = array_merge(
-                                    $subcomponentIDs[$dbname][$database_key][$id] ?? [],
+                                $subcomponentIDs[$dbname][$database_key][(string)$id] = array_merge(
+                                    $subcomponentIDs[$dbname][$database_key][(string)$id] ?? [],
                                     is_array($database_field_ids) ? $database_field_ids : array($database_field_ids)
                                 );
                             }
