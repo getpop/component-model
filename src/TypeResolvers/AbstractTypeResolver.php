@@ -1030,6 +1030,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     protected function addSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = [])
     {
         $typeName = $this->getTypeName();
+        $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_NAME] = $typeName;
 
         // Properties
         if ($description = $this->getSchemaTypeDescription()) {
@@ -1041,7 +1042,8 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $directiveResolverInstances = $this->getSchemaDirectiveResolvers(false);
         foreach ($directiveResolverInstances as $directiveResolverInstance) {
             $directiveSchemaDefinition = $directiveResolverInstance->getSchemaDefinitionForDirective($this);
-            $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DIRECTIVES][] = $directiveSchemaDefinition;
+            $directiveName = $directiveResolverInstance->getDirectiveName();
+            $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DIRECTIVES][$directiveName] = $directiveSchemaDefinition;
         }
 
         // Add all the implemented interfaces
@@ -1146,7 +1148,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             unset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL]);
         }
         $typeName = $this->getTypeName();
-        $this->schemaDefinition[$typeName][$entry][] = $fieldSchemaDefinition;
+        $this->schemaDefinition[$typeName][$entry][$fieldName] = $fieldSchemaDefinition;
     }
 
     protected function getAllFieldResolvers(): array

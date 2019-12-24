@@ -204,7 +204,12 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATEDDESCRIPTION] = $deprecationDescription;
             }
             if ($args = $schemaDefinitionResolver->getSchemaFieldArgs($typeResolver, $fieldName)) {
-                $schemaDefinition[SchemaDefinition::ARGNAME_ARGS] = $args;
+                // Add the args under their name
+                $nameArgs = [];
+                foreach ($args as $arg) {
+                    $nameArgs[$arg[SchemaDefinition::ARGNAME_NAME]] = $arg;
+                }
+                $schemaDefinition[SchemaDefinition::ARGNAME_ARGS] = $nameArgs;
             }
             $schemaDefinitionResolver->addSchemaDefinitionForField($schemaDefinition, $typeResolver, $fieldName);
         }
