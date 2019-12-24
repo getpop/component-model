@@ -5,7 +5,6 @@ use function substr;
 use function explode;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
-use PoP\ComponentModel\TypeResolvers\UnionTypeResolverInterface;
 
 class UnionTypeHelpers
 {
