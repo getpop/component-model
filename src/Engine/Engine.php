@@ -1229,7 +1229,6 @@ class Engine implements EngineInterface
         // Keep an object with all fetched IDs/fields for each typeResolver. Then, we can keep using the same typeResolver as subcomponent,
         // but we need to avoid fetching those DB objects that were already fetched in a previous iteration
         $already_loaded_ids_data_fields = array();
-        $subcomponent_data_fields = array();
 
         // The variables come from the request
         $variables = $fieldQueryInterpreter->getVariablesFromRequest();
@@ -1475,129 +1474,36 @@ class Engine implements EngineInterface
                 // Check if it has subcomponents, and then bring this data
                 if ($subcomponents_data_properties = $typeResolver_data['subcomponents']) {
                     $typeResolver_ids = $typeResolver_data['ids'];
-                    foreach ($subcomponents_data_properties as $subcomponent_data_field => $subcomponent_data_properties) {
-                        // Retrieve the subcomponent typeResolver from the current typeResolver
-                        if ($subcomponent_typeResolver_class = DataloadUtils::getTypeResolverClassFromSubcomponentDataField($typeResolver, $subcomponent_data_field)) {
-                            $subcomponent_data_field_outputkey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($subcomponent_data_field);
-                            // The array_merge_recursive when there are at least 2 levels will make the data_fields to be duplicated, so remove duplicates now
-                            $subcomponent_data_fields = array_unique($subcomponent_data_properties['data-fields'] ?? []);
-                            $subcomponent_conditional_data_fields = $subcomponent_data_properties['conditional-data-fields'] ?? [];
-                            if ($subcomponent_data_fields || $subcomponent_conditional_data_fields) {
+                    // The unionTypeResolver doesn't know how to resolver the subcomponents, since the fields (eg: "authors") are attached to the target typeResolver, not to the unionTypeResolver
+                    // Then, iterate through all the target typeResolvers, and have each of them process their data
+                    if ($isUnionTypeResolver) {
+                        // If the type data resolver is union, the dbKey where the value is stored is contained in the ID itself,
+                        // with format dbKey/ID. We must extract this information: assign the dbKey to $database_key, and remove the dbKey from the ID
+                        $typeResolver_ids = array_map(
+                            function($composedID) {
+                                list(
+                                    $database_key,
+                                    $id
+                                ) = UnionTypeHelpers::extractDBObjectTypeAndID($composedID);
+                                return $id;
+                            },
+                            $typeResolver_ids
+                        );
 
-                                $subcomponentTypeResolver = $instanceManager->getInstance($subcomponent_typeResolver_class);
-                                $subcomponentIsUnionTypeResolver = $subcomponentTypeResolver instanceof UnionTypeResolverInterface;
-
-                                $subcomponent_already_loaded_ids_data_fields = array();
-                                if ($already_loaded_ids_data_fields && $already_loaded_ids_data_fields[$subcomponent_typeResolver_class]) {
-                                    $subcomponent_already_loaded_ids_data_fields = $already_loaded_ids_data_fields[$subcomponent_typeResolver_class];
-                                }
-                                $subcomponentIDs = [];
-                                foreach ($typeResolver_ids as $id) {
-                                    // If the type data resolver is union, the dbKey where the value is stored is contained in the ID itself,
-                                    // with format dbKey/ID. We must extract this information: assign the dbKey to $database_key, and remove the dbKey from the ID
-                                    if ($isUnionTypeResolver) {
-                                        list(
-                                            $database_key,
-                                            $id
-                                        ) = UnionTypeHelpers::extractDBObjectTypeAndID($id);
-                                    }
-                                    // $databases may contain more the 1 DB shipped by pop-engine/ ("primary"). Eg: PoP User Login adds db "userstate"
-                                    // Fetch the field_ids from all these DBs
-                                    foreach ($databases as $dbname => $database) {
-                                        if ($database_field_ids = $database[$database_key][(string)$id][$subcomponent_data_field_outputkey]) {
-                                            $subcomponentIDs[$dbname][$database_key][$id] = array_merge(
-                                                $subcomponentIDs[$dbname][$database_key][$id] ?? [],
-                                                is_array($database_field_ids) ? $database_field_ids : array($database_field_ids)
-                                            );
-                                        }
-                                    }
-                                }
-                                // We don't want to store the dbKey/ID inside the relationalID, because that can lead to problems when dealing with the relations in the application (better keep it only to the ID)
-                                // So, instead, we store the dbKey/ID values in another object "$unionDBKeyIDs"
-                                // Then, whenever it's a union type data resolver, we obtain the values for the relationship under this other object
-                                $typedSubcomponentIDs = [];
-                                if ($subcomponentIsUnionTypeResolver) {
-                                    // Get the types for all of the IDs all at once. Flatten 3 levels: dbname => dbkey => id => ...
-                                    $allSubcomponentIDs = array_values(array_unique(
-                                        GeneralUtils::arrayFlatten(GeneralUtils::arrayFlatten(GeneralUtils::arrayFlatten($subcomponentIDs)))
-                                    ));
-                                    $qualifiedSubcomponentIDs = $subcomponentTypeResolver->getQualifiedDBObjectIDOrIDs($allSubcomponentIDs);
-                                    // Create a map, from ID to TypedID
-                                    for ($i=0; $i<count($allSubcomponentIDs); $i++) {
-                                        $typedSubcomponentIDs[$allSubcomponentIDs[$i]] = $qualifiedSubcomponentIDs[$i];
-                                    }
-                                }
-
-                                $field_ids = [];
-                                foreach ($subcomponentIDs as $dbname => $dbkey_id_database_field_ids) {
-                                    foreach ($dbkey_id_database_field_ids as $database_key => $id_database_field_ids) {
-                                        foreach ($id_database_field_ids as $id => $database_field_ids) {
-                                            if ($subcomponentIsUnionTypeResolver) {
-                                                // Transform the IDs, adding their type
-                                                $database_field_ids = array_map(
-                                                    function($field_id) use($typedSubcomponentIDs) {
-                                                        return $typedSubcomponentIDs[$field_id];
-                                                    },
-                                                    $database_field_ids
-                                                );
-
-                                                // Set on the `unionDBKeyIDs` output entry
-                                                $unionDBKeyIDs[$dbname][$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
-                                                $combinedUnionDBKeyIDs[$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
-                                            }
-                                            // Merge, after adding their type!
-                                            $field_ids = array_merge(
-                                                $field_ids,
-                                                is_array($database_field_ids) ? $database_field_ids : array($database_field_ids)
-                                            );
-                                        }
-                                    }
-                                }
-                                if ($field_ids) {
-                                    foreach ($field_ids as $field_id) {
-                                        // Do not add again the IDs/Fields already loaded
-                                        if ($subcomponent_already_loaded_data_fields = $subcomponent_already_loaded_ids_data_fields[$field_id]) {
-                                            $id_subcomponent_data_fields = array_values(
-                                                array_diff(
-                                                    $subcomponent_data_fields,
-                                                    $subcomponent_already_loaded_data_fields
-                                                )
-                                            );
-                                            $id_subcomponent_conditional_data_fields = [];
-                                            foreach ($subcomponent_conditional_data_fields as $conditionField => $conditionalFields) {
-                                                $id_subcomponent_conditional_data_fields[$conditionField] = array_values(
-                                                    array_diff(
-                                                        $conditionalFields,
-                                                        $subcomponent_already_loaded_data_fields
-                                                    )
-                                                );
-                                            }
-                                        } else {
-                                            $id_subcomponent_data_fields = $subcomponent_data_fields;
-                                            $id_subcomponent_conditional_data_fields = $subcomponent_conditional_data_fields;
-                                        }
-                                        // Important: do ALWAYS execute the lines below, even if $id_subcomponent_data_fields is empty
-                                        // That is because we can load additional data for an object that was already loaded in a previous iteration
-                                        // Eg: /api/?query=posts(id:1).author.posts.comments.post.author.posts.title
-                                        // In this case, property "title" at the end would not be fetched otherwise (that post was already loaded at the beginning)
-                                        // if ($id_subcomponent_data_fields) {
-                                        $this->combineIdsDatafields($this->typeResolverClass_ids_data_fields, $subcomponent_typeResolver_class, array($field_id), $id_subcomponent_data_fields, $id_subcomponent_conditional_data_fields);
-                                        // }
-                                    }
-                                    $this->initializeTypeResolverEntry($this->dbdata, $subcomponent_typeResolver_class, $module_path_key);
-                                    $this->dbdata[$subcomponent_typeResolver_class][$module_path_key]['ids'] = array_merge(
-                                        $this->dbdata[$subcomponent_typeResolver_class][$module_path_key]['ids'] ?? [],
-                                        $field_ids
-                                    );
-                                    $this->integrateSubcomponentDataProperties($this->dbdata, $subcomponent_data_properties, $subcomponent_typeResolver_class, $module_path_key);
-                                }
-
-                                if ($this->dbdata[$subcomponent_typeResolver_class][$module_path_key]) {
-                                    $this->dbdata[$subcomponent_typeResolver_class][$module_path_key]['ids'] = array_unique($this->dbdata[$subcomponent_typeResolver_class][$module_path_key]['ids']);
-                                    $this->dbdata[$subcomponent_typeResolver_class][$module_path_key]['data-fields'] = array_unique($this->dbdata[$subcomponent_typeResolver_class][$module_path_key]['data-fields']);
-                                }
-                            }
+                        // If it's a unionTypeResolver, get the typeResolver for each resultItem to obtain the subcomponent typeResolver
+                        $resultItemTypeResolvers = $typeResolver->getResultItemIDTargetTypeResolvers($typeResolver_ids);
+                        $iterationTypeResolverIDs = [];
+                        foreach ($typeResolver_ids as $id) {
+                            $resultItemTypeResolver = $resultItemTypeResolvers[(string)$id];
+                            $resultItemTypeResolverClass = get_class($resultItemTypeResolver);
+                            $iterationTypeResolverIDs[$resultItemTypeResolverClass][] = $id;
                         }
+                        foreach ($iterationTypeResolverIDs as $targetTypeResolverClass => $targetIDs) {
+                            $targetTypeResolver = $instanceManager->getInstance($targetTypeResolverClass);
+                            $this->processSubcomponentData($targetTypeResolver, $targetIDs, $module_path_key, $databases, $subcomponents_data_properties, $already_loaded_ids_data_fields, $unionDBKeyIDs, $combinedUnionDBKeyIDs);
+                        }
+                    } else {
+                        $this->processSubcomponentData($typeResolver, $typeResolver_ids, $module_path_key, $databases, $subcomponents_data_properties, $already_loaded_ids_data_fields, $unionDBKeyIDs, $combinedUnionDBKeyIDs);
                     }
                 }
             }
@@ -1639,6 +1545,128 @@ class Engine implements EngineInterface
         $this->maybeCombineAndAddDatabaseEntries($ret, 'unionDBKeyIDs', $unionDBKeyIDs);
 
         return $ret;
+    }
+
+    protected function processSubcomponentData($typeResolver, $typeResolver_ids, $module_path_key, array &$databases, array &$subcomponents_data_properties, array &$already_loaded_ids_data_fields, array &$unionDBKeyIDs, array &$combinedUnionDBKeyIDs)
+    {
+        $instanceManager = InstanceManagerFacade::getInstance();
+        $database_key = $typeResolver->getTypeOutputName();
+        foreach ($subcomponents_data_properties as $subcomponent_data_field => $subcomponent_data_properties) {
+            // Retrieve the subcomponent typeResolver from the current typeResolver
+            if ($subcomponent_typeResolver_class = DataloadUtils::getTypeResolverClassFromSubcomponentDataField($typeResolver, $subcomponent_data_field)) {
+                $subcomponent_data_field_outputkey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($subcomponent_data_field);
+                // The array_merge_recursive when there are at least 2 levels will make the data_fields to be duplicated, so remove duplicates now
+                $subcomponent_data_fields = array_unique($subcomponent_data_properties['data-fields'] ?? []);
+                $subcomponent_conditional_data_fields = $subcomponent_data_properties['conditional-data-fields'] ?? [];
+                if ($subcomponent_data_fields || $subcomponent_conditional_data_fields) {
+
+                    $subcomponentTypeResolver = $instanceManager->getInstance($subcomponent_typeResolver_class);
+                    $subcomponentIsUnionTypeResolver = $subcomponentTypeResolver instanceof UnionTypeResolverInterface;
+
+                    $subcomponent_already_loaded_ids_data_fields = array();
+                    if ($already_loaded_ids_data_fields && $already_loaded_ids_data_fields[$subcomponent_typeResolver_class]) {
+                        $subcomponent_already_loaded_ids_data_fields = $already_loaded_ids_data_fields[$subcomponent_typeResolver_class];
+                    }
+                    $subcomponentIDs = [];
+                    foreach ($typeResolver_ids as $id) {
+                        // $databases may contain more the 1 DB shipped by pop-engine/ ("primary"). Eg: PoP User Login adds db "userstate"
+                        // Fetch the field_ids from all these DBs
+                        foreach ($databases as $dbname => $database) {
+                            if ($database_field_ids = $database[$database_key][(string)$id][$subcomponent_data_field_outputkey]) {
+                                $subcomponentIDs[$dbname][$database_key][$id] = array_merge(
+                                    $subcomponentIDs[$dbname][$database_key][$id] ?? [],
+                                    is_array($database_field_ids) ? $database_field_ids : array($database_field_ids)
+                                );
+                            }
+                        }
+                    }
+                    // We don't want to store the dbKey/ID inside the relationalID, because that can lead to problems when dealing with the relations in the application (better keep it only to the ID)
+                    // So, instead, we store the dbKey/ID values in another object "$unionDBKeyIDs"
+                    // Then, whenever it's a union type data resolver, we obtain the values for the relationship under this other object
+                    $typedSubcomponentIDs = [];
+                    if ($subcomponentIsUnionTypeResolver) {
+                        // Get the types for all of the IDs all at once. Flatten 3 levels: dbname => dbkey => id => ...
+                        $allSubcomponentIDs = array_values(array_unique(
+                            GeneralUtils::arrayFlatten(GeneralUtils::arrayFlatten(GeneralUtils::arrayFlatten($subcomponentIDs)))
+                        ));
+                        $qualifiedSubcomponentIDs = $subcomponentTypeResolver->getQualifiedDBObjectIDOrIDs($allSubcomponentIDs);
+                        // Create a map, from ID to TypedID
+                        for ($i=0; $i<count($allSubcomponentIDs); $i++) {
+                            $typedSubcomponentIDs[$allSubcomponentIDs[$i]] = $qualifiedSubcomponentIDs[$i];
+                        }
+                    }
+
+                    $field_ids = [];
+                    foreach ($subcomponentIDs as $dbname => $dbkey_id_database_field_ids) {
+                        foreach ($dbkey_id_database_field_ids as $database_key => $id_database_field_ids) {
+                            foreach ($id_database_field_ids as $id => $database_field_ids) {
+                                if ($subcomponentIsUnionTypeResolver) {
+                                    // Transform the IDs, adding their type
+                                    $database_field_ids = array_map(
+                                        function($field_id) use($typedSubcomponentIDs) {
+                                            return $typedSubcomponentIDs[$field_id];
+                                        },
+                                        $database_field_ids
+                                    );
+
+                                    // Set on the `unionDBKeyIDs` output entry
+                                    $unionDBKeyIDs[$dbname][$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
+                                    $combinedUnionDBKeyIDs[$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
+                                }
+                                // Merge, after adding their type!
+                                $field_ids = array_merge(
+                                    $field_ids,
+                                    is_array($database_field_ids) ? $database_field_ids : array($database_field_ids)
+                                );
+                            }
+                        }
+                    }
+                    if ($field_ids) {
+                        foreach ($field_ids as $field_id) {
+                            // Do not add again the IDs/Fields already loaded
+                            if ($subcomponent_already_loaded_data_fields = $subcomponent_already_loaded_ids_data_fields[$field_id]) {
+                                $id_subcomponent_data_fields = array_values(
+                                    array_diff(
+                                        $subcomponent_data_fields,
+                                        $subcomponent_already_loaded_data_fields
+                                    )
+                                );
+                                $id_subcomponent_conditional_data_fields = [];
+                                foreach ($subcomponent_conditional_data_fields as $conditionField => $conditionalFields) {
+                                    $id_subcomponent_conditional_data_fields[$conditionField] = array_values(
+                                        array_diff(
+                                            $conditionalFields,
+                                            $subcomponent_already_loaded_data_fields
+                                        )
+                                    );
+                                }
+                            } else {
+                                $id_subcomponent_data_fields = $subcomponent_data_fields;
+                                $id_subcomponent_conditional_data_fields = $subcomponent_conditional_data_fields;
+                            }
+                            // Important: do ALWAYS execute the lines below, even if $id_subcomponent_data_fields is empty
+                            // That is because we can load additional data for an object that was already loaded in a previous iteration
+                            // Eg: /api/?query=posts(id:1).author.posts.comments.post.author.posts.title
+                            // In this case, property "title" at the end would not be fetched otherwise (that post was already loaded at the beginning)
+                            // if ($id_subcomponent_data_fields) {
+                            $this->combineIdsDatafields($this->typeResolverClass_ids_data_fields, $subcomponent_typeResolver_class, array($field_id), $id_subcomponent_data_fields, $id_subcomponent_conditional_data_fields);
+                            // }
+                        }
+                        $this->initializeTypeResolverEntry($this->dbdata, $subcomponent_typeResolver_class, $module_path_key);
+                        $this->dbdata[$subcomponent_typeResolver_class][$module_path_key]['ids'] = array_merge(
+                            $this->dbdata[$subcomponent_typeResolver_class][$module_path_key]['ids'] ?? [],
+                            $field_ids
+                        );
+                        $this->integrateSubcomponentDataProperties($this->dbdata, $subcomponent_data_properties, $subcomponent_typeResolver_class, $module_path_key);
+                    }
+
+                    if ($this->dbdata[$subcomponent_typeResolver_class][$module_path_key]) {
+                        $this->dbdata[$subcomponent_typeResolver_class][$module_path_key]['ids'] = array_unique($this->dbdata[$subcomponent_typeResolver_class][$module_path_key]['ids']);
+                        $this->dbdata[$subcomponent_typeResolver_class][$module_path_key]['data-fields'] = array_unique($this->dbdata[$subcomponent_typeResolver_class][$module_path_key]['data-fields']);
+                    }
+                }
+            }
+        }
     }
 
     protected function maybeCombineAndAddDatabaseEntries(&$ret, $name, $entries) {
