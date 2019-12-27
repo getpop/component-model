@@ -940,6 +940,7 @@ class Engine implements EngineInterface
                 if ($load_data) {
                     $typeResolver_class = $processor->getTypeResolverClass($module);
                     $typeResolver = $instanceManager->getInstance((string)$typeResolver_class);
+                    $isUnionTypeResolver = $typeResolver instanceof UnionTypeResolverInterface;
                     // ------------------------------------------
                     // Data Properties Query Args: add mutableonrequest data
                     // ------------------------------------------
@@ -947,7 +948,11 @@ class Engine implements EngineInterface
                     $dbObjectIDOrIDs = $processor->getDBObjectIDOrIDs($module, $module_props, $data_properties);
                     // If the type is union, we must add the type to each object
                     if (!is_null($dbObjectIDOrIDs)) {
-                        $typeDBObjectIDOrIDs = $typeResolver->getQualifiedDBObjectIDOrIDs($dbObjectIDOrIDs);
+                        if ($isUnionTypeResolver) {
+                            $typeDBObjectIDOrIDs = $typeResolver->getQualifiedDBObjectIDOrIDs($dbObjectIDOrIDs);
+                        } else {
+                            $typeDBObjectIDOrIDs = $dbObjectIDOrIDs;
+                        }
                     }
 
                     $dbObjectIDs = is_array($dbObjectIDOrIDs) ? $dbObjectIDOrIDs : array($dbObjectIDOrIDs);
@@ -1494,9 +1499,11 @@ class Engine implements EngineInterface
                         $resultItemTypeResolvers = $typeResolver->getResultItemIDTargetTypeResolvers($typeResolver_ids);
                         $iterationTypeResolverIDs = [];
                         foreach ($typeResolver_ids as $id) {
-                            $resultItemTypeResolver = $resultItemTypeResolvers[(string)$id];
-                            $resultItemTypeResolverClass = get_class($resultItemTypeResolver);
-                            $iterationTypeResolverIDs[$resultItemTypeResolverClass][] = $id;
+                            // If there's no resolver, it's an error: the ID can't be processed by anyone
+                            if ($resultItemTypeResolver = $resultItemTypeResolvers[(string)$id]) {
+                                $resultItemTypeResolverClass = get_class($resultItemTypeResolver);
+                                $iterationTypeResolverIDs[$resultItemTypeResolverClass][] = $id;
+                            }
                         }
                         foreach ($iterationTypeResolverIDs as $targetTypeResolverClass => $targetIDs) {
                             $targetTypeResolver = $instanceManager->getInstance($targetTypeResolverClass);
@@ -1591,7 +1598,7 @@ class Engine implements EngineInterface
                     // So, instead, we store the dbKey/ID values in another object "$unionDBKeyIDs"
                     // Then, whenever it's a union type data resolver, we obtain the values for the relationship under this other object
                     $typedSubcomponentIDs = [];
-                    if ($subcomponentIsUnionTypeResolver) {
+                    // if ($subcomponentIsUnionTypeResolver) {
                         // Get the types for all of the IDs all at once. Flatten 3 levels: dbname => dbkey => id => ...
                         $allSubcomponentIDs = array_values(array_unique(
                             GeneralUtils::arrayFlatten(GeneralUtils::arrayFlatten(GeneralUtils::arrayFlatten($subcomponentIDs)))
@@ -1601,25 +1608,31 @@ class Engine implements EngineInterface
                         for ($i=0; $i<count($allSubcomponentIDs); $i++) {
                             $typedSubcomponentIDs[$allSubcomponentIDs[$i]] = $qualifiedSubcomponentIDs[$i];
                         }
-                    }
+                    // }
 
                     $field_ids = [];
                     foreach ($subcomponentIDs as $dbname => $dbkey_id_database_field_ids) {
                         foreach ($dbkey_id_database_field_ids as $database_key => $id_database_field_ids) {
                             foreach ($id_database_field_ids as $id => $database_field_ids) {
+                                // Transform the IDs, adding their type
+                                // Do it always, for UnionTypeResolvers and non-union ones.
+                                // This is because if it's a relational field that comes after a UnionTypeResolver, its dbKey could not be inferred (since it depends from the dbObject, and can't be obtained in the settings, where "dbkeys" is obtained and which doesn't depend on data items)
+                                // Eg: /?query=content.comments.id. In this case, "content" is handled by UnionTypeResolver, and "comments" would not be found since its entry can't be added under "datasetmodulesettings.dbkeys", since the module (of class AbstractRelationalFieldQueryDataModuleProcessor) with a UnionTypeResolver can't resolve the 'succeeding-typeResolver' to set to its submodules
+                                // Having 'succeeding-typeResolver' being NULL, then it is not able to locate its data
+                                $typed_database_field_ids = array_map(
+                                    function($field_id) use($typedSubcomponentIDs) {
+                                        return $typedSubcomponentIDs[$field_id];
+                                    },
+                                    $database_field_ids
+                                );
                                 if ($subcomponentIsUnionTypeResolver) {
-                                    // Transform the IDs, adding their type
-                                    $database_field_ids = array_map(
-                                        function($field_id) use($typedSubcomponentIDs) {
-                                            return $typedSubcomponentIDs[$field_id];
-                                        },
-                                        $database_field_ids
-                                    );
-
-                                    // Set on the `unionDBKeyIDs` output entry
-                                    $unionDBKeyIDs[$dbname][$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
-                                    $combinedUnionDBKeyIDs[$database_key][(string)$id][$subcomponent_data_field_outputkey] = $database_field_ids;
+                                    $database_field_ids = $typed_database_field_ids;
                                 }
+                                // Set on the `unionDBKeyIDs` output entry. This could be either an array or a single value. Check from the original entry which case it is
+                                $entryIsArray = $databases[$dbname][$database_key][(string)$id][$subcomponent_data_field_outputkey] && is_array($databases[$dbname][$database_key][(string)$id][$subcomponent_data_field_outputkey]);
+                                $unionDBKeyIDs[$dbname][$database_key][(string)$id][$subcomponent_data_field_outputkey] = $entryIsArray ? $typed_database_field_ids : $typed_database_field_ids[0];
+                                $combinedUnionDBKeyIDs[$database_key][(string)$id][$subcomponent_data_field_outputkey] = $entryIsArray ? $typed_database_field_ids : $typed_database_field_ids[0];
+
                                 // Merge, after adding their type!
                                 $field_ids = array_merge(
                                     $field_ids,

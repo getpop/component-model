@@ -65,6 +65,11 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         return $typeDBObjectIDOrIDs;
     }
 
+    public function qualifyDBObjectIDsToRemoveFromErrors(): bool
+    {
+        return true;
+    }
+
     public function getResultItemIDTargetTypeResolvers(array $ids): array
     {
         return $this->recursiveGetResultItemIDTargetTypeResolvers($this, $ids);

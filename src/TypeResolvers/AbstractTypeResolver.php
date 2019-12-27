@@ -71,7 +71,23 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
     public function getQualifiedDBObjectIDOrIDs($dbObjectIDOrIDs)
     {
-        return $dbObjectIDOrIDs;
+        // Add the type before the ID
+        $dbObjectIDs = is_array($dbObjectIDOrIDs) ? $dbObjectIDOrIDs : [$dbObjectIDOrIDs];
+        $qualifiedDBObjectIDs = array_map(
+            function($id) {
+                return UnionTypeHelpers::getDBObjectComposedTypeAndID(
+                    $this,
+                    $id
+                );
+            },
+            $dbObjectIDs
+        );
+        return is_array($dbObjectIDOrIDs) ? $qualifiedDBObjectIDs : $qualifiedDBObjectIDs[0];
+    }
+
+    public function qualifyDBObjectIDsToRemoveFromErrors(): bool
+    {
+        return false;
     }
 
     /**
@@ -564,7 +580,9 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         // Remove all the IDs that failed from the elements to process, so it doesn't show a "Corrupted Data" error
         // Because these are IDs (eg: 223) and $ids_data_fields contains qualified or typed IDs (eg: post/223), we must convert them first
         if ($unresolvedResultItemIDs) {
-            $unresolvedResultItemIDs = $this->getQualifiedDBObjectIDOrIDs($unresolvedResultItemIDs);
+            if ($this->qualifyDBObjectIDsToRemoveFromErrors()) {
+                $unresolvedResultItemIDs = $this->getQualifiedDBObjectIDOrIDs($unresolvedResultItemIDs);
+            }
             $ids_data_fields = array_filter(
                 $ids_data_fields,
                 function($id) use($unresolvedResultItemIDs) {
