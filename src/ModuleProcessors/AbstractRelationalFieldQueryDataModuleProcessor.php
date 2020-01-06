@@ -28,17 +28,13 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
         $moduleAtts = count($module) >= 3 ? $module[2] : null;
         $fields = $this->getFields($module, $moduleAtts);
 
-        $fields = array_values(array_filter(
+        return array_values(array_filter(
             $fields,
             function ($key) {
                 return is_numeric($key);
             },
             ARRAY_FILTER_USE_KEY
         ));
-
-        // Only allow from a specific list of fields. Precaution against hackers.
-        $dataquery_manager = \PoP\ComponentModel\DataQueryManagerFactory::getInstance();
-        return $dataquery_manager->filterAllowedfields($fields);
     }
 
     /**
@@ -52,21 +48,10 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
         $moduleAtts = count($module) >= 3 ? $module[2] : null;
         $fields = $this->getFields($module, $moduleAtts);
 
-        $fieldNestedFields = array_filter(
+        return array_filter(
             $fields,
             function ($key) {
                 return !is_numeric($key);
-            },
-            ARRAY_FILTER_USE_KEY
-        );
-
-        // Only allow from a specific list of fields. Precaution against hackers.
-        $dataquery_manager = \PoP\ComponentModel\DataQueryManagerFactory::getInstance();
-        $allowedFields = $dataquery_manager->filterAllowedfields(array_keys($fieldNestedFields));
-        return array_filter(
-            $fieldNestedFields,
-            function ($field) use ($allowedFields) {
-                return in_array($field, $allowedFields);
             },
             ARRAY_FILTER_USE_KEY
         );

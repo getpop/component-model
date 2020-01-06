@@ -9,7 +9,6 @@ use PoP\ComponentModel\DataloadUtils;
 use PoP\Hooks\Facades\HooksAPIFacade;
 use PoP\ComponentModel\Modules\ModuleUtils;
 use PoP\ComponentModel\Configuration\Request;
-use PoP\ComponentModel\DataQueryManagerFactory;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\Server\Utils as ServerUtils;
 use PoP\ComponentModel\CheckpointProcessorManagerFactory;
@@ -1220,7 +1219,6 @@ class Engine implements EngineInterface
     public function getDatabases()
     {
         $instanceManager = InstanceManagerFacade::getInstance();
-        // $dataquery_manager = DataQueryManagerFactory::getInstance();
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
 
         $vars = Engine_Vars::getVars();
@@ -1367,107 +1365,6 @@ class Engine implements EngineInterface
                     );
                 }
             }
-
-            // Comment Leo 21/10/2019: This code will soon be deleted, so I can momentarily comment it
-            // ------------------------------------------------------------
-            /*
-            // Keep the list of elements that must be retrieved once again from the server
-            if ($dataquery_name = $typeDataLoader->getDataquery()) {
-                $dataquery = $dataquery_manager->get($dataquery_name);
-                $objectid_fieldname = $dataquery->getObjectidFieldname();
-
-                // Force retrieval of data from the server. Eg: recommendpost-count
-                $forceserverload_fields = $dataquery->getNoCacheFields();
-
-                // Lazy fields. Eg: comments
-                $lazylayouts = $dataquery->getLazyLayouts();
-                $lazyload_fields = array_keys($lazylayouts);
-
-                // Store the intersected fields and the corresponding ids
-                $forceserverload = array(
-                    'ids' => array(),
-                    'fields' => array()
-                );
-                $lazyload = array(
-                    'ids' => array(),
-                    'layouts' => array()
-                );
-
-                // Compare the fields in the result dbobjectids, with the dataquery's specified list of fields that must always be retrieved from the server
-                // (eg: comment-count, since adding a comment doesn't delete the cache)
-                foreach ($ids as $dataitem_id) {
-                    // Get the fields requested to that dataitem, for both the database and user database
-                    $dataitem_fields = [];
-                    foreach ($iterationDBItems as $dbname => $dbItems) {
-                        $dataitem_fields = array_merge(
-                            $dataitem_fields,
-                            array_keys($dbItems[$dataitem_id] ?? array())
-                        );
-                    }
-                    $dataitem_fields = array_unique($dataitem_fields);
-
-                    // Intersect these with the fields that must be loaded from server
-                    // Comment Leo 31/03/2017: do it only if we are not currently in the noncacheable_page
-                    // If we are, then we came here loading a backgroundload-url, and we don't need to load it again
-                    // Otherwise, it would create an infinite loop, since the fields loaded here are, exactly, those defined in the noncacheable_fields
-                    // Eg: https://www.mesym.com/en/loaders/posts/data/?pid[0]=21636&pid[1]=21632&pid[2]=21630&pid[3]=21628&pid[4]=21624&pid[5]=21622&fields[0]=recommendpost-count&fields[1]=recommendpost-count-plus1&fields[2]=userpostactivity-count&format=updatedata
-                    if ($route != $dataquery->getNonCacheableRoute()) {
-                        if ($intersect = array_values(array_intersect($dataitem_fields, $forceserverload_fields))) {
-                            $forceserverload['ids'][] = $dataitem_id;
-                            $forceserverload['fields'] = array_merge(
-                                $forceserverload['fields'],
-                                $intersect
-                            );
-                        }
-                    }
-
-                    // Intersect these with the lazyload fields
-                    if ($intersect = array_values(array_intersect($dataitem_fields, $lazyload_fields))) {
-                        $lazyload['ids'][] = $dataitem_id;
-                        foreach ($intersect as $field) {
-                            // Get the layout for the current format, if it exists, or the default one if not
-                            $lazyload['layouts'][] = $lazylayouts[$field][$format] ?? $lazylayouts[$field]['default'];
-                        }
-                    }
-                }
-                if ($forceserverload['ids']) {
-                    $forceserverload['fields'] = array_unique($forceserverload['fields']);
-
-                    $url = RouteUtils::getRouteURL($dataquery->getNonCacheableRoute());
-                    $url = GeneralUtils::addQueryArgs([
-                        $objectid_fieldname => $forceserverload['ids'],
-                        GD_URLPARAM_FIELDS => $forceserverload['fields'],
-                        GD_URLPARAM_FORMAT => POP_FORMAT_FIELDS,
-                    ], $url);
-                    $this->backgroundload_urls[urldecode($url)] = array(POP_TARGET_MAIN);
-
-                    // Keep the nocache fields to remove those from the code when generating the ETag
-                    $this->nocache_fields = array_merge(
-                        $this->nocache_fields,
-                        $forceserverload['fields']
-                    );
-                }
-                if ($lazyload['ids']) {
-                    $lazyload['layouts'] = array_unique(
-                        $lazyload['layouts'],
-                        SORT_REGULAR
-                    );
-
-                    $url = RouteUtils::getRouteURL($dataquery->getCacheableRoute());
-                    $url = GeneralUtils::addQueryArgs([
-                        $objectid_fieldname => $lazyload['ids'],
-                        // Convert from module to moduleFullName
-                        GD_URLPARAM_LAYOUTS => array_map(
-                            [ModuleUtils::class, 'getModuleOutputName'],
-                            $lazyload['layouts']
-                        ),
-                        GD_URLPARAM_FORMAT => POP_FORMAT_LAYOUTS,
-                    ], $url);
-                    $this->backgroundload_urls[urldecode($url)] = array(POP_TARGET_MAIN);
-                }
-            }
-            */
-            // ------------------------------------------------------------
 
             // Important: query like this: obtain keys first instead of iterating directly on array, because it will keep adding elements
             $typeResolver_dbdata = $this->dbdata[$typeResolver_class];
