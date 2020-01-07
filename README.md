@@ -1483,7 +1483,6 @@ The dataloader must also implement the following functions:
 
 - `getFieldprocessor`: return the name of the [FieldResolver](#fieldprocessor) that will handle the data-fields for all objects returned by the dataloader
 - `getDatabaseKey`: return the object type under which objects returned by the dataloader will be stored under `databases` in the JSON response
-- `getDataquery`: return the name of the [DataQuery](#dataquery) object that will handle the objects returned by the dataloader
 
 For instance, a [dataloader fetching posts](https://github.com/leoloso/PoP/blob/master/pop-cmsmodel/library/dataload/dataloaders/dataloader-post-base.php) will implement these functions like this:
 
@@ -1496,11 +1495,6 @@ function getDatabaseKey()
 function getFieldprocessor() 
 {
   return GD_DATALOAD_FIELDPROCESSOR_POSTS;
-}
-
-function getDataquery() 
-{
-  return GD_DATAQUERY_POST;
 }
 ```
 
@@ -1723,20 +1717,6 @@ Before fetching data from the database, function `prepareQueryArgs` populates th
 
 After fecthing data from the database, functions `getQueryState`, `getQueryParams` and `getQueryResult`, all of them receiving parameters `$data_properties, $checkpoint_validation, $executed, $dbobjectids`, send information about the executed query back to the client: state values (eg: are there more results?), parameter values (eg: how many results to bring each time) and result values (eg: was execution successful?) correspondingly.
 
-### DataQuery
-
-When loading data, it is possible to mark data-fields as noncacheable to make sure that their value is always fresh from the database (eg: a post's "Recommend" count), and modules as lazy to load them on a subsequent request (eg: a post's comments). A DataQuery is an object which allows to define these values. It must inherit from class `DataQueryBase`. 
-
-In plugin `pop-cmsmodel` there are already basic implementations of DataQueries for post, user, comment and tag, on which can be injected the data-fields to mark as noncacheable and modules to mark as lazy through a corresponding [DataQueryHook](#dataqueryhook) object:
-
-- `DataQuery_Post`
-- `DataQuery_User`
-- `DataQuery_Comment`
-- `DataQuery_Tag`
-
-#### DataQueryHook
-
-The DataQueryHooks injects data-fields to mark as noncacheable and modules to mark as lazy on a DataQuery object. It must inherit from class `DataQuery_HookBase`. 
 ### ActionExecuter
 
 In addition to loading data, "dataloading" modules can also post data, or execute any operation supported by the underlying CMS (log in/out the user, send emails, logging, etc).
