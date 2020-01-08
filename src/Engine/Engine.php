@@ -1219,7 +1219,6 @@ class Engine implements EngineInterface
     public function getDatabases()
     {
         $instanceManager = InstanceManagerFacade::getInstance();
-        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
 
         $vars = Engine_Vars::getVars();
 
@@ -1233,8 +1232,8 @@ class Engine implements EngineInterface
         // but we need to avoid fetching those DB objects that were already fetched in a previous iteration
         $already_loaded_ids_data_fields = array();
 
-        // The variables come from the request
-        $variables = $fieldQueryInterpreter->getVariablesFromRequest();
+        // The variables come from $vars
+        $variables = $vars['variables'];
         // Initiate a new $messages interchange across directives
         $messages = [];
 

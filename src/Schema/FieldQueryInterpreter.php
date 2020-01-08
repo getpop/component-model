@@ -14,6 +14,7 @@ use PoP\ComponentModel\TypeResolvers\AbstractTypeResolver;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\DirectiveResolvers\DirectiveResolverInterface;
 use PoP\ComponentModel\Feedback\Tokens;
+use PoP\ComponentModel\Engine_Vars;
 
 class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implements FieldQueryInterpreterInterface
 {
@@ -782,7 +783,10 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             // Variables: allow to pass a field argument "key:$input", and then resolve it as ?variable[input]=value
             // Expected input is similar to GraphQL: https://graphql.org/learn/queries/#variables
             // If not passed the variables parameter, use $_REQUEST["variables"] by default
-            $variables = $variables ?? $this->getVariablesFromRequest();
+            if (is_null($variables)) {
+                $vars = Engine_Vars::getVars();
+                $variables = $vars['variables'];
+            }
             $variableName = substr($fieldArgValue, strlen(QuerySyntax::SYMBOL_VARIABLE_PREFIX));
             if (isset($variables[$variableName])) {
                 return $variables[$variableName];
