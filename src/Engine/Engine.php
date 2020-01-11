@@ -1420,7 +1420,7 @@ class Engine implements EngineInterface
         // This is unavoidable, since add schemaWarnings (and, correspondingly, errors and deprecations) in functions
         // `resolveSchemaValidationWarningDescriptions` and `resolveValue` from the AbstractTypeResolver
         // Ideally, doing it in `resolveValue` is not needed, since it already went through the validation in `resolveSchemaValidationWarningDescriptions`, so it's a duplication
-        // However, when doing nested fields, the warnings are caught only in `resolveValue`, hence we need to add it there too
+        // However, when having composed fields, the warnings are caught only in `resolveValue`, hence we need to add it there too
         // Then, we will certainly have duplicates. Remove them now
         // Because these are arrays of arrays, we use the method taken from https://stackoverflow.com/a/2561283
         foreach ($schemaErrors as $dbname => &$entries) {
