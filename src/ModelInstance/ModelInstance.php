@@ -54,7 +54,7 @@ class ModelInstance implements ModelInstanceInterface
             foreach ($definitionResolvers as $group => $resolverInstance) {
                 $resolvers[] = $group.'-'.get_class($resolverInstance);
             }
-            $components[] = $this->translationAPI->__('definition resolvers:', 'engine').implode(',', $resolvers);
+            $components[] = $this->translationAPI->__('definition resolvers:', 'component-model').implode(',', $resolvers);
         }
 
         return $components;
@@ -69,30 +69,30 @@ class ModelInstance implements ModelInstanceInterface
         // There will always be a nature. Add it.
         $nature = $vars['nature'];
         $route = $vars['route'];
-        $components[] = $this->translationAPI->__('nature:', 'engine').$nature;
-        $components[] = $this->translationAPI->__('route:', 'engine').$route;
+        $components[] = $this->translationAPI->__('nature:', 'component-model').$nature;
+        $components[] = $this->translationAPI->__('route:', 'component-model').$route;
 
         // Add the version, because otherwise there may be PHP errors happening from stale configuration that is not deleted, and still served, after a new version is deployed
-        $components[] = $this->translationAPI->__('version:', 'engine').$vars['version'];
+        $components[] = $this->translationAPI->__('version:', 'component-model').$vars['version'];
 
         // Other properties
         if ($format = $vars['format']) {
-            $components[] = $this->translationAPI->__('format:', 'engine').$format;
+            $components[] = $this->translationAPI->__('format:', 'component-model').$format;
         }
         if ($target = $vars['target']) {
-            $components[] = $this->translationAPI->__('target:', 'engine').$target;
+            $components[] = $this->translationAPI->__('target:', 'component-model').$target;
         }
         if ($actions = $vars['actions']) {
-            $components[] = $this->translationAPI->__('actions:', 'engine').implode(';', $actions);
+            $components[] = $this->translationAPI->__('actions:', 'component-model').implode(';', $actions);
         }
         if ($config = $vars['config']) {
-            $components[] = $this->translationAPI->__('config:', 'engine').$config;
+            $components[] = $this->translationAPI->__('config:', 'component-model').$config;
         }
         if ($modulefilter = $vars['modulefilter']) {
-            $components[] = $this->translationAPI->__('module filter:', 'engine').$modulefilter;
+            $components[] = $this->translationAPI->__('module filter:', 'component-model').$modulefilter;
         }
         if ($stratum = $vars['stratum']) {
-            $components[] = $this->translationAPI->__('stratum:', 'engine').$stratum;
+            $components[] = $this->translationAPI->__('stratum:', 'component-model').$stratum;
         }
 
         // Can the configuration change when doing a POST or GET?
@@ -100,12 +100,15 @@ class ModelInstance implements ModelInstanceInterface
             self::HOOK_COMPONENTSFROMVARS_POSTORGETCHANGE,
             false
         )) {
-            $components[] = $this->translationAPI->__('operation:', 'engine').(doingPost() ? 'post' : 'get');
+            $components[] = $this->translationAPI->__('operation:', 'component-model').(doingPost() ? 'post' : 'get');
         }
         if ($mangled = $vars['mangled']) {
             // By default it is mangled. To make it non-mangled, url must have param "mangled=none",
             // so only in these exceptional cases the identifier will add this parameter
-            $components[] = $this->translationAPI->__('mangled:', 'engine').$mangled;
+            $components[] = $this->translationAPI->__('mangled:', 'component-model').$mangled;
+        }
+        if ($vars['skip-fieldargs-from-outputkey']) {
+            $components[] = $this->translationAPI->__('skip-fieldargs-from-outputkey', 'component-model');
         }
 
         // Allow for plug-ins to add their own vars. Eg: URE source parameter

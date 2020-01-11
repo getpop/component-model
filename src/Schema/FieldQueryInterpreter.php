@@ -1009,4 +1009,14 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
 
         return [];
     }
+
+    protected function getNoAliasFieldOutputKey(string $field): string
+    {
+        // GraphQL: Use fieldName only
+        $vars = Engine_Vars::getVars();
+        if ($vars['skip-fieldargs-from-outputkey']) {
+            return $this->getFieldName($field);
+        }
+        return parent::getNoAliasFieldOutputKey($field);
+    }
 }
