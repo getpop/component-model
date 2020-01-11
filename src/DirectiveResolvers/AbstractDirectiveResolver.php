@@ -68,7 +68,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 }
                 $nestedFieldDirectives = $expandedNestedFieldDirectives;
             }
-            // Each nested directive will deal with the same fields as the current directive
+            // Each composed directive will deal with the same fields as the current directive
             $nestedFieldDirectiveFields = $fieldDirectiveFields;
             foreach ($nestedFieldDirectives as $nestedFieldDirective) {
                 $nestedFieldDirectiveFields[$nestedFieldDirective] = $fieldDirectiveFields[$this->directive];
@@ -96,7 +96,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 }
                 $schemaErrors[] = [
                     Tokens::PATH => [$this->directive],
-                    Tokens::MESSAGE => $translationAPI->__('This directive can\'t be executed due to errors from its nested directives', 'component-model'),
+                    Tokens::MESSAGE => $translationAPI->__('This directive can\'t be executed due to errors from its composed directives', 'component-model'),
                 ];
                 return [
                     null, // $validDirective

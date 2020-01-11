@@ -675,7 +675,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         while (!empty($this->fieldDirectiveIDFields)) {
             $fieldDirectiveIDFields = $this->fieldDirectiveIDFields;
             // Now that we have all data, remove all entries from the inner stack.
-            // It may be filled again with nested directives, when resolving the pipeline
+            // It may be filled again with composed directives, when resolving the pipeline
             $this->fieldDirectiveIDFields = [];
 
             // Calculate the fieldDirectives
