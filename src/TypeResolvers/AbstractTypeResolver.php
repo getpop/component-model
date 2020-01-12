@@ -985,13 +985,23 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return ErrorUtils::getNoFieldError($fieldName);
     }
 
+    public function getTypeSchemaKey(array $options = []): string
+    {
+        // Use this class as the key
+        if ($options['use-type-resolver-class-as-schema-key']) {
+            return get_called_class();
+        }
+        // By default, use the type name
+        return $this->getTypeName();
+    }
+
     protected function processFlatShapeSchemaDefinition(array $options = [])
     {
-        $typeName = $this->getTypeName();
+        $typeSchemaKey = $this->getTypeSchemaKey($options);
 
         // By now, we have the schema definition
-        if (isset($this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_CONNECTIONS])) {
-            $connections = &$this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_CONNECTIONS];
+        if (isset($this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_CONNECTIONS])) {
+            $connections = &$this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_CONNECTIONS];
             foreach ($connections as &$connection) {
                 // If it is a recursion or repeated there will be no schema
                 if (isset($connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA])) {
@@ -1005,13 +1015,13 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
     public function getSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = []): array
     {
-        $typeName = $this->getTypeName();
+        $typeSchemaKey = $this->getTypeSchemaKey($options);
 
         // Stop recursion
         $class = get_called_class();
         if (in_array($class, $stackMessages['processed'])) {
             return [
-                $typeName => [
+                $typeSchemaKey => [
                     SchemaDefinition::ARGNAME_RECURSION => true,
                 ]
             ];
@@ -1022,7 +1032,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         // If "compressed" or printing a flat shape, and the resolver has already been added to the schema, then skip it
         if (($isFlatShape || $options['compressed']) && in_array($class, $generalMessages['processed'])) {
             return [
-                $typeName => [
+                $typeSchemaKey => [
                     SchemaDefinition::ARGNAME_REPEATED => true,
                 ]
             ];
@@ -1038,7 +1048,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             if ($isFlatShape) {
                 $this->processFlatShapeSchemaDefinition($options);
                 // Add the type to the list of all types, displayed when doing "shape=>flat"
-                $generalMessages[SchemaDefinition::ARGNAME_TYPES][$typeName] = $this->schemaDefinition[$typeName];
+                $generalMessages[SchemaDefinition::ARGNAME_TYPES][$typeSchemaKey] = $this->schemaDefinition[$typeSchemaKey];
             }
         }
 
@@ -1047,25 +1057,21 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
     protected function addSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = [])
     {
-        $typeName = $this->getTypeName();
-        $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_NAME] = $typeName;
+        $typeSchemaKey = $this->getTypeSchemaKey($options);
+        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_NAME] = $this->getTypeName();
 
         // Properties
         if ($description = $this->getSchemaTypeDescription()) {
-            $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
-        }
-        // Internal properties!
-        if ($options['include-type-resolver-classname']) {
-            $this->schemaDefinition[$typeName][SchemaDefinition::OPTIONNAME_CLASS] = get_called_class();
+            $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
         }
 
         // Add the directives (non-global)
-        $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DIRECTIVES] = [];
+        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_DIRECTIVES] = [];
         $directiveResolverInstances = $this->getSchemaDirectiveResolvers(false);
         foreach ($directiveResolverInstances as $directiveResolverInstance) {
             $directiveSchemaDefinition = $directiveResolverInstance->getSchemaDefinitionForDirective($this);
             $directiveName = $directiveResolverInstance->getDirectiveName();
-            $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DIRECTIVES][$directiveName] = $directiveSchemaDefinition;
+            $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_DIRECTIVES][$directiveName] = $directiveSchemaDefinition;
         }
 
         // Add all the implemented interfaces
@@ -1075,10 +1081,10 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             },
             $this->getAllImplementedInterfaceClasses()
         );
-        $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_INTERFACES] = $interfaceClassNames;
+        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_INTERFACES] = $interfaceClassNames;
 
         // Add the fields (non-global)
-        $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_FIELDS] = [];
+        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_FIELDS] = [];
         $schemaFieldResolvers = $this->getSchemaFieldResolvers(false);
         foreach ($schemaFieldResolvers as $fieldName => $fieldResolver) {
             $this->addFieldSchemaDefinition($fieldResolver, $fieldName, $stackMessages, $generalMessages, $options);
@@ -1169,8 +1175,8 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         if ($isConnection) {
             unset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL]);
         }
-        $typeName = $this->getTypeName();
-        $this->schemaDefinition[$typeName][$entry][$fieldName] = $fieldSchemaDefinition;
+        $typeSchemaKey = $this->getTypeSchemaKey($options);
+        $this->schemaDefinition[$typeSchemaKey][$entry][$fieldName] = $fieldSchemaDefinition;
     }
 
     protected function getAllFieldResolvers(): array

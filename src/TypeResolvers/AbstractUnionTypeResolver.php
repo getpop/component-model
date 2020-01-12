@@ -334,17 +334,17 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
     protected function addSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = [])
     {
         $instanceManager = InstanceManagerFacade::getInstance();
-        $typeName = $this->getTypeName();
+        $typeSchemaKey = $this->getTypeSchemaKey($options);
 
         // Properties
         if ($description = $this->getSchemaTypeDescription()) {
-            $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
+            $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
         }
-        $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_IS_UNION] = true;
+        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_IS_UNION] = true;
 
         // If it returns an interface as type, add it to the schemaDefinition
         if ($typeInterfaceClass = $this->getSchemaTypeInterfaceClass()) {
-            $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_RESULTS_IMPLEMENT_INTERFACE] = $typeInterfaceClass::getInterfaceName();
+            $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_RESULTS_IMPLEMENT_INTERFACE] = $typeInterfaceClass::getInterfaceName();
         }
 
         // Iterate through the typeResolvers from all the pickers and get their schema definitions
@@ -352,7 +352,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
             $pickerTypeResolver = $instanceManager->getInstance($picker->getTypeResolverClass());
             $pickerTypeSchemaDefinition = $pickerTypeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options);
             $pickerTypeName = $pickerTypeResolver->getTypeName();
-            $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_UNION_TYPES][$pickerTypeName] = $pickerTypeSchemaDefinition[$pickerTypeName];
+            $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_UNION_TYPES][$pickerTypeName] = $pickerTypeSchemaDefinition[$pickerTypeName];
         }
     }
 
@@ -360,11 +360,11 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
     {
         parent::processFlatShapeSchemaDefinition($options);
 
-        $typeName = $this->getTypeName();
+        $typeSchemaKey = $this->getTypeSchemaKey($options);
 
         // Replace the UnionTypeResolver's types with their typeNames
-        $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_UNION_TYPES] = array_keys(
-            $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_UNION_TYPES]
+        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_UNION_TYPES] = array_keys(
+            $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_UNION_TYPES]
         );
     }
 

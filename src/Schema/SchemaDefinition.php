@@ -40,8 +40,6 @@ class SchemaDefinition {
     const ARGVALUE_SCHEMA_SHAPE_FLAT = 'flat';
     const ARGVALUE_SCHEMA_SHAPE_NESTED = 'nested';
 
-    const OPTIONNAME_CLASS = 'class';
-
     // Field/Directive Argument Types
     const TYPE_MIXED = 'mixed';
     const TYPE_ID = 'id';
