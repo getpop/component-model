@@ -1054,6 +1054,10 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         if ($description = $this->getSchemaTypeDescription()) {
             $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
         }
+        // Internal properties!
+        if ($options['include-type-resolver-classname']) {
+            $this->schemaDefinition[$typeName][SchemaDefinition::OPTIONNAME_CLASS] = get_called_class();
+        }
 
         // Add the directives (non-global)
         $this->schemaDefinition[$typeName][SchemaDefinition::ARGNAME_DIRECTIVES] = [];
