@@ -1110,7 +1110,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 SchemaDefinition::ARGNAME_DESCRIPTION => $interfaceInstance->getSchemaInterfaceDescription(),
                 SchemaDefinition::ARGNAME_FIELDS => $interfaceFields,
                 // The list of types that implement this interface
-                SchemaDefinition::ARGNAME_POSSIBLE_TYPES => $interfacePossibleTypes,
+                SchemaDefinition::ARGNAME_POSSIBLE_TYPES => &$interfacePossibleTypes,
             ];
         }
         $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_INTERFACES] = $typeInterfaceDefinitions;
