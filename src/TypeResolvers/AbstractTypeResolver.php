@@ -1074,25 +1074,36 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_DIRECTIVES][$directiveName] = $directiveSchemaDefinition;
         }
 
-        // Add all the implemented interfaces
-        $instanceManager = InstanceManagerFacade::getInstance();
-        $typeInterfaceDefinitions = [];
-        foreach ($this->getAllImplementedInterfaceClasses() as $interfaceResolverClass) {
-            $interfaceInstance = $instanceManager->getInstance($interfaceResolverClass);
-            $interfaceSchemaKey = $interfaceInstance->getInterfaceSchemaKey($options);
-            $typeInterfaceDefinitions[$interfaceSchemaKey] = [
-                SchemaDefinition::ARGNAME_NAME => $interfaceInstance->getInterfaceName(),
-                SchemaDefinition::ARGNAME_DESCRIPTION => $interfaceInstance->getSchemaInterfaceDescription(),
-            ];
-        }
-        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_INTERFACES] = $typeInterfaceDefinitions;
-
         // Add the fields (non-global)
         $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_FIELDS] = [];
         $schemaFieldResolvers = $this->getSchemaFieldResolvers(false);
         foreach ($schemaFieldResolvers as $fieldName => $fieldResolver) {
             $this->addFieldSchemaDefinition($fieldResolver, $fieldName, $stackMessages, $generalMessages, $options);
         }
+
+        // Add all the implemented interfaces
+        $instanceManager = InstanceManagerFacade::getInstance();
+        $typeInterfaceDefinitions = [];
+        foreach ($this->getAllImplementedInterfaceClasses() as $interfaceResolverClass) {
+            $interfaceInstance = $instanceManager->getInstance($interfaceResolverClass);
+            $interfaceSchemaKey = $interfaceInstance->getInterfaceSchemaKey($options);
+
+            // Conveniently get the fields from the schema, which have already been calculated above since they also include their interface fields
+            $interfaceFieldNames = $interfaceInstance::getFieldNamesToImplement();
+            $interfaceFields = array_filter(
+                $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_FIELDS],
+                function($fieldName) use($interfaceFieldNames) {
+                    return in_array($fieldName, $interfaceFieldNames);
+                },
+                ARRAY_FILTER_USE_KEY
+            );
+            $typeInterfaceDefinitions[$interfaceSchemaKey] = [
+                SchemaDefinition::ARGNAME_NAME => $interfaceInstance->getInterfaceName(),
+                SchemaDefinition::ARGNAME_DESCRIPTION => $interfaceInstance->getSchemaInterfaceDescription(),
+                SchemaDefinition::ARGNAME_FIELDS => $interfaceFields,
+            ];
+        }
+        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_INTERFACES] = $typeInterfaceDefinitions;
     }
 
     protected function getSchemaDirectiveResolvers(bool $global): array
