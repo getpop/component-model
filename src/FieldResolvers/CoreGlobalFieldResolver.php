@@ -21,7 +21,7 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
     public function getSchemaFieldType(TypeResolverInterface $typeResolver, string $fieldName): ?string
     {
         $types = [
-            'id' => SchemaDefinition::TYPE_ID,
+            'id' => SchemaDefinition::TYPE_MIXED,
             '__typename' => SchemaDefinition::TYPE_STRING,
             'isType' => SchemaDefinition::TYPE_BOOL,
             'implements' => SchemaDefinition::TYPE_BOOL,
