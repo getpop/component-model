@@ -1058,7 +1058,8 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     protected function addSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = [])
     {
         $typeSchemaKey = $this->getTypeSchemaKey($options);
-        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_NAME] = $this->getTypeName();
+        $typeName = $this->getTypeName();
+        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_NAME] = $typeName;
 
         // Properties
         if ($description = $this->getSchemaTypeDescription()) {
@@ -1097,10 +1098,19 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 },
                 ARRAY_FILTER_USE_KEY
             );
+            $interfaceName = $interfaceInstance->getInterfaceName();
+            // Possible types: Because we are generating this list as we go along resolving all the types, simply have this value point to a reference in $generalMessages
+            // Just by updating that variable, it will eventually be updated everywhere
+            $generalMessages['interfaceGeneralTypes'][$interfaceName] = $generalMessages['interfaceGeneralTypes'][$interfaceName] ?? [];
+            $interfacePossibleTypes = &$generalMessages['interfaceGeneralTypes'][$interfaceName];
+            // Add this type to the list of implemented types for this interface
+            $interfacePossibleTypes[] = $typeName;
             $typeInterfaceDefinitions[$interfaceSchemaKey] = [
-                SchemaDefinition::ARGNAME_NAME => $interfaceInstance->getInterfaceName(),
+                SchemaDefinition::ARGNAME_NAME => $interfaceName,
                 SchemaDefinition::ARGNAME_DESCRIPTION => $interfaceInstance->getSchemaInterfaceDescription(),
                 SchemaDefinition::ARGNAME_FIELDS => $interfaceFields,
+                // The list of types that implement this interface
+                SchemaDefinition::ARGNAME_POSSIBLE_TYPES => $interfacePossibleTypes,
             ];
         }
         $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_INTERFACES] = $typeInterfaceDefinitions;
