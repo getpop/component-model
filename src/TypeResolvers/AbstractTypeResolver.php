@@ -1075,13 +1075,17 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         }
 
         // Add all the implemented interfaces
-        $interfaceClassNames = array_map(
-            function($interfaceClass) {
-                return $interfaceClass::getInterfaceName();
-            },
-            $this->getAllImplementedInterfaceClasses()
-        );
-        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_INTERFACES] = $interfaceClassNames;
+        $instanceManager = InstanceManagerFacade::getInstance();
+        $typeInterfaceDefinitions = [];
+        foreach ($this->getAllImplementedInterfaceClasses() as $interfaceResolverClass) {
+            $interfaceInstance = $instanceManager->getInstance($interfaceResolverClass);
+            $interfaceSchemaKey = $interfaceInstance->getInterfaceSchemaKey($options);
+            $typeInterfaceDefinitions[$interfaceSchemaKey] = [
+                SchemaDefinition::ARGNAME_NAME => $interfaceInstance->getInterfaceName(),
+                SchemaDefinition::ARGNAME_DESCRIPTION => $interfaceInstance->getSchemaInterfaceDescription(),
+            ];
+        }
+        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_INTERFACES] = $typeInterfaceDefinitions;
 
         // Add the fields (non-global)
         $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_FIELDS] = [];
