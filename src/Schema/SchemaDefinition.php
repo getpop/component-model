@@ -23,7 +23,6 @@ class SchemaDefinition {
     const ARGNAME_QUERY_TYPE = 'queryType';
     const ARGNAME_TYPES = 'types';
     const ARGNAME_TYPE_SCHEMA = 'typeSchema';
-    const ARGNAME_UNION_TYPES = 'unionTypes';
     const ARGNAME_POSSIBLE_TYPES = 'possibleTypes';
     const ARGNAME_BASERESOLVER = 'baseResolver';
     const ARGNAME_RECURSION = 'recursion';
