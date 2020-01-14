@@ -47,6 +47,19 @@ class SchemaHelpers
         );
     }
 
+    public static function convertToSchemaFieldArgEnumValueDefinitions(array $enumValues)
+    {
+        $enumValueDefinitions = [];
+        // Create an array representing the enumValue definition
+        // Since only the enumValues were defined, these have no description/deprecated data, so no need to add these either
+        foreach ($enumValues as $enumValue) {
+            $enumValueDefinitions[$enumValue] = [
+                SchemaDefinition::ARGNAME_NAME => $enumValue,
+            ];
+        }
+        return $enumValueDefinitions;
+    }
+
     public static function getSchemaFieldArgEnumValueDefinitions(array $schemaFieldArgs)
     {
         $enumValuesOrDefinitions = array_map(
