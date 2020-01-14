@@ -105,7 +105,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             // That is because this is a schema error, so we still don't have the $resultItem against which to resolve the field
             // For instance, this doesn't work: /?query=arrayItem(posts(),3)
             // In that case, the validation will be done inside ->resolveValue(), and will be treated as a $dbError, not a $schemaError
-            if (!FieldQueryUtils::isAnyFieldArgumentValueAField($schemaFieldArgs)) {
+            if (!FieldQueryUtils::isAnyFieldArgumentValueAField($fieldArgs)) {
                 // Iterate all the enum types and check that the provided values is one of them, or throw an error
                 if ($enumArgs = SchemaHelpers::getSchemaEnumTypeFieldArgs($schemaFieldArgs)) {
                     list(
@@ -131,7 +131,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             // That is because this is a schema error, so we still don't have the $resultItem against which to resolve the field
             // For instance, this doesn't work: /?query=arrayItem(posts(),3)
             // In that case, the validation will be done inside ->resolveValue(), and will be treated as a $dbError, not a $schemaError
-            if (!FieldQueryUtils::isAnyFieldArgumentValueAField($schemaFieldArgs)) {
+            if (!FieldQueryUtils::isAnyFieldArgumentValueAField($fieldArgs)) {
                 // Iterate all the enum types and check that the provided values is one of them, or throw an error
                 if ($enumArgs = SchemaHelpers::getSchemaEnumTypeFieldArgs($schemaFieldArgs)) {
                     list(
