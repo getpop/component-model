@@ -192,16 +192,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 $schemaFieldArgumentEnumValues = $schemaFieldArgumentEnumValueDefinitions[$fieldArgumentName];
                 $fieldArgumentValueDefinition = $schemaFieldArgumentEnumValues[$fieldArgumentValue];
                 if (is_null($fieldArgumentValueDefinition)) {
-                    // Remove deprecated ones
-                    $fieldArgumentEnumValues = array_filter(array_map(
-                        function($enumValueDefinition) {
-                            if ($enumValueDefinition[SchemaDefinition::ARGNAME_DEPRECATED]) {
-                                return null;
-                            }
-                            return $enumValueDefinition[SchemaDefinition::ARGNAME_NAME];
-                        },
-                        $schemaFieldArgumentEnumValues
-                    ));
+                    // Remove deprecated ones and extract their names
+                    $fieldArgumentEnumValues = SchemaHelpers::removeDeprecatedEnumValuesFromSchemaDefinition($schemaFieldArgumentEnumValues);
+                    $fieldArgumentEnumValues = array_keys($fieldArgumentEnumValues);
                     $errors[] = sprintf(
                         $translationAPI->__('Value \'%s\' for argument \'%s\' in field \'%s\' is not allowed (the only allowed values are: \'%s\')', 'component-model'),
                         $fieldArgumentValue,

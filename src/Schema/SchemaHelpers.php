@@ -61,6 +61,26 @@ class SchemaHelpers
         return $enumValueDefinitions;
     }
 
+    /**
+     * Remove the deprecated enumValues from the schema definition
+     *
+     * @param array $enumValueDefinitions
+     * @return void
+     */
+    public static function removeDeprecatedEnumValuesFromSchemaDefinition(array $enumValueDefinitions): array
+    {
+        // Remove deprecated ones
+        return array_filter(
+            $enumValueDefinitions,
+            function($enumValueDefinition) {
+                if ($enumValueDefinition[SchemaDefinition::ARGNAME_DEPRECATED]) {
+                    return false;
+                }
+                return true;
+            }
+        );
+    }
+
     public static function getSchemaFieldArgEnumValueDefinitions(array $schemaFieldArgs)
     {
         $enumValuesOrDefinitions = array_map(
