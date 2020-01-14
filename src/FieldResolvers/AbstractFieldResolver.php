@@ -182,7 +182,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         $errors = $deprecations = [];
-        $fieldArgumentNames = array_keys(SchemaHelpers::getSchemaFieldArgNames($enumArgs));
+        $fieldArgumentNames = SchemaHelpers::getSchemaFieldArgNames($enumArgs);
         $schemaFieldArgumentEnumValueDefinitions = SchemaHelpers::getSchemaFieldArgEnumValueDefinitions($enumArgs);
         for ($i=0; $i<count($fieldArgumentNames); $i++) {
             $fieldArgumentName = $fieldArgumentNames[$i];

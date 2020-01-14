@@ -39,12 +39,13 @@ class SchemaHelpers
 
     public static function getSchemaFieldArgNames(array $schemaFieldArgs)
     {
-        return array_map(
+        // $schemaFieldArgs contains the name also as the key, keep only the values
+        return array_values(array_map(
             function($schemaFieldArg) {
                 return $schemaFieldArg[SchemaDefinition::ARGNAME_NAME];
             },
             $schemaFieldArgs
-        );
+        ));
     }
 
     public static function convertToSchemaFieldArgEnumValueDefinitions(array $enumValues)
