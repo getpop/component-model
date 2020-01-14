@@ -182,27 +182,14 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         $errors = $deprecations = [];
-        $fieldArgumentNames = SchemaHelpers::getSchemaFieldArgNames($enumArgs);
+        $fieldArgumentNames = array_keys(SchemaHelpers::getSchemaFieldArgNames($enumArgs));
         $schemaFieldArgumentEnumValueDefinitions = SchemaHelpers::getSchemaFieldArgEnumValueDefinitions($enumArgs);
         for ($i=0; $i<count($fieldArgumentNames); $i++) {
             $fieldArgumentName = $fieldArgumentNames[$i];
             $fieldArgumentValue = $fieldArgs[$fieldArgumentName];
             if (!is_null($fieldArgumentValue)) {
-                // Each fieldArgumentEnumValue is an array with items "name", "description", "deprecated" and "deprecationDescription"
-                $schemaFieldArgumentEnumValues = $schemaFieldArgumentEnumValueDefinitions[$i];
-                // // Extract the actual enum value, stored under property "name"
-                // $fieldArgumentEnumValues = array_map(
-                //     function($enumValueDefinition) {
-                //         return $enumValueDefinition[SchemaDefinition::ARGNAME_NAME];
-                //     },
-                //     $schemaFieldArgumentEnumValues
-                // );
-                // // The value is also the key of the array
-                // $fieldArgumentEnumValues = array_keys($schemaFieldArgumentEnumValues);
-
-                // If the field is mandatory and not set, the "mandatory" validation above will fail.
-                // Here only validate if the field value is provided
-                // if (!in_array($fieldArgumentValue, $fieldArgumentEnumValues)) {
+                // Each fieldArgumentEnumValue is an array with item "name" for sure, and maybe also "description", "deprecated" and "deprecationDescription"
+                $schemaFieldArgumentEnumValues = $schemaFieldArgumentEnumValueDefinitions[$fieldArgumentName];
                 $fieldArgumentValueDefinition = $schemaFieldArgumentEnumValues[$fieldArgumentValue];
                 if (is_null($fieldArgumentValueDefinition)) {
                     $fieldArgumentEnumValues = array_keys($schemaFieldArgumentEnumValues);
