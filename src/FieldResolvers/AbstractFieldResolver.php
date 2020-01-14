@@ -207,7 +207,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                         $fieldArgumentValue,
                         $fieldArgumentName,
                         $fieldName,
-                        $fieldArgumentValueDefinition[SchemaDefinition::ARGNAME_DEPRECATEDDESCRIPTION]
+                        $fieldArgumentValueDefinition[SchemaDefinition::ARGNAME_DEPRECATIONDESCRIPTION]
                     );
                 }
             }
@@ -258,7 +258,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             }
             if ($deprecationDescription = $schemaDefinitionResolver->getSchemaFieldDeprecationDescription($typeResolver, $fieldName, $fieldArgs)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATED] = true;
-                $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATEDDESCRIPTION] = $deprecationDescription;
+                $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATIONDESCRIPTION] = $deprecationDescription;
             }
             if ($args = $schemaDefinitionResolver->getSchemaFieldArgs($typeResolver, $fieldName)) {
                 // Add the args under their name

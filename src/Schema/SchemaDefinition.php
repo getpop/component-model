@@ -10,7 +10,7 @@ class SchemaDefinition {
     const ARGNAME_MANDATORY = 'mandatory';
     const ARGNAME_ENUMVALUES = 'enumValues';
     const ARGNAME_DEPRECATED = 'deprecated';
-    const ARGNAME_DEPRECATEDDESCRIPTION = 'deprecatedDescription';
+    const ARGNAME_DEPRECATIONDESCRIPTION = 'deprecationDescription';
     const ARGNAME_DEFAULT_VALUE = 'defaultValue';
     const ARGNAME_ARGS = 'args';
     const ARGNAME_RESULTS_IMPLEMENT_INTERFACE = 'resultsImplementInterface';

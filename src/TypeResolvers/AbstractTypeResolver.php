@@ -854,7 +854,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 // $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
                 $schemaDeprecations[] = [
                     Tokens::PATH => [$field],
-                    Tokens::MESSAGE => $fieldSchemaDefinition[SchemaDefinition::ARGNAME_DEPRECATEDDESCRIPTION],
+                    Tokens::MESSAGE => $fieldSchemaDefinition[SchemaDefinition::ARGNAME_DEPRECATIONDESCRIPTION],
                 ];
             }
             // Check for deprecations in the enums
