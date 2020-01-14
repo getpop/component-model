@@ -856,6 +856,13 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     Tokens::MESSAGE => $fieldSchemaDefinition[SchemaDefinition::ARGNAME_DEPRECATEDDESCRIPTION],
                 ];
             }
+            // Check for deprecations in the enums
+            if ($maybeDeprecation = $fieldResolvers[0]->resolveSchemaValidationDeprecationDescription($this, $fieldName, $fieldArgs)) {
+                $schemaDeprecations[] = [
+                    Tokens::PATH => [$field],
+                    Tokens::MESSAGE => $maybeDeprecation,
+                ];
+            }
             return $schemaDeprecations;
         }
 
@@ -968,6 +975,14 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     if ($validateSchemaOnResultItem) {
                         if ($maybeError = $fieldResolver->resolveSchemaValidationErrorDescription($this, $fieldName, $fieldArgs)) {
                             return ErrorUtils::getValidationFailedError($fieldName, $fieldArgs, $maybeError);
+                        }
+                        if ($maybeDeprecation = $fieldResolver->resolveSchemaValidationDeprecationDescription($this, $fieldName, $fieldArgs)) {
+                            $id = $this->getID($resultItem);
+                            $dbDeprecations[(string)$id][] = [
+                                Tokens::PATH => [$field],
+                                Tokens::MESSAGE => $maybeDeprecation,
+                            ];
+                            $feedbackMessageStore->addDBDeprecations($dbDeprecations);
                         }
                     }
                     if ($validationErrorDescription = $fieldResolver->getValidationErrorDescription($this, $resultItem, $fieldName, $fieldArgs)) {

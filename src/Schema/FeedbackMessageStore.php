@@ -8,6 +8,7 @@ class FeedbackMessageStore extends \PoP\FieldQuery\FeedbackMessageStore implemen
     protected $schemaWarnings = [];
     protected $schemaErrors = [];
     protected $dbWarnings = [];
+    protected $dbDeprecations = [];
     protected $logEntries = [];
 
     public function addDBWarnings(array $dbWarnings)
@@ -16,6 +17,15 @@ class FeedbackMessageStore extends \PoP\FieldQuery\FeedbackMessageStore implemen
             $this->dbWarnings[$resultItemID] = array_merge(
                 $this->dbWarnings[$resultItemID] ?? [],
                 $resultItemWarnings
+            );
+        }
+    }
+    public function addDBDeprecations(array $dbDeprecations)
+    {
+        foreach ($dbDeprecations as $resultItemID => $resultItemDeprecations) {
+            $this->dbDeprecations[$resultItemID] = array_merge(
+                $this->dbDeprecations[$resultItemID] ?? [],
+                $resultItemDeprecations
             );
         }
     }
@@ -31,6 +41,12 @@ class FeedbackMessageStore extends \PoP\FieldQuery\FeedbackMessageStore implemen
         $resultItemDBWarnings = $this->dbWarnings[$resultItemID];
         unset($this->dbWarnings[$resultItemID]);
         return $resultItemDBWarnings;
+    }
+    public function retrieveAndClearResultItemDBDeprecations($resultItemID): ?array
+    {
+        $resultItemDBDeprecations = $this->dbDeprecations[$resultItemID];
+        unset($this->dbDeprecations[$resultItemID]);
+        return $resultItemDBDeprecations;
     }
 
     public function addSchemaError(string $dbKey, string $field, string $error)

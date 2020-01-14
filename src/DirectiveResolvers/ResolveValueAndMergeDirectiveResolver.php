@@ -127,6 +127,13 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
                 $resultItemDBWarnings
             );
         }
+        // TODO: Fix here adding $dbDeprecations!!!
+        if ($resultItemDBDeprecations = $feedbackMessageStore->retrieveAndClearResultItemDBDeprecations($id)) {
+            $dbWarnings[$id] = array_merge(
+                $dbWarnings[$id] ?? [],
+                $resultItemDBDeprecations
+            );
+        }
 
         return $value;
     }

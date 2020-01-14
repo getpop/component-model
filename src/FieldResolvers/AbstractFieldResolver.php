@@ -20,6 +20,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
     use AttachableExtensionTrait;
     use SchemaDefinitionResolverTrait;
 
+    protected $enumValueArgumentValidationCache = [];
+
     public static function getImplementedInterfaceClasses(): array
     {
         return [];
@@ -106,12 +108,42 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             if (!FieldQueryUtils::isAnyFieldArgumentValueAField($schemaFieldArgs)) {
                 // Iterate all the enum types and check that the provided values is one of them, or throw an error
                 if ($enumArgs = SchemaHelpers::getSchemaEnumTypeFieldArgs($schemaFieldArgs)) {
-                    if ($maybeError = $this->validateEnumFieldArguments(
+                    list(
+                        $maybeError,
+                    ) = $this->validateEnumFieldArguments(
                         $enumArgs,
                         $fieldName,
                         $fieldArgs
-                    )) {
+                    );
+                    if ($maybeError) {
                         return $maybeError;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    public function resolveSchemaValidationDeprecationDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
+    {
+        $fieldSchemaDefinition = $this->getSchemaDefinitionForField($typeResolver, $fieldName, $fieldArgs);
+        if ($schemaFieldArgs = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) {
+            // Important: The validations below can only be done if no fieldArg contains a field!
+            // That is because this is a schema error, so we still don't have the $resultItem against which to resolve the field
+            // For instance, this doesn't work: /?query=arrayItem(posts(),3)
+            // In that case, the validation will be done inside ->resolveValue(), and will be treated as a $dbError, not a $schemaError
+            if (!FieldQueryUtils::isAnyFieldArgumentValueAField($schemaFieldArgs)) {
+                // Iterate all the enum types and check that the provided values is one of them, or throw an error
+                if ($enumArgs = SchemaHelpers::getSchemaEnumTypeFieldArgs($schemaFieldArgs)) {
+                    list(
+                        $maybeError,
+                        $maybeDeprecation
+                    ) = $this->validateEnumFieldArguments(
+                        $enumArgs,
+                        $fieldName,
+                        $fieldArgs
+                    );
+                    if ($maybeDeprecation) {
+                        return $maybeDeprecation;
                     }
                 }
             }
@@ -138,31 +170,67 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         return null;
     }
 
-    protected function validateEnumFieldArguments(array $enumArgs, string $fieldName, array $fieldArgs = []): ?string
+    protected function validateEnumFieldArguments(array $enumArgs, string $fieldName, array $fieldArgs = []): array
+    {
+        $key = serialize($enumArgs).'|'.$fieldName.serialize($fieldArgs);
+        if (!isset($this->enumValueArgumentValidationCache[$key])) {
+            $this->enumValueArgumentValidationCache[$key] = $this->doValidateEnumFieldArguments($enumArgs, $fieldName, $fieldArgs);
+        }
+        return $this->enumValueArgumentValidationCache[$key];
+    }
+    protected function doValidateEnumFieldArguments(array $enumArgs, string $fieldName, array $fieldArgs = []): array
     {
         $translationAPI = TranslationAPIFacade::getInstance();
-        $errors = [];
+        $errors = $deprecations = [];
         $fieldArgumentNames = SchemaHelpers::getSchemaFieldArgNames($enumArgs);
-        $fieldArgumentEnumValues = SchemaHelpers::getSchemaFieldArgEnumValues($enumArgs);
+        $schemaFieldArgumentEnumValueDefinitions = SchemaHelpers::getSchemaFieldArgEnumValueDefinitions($enumArgs);
         for ($i=0; $i<count($fieldArgumentNames); $i++) {
             $fieldArgumentName = $fieldArgumentNames[$i];
-            $fieldArgumentEnumValues = $fieldArgumentEnumValues[$i];
             $fieldArgumentValue = $fieldArgs[$fieldArgumentName];
-            // If the field is mandatory and not set, the "mandatory" validation above will fail.
-            // Here only validate if the field value is provided
-            if (!is_null($fieldArgumentValue) && !in_array($fieldArgumentValue, $fieldArgumentEnumValues)) {
-                $errors[] = sprintf(
-                    $translationAPI->__('Value \'%s\' for argument \'%s\' is not allowed (the only allowed values are: \'%s\')', 'component-model'),
-                    $fieldArgumentValue,
-                    $fieldArgumentName,
-                    implode($translationAPI->__('\', \''), $fieldArgumentEnumValues)
-                );
+            if (!is_null($fieldArgumentValue)) {
+                // Each fieldArgumentEnumValue is an array with items "name", "description", "deprecated" and "deprecationDescription"
+                $schemaFieldArgumentEnumValues = $schemaFieldArgumentEnumValueDefinitions[$i];
+                // // Extract the actual enum value, stored under property "name"
+                // $fieldArgumentEnumValues = array_map(
+                //     function($enumValueDefinition) {
+                //         return $enumValueDefinition[SchemaDefinition::ARGNAME_NAME];
+                //     },
+                //     $schemaFieldArgumentEnumValues
+                // );
+                // // The value is also the key of the array
+                // $fieldArgumentEnumValues = array_keys($schemaFieldArgumentEnumValues);
+
+                // If the field is mandatory and not set, the "mandatory" validation above will fail.
+                // Here only validate if the field value is provided
+                // if (!in_array($fieldArgumentValue, $fieldArgumentEnumValues)) {
+                $fieldArgumentValueDefinition = $schemaFieldArgumentEnumValues[$fieldArgumentValue];
+                if (is_null($fieldArgumentValueDefinition)) {
+                    $fieldArgumentEnumValues = array_keys($schemaFieldArgumentEnumValues);
+                    $errors[] = sprintf(
+                        $translationAPI->__('Value \'%s\' for argument \'%s\' is not allowed (the only allowed values are: \'%s\')', 'component-model'),
+                        $fieldArgumentValue,
+                        $fieldArgumentName,
+                        implode($translationAPI->__('\', \''), $fieldArgumentEnumValues)
+                    );
+                } elseif ($fieldArgumentValueDefinition[SchemaDefinition::ARGNAME_DEPRECATED]) {
+                    // Check if this enumValue is deprecated
+                    $deprecations[] = sprintf(
+                        $translationAPI->__('Value \'%s\' for argument \'%s\' is deprecated: \'%s\'', 'component-model'),
+                        $fieldArgumentValue,
+                        $fieldArgumentName,
+                        $fieldArgumentValueDefinition[SchemaDefinition::ARGNAME_DEPRECATEDDESCRIPTION]
+                    );
+                }
             }
         }
-        if ($errors) {
-            return implode($translationAPI->__('. '), $errors);
-        }
-        return null;
+        // if ($errors) {
+        //     return implode($translationAPI->__('. '), $errors);
+        // }
+        // Array of 2 items: errors and deprecations
+        return [
+            $errors ? implode($translationAPI->__('. '), $errors) : null,
+            $deprecations ? implode($translationAPI->__('. '), $deprecations) : null,
+        ];
     }
 
     /**

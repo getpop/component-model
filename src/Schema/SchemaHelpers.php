@@ -47,7 +47,7 @@ class SchemaHelpers
         );
     }
 
-    public static function getSchemaFieldArgEnumValues(array $schemaFieldArgs)
+    public static function getSchemaFieldArgEnumValueDefinitions(array $schemaFieldArgs)
     {
         return array_map(
             function($schemaFieldArg) {
