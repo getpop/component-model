@@ -1223,7 +1223,7 @@ class Engine implements EngineInterface
         $vars = Engine_Vars::getVars();
 
         // Save all database elements here, under typeResolver
-        $databases = $unionDBKeyIDs = $combinedUnionDBKeyIDs = $previousDBItems = $dbErrors = $dbWarnings = $schemaErrors = $schemaWarnings = $schemaDeprecations = array();
+        $databases = $unionDBKeyIDs = $combinedUnionDBKeyIDs = $previousDBItems = $dbErrors = $dbWarnings = $dbDeprecations = $schemaErrors = $schemaWarnings = $schemaDeprecations = array();
         $this->nocache_fields = array();
         // $format = $vars['format'];
         // $route = $vars['route'];
@@ -1267,9 +1267,9 @@ class Engine implements EngineInterface
             $database_key = $typeResolver->getTypeOutputName();
 
             // Execute the typeResolver for all combined ids
-            $iterationDBItems = $iterationDBErrors = $iterationDBWarnings = $iterationSchemaErrors = $iterationSchemaWarnings = $iterationSchemaDeprecations = array();
+            $iterationDBItems = $iterationDBErrors = $iterationDBWarnings = $iterationDBDeprecations = $iterationSchemaErrors = $iterationSchemaWarnings = $iterationSchemaDeprecations = array();
             $isUnionTypeResolver = $typeResolver instanceof UnionTypeResolverInterface;
-            $resultIDItems = $typeResolver->fillResultItems($ids_data_fields, $combinedUnionDBKeyIDs, $iterationDBItems, $previousDBItems, $variables, $messages, $iterationDBErrors, $iterationDBWarnings, $iterationSchemaErrors, $iterationSchemaWarnings, $iterationSchemaDeprecations);
+            $resultIDItems = $typeResolver->fillResultItems($ids_data_fields, $combinedUnionDBKeyIDs, $iterationDBItems, $previousDBItems, $variables, $messages, $iterationDBErrors, $iterationDBWarnings, $iterationDBDeprecations, $iterationSchemaErrors, $iterationSchemaWarnings, $iterationSchemaDeprecations);
 
             // Save in the database under the corresponding database-key (this way, different dataloaders, like 'list-users' and 'author',
             // can both save their results under database key 'users'
@@ -1319,6 +1319,12 @@ class Engine implements EngineInterface
                 $dbNameWarningEntries = $this->moveEntriesUnderDBName($iterationDBWarnings, true, $typeResolver);
                 foreach ($dbNameWarningEntries as $dbname => $entries) {
                     $this->addDatasetToDatabase($dbWarnings[$dbname], $typeResolver, $database_key, $entries, $resultIDItems, true);
+                }
+            }
+            if ($iterationDBDeprecations) {
+                $dbNameDeprecationEntries = $this->moveEntriesUnderDBName($iterationDBDeprecations, true, $typeResolver);
+                foreach ($dbNameDeprecationEntries as $dbname => $entries) {
+                    $this->addDatasetToDatabase($dbDeprecations[$dbname], $typeResolver, $database_key, $entries, $resultIDItems, true);
                 }
             }
 
@@ -1436,6 +1442,7 @@ class Engine implements EngineInterface
         }
         $this->maybeCombineAndAddDatabaseEntries($ret, 'dbErrors', $dbErrors);
         $this->maybeCombineAndAddDatabaseEntries($ret, 'dbWarnings', $dbWarnings);
+        $this->maybeCombineAndAddDatabaseEntries($ret, 'dbDeprecations', $dbDeprecations);
         $this->maybeCombineAndAddSchemaEntries($ret, 'schemaErrors', $schemaErrors);
         $this->maybeCombineAndAddSchemaEntries($ret, 'schemaWarnings', $schemaWarnings);
         $this->maybeCombineAndAddSchemaEntries($ret, 'schemaDeprecations', $schemaDeprecations);

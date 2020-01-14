@@ -172,7 +172,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         return $directiveArgs;
     }
 
-    public function dissectAndValidateDirectiveForResultItem(TypeResolverInterface $typeResolver, $resultItem, array &$variables, array &$expressions, array &$dbErrors, array &$dbWarnings): array
+    public function dissectAndValidateDirectiveForResultItem(TypeResolverInterface $typeResolver, $resultItem, array &$variables, array &$expressions, array &$dbErrors, array &$dbWarnings, array &$dbDeprecations): array
     {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         list(
@@ -403,6 +403,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $messages,
             $dbErrors,
             $dbWarnings,
+            $dbDeprecations,
             $schemaErrors,
             $schemaWarnings,
             $schemaDeprecations
@@ -424,6 +425,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         //     $messages,
         //     $dbErrors,
         //     $dbWarnings,
+        //     $dbDeprecations,
         //     $schemaErrors,
         //     $schemaWarnings,
         //     $schemaDeprecations
@@ -445,6 +447,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $messages,
             $dbErrors,
             $dbWarnings,
+            $dbDeprecations,
             $schemaErrors,
             $schemaWarnings,
             $schemaDeprecations
@@ -463,13 +466,14 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $messages,
             $dbErrors,
             $dbWarnings,
+            $dbDeprecations,
             $schemaErrors,
             $schemaWarnings,
             $schemaDeprecations
         );
     }
 
-    // public function validateDirective(TypeResolverInterface $typeResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
+    // public function validateDirective(TypeResolverInterface $typeResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$resultIDItems, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$dbDeprecations, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     // {
     //     // Check that the directive can be applied to all provided fields
     //     $this->validateAndFilterFieldsForDirective($idsDataFields, $schemaErrors, $schemaWarnings);

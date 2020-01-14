@@ -4,7 +4,7 @@ use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
 class DirectivePipelineUtils
 {
-    public static function convertArgumentsToPayload(TypeResolverInterface $typeResolver, array &$pipelineIDsDataFields, array &$resultIDItems, array &$unionDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    public static function convertArgumentsToPayload(TypeResolverInterface $typeResolver, array &$pipelineIDsDataFields, array &$resultIDItems, array &$unionDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$dbDeprecations, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
         return [
             'typeResolver' => &$typeResolver,
@@ -17,6 +17,7 @@ class DirectivePipelineUtils
             'messages' => &$messages,
             'dbErrors' => &$dbErrors,
             'dbWarnings' => &$dbWarnings,
+            'dbDeprecations' => &$dbDeprecations,
             'schemaErrors' => &$schemaErrors,
             'schemaWarnings' => &$schemaWarnings,
             'schemaDeprecations' => &$schemaDeprecations,
@@ -36,6 +37,7 @@ class DirectivePipelineUtils
             &$payload['messages'],
             &$payload['dbErrors'],
             &$payload['dbWarnings'],
+            &$payload['dbDeprecations'],
             &$payload['schemaErrors'],
             &$payload['schemaWarnings'],
             &$payload['schemaDeprecations'],
