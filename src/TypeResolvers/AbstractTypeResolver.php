@@ -1088,6 +1088,16 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         foreach ($directiveResolverInstances as $directiveResolverInstance) {
             $directiveSchemaDefinition = $directiveResolverInstance->getSchemaDefinitionForDirective($this);
             $directiveName = $directiveResolverInstance->getDirectiveName();
+            // Convert the directive arguments from its internal representation (eg: "array:id") to the GraphQL standard representation (eg: "[Post]")
+            if ($options['typeAsSDL']) {
+                if ($directiveArgs = $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) {
+                    foreach ($directiveArgs as $directiveArgName => $directiveArgSchemaDefinition) {
+                        if ($type = $directiveArgSchemaDefinition[SchemaDefinition::ARGNAME_TYPE]) {
+                            $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS][$directiveArgName][SchemaDefinition::ARGNAME_TYPE] = SchemaHelpers::getFieldOrDirectiveArgTypeToOutputInSchema($type, $directiveArgSchemaDefinition[SchemaDefinition::ARGNAME_MANDATORY]);
+                        }
+                    }
+                }
+            }
             $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_DIRECTIVES][$directiveName] = $directiveSchemaDefinition;
         }
 
@@ -1184,7 +1194,15 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         // Convert the field type from its internal representation (eg: "array:id") to the GraphQL standard representation (eg: "[Post]")
         if ($options['typeAsSDL']) {
             if ($type = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE]) {
-                $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE] = SchemaHelpers::getTypeToOutputInSchema($this, $fieldName, $type);
+                $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE] = SchemaHelpers::getFieldTypeToOutputInSchema($type, $this, $fieldName, $fieldSchemaDefinition[SchemaDefinition::ARGNAME_MANDATORY]);
+            }
+            // Also for the field arguments
+            if ($fieldArgs = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) {
+                foreach ($fieldArgs as $fieldArgName => $fieldArgSchemaDefinition) {
+                    if ($type = $fieldArgSchemaDefinition[SchemaDefinition::ARGNAME_TYPE]) {
+                        $fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS][$fieldArgName][SchemaDefinition::ARGNAME_TYPE] = SchemaHelpers::getFieldOrDirectiveArgTypeToOutputInSchema($type, $fieldArgSchemaDefinition[SchemaDefinition::ARGNAME_MANDATORY]);
+                    }
+                }
             }
         } else {
             // If the output does not use SDL notation, then display the type under entry "referencedType"

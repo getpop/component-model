@@ -1,8 +1,10 @@
 <?php
 namespace PoP\ComponentModel\Schema;
 
+use InvalidArgumentException;
 use PoP\ComponentModel\DataloadUtils;
 use PoP\ComponentModel\Schema\SchemaDefinition;
+use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 
@@ -120,22 +122,12 @@ class SchemaHelpers
      * @param string $type
      * @return void
      */
-    public static function getTypeToOutputInSchema(TypeResolverInterface $typeResolver, string $fieldName, string $type)
+    public static function getFieldTypeToOutputInSchema(string $type, TypeResolverInterface $typeResolver, string $fieldName, ?bool $isMandatory = false): string
     {
-        $convertedType = $type;
-
-        // Replace all instances of "array:" with wrapping the type with "[]"
-        $arrayInstances = 0;
-        while ($convertedType && TypeCastingHelpers::getTypeCombinationCurrentElement($convertedType) == SchemaDefinition::TYPE_ARRAY) {
-            $arrayInstances++;
-            $convertedType = TypeCastingHelpers::getTypeCombinationNestedElements($convertedType);
-        }
-
-        // If the type was actually only "array", without indicating its type, by now $type will be null
-        // In that case, just return the type as it was: "array" (this is better than "[]")
-        if (!$convertedType) {
-            return $type;
-        }
+        list (
+            $arrayInstances,
+            $convertedType
+        ) = self::getTypeComponents($type);
 
         // If the type is an ID, replace it with the actual type the ID references
         if ($convertedType == SchemaDefinition::TYPE_ID) {
@@ -147,12 +139,56 @@ class SchemaHelpers
             }
         }
 
+        return self::convertTypeToSDLSyntax($arrayInstances, $convertedType, $isMandatory);
+    }
+    public static function getFieldOrDirectiveArgTypeToOutputInSchema(string $type, ?bool $isMandatory = false): string
+    {
+        list (
+            $arrayInstances,
+            $convertedType
+        ) = self::getTypeComponents($type);
+
+        return self::convertTypeToSDLSyntax($arrayInstances, $convertedType, $isMandatory);
+    }
+    protected static function getTypeComponents(string $type): array
+    {
+        $convertedType = $type;
+
+        // Replace all instances of "array:" with wrapping the type with "[]"
+        $arrayInstances = 0;
+        while ($convertedType && TypeCastingHelpers::getTypeCombinationCurrentElement($convertedType) == SchemaDefinition::TYPE_ARRAY) {
+            $arrayInstances++;
+            $convertedType = TypeCastingHelpers::getTypeCombinationNestedElements($convertedType);
+        }
+
+        // If the type was actually only "array", without indicating its type, by now $type will be null
+        // In that case, inform of the error (an array cannot have its inner type undefined)
+        if (!$convertedType) {
+            $translationAPI = TranslationAPIFacade::getInstance();
+            throw new InvalidArgumentException(
+                sprintf(
+                    $translationAPI->__('Type \'%s\' doesn\'t declare the type of the innermost element'),
+                    $type
+                )
+            );
+        }
+
+        return [
+            $arrayInstances,
+            $convertedType
+        ];
+    }
+    protected static function convertTypeToSDLSyntax(int $arrayInstances, string $convertedType, ?bool $isMandatory = false): string
+    {
         // Wrap the type with the array brackets
         for ($i=0; $i<$arrayInstances; $i++) {
             $convertedType = sprintf(
                 '[%s]',
                 $convertedType
             );
+        }
+        if ($isMandatory) {
+            $convertedType .= '!';
         }
         return $convertedType;
     }
