@@ -166,6 +166,7 @@ class SchemaHelpers
             SchemaDefinition::TYPE_INT => 'Int',
             SchemaDefinition::TYPE_FLOAT => 'Float',
             SchemaDefinition::TYPE_BOOL => 'Boolean',
+            SchemaDefinition::TYPE_ENUM => 'Enum',
         ];
         $convertToTitleCaseTypes = [
             SchemaDefinition::TYPE_OBJECT,

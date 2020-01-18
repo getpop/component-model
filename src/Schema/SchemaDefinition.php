@@ -49,11 +49,11 @@ class SchemaDefinition {
     const TYPE_BOOL = 'bool';
     const TYPE_DATE = 'date';
     const TYPE_TIME = 'time';
-    const TYPE_ARRAY = 'array';
     const TYPE_OBJECT = 'object';
-    const TYPE_INPUT_OBJECT = 'input_object';
     const TYPE_URL = 'url';
     const TYPE_EMAIL = 'email';
     const TYPE_IP = 'ip';
     const TYPE_ENUM = 'enum';
+    const TYPE_ARRAY = 'array';
+    const TYPE_INPUT_OBJECT = 'input_object';
 }
