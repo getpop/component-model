@@ -1094,6 +1094,13 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     foreach ($directiveArgs as $directiveArgName => $directiveArgSchemaDefinition) {
                         if ($type = $directiveArgSchemaDefinition[SchemaDefinition::ARGNAME_TYPE]) {
                             $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS][$directiveArgName][SchemaDefinition::ARGNAME_TYPE] = SchemaHelpers::getFieldOrDirectiveArgTypeToOutputInSchema($type, $directiveArgSchemaDefinition[SchemaDefinition::ARGNAME_MANDATORY]);
+                            // If it is an input object, it may have its own args to also convert
+                            if ($type == SchemaDefinition::TYPE_INPUT_OBJECT) {
+                                foreach (($directiveArgSchemaDefinition[SchemaDefinition::ARGNAME_ARGS] ?? []) as $inputFieldArgName => $inputFieldArgDefinition) {
+                                    $inputFieldType = $inputFieldArgDefinition[SchemaDefinition::ARGNAME_TYPE];
+                                    $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS][$directiveArgName][SchemaDefinition::ARGNAME_ARGS][$inputFieldArgName][SchemaDefinition::ARGNAME_TYPE] = SchemaHelpers::getFieldOrDirectiveArgTypeToOutputInSchema($inputFieldType, $inputFieldArgDefinition[SchemaDefinition::ARGNAME_MANDATORY]);
+                                }
+                            }
                         }
                     }
                 }
@@ -1201,6 +1208,13 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 foreach ($fieldArgs as $fieldArgName => $fieldArgSchemaDefinition) {
                     if ($type = $fieldArgSchemaDefinition[SchemaDefinition::ARGNAME_TYPE]) {
                         $fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS][$fieldArgName][SchemaDefinition::ARGNAME_TYPE] = SchemaHelpers::getFieldOrDirectiveArgTypeToOutputInSchema($type, $fieldArgSchemaDefinition[SchemaDefinition::ARGNAME_MANDATORY]);
+                        // If it is an input object, it may have its own args to also convert
+                        if ($type == SchemaDefinition::TYPE_INPUT_OBJECT) {
+                            foreach (($fieldArgSchemaDefinition[SchemaDefinition::ARGNAME_ARGS] ?? []) as $inputFieldArgName => $inputFieldArgDefinition) {
+                                $inputFieldType = $inputFieldArgDefinition[SchemaDefinition::ARGNAME_TYPE];
+                                $fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS][$fieldArgName][SchemaDefinition::ARGNAME_ARGS][$inputFieldArgName][SchemaDefinition::ARGNAME_TYPE] = SchemaHelpers::getFieldOrDirectiveArgTypeToOutputInSchema($inputFieldType, $inputFieldArgDefinition[SchemaDefinition::ARGNAME_MANDATORY]);
+                            }
+                        }
                     }
                 }
             }
