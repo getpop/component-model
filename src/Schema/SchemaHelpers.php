@@ -150,6 +150,34 @@ class SchemaHelpers
 
         return self::convertTypeToSDLSyntax($arrayInstances, $convertedType, $isMandatory);
     }
+    public static function convertTypeNameToGraphQLStandard(string $typeName): string
+    {
+        // If the type is a scalar value, we need to convert it to the official GraphQL type
+        $graphQLScalarTypes = [
+            SchemaDefinition::TYPE_UNRESOLVED_ID => 'ID',
+            SchemaDefinition::TYPE_STRING => 'String',
+            SchemaDefinition::TYPE_INT => 'Int',
+            SchemaDefinition::TYPE_FLOAT => 'Float',
+            SchemaDefinition::TYPE_BOOL => 'Boolean',
+        ];
+        $convertToTitleCaseTypes = [
+            SchemaDefinition::TYPE_OBJECT,
+            SchemaDefinition::TYPE_MIXED,
+            SchemaDefinition::TYPE_DATE,
+            SchemaDefinition::TYPE_TIME,
+            SchemaDefinition::TYPE_URL,
+            SchemaDefinition::TYPE_EMAIL,
+            SchemaDefinition::TYPE_IP,
+        ];
+        if (isset($graphQLScalarTypes[$typeName])) {
+            $typeName = $graphQLScalarTypes[$typeName];
+        } elseif (in_array($typeName, $convertToTitleCaseTypes)) {
+            // Otherwise, by convention, convert the type name to title case
+            $typeName = ucfirst($typeName);
+        }
+
+        return $typeName;
+    }
     protected static function getTypeComponents(string $type): array
     {
         $convertedType = $type;
@@ -173,29 +201,8 @@ class SchemaHelpers
             );
         }
 
-        // If the type is a scalar value, we need to convert it to the official GraphQL type
-        $graphQLScalarTypes = [
-            SchemaDefinition::TYPE_UNRESOLVED_ID => 'ID',
-            SchemaDefinition::TYPE_STRING => 'String',
-            SchemaDefinition::TYPE_INT => 'Int',
-            SchemaDefinition::TYPE_FLOAT => 'Float',
-            SchemaDefinition::TYPE_BOOL => 'Boolean',
-        ];
-        $convertToTitleCaseTypes = [
-            SchemaDefinition::TYPE_OBJECT,
-            SchemaDefinition::TYPE_MIXED,
-            SchemaDefinition::TYPE_DATE,
-            SchemaDefinition::TYPE_TIME,
-            SchemaDefinition::TYPE_URL,
-            SchemaDefinition::TYPE_EMAIL,
-            SchemaDefinition::TYPE_IP,
-        ];
-        if (isset($graphQLScalarTypes[$convertedType])) {
-            $convertedType = $graphQLScalarTypes[$convertedType];
-        } elseif (in_array($convertedType, $convertToTitleCaseTypes)) {
-            // Otherwise, by convention, convert the type name to title case
-            $convertedType = ucfirst($convertedType);
-        }
+        // Convert the type name to standards by GraphQL
+        $convertedType = self::convertTypeNameToGraphQLStandard($convertedType);
 
         return [
             $arrayInstances,
