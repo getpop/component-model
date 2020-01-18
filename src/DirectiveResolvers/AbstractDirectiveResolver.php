@@ -652,7 +652,12 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATIONDESCRIPTION] = $deprecationDescription;
             }
             if ($args = $schemaDefinitionResolver->getSchemaDirectiveArgs($typeResolver)) {
-                $schemaDefinition[SchemaDefinition::ARGNAME_ARGS] = $args;
+                // Add the args under their name
+                $nameArgs = [];
+                foreach ($args as $arg) {
+                    $nameArgs[$arg[SchemaDefinition::ARGNAME_NAME]] = $arg;
+                }
+                $schemaDefinition[SchemaDefinition::ARGNAME_ARGS] = $nameArgs;
             }
         }
         $this->addSchemaDefinitionForDirective($schemaDefinition);
