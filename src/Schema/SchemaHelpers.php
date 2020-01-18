@@ -137,6 +137,9 @@ class SchemaHelpers
                 $fieldTypeResolver = $instanceManager->getInstance((string)$fieldTypeResolverClass);
                 $convertedType = $fieldTypeResolver->getTypeName();
             }
+        } else {
+            // Convert the type name to standards by GraphQL
+            $convertedType = self::convertTypeNameToGraphQLStandard($convertedType);
         }
 
         return self::convertTypeToSDLSyntax($arrayInstances, $convertedType, $isMandatory);
@@ -147,6 +150,9 @@ class SchemaHelpers
             $arrayInstances,
             $convertedType
         ) = self::getTypeComponents($type);
+
+        // Convert the type name to standards by GraphQL
+        $convertedType = self::convertTypeNameToGraphQLStandard($convertedType);
 
         return self::convertTypeToSDLSyntax($arrayInstances, $convertedType, $isMandatory);
     }
@@ -200,9 +206,6 @@ class SchemaHelpers
                 )
             );
         }
-
-        // Convert the type name to standards by GraphQL
-        $convertedType = self::convertTypeNameToGraphQLStandard($convertedType);
 
         return [
             $arrayInstances,
