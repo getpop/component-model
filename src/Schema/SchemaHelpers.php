@@ -137,10 +137,10 @@ class SchemaHelpers
                 $fieldTypeResolver = $instanceManager->getInstance((string)$fieldTypeResolverClass);
                 $convertedType = $fieldTypeResolver->getTypeName();
             }
-        } else {
-            // Convert the type name to standards by GraphQL
-            $convertedType = self::convertTypeNameToGraphQLStandard($convertedType);
         }
+        // Convert the type name to standards by GraphQL
+        // If "id" was converted to a Type, nothing will happen. If it was not converted, it will now be converted to "ID", for which the type has been registered
+        $convertedType = self::convertTypeNameToGraphQLStandard($convertedType);
 
         return self::convertTypeToSDLSyntax($arrayInstances, $convertedType, $isMandatory);
     }
@@ -160,7 +160,8 @@ class SchemaHelpers
     {
         // If the type is a scalar value, we need to convert it to the official GraphQL type
         $graphQLScalarTypes = [
-            SchemaDefinition::TYPE_UNRESOLVED_ID => 'ID',
+            // SchemaDefinition::TYPE_UNRESOLVED_ID => 'ID',
+            SchemaDefinition::TYPE_ID => 'ID',
             SchemaDefinition::TYPE_STRING => 'String',
             SchemaDefinition::TYPE_INT => 'Int',
             SchemaDefinition::TYPE_FLOAT => 'Float',
