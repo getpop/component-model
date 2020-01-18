@@ -61,6 +61,7 @@ class TypeCastingExecuter implements TypeCastingExecuterInterface
                 }
                 return $value;
             case SchemaDefinition::TYPE_OBJECT:
+            case SchemaDefinition::TYPE_INPUT_OBJECT:
                 if (!is_array($value) && !is_object($value)) {
                     return null;
                 }
