@@ -21,6 +21,7 @@ use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
+use PoP\ComponentModel\DirectiveResolvers\DirectiveResolverInterface;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
 
@@ -1071,33 +1072,27 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return $this->schemaDefinition;
     }
 
-    protected function getSchemaDefinitionForDirectives(bool $global, array $options = []): array
+    protected function getDirectiveSchemaDefinition(DirectiveResolverInterface $directiveResolver, array $options = []): array
     {
-        $directiveResolverInstances = $this->getSchemaDirectiveResolvers($global);
-        $schemaDefinition = [];
-        foreach ($directiveResolverInstances as $directiveResolverInstance) {
-            $directiveSchemaDefinition = $directiveResolverInstance->getSchemaDefinitionForDirective($this);
-            $directiveName = $directiveResolverInstance->getDirectiveName();
-            // Convert the directive arguments from its internal representation (eg: "array:id") to the GraphQL standard representation (eg: "[Post]")
-            if ($options['typeAsSDL']) {
-                if ($directiveArgs = $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) {
-                    foreach ($directiveArgs as $directiveArgName => $directiveArgSchemaDefinition) {
-                        if ($type = $directiveArgSchemaDefinition[SchemaDefinition::ARGNAME_TYPE]) {
-                            $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS][$directiveArgName][SchemaDefinition::ARGNAME_TYPE] = SchemaHelpers::getFieldOrDirectiveArgTypeToOutputInSchema($type, $directiveArgSchemaDefinition[SchemaDefinition::ARGNAME_MANDATORY]);
-                            // If it is an input object, it may have its own args to also convert
-                            if ($type == SchemaDefinition::TYPE_INPUT_OBJECT) {
-                                foreach (($directiveArgSchemaDefinition[SchemaDefinition::ARGNAME_ARGS] ?? []) as $inputFieldArgName => $inputFieldArgDefinition) {
-                                    $inputFieldType = $inputFieldArgDefinition[SchemaDefinition::ARGNAME_TYPE];
-                                    $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS][$directiveArgName][SchemaDefinition::ARGNAME_ARGS][$inputFieldArgName][SchemaDefinition::ARGNAME_TYPE] = SchemaHelpers::getFieldOrDirectiveArgTypeToOutputInSchema($inputFieldType, $inputFieldArgDefinition[SchemaDefinition::ARGNAME_MANDATORY]);
-                                }
+        $directiveSchemaDefinition = $directiveResolver->getSchemaDefinitionForDirective($this);
+        // Convert the directive arguments from its internal representation (eg: "array:id") to the GraphQL standard representation (eg: "[Post]")
+        if ($options['typeAsSDL']) {
+            if ($directiveArgs = $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) {
+                foreach ($directiveArgs as $directiveArgName => $directiveArgSchemaDefinition) {
+                    if ($type = $directiveArgSchemaDefinition[SchemaDefinition::ARGNAME_TYPE]) {
+                        $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS][$directiveArgName][SchemaDefinition::ARGNAME_TYPE] = SchemaHelpers::getFieldOrDirectiveArgTypeToOutputInSchema($type, $directiveArgSchemaDefinition[SchemaDefinition::ARGNAME_MANDATORY]);
+                        // If it is an input object, it may have its own args to also convert
+                        if ($type == SchemaDefinition::TYPE_INPUT_OBJECT) {
+                            foreach (($directiveArgSchemaDefinition[SchemaDefinition::ARGNAME_ARGS] ?? []) as $inputFieldArgName => $inputFieldArgDefinition) {
+                                $inputFieldType = $inputFieldArgDefinition[SchemaDefinition::ARGNAME_TYPE];
+                                $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS][$directiveArgName][SchemaDefinition::ARGNAME_ARGS][$inputFieldArgName][SchemaDefinition::ARGNAME_TYPE] = SchemaHelpers::getFieldOrDirectiveArgTypeToOutputInSchema($inputFieldType, $inputFieldArgDefinition[SchemaDefinition::ARGNAME_MANDATORY]);
                             }
                         }
                     }
                 }
             }
-            $schemaDefinition[$directiveName] = $directiveSchemaDefinition;
         }
-        return $schemaDefinition;
+        return $directiveSchemaDefinition;
     }
 
     protected function addSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = [])
@@ -1112,7 +1107,11 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         }
 
         // Add the directives (non-global)
-        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_DIRECTIVES] = $this->getSchemaDefinitionForDirectives(false, $options);
+        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_DIRECTIVES] = [];
+        $schemaDirectiveResolvers = $this->getSchemaDirectiveResolvers(false);
+        foreach ($schemaDirectiveResolvers as $directiveName => $directiveResolver) {
+            $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_DIRECTIVES][$directiveName] = $this->getDirectiveSchemaDefinition($directiveResolver, $options);
+        }
 
         // Add the fields (non-global)
         $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_FIELDS] = [];
@@ -1169,7 +1168,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 }
                 $isGlobal = $directiveResolverInstance->isGlobal($this);
                 if (($global && $isGlobal) || (!$global && !$isGlobal)) {
-                    $directiveResolverInstances[] = $directiveResolverInstance;
+                    $directiveResolverInstances[$directiveName] = $directiveResolverInstance;
                 }
             }
         }
