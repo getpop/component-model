@@ -1071,20 +1071,10 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return $this->schemaDefinition;
     }
 
-    protected function addSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = [])
+    protected function getSchemaDefinitionForDirectives(bool $global, array $options = []): array
     {
-        $typeSchemaKey = $this->getTypeSchemaKey($options);
-        $typeName = $this->getTypeName();
-        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_NAME] = $typeName;
-
-        // Properties
-        if ($description = $this->getSchemaTypeDescription()) {
-            $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
-        }
-
-        // Add the directives (non-global)
-        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_DIRECTIVES] = [];
-        $directiveResolverInstances = $this->getSchemaDirectiveResolvers(false);
+        $directiveResolverInstances = $this->getSchemaDirectiveResolvers($global);
+        $schemaDefinition = [];
         foreach ($directiveResolverInstances as $directiveResolverInstance) {
             $directiveSchemaDefinition = $directiveResolverInstance->getSchemaDefinitionForDirective($this);
             $directiveName = $directiveResolverInstance->getDirectiveName();
@@ -1105,8 +1095,24 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     }
                 }
             }
-            $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_DIRECTIVES][$directiveName] = $directiveSchemaDefinition;
+            $schemaDefinition[$directiveName] = $directiveSchemaDefinition;
         }
+        return $schemaDefinition;
+    }
+
+    protected function addSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = [])
+    {
+        $typeSchemaKey = $this->getTypeSchemaKey($options);
+        $typeName = $this->getTypeName();
+        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_NAME] = $typeName;
+
+        // Properties
+        if ($description = $this->getSchemaTypeDescription()) {
+            $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
+        }
+
+        // Add the directives (non-global)
+        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_DIRECTIVES] = $this->getSchemaDefinitionForDirectives(false, $options);
 
         // Add the fields (non-global)
         $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_FIELDS] = [];
