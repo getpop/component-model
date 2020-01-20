@@ -8,6 +8,7 @@ use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\UnionTypeHelpers;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
+use PoP\ComponentModel\Facades\Schema\SchemaDefinitionServiceFacade;
 use PoP\ComponentModel\TypeResolverPickers\TypeResolverPickerInterface;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
 
@@ -334,7 +335,8 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
     protected function addSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = [])
     {
         $instanceManager = InstanceManagerFacade::getInstance();
-        $typeSchemaKey = $this->getTypeSchemaKey($options);
+        $schemaDefinitionService = SchemaDefinitionServiceFacade::getInstance();
+        $typeSchemaKey = $schemaDefinitionService->getTypeSchemaKey($this, $options);
 
         // Properties
         $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_NAME] = $this->getTypeName();
@@ -361,7 +363,8 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
     {
         parent::processFlatShapeSchemaDefinition($options);
 
-        $typeSchemaKey = $this->getTypeSchemaKey($options);
+        $schemaDefinitionService = SchemaDefinitionServiceFacade::getInstance();
+        $typeSchemaKey = $schemaDefinitionService->getTypeSchemaKey($this, $options);
 
         // Replace the UnionTypeResolver's types with their typeNames
         $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_POSSIBLE_TYPES] = array_keys(

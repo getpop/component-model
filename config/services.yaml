@@ -87,6 +87,10 @@ services:
         class: \PoP\ComponentModel\Schema\TypeCastingExecuter
         public: true
 
+    schema_definition_service:
+        class: \PoP\ComponentModel\Schema\SchemaDefinitionService
+        public: true
+
     attachable_extension_manager:
         class: \PoP\ComponentModel\AttachableExtensions\AttachableExtensionManager
         public: true

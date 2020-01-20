@@ -16,10 +16,4 @@ abstract class AbstractFieldInterfaceResolver implements FieldInterfaceResolverI
     {
         return null;
     }
-
-    public function getInterfaceSchemaKey(array $options = []): string
-    {
-        // By default, use the type name
-        return $this->getInterfaceName();
-    }
 }

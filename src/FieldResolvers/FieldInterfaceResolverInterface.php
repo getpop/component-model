@@ -13,5 +13,4 @@ interface FieldInterfaceResolverInterface extends FieldSchemaDefinitionResolverI
     public static function getFieldNamesToImplement(): array;
     public function getInterfaceName(): string;
     public function getSchemaInterfaceDescription(): ?string;
-    public function getInterfaceSchemaKey(array $options = []): string;
 }

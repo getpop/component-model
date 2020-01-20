@@ -25,6 +25,7 @@ use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
 use PoP\ComponentModel\DirectiveResolvers\DirectiveResolverInterface;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
+use PoP\ComponentModel\Facades\Schema\SchemaDefinitionServiceFacade;
 
 abstract class AbstractTypeResolver implements TypeResolverInterface
 {
@@ -1003,15 +1004,10 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return ErrorUtils::getNoFieldError($fieldName);
     }
 
-    public function getTypeSchemaKey(array $options = []): string
-    {
-        // By default, use the type name
-        return $this->getTypeName();
-    }
-
     protected function processFlatShapeSchemaDefinition(array $options = [])
     {
-        $typeSchemaKey = $this->getTypeSchemaKey($options);
+        $schemaDefinitionService = SchemaDefinitionServiceFacade::getInstance();
+        $typeSchemaKey = $schemaDefinitionService->getTypeSchemaKey($this, $options);
 
         // By now, we have the schema definition
         if (isset($this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_CONNECTIONS])) {
@@ -1029,7 +1025,8 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
     public function getSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = []): array
     {
-        $typeSchemaKey = $this->getTypeSchemaKey($options);
+        $schemaDefinitionService = SchemaDefinitionServiceFacade::getInstance();
+        $typeSchemaKey = $schemaDefinitionService->getTypeSchemaKey($this, $options);
 
         // Stop recursion
         $class = get_called_class();
@@ -1094,7 +1091,8 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
     protected function addSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = [])
     {
-        $typeSchemaKey = $this->getTypeSchemaKey($options);
+        $schemaDefinitionService = SchemaDefinitionServiceFacade::getInstance();
+        $typeSchemaKey = $schemaDefinitionService->getTypeSchemaKey($this, $options);
         $typeName = $this->getTypeName();
         $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_NAME] = $typeName;
 
@@ -1119,10 +1117,11 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
         // Add all the implemented interfaces
         $instanceManager = InstanceManagerFacade::getInstance();
+        $schemaDefinitionService = SchemaDefinitionServiceFacade::getInstance();
         $typeInterfaceDefinitions = [];
         foreach ($this->getAllImplementedInterfaceClasses() as $interfaceResolverClass) {
             $interfaceInstance = $instanceManager->getInstance($interfaceResolverClass);
-            $interfaceSchemaKey = $interfaceInstance->getInterfaceSchemaKey($options);
+            $interfaceSchemaKey = $schemaDefinitionService->getInterfaceSchemaKey($interfaceInstance, $options);
 
             // Conveniently get the fields from the schema, which have already been calculated above since they also include their interface fields
             $interfaceFieldNames = $interfaceInstance::getFieldNamesToImplement();
@@ -1250,7 +1249,8 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         if ($isConnection) {
             unset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL]);
         }
-        $typeSchemaKey = $this->getTypeSchemaKey($options);
+        $schemaDefinitionService = SchemaDefinitionServiceFacade::getInstance();
+        $typeSchemaKey = $schemaDefinitionService->getTypeSchemaKey($this, $options);
         $this->schemaDefinition[$typeSchemaKey][$entry][$fieldName] = $fieldSchemaDefinition;
     }
 

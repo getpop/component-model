@@ -11,7 +11,6 @@ interface TypeResolverInterface
     public function getTypeOutputName(): string;
     public function getTypeDataLoaderClass(): string;
     public function getSchemaTypeDescription(): ?string;
-    public function getTypeSchemaKey(array $options = []): string;
 
     // ... because all functions below have already been implemented in the Abstract base class
     public function getAllImplementedInterfaceClasses(): array;

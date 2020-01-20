@@ -1,12 +1,7 @@
 <?php
 namespace PoP\ComponentModel\Schema;
 
-use InvalidArgumentException;
 use PoP\ComponentModel\Schema\SchemaDefinition;
-use PoP\GraphQL\Schema\SchemaDefinition as GraphQLSchemaDefinition;
-use PoP\Translation\Facades\TranslationAPIFacade;
-use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
-use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 
 class SchemaHelpers
 {
