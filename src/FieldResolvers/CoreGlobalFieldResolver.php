@@ -12,7 +12,7 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
     {
         return [
             'id',
-            '__typename',
+            'typeName',
             'isType',
             'implements',
         ];
@@ -22,7 +22,7 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
     {
         $types = [
             'id' => SchemaDefinition::TYPE_ID,//SchemaDefinition::TYPE_UNRESOLVED_ID,
-            '__typename' => SchemaDefinition::TYPE_STRING,
+            'typeName' => SchemaDefinition::TYPE_STRING,
             'isType' => SchemaDefinition::TYPE_BOOL,
             'implements' => SchemaDefinition::TYPE_BOOL,
         ];
@@ -34,7 +34,7 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
         $translationAPI = TranslationAPIFacade::getInstance();
         $descriptions = [
             'id' => $translationAPI->__('The object ID', 'pop-component-model'),
-            '__typename' => $translationAPI->__('The object\'s type', 'pop-component-model'),
+            'typeName' => $translationAPI->__('The object\'s type', 'pop-component-model'),
             'isType' => $translationAPI->__('Indicate if the object is of a given type', 'pop-component-model'),
             'implements' => $translationAPI->__('Indicate if the object implements a given interface', 'pop-component-model'),
         ];
@@ -73,7 +73,7 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
         switch ($fieldName) {
             case 'id':
                 return $typeResolver->getID($resultItem);
-            case '__typename':
+            case 'typeName':
                 return $typeResolver->getTypeName();
             case 'isType':
                 $typeName = $fieldArgs['type'];
