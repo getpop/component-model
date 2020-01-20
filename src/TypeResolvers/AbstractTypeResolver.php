@@ -1005,10 +1005,6 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
     public function getTypeSchemaKey(array $options = []): string
     {
-        // Use this class as the key
-        if ($options['use-type-resolver-class-as-schema-key']) {
-            return get_called_class();
-        }
         // By default, use the type name
         return $this->getTypeName();
     }
