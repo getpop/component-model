@@ -11,7 +11,6 @@ use PoP\FieldQuery\FieldQueryUtils;
 use League\Pipeline\PipelineBuilder;
 use PoP\ComponentModel\Feedback\Tokens;
 use PoP\ComponentModel\Schema\SchemaHelpers;
-use PoP\GraphQL\Schema\SchemaHelpers as GraphQLSchemaHelpers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\FieldHelpers;
@@ -1069,23 +1068,6 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     protected function getDirectiveSchemaDefinition(DirectiveResolverInterface $directiveResolver, array $options = []): array
     {
         $directiveSchemaDefinition = $directiveResolver->getSchemaDefinitionForDirective($this);
-        // Convert the directive arguments from its internal representation (eg: "array:id") to the GraphQL standard representation (eg: "[Post]")
-        if ($options['typeAsSDL']) {
-            if ($directiveArgs = $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) {
-                foreach ($directiveArgs as $directiveArgName => $directiveArgSchemaDefinition) {
-                    if ($type = $directiveArgSchemaDefinition[SchemaDefinition::ARGNAME_TYPE]) {
-                        $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS][$directiveArgName][SchemaDefinition::ARGNAME_TYPE] = GraphQLSchemaHelpers::getFieldOrDirectiveArgTypeToOutputInSchema($type, $directiveArgSchemaDefinition[SchemaDefinition::ARGNAME_MANDATORY]);
-                        // If it is an input object, it may have its own args to also convert
-                        if ($type == SchemaDefinition::TYPE_INPUT_OBJECT) {
-                            foreach (($directiveArgSchemaDefinition[SchemaDefinition::ARGNAME_ARGS] ?? []) as $inputFieldArgName => $inputFieldArgDefinition) {
-                                $inputFieldType = $inputFieldArgDefinition[SchemaDefinition::ARGNAME_TYPE];
-                                $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS][$directiveArgName][SchemaDefinition::ARGNAME_ARGS][$inputFieldArgName][SchemaDefinition::ARGNAME_TYPE] = GraphQLSchemaHelpers::getFieldOrDirectiveArgTypeToOutputInSchema($inputFieldType, $inputFieldArgDefinition[SchemaDefinition::ARGNAME_MANDATORY]);
-                            }
-                        }
-                    }
-                }
-            }
-        }
         return $directiveSchemaDefinition;
     }
 
@@ -1199,28 +1181,13 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE_SCHEMA] = $fieldTypeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options);
             }
         }
-        // Convert the field type from its internal representation (eg: "array:id") to the GraphQL standard representation (eg: "[Post]")
-        if ($options['typeAsSDL']) {
+        // Convert the field type from its internal representation (eg: "array:id") to the type (eg: "array:Post")
+        if ($options['useTypeName']) {
             if ($type = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE]) {
-                $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE] = GraphQLSchemaHelpers::getFieldTypeToOutputInSchema($type, $this, $fieldName, $fieldSchemaDefinition[SchemaDefinition::ARGNAME_MANDATORY]);
-            }
-            // Also for the field arguments
-            if ($fieldArgs = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) {
-                foreach ($fieldArgs as $fieldArgName => $fieldArgSchemaDefinition) {
-                    if ($type = $fieldArgSchemaDefinition[SchemaDefinition::ARGNAME_TYPE]) {
-                        $fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS][$fieldArgName][SchemaDefinition::ARGNAME_TYPE] = GraphQLSchemaHelpers::getFieldOrDirectiveArgTypeToOutputInSchema($type, $fieldArgSchemaDefinition[SchemaDefinition::ARGNAME_MANDATORY]);
-                        // If it is an input object, it may have its own args to also convert
-                        if ($type == SchemaDefinition::TYPE_INPUT_OBJECT) {
-                            foreach (($fieldArgSchemaDefinition[SchemaDefinition::ARGNAME_ARGS] ?? []) as $inputFieldArgName => $inputFieldArgDefinition) {
-                                $inputFieldType = $inputFieldArgDefinition[SchemaDefinition::ARGNAME_TYPE];
-                                $fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS][$fieldArgName][SchemaDefinition::ARGNAME_ARGS][$inputFieldArgName][SchemaDefinition::ARGNAME_TYPE] = GraphQLSchemaHelpers::getFieldOrDirectiveArgTypeToOutputInSchema($inputFieldType, $inputFieldArgDefinition[SchemaDefinition::ARGNAME_MANDATORY]);
-                            }
-                        }
-                    }
-                }
+                $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE] = SchemaHelpers::convertTypeIDToTypeName($type, $this, $fieldName);
             }
         } else {
-            // If the output does not use SDL notation, then display the type under entry "referencedType"
+            // Display the type under entry "referencedType"
             if ($types = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE_SCHEMA]) {
                 $typeNames = array_keys($types);
                 $fieldSchemaDefinition[SchemaDefinition::ARGNAME_REFERENCED_TYPE] = $typeNames[0];
@@ -1233,7 +1200,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             if ($isConnection) {
                 $entry = SchemaDefinition::ARGNAME_GLOBAL_CONNECTIONS;
                 // Remove the "types"
-                if ($options['typeAsSDL']) {
+                if ($options['useTypeName']) {
                     unset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE_SCHEMA]);
                 }
             } else {

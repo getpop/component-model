@@ -1,7 +1,11 @@
 <?php
 namespace PoP\ComponentModel\Schema;
 
+use InvalidArgumentException;
 use PoP\ComponentModel\Schema\SchemaDefinition;
+use PoP\Translation\Facades\TranslationAPIFacade;
+use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
+use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 
 class SchemaHelpers
 {
@@ -107,5 +111,53 @@ class SchemaHelpers
             }
         }
         return $enumValueDefinitions;
+    }
+
+    public static function getTypeComponents(string $type): array
+    {
+        $convertedType = $type;
+
+        // Replace all instances of "array:" with wrapping the type with "[]"
+        $arrayInstances = 0;
+        while ($convertedType && TypeCastingHelpers::getTypeCombinationCurrentElement($convertedType) == SchemaDefinition::TYPE_ARRAY) {
+            $arrayInstances++;
+            $convertedType = TypeCastingHelpers::getTypeCombinationNestedElements($convertedType);
+        }
+
+        // If the type was actually only "array", without indicating its type, by now $type will be null
+        // In that case, inform of the error (an array cannot have its inner type undefined)
+        if (!$convertedType) {
+            $translationAPI = TranslationAPIFacade::getInstance();
+            throw new InvalidArgumentException(
+                sprintf(
+                    $translationAPI->__('Type \'%s\' doesn\'t declare the type of the innermost element'),
+                    $type
+                )
+            );
+        }
+
+        return [
+            $arrayInstances,
+            $convertedType
+        ];
+    }
+
+    public static function convertTypeIDToTypeName(string $type, TypeResolverInterface $typeResolver, string $fieldName): string
+    {
+        list (
+            $arrayInstances,
+            $convertedType
+        ) = self::getTypeComponents($type);
+
+        // If the type is an ID, replace it with the actual type the ID references
+        if ($convertedType == SchemaDefinition::TYPE_ID) {
+            $instanceManager = InstanceManagerFacade::getInstance();
+            // The convertedType may not be implemented yet (eg: Category), then skip
+            if ($fieldTypeResolverClass = $typeResolver->resolveFieldTypeResolverClass($fieldName)) {
+                $fieldTypeResolver = $instanceManager->getInstance((string)$fieldTypeResolverClass);
+                $convertedType = $fieldTypeResolver->getTypeName();
+            }
+        }
+        return TypeCastingHelpers::makeArray($convertedType, $arrayInstances);
     }
 }
