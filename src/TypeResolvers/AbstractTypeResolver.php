@@ -1114,6 +1114,14 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 },
                 ARRAY_FILTER_USE_KEY
             );
+            // An interface can itself implement interfaces!
+            $interfaceImplementedInterfaceNames = [];
+            if ($interfaceImplementedInterfaceClasses = $interfaceInstance::getImplementedInterfaceClasses()) {
+                foreach ($interfaceImplementedInterfaceClasses as $interfaceImplementedInterfaceClass) {
+                    $interfaceImplementedInterfaceInstance = $instanceManager->getInstance($interfaceImplementedInterfaceClass);
+                    $interfaceImplementedInterfaceNames[] = $interfaceImplementedInterfaceInstance->getInterfaceName();
+                }
+            }
             $interfaceName = $interfaceInstance->getInterfaceName();
             // Possible types: Because we are generating this list as we go along resolving all the types, simply have this value point to a reference in $generalMessages
             // Just by updating that variable, it will eventually be updated everywhere
@@ -1125,6 +1133,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 SchemaDefinition::ARGNAME_NAME => $interfaceName,
                 SchemaDefinition::ARGNAME_DESCRIPTION => $interfaceInstance->getSchemaInterfaceDescription(),
                 SchemaDefinition::ARGNAME_FIELDS => $interfaceFields,
+                SchemaDefinition::ARGNAME_INTERFACES => $interfaceImplementedInterfaceNames,
                 // The list of types that implement this interface
                 SchemaDefinition::ARGNAME_POSSIBLE_TYPES => &$interfacePossibleTypes,
             ];

@@ -12,6 +12,11 @@ abstract class AbstractFieldInterfaceResolver implements FieldInterfaceResolverI
         return self::getFieldNamesToImplement();
     }
 
+    public static function getImplementedInterfaceClasses(): array
+    {
+        return [];
+    }
+
     public function getSchemaInterfaceDescription(): ?string
     {
         return null;
