@@ -50,7 +50,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
     public function getNamespace(): string
     {
-        return SchemaHelpers::convertNamespace(__NAMESPACE__);
+        return SchemaHelpers::convertNamespace(SchemaHelpers::getOwnerAndProjectFromNamespace(__NAMESPACE__));
     }
 
     final public function getQualifiedTypeName(): string

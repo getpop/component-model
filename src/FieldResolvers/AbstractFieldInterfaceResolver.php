@@ -22,7 +22,7 @@ abstract class AbstractFieldInterfaceResolver implements FieldInterfaceResolverI
 
     public function getNamespace(): string
     {
-        return SchemaHelpers::convertNamespace(__NAMESPACE__);
+        return SchemaHelpers::convertNamespace(SchemaHelpers::getOwnerAndProjectFromNamespace(__NAMESPACE__));
     }
 
     final public function getQualifiedInterfaceName(): string
