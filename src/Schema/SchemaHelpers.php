@@ -2,6 +2,7 @@
 namespace PoP\ComponentModel\Schema;
 
 use InvalidArgumentException;
+use PoP\ComponentModel\Environment;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
@@ -155,9 +156,14 @@ class SchemaHelpers
             // The convertedType may not be implemented yet (eg: Category), then skip
             if ($fieldTypeResolverClass = $typeResolver->resolveFieldTypeResolverClass($fieldName)) {
                 $fieldTypeResolver = $instanceManager->getInstance((string)$fieldTypeResolverClass);
-                $convertedType = $fieldTypeResolver->getTypeName();
+                $convertedType = $fieldTypeResolver->getMaybeQualifiedTypeName();
             }
         }
         return TypeCastingHelpers::makeArray($convertedType, $arrayInstances);
+    }
+
+    public static function convertNamespace($namespace): string
+    {
+        return str_replace('\\', SchemaDefinition::TOKEN_NAMESPACE_SEPARATOR, $namespace);
     }
 }

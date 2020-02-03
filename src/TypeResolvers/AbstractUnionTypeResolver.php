@@ -217,12 +217,13 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
             );
             if ($notImplementingInterfaceTypeResolverClasses) {
                 $translationAPI = TranslationAPIFacade::getInstance();
+                $typeInterfaceResolver = $instanceManager->getInstance($typeInterfaceClass);
                 throw new Exception(
                     sprintf(
                         $translationAPI->__('UnionTypeResolver \'%s\' (\'%s\') must return results implementing interface \'%s\' (\'%s\'), however its following member TypeResolvers do not: \'%s\'', 'component-model'),
-                        $this->getTypeName(),
+                        $this->getMaybeQualifiedTypeName(),
                         get_called_class(),
-                        $typeInterfaceClass::getInterfaceName(),
+                        $typeInterfaceResolver->getMaybeQualifiedInterfaceName(),
                         $typeInterfaceClass,
                         implode(
                             $translationAPI->__('\', \''),
@@ -231,7 +232,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
                                     $typeResolver = $instanceManager->getInstance($typeResolverClass);
                                     return sprintf(
                                         $translationAPI->__('%s (%s)'),
-                                        $typeResolver->getTypeName(),
+                                        $typeResolver->getMaybeQualifiedTypeName(),
                                         $typeResolverClass
                                     );
                                 },
@@ -339,7 +340,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         $typeSchemaKey = $schemaDefinitionService->getTypeSchemaKey($this, $options);
 
         // Properties
-        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_NAME] = $this->getTypeName();
+        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_NAME] = $this->getMaybeQualifiedTypeName();
         if ($description = $this->getSchemaTypeDescription()) {
             $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
         }
@@ -347,14 +348,15 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
 
         // If it returns an interface as type, add it to the schemaDefinition
         if ($typeInterfaceClass = $this->getSchemaTypeInterfaceClass()) {
-            $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_RESULTS_IMPLEMENT_INTERFACE] = $typeInterfaceClass::getInterfaceName();
+            $typeInterfaceResolver = $instanceManager->getInstance($typeInterfaceClass);
+            $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_RESULTS_IMPLEMENT_INTERFACE] = $typeInterfaceResolver->getMaybeQualifiedInterfaceName();
         }
 
         // Iterate through the typeResolvers from all the pickers and get their schema definitions
         foreach ($this->getTypeResolverPickers() as $picker) {
             $pickerTypeResolver = $instanceManager->getInstance($picker->getTypeResolverClass());
             $pickerTypeSchemaDefinition = $pickerTypeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options);
-            $pickerTypeName = $pickerTypeResolver->getTypeName();
+            $pickerTypeName = $pickerTypeResolver->getMaybeQualifiedTypeName();
             $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_POSSIBLE_TYPES][$pickerTypeName] = $pickerTypeSchemaDefinition[$pickerTypeName];
         }
     }

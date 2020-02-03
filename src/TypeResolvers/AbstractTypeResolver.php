@@ -41,16 +41,35 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     protected $safeVars;
     protected $schemaFieldResolvers;
     protected $interfaceClasses;
+    protected $interfaceResolverInstances;
 
     private $fieldDirectiveIDFields = [];
     private $fieldDirectivesFromFieldCache = [];
     private $dissectedFieldForSchemaCache = [];
     private $directiveResolverInstanceCache = [];
 
+    public function getNamespace(): string
+    {
+        return SchemaHelpers::convertNamespace(__NAMESPACE__);
+    }
+
+    final public function getQualifiedTypeName(): string
+    {
+        $namespace = $this->getNamespace();
+        return ($namespace ? $namespace.SchemaDefinition::TOKEN_NAMESPACE_SEPARATOR : '').$this->getTypeName();
+    }
+
+    final public function getMaybeQualifiedTypeName(): string
+    {
+        return Environment::namespaceTypesAndInterfaces() ?
+            $this->getQualifiedTypeName() :
+            $this->getTypeName();
+    }
+
     public function getTypeOutputName(): string
     {
         // First letter lowercase
-        return lcfirst($this->getTypeName());
+        return lcfirst($this->getMaybeQualifiedTypeName());
     }
 
     public function getSchemaTypeDescription(): ?string
@@ -1075,7 +1094,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     {
         $schemaDefinitionService = SchemaDefinitionServiceFacade::getInstance();
         $typeSchemaKey = $schemaDefinitionService->getTypeSchemaKey($this, $options);
-        $typeName = $this->getTypeName();
+        $typeName = $this->getMaybeQualifiedTypeName();
         $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_NAME] = $typeName;
 
         // Properties
@@ -1101,8 +1120,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $instanceManager = InstanceManagerFacade::getInstance();
         $schemaDefinitionService = SchemaDefinitionServiceFacade::getInstance();
         $typeInterfaceDefinitions = [];
-        foreach ($this->getAllImplementedInterfaceClasses() as $interfaceResolverClass) {
-            $interfaceInstance = $instanceManager->getInstance($interfaceResolverClass);
+        foreach ($this->getAllImplementedInterfaceResolverInstances() as $interfaceInstance) {
             $interfaceSchemaKey = $schemaDefinitionService->getInterfaceSchemaKey($interfaceInstance, $options);
 
             // Conveniently get the fields from the schema, which have already been calculated above since they also include their interface fields
@@ -1119,10 +1137,10 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             if ($interfaceImplementedInterfaceClasses = $interfaceInstance::getImplementedInterfaceClasses()) {
                 foreach ($interfaceImplementedInterfaceClasses as $interfaceImplementedInterfaceClass) {
                     $interfaceImplementedInterfaceInstance = $instanceManager->getInstance($interfaceImplementedInterfaceClass);
-                    $interfaceImplementedInterfaceNames[] = $interfaceImplementedInterfaceInstance->getInterfaceName();
+                    $interfaceImplementedInterfaceNames[] = $interfaceImplementedInterfaceInstance->getMaybeQualifiedInterfaceName();
                 }
             }
-            $interfaceName = $interfaceInstance->getInterfaceName();
+            $interfaceName = $interfaceInstance->getMaybeQualifiedInterfaceName();
             // Possible types: Because we are generating this list as we go along resolving all the types, simply have this value point to a reference in $generalMessages
             // Just by updating that variable, it will eventually be updated everywhere
             $generalMessages['interfaceGeneralTypes'][$interfaceName] = $generalMessages['interfaceGeneralTypes'][$interfaceName] ?? [];
@@ -1272,6 +1290,25 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         }
 
         return $schemaFieldResolvers;
+    }
+
+    public function getAllImplementedInterfaceResolverInstances(): array
+    {
+        if (is_null($this->interfaceResolverInstances)) {
+            $this->interfaceResolverInstances = $this->calculateAllImplementedInterfaceResolverInstances();
+        }
+        return $this->interfaceResolverInstances;
+    }
+
+    protected function calculateAllImplementedInterfaceResolverInstances(): array
+    {
+        $instanceManager = InstanceManagerFacade::getInstance();
+        return array_map(
+            function($interfaceClass) use($instanceManager) {
+                return $instanceManager->getInstance($interfaceClass);
+            },
+            $this->getAllImplementedInterfaceClasses()
+        );
     }
 
     public function getAllImplementedInterfaceClasses(): array

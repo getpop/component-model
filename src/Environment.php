@@ -22,5 +22,15 @@ class Environment
     {
         return isset($_ENV['STOP_DIRECTIVE_PIPELINE_EXECUTION_IF_DIRECTIVE_FAILED']) ? strtolower($_ENV['STOP_DIRECTIVE_PIPELINE_EXECUTION_IF_DIRECTIVE_FAILED']) == "true" : false;
     }
+
+    /**
+     * Indicate: If a directive fails, then stop execution of the directive pipeline altogether
+     *
+     * @return void
+     */
+    public static function namespaceTypesAndInterfaces(): bool
+    {
+        return isset($_ENV['NAMESPACE_TYPES_AND_INTERFACES']) ? strtolower($_ENV['NAMESPACE_TYPES_AND_INTERFACES']) == "true" : false;
+    }
 }
 

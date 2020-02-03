@@ -56,4 +56,9 @@ class SchemaDefinition {
     const TYPE_ENUM = 'enum';
     const TYPE_ARRAY = 'array';
     const TYPE_INPUT_OBJECT = 'input_object';
+
+    /**
+     * Using "/" doesn't work with GraphQL Voyager!
+     */
+    const TOKEN_NAMESPACE_SEPARATOR = '_';
 }
