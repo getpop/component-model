@@ -1,6 +1,7 @@
 <?php
 namespace PoP\ComponentModel\FieldResolvers;
 
+use PoP\ComponentModel\Engine_Vars;
 use PoP\ComponentModel\Environment;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\ComponentModel\FieldResolvers\SchemaDefinitionResolverTrait;
@@ -33,7 +34,8 @@ abstract class AbstractFieldInterfaceResolver implements FieldInterfaceResolverI
 
     final public function getMaybeQualifiedInterfaceName(): string
     {
-        return Environment::namespaceTypesAndInterfaces() ?
+        $vars = Engine_Vars::getVars();
+        return $vars['namespace-types-and-interfaces'] ?
             $this->getQualifiedInterfaceName() :
             $this->getInterfaceName();
     }

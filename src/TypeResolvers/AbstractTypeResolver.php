@@ -1,6 +1,7 @@
 <?php
 namespace PoP\ComponentModel\TypeResolvers;
 
+use PoP\ComponentModel\Engine_Vars;
 use PoP\ComponentModel\Error;
 use PoP\FieldQuery\QueryUtils;
 use PoP\FieldQuery\QuerySyntax;
@@ -61,7 +62,8 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
     final public function getMaybeQualifiedTypeName(): string
     {
-        return Environment::namespaceTypesAndInterfaces() ?
+        $vars = Engine_Vars::getVars();
+        return $vars['namespace-types-and-interfaces'] ?
             $this->getQualifiedTypeName() :
             $this->getTypeName();
     }
