@@ -12,7 +12,6 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
     public static function getFieldNamesToResolve(): array
     {
         return [
-            'id',
             'typeName',
             'namespace',
             'qualifiedTypeName',
@@ -24,7 +23,6 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
     public function getSchemaFieldType(TypeResolverInterface $typeResolver, string $fieldName): ?string
     {
         $types = [
-            'id' => SchemaDefinition::TYPE_ID,//SchemaDefinition::TYPE_UNRESOLVED_ID,
             'typeName' => SchemaDefinition::TYPE_STRING,
             'namespace' => SchemaDefinition::TYPE_STRING,
             'qualifiedTypeName' => SchemaDefinition::TYPE_STRING,
@@ -38,7 +36,6 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         $descriptions = [
-            'id' => $translationAPI->__('The object ID', 'pop-component-model'),
             'typeName' => $translationAPI->__('The object\'s type', 'pop-component-model'),
             'namespace' => $translationAPI->__('The object\'s namespace', 'pop-component-model'),
             'qualifiedTypeName' => $translationAPI->__('The object\'s namespace + type', 'pop-component-model'),
@@ -78,8 +75,6 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
     public function resolveValue(TypeResolverInterface $typeResolver, $resultItem, string $fieldName, array $fieldArgs = [], ?array $variables = null, ?array $expressions = null, array $options = [])
     {
         switch ($fieldName) {
-            case 'id':
-                return $typeResolver->getID($resultItem);
             case 'typeName':
                 return $typeResolver->getTypeName();
             case 'namespace':
