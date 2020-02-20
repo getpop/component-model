@@ -52,9 +52,8 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
                 $data_fields['direct']
             )));
         }
-        foreach ($dataFields as $field) {
-            $this->validateField($typeResolver, $field, $schemaErrors, $schemaWarnings, $schemaDeprecations, $variables, $failedDataFields);
-        }
+        $this->validateFields($typeResolver, $dataFields, $schemaErrors, $schemaWarnings, $schemaDeprecations, $variables, $failedDataFields);
+
         // Remove from the data_fields list to execute on the resultItem for the next stages of the pipeline
         if ($failedDataFields) {
             $idsDataFieldsToRemove = [];
@@ -78,7 +77,18 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
         // }
     }
 
-    protected function validateField(TypeResolverInterface $typeResolver, string $field, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$variables, array &$failedDataFields): bool {
+    protected function validateFields(TypeResolverInterface $typeResolver, array $dataFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$variables, array &$failedDataFields): void
+    {
+        foreach ($dataFields as $field) {
+            $success = $this->validateField($typeResolver, $field, $schemaErrors, $schemaWarnings, $schemaDeprecations, $variables);
+            if (!$success) {
+                $failedDataFields[] = $field;
+            }
+        }
+    }
+
+    protected function validateField(TypeResolverInterface $typeResolver, string $field, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$variables): bool
+    {
         // Check for errors first, warnings and deprecations then
         $success = true;
         if ($schemaValidationErrors = $typeResolver->resolveSchemaValidationErrorDescriptions($field, $variables)) {
@@ -86,7 +96,6 @@ class ValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
                 $schemaErrors,
                 $schemaValidationErrors
             );
-            $failedDataFields[] = $field;
             $success = false;
         }
         if ($schemaValidationWarnings = $typeResolver->resolveSchemaValidationWarningDescriptions($field, $variables)) {
