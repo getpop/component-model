@@ -41,6 +41,8 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     protected $directiveNameClasses;
     protected $safeVars;
     protected $schemaFieldResolvers;
+    protected $typeResolverDecoratorClasses;
+    protected $mandatoryDirectivesForFields;
     protected $interfaceClasses;
     protected $interfaceResolverInstances;
 
@@ -644,6 +646,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 $this->getMandatoryDirectives()
             )
         );
+        $mandatoryDirectivesForFields = $this->getAllMandatoryDirectivesForFields();
         $fieldDirectiveCounter = [];
         foreach ($ids_data_fields as $id => $data_fields) {
             $fields = $data_fields['direct'];
@@ -657,7 +660,26 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             foreach ($fields as $field) {
                 if (is_null($this->fieldDirectivesFromFieldCache[$field])) {
                     $fieldDirectives = $fieldQueryInterpreter->getFieldDirectives($field, false) ?? '';
-                    // Place the mandatory directives at the beginning of the list, then they will be added to their needed position in the pipeline
+                    // Add the mandatory directives defined for this field or for any field in this typeResolver
+                    $fieldName = $fieldQueryInterpreter->getFieldName($field);
+                    if ($mandatoryDirectivesForField = array_merge(
+                        $mandatoryDirectivesForFields[FieldSymbols::ANY_FIELD] ?? [],
+                        $mandatoryDirectivesForFields[$fieldName] ?? []
+                    )) {
+                        // Place the custom mandatory directives at the beginning of the list, because they may deal with validation (validate first, execute later!)
+                        $mandatoryDirectivesForField = implode(
+                            QuerySyntax::SYMBOL_FIELDDIRECTIVE_SEPARATOR,
+                            array_map(
+                                [$fieldQueryInterpreter, 'convertDirectiveToFieldDirective'],
+                                $mandatoryDirectivesForField
+                            )
+                        );
+                        $fieldDirectives = $fieldDirectives ?
+                            $mandatoryDirectivesForField.QuerySyntax::SYMBOL_FIELDDIRECTIVE_SEPARATOR.$fieldDirectives :
+                            $mandatoryDirectivesForField;
+                    }
+
+                    // Place the global mandatory directives at the beginning of the list, then they will be added to their needed position in the pipeline
                     $fieldDirectives = $fieldDirectives ?
                         $mandatoryRootFieldDirectives.QuerySyntax::SYMBOL_FIELDDIRECTIVE_SEPARATOR.$fieldDirectives :
                         $mandatoryRootFieldDirectives;
@@ -1292,6 +1314,64 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         }
 
         return $schemaFieldResolvers;
+    }
+
+    protected function getAllMandatoryDirectivesForFields(): array
+    {
+        if (is_null($this->mandatoryDirectivesForFields)) {
+            $this->mandatoryDirectivesForFields = $this->calculateAllMandatoryDirectivesForFields();
+        }
+        return $this->mandatoryDirectivesForFields;
+    }
+
+    protected function calculateAllMandatoryDirectivesForFields(): array
+    {
+        $mandatoryDirectivesForFields = [];
+        $instanceManager = InstanceManagerFacade::getInstance();
+        $typeResolverDecoratorClasses = $this->getAllTypeResolverDecoratorClassess();
+        foreach ($typeResolverDecoratorClasses as $typeResolverDecoratorClass) {
+            $typeResolverDecoratorInstance = $instanceManager->getInstance($typeResolverDecoratorClass);
+            // array_merge_recursive so that if 2 different decorators add a directive for the same field, the results are merged together, not override each other
+            $mandatoryDirectivesForFields = array_merge_recursive(
+                $mandatoryDirectivesForFields,
+                $typeResolverDecoratorInstance->getMandatoryDirectivesForFields($this)
+            );
+        }
+
+        return $mandatoryDirectivesForFields;
+    }
+
+    protected function getAllTypeResolverDecoratorClassess(): array
+    {
+        if (is_null($this->typeResolverDecoratorClasses)) {
+            $this->typeResolverDecoratorClasses = $this->calculateAllTypeResolverDecoratorClassess();
+        }
+        return $this->typeResolverDecoratorClasses;
+    }
+
+    protected function calculateAllTypeResolverDecoratorClassess(): array
+    {
+        $attachableExtensionManager = AttachableExtensionManagerFacade::getInstance();
+        $decoratorClasses = [];
+
+        $class = get_called_class();
+        // Iterate classes from the current class towards the parent classes until finding typeResolver that satisfies processing this field
+        do {
+            // Important: do array_reverse to enable more specific hooks, which are initialized later on in the project, to be the chosen ones (if their priority is the same)
+            $extensionClassPriorities = array_reverse($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::TYPERESOLVERDECORATORS));
+            // Order them by priority: higher priority are evaluated first
+            $extensionClasses = array_keys($extensionClassPriorities);
+            $extensionPriorities = array_values($extensionClassPriorities);
+            array_multisort($extensionPriorities, SORT_DESC, SORT_NUMERIC, $extensionClasses);
+            // Add them to the results
+            $decoratorClasses = array_merge(
+                $decoratorClasses,
+                $extensionClasses
+            );
+            // Continue iterating for the class parents
+        } while ($class = get_parent_class($class));
+
+        return $decoratorClasses;
     }
 
     public function getAllImplementedInterfaceResolverInstances(): array

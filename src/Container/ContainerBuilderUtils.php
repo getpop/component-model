@@ -33,7 +33,7 @@ class ContainerBuilderUtils extends RootContainerBuilderUtils {
     }
 
     /**
-     * Attach all typeResolverPickerss located under the specified namespace
+     * Attach all typeResolverPickers located under the specified namespace
      *
      * @param string $namespace
      * @return void
@@ -42,6 +42,19 @@ class ContainerBuilderUtils extends RootContainerBuilderUtils {
     {
         foreach (self::getServiceClassesUnderNamespace($namespace, $includeSubfolders) as $serviceClass) {
             $serviceClass::attach(AttachableExtensionGroups::TYPERESOLVERPICKERS);
+        }
+    }
+
+    /**
+     * Attach all typeResolverDecorators located under the specified namespace
+     *
+     * @param string $namespace
+     * @return void
+     */
+    public static function attachTypeResolverDecoratorsFromNamespace(string $namespace, bool $includeSubfolders = true): void
+    {
+        foreach (self::getServiceClassesUnderNamespace($namespace, $includeSubfolders) as $serviceClass) {
+            $serviceClass::attach(AttachableExtensionGroups::TYPERESOLVERDECORATORS);
         }
     }
 }
