@@ -1758,7 +1758,7 @@ class ActionExecuter_Logout extends \PoP\Engine\AbstractActionExecuter {
 
       // If the user is not logged in, then return the error
       $vars = \PoP\ComponentModel\Engine_Vars::getVars();
-      if (!$vars['global-state']['is-user-logged-in']) 
+      if (!$vars['global-userstate']['is-user-logged-in']) 
       {
         $error = __('You are not logged in.');
       

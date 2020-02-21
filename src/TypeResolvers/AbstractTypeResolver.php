@@ -704,7 +704,6 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                         $mandatorySystemDirectives,
                         $directives
                     );
-
                     // If the directives must be preceded by other directives, add them now
                     $directives = $this->addMandatoryDirectivesForDirectives($directives);
                     // Convert from directive to fieldDirective
@@ -1384,19 +1383,19 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
     protected function calculateAllMandatoryDirectivesForDirectives(): array
     {
-        $mandatoryDirectivesForFields = [];
+        $mandatoryDirectivesForDirectives = [];
         $instanceManager = InstanceManagerFacade::getInstance();
         $typeResolverDecoratorClasses = $this->getAllTypeResolverDecoratorClassess();
         foreach ($typeResolverDecoratorClasses as $typeResolverDecoratorClass) {
             $typeResolverDecoratorInstance = $instanceManager->getInstance($typeResolverDecoratorClass);
-            // array_merge_recursive so that if 2 different decorators add a directive for the same field, the results are merged together, not override each other
-            $mandatoryDirectivesForFields = array_merge_recursive(
-                $mandatoryDirectivesForFields,
+            // array_merge_recursive so that if 2 different decorators add a directive for the same directive, the results are merged together, not override each other
+            $mandatoryDirectivesForDirectives = array_merge_recursive(
+                $mandatoryDirectivesForDirectives,
                 $typeResolverDecoratorInstance->getMandatoryDirectivesForDirectives($this)
             );
         }
 
-        return $mandatoryDirectivesForFields;
+        return $mandatoryDirectivesForDirectives;
     }
 
     protected function getAllTypeResolverDecoratorClassess(): array
