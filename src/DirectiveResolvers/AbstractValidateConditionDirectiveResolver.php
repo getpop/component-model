@@ -9,6 +9,16 @@ use PoP\ComponentModel\DirectiveResolvers\ValidateDirectiveResolver;
 abstract class AbstractValidateConditionDirectiveResolver extends ValidateDirectiveResolver
 {
     /**
+     * By default, validating the directive can be done more than once
+     *
+     * @return boolean
+     */
+    public function canExecuteMultipleTimesInField(): bool
+    {
+        return true;
+    }
+
+    /**
      * Validate a custom condition
      *
      * @param TypeResolverInterface $typeResolver
