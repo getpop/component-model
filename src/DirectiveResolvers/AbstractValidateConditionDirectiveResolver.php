@@ -4,20 +4,10 @@ namespace PoP\ComponentModel\DirectiveResolvers;
 use PoP\ComponentModel\Feedback\Tokens;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
-use PoP\ComponentModel\DirectiveResolvers\ValidateDirectiveResolver;
+use PoP\ComponentModel\DirectiveResolvers\AbstractValidateDirectiveResolver;
 
-abstract class AbstractValidateConditionDirectiveResolver extends ValidateDirectiveResolver
+abstract class AbstractValidateConditionDirectiveResolver extends AbstractValidateDirectiveResolver
 {
-    /**
-     * By default, validating the directive can be done more than once
-     *
-     * @return boolean
-     */
-    public function canExecuteMultipleTimesInField(): bool
-    {
-        return true;
-    }
-
     /**
      * Validate a custom condition
      *
