@@ -43,6 +43,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     protected $schemaFieldResolvers;
     protected $typeResolverDecoratorClasses;
     protected $mandatoryDirectivesForFields;
+    protected $mandatoryDirectivesForDirectives;
     protected $interfaceClasses;
     protected $interfaceResolverInstances;
 
@@ -627,6 +628,36 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     }
 
     /**
+     * Given an array of directives, attach, before each of them, their own mandatory directives
+     * Eg: a directive `@validateDoesUserHaveCapability` must be preceded by a directive `@validateIsUserLoggedIn`
+     *
+     * @param array $directives
+     * @return array
+     */
+    protected function addMandatoryDirectivesForDirectives(array $directives): array
+    {
+        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
+        $mandatoryDirectivesForDirectives = $this->getAllMandatoryDirectivesForDirectives();
+        $allDirectives = [];
+        foreach ($directives as $directive) {
+            $directiveName = $fieldQueryInterpreter->getDirectiveName($directive);
+            // If there are mandatory directives to be added, then we must also check if they, themselves, also must be added their own mandatory directives!
+            if ($mandatoryDirectivesForDirective = array_merge(
+                $mandatoryDirectivesForDirectives[FieldSymbols::ANY_FIELD] ?? [],
+                $mandatoryDirectivesForDirectives[$directiveName] ?? []
+            )) {
+                $allDirectives = array_merge(
+                    $allDirectives,
+                    $this->addMandatoryDirectivesForDirectives($mandatoryDirectivesForDirective)
+                );
+            }
+            $allDirectives[] = $directive;
+        }
+
+        return $allDirectives;
+    }
+
+    /**
      * Collect all directives for all fields, and then build a single directive pipeline for all fields,
      * including all directives, even if they don't apply to all fields
      * Eg: id|title<skip>|excerpt<translate> will produce a pipeline [Skip, Translate] where they apply
@@ -639,14 +670,8 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     public function enqueueFillingResultItemsFromIDs(array $ids_data_fields)
     {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
-        $mandatoryRootFieldDirectives = implode(
-            QuerySyntax::SYMBOL_FIELDDIRECTIVE_SEPARATOR,
-            array_map(
-                [$fieldQueryInterpreter, 'convertDirectiveToFieldDirective'],
-                $this->getMandatoryDirectives()
-            )
-        );
         $mandatoryDirectivesForFields = $this->getAllMandatoryDirectivesForFields();
+        $mandatorySystemDirectives = $this->getMandatoryDirectives();
         $fieldDirectiveCounter = [];
         foreach ($ids_data_fields as $id => $data_fields) {
             $fields = $data_fields['direct'];
@@ -659,30 +684,38 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             ));
             foreach ($fields as $field) {
                 if (is_null($this->fieldDirectivesFromFieldCache[$field])) {
-                    $fieldDirectives = $fieldQueryInterpreter->getFieldDirectives($field, false) ?? '';
+                    // Get the directives from the field
+                    $directives = $fieldQueryInterpreter->getDirectives($field);
                     // Add the mandatory directives defined for this field or for any field in this typeResolver
                     $fieldName = $fieldQueryInterpreter->getFieldName($field);
                     if ($mandatoryDirectivesForField = array_merge(
                         $mandatoryDirectivesForFields[FieldSymbols::ANY_FIELD] ?? [],
                         $mandatoryDirectivesForFields[$fieldName] ?? []
                     )) {
-                        // Place the custom mandatory directives at the beginning of the list, because they may deal with validation (validate first, execute later!)
-                        $mandatoryDirectivesForField = implode(
-                            QuerySyntax::SYMBOL_FIELDDIRECTIVE_SEPARATOR,
-                            array_map(
-                                [$fieldQueryInterpreter, 'convertDirectiveToFieldDirective'],
-                                $mandatoryDirectivesForField
-                            )
+                        // The mandatory directives must be placed first!
+                        $directives = array_merge(
+                            $mandatoryDirectivesForField,
+                            $directives
                         );
-                        $fieldDirectives = $fieldDirectives ?
-                            $mandatoryDirectivesForField.QuerySyntax::SYMBOL_FIELDDIRECTIVE_SEPARATOR.$fieldDirectives :
-                            $mandatoryDirectivesForField;
                     }
 
-                    // Place the global mandatory directives at the beginning of the list, then they will be added to their needed position in the pipeline
-                    $fieldDirectives = $fieldDirectives ?
-                        $mandatoryRootFieldDirectives.QuerySyntax::SYMBOL_FIELDDIRECTIVE_SEPARATOR.$fieldDirectives :
-                        $mandatoryRootFieldDirectives;
+                    // Place the mandatory "system" directives at the beginning of the list, then they will be added to their needed position in the pipeline
+                    $directives = array_merge(
+                        $mandatorySystemDirectives,
+                        $directives
+                    );
+
+                    // If the directives must be preceded by other directives, add them now
+                    $directives = $this->addMandatoryDirectivesForDirectives($directives);
+                    // Convert from directive to fieldDirective
+                    $fieldDirectives = implode(
+                        QuerySyntax::SYMBOL_FIELDDIRECTIVE_SEPARATOR,
+                        array_map(
+                            [$fieldQueryInterpreter, 'convertDirectiveToFieldDirective'],
+                            $directives
+                        )
+                    );
+                    // Assign in the cache
                     $this->fieldDirectivesFromFieldCache[$field] = $fieldDirectives;
                 }
                 // Extract all the directives, and store which fields they process
@@ -1335,6 +1368,31 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             $mandatoryDirectivesForFields = array_merge_recursive(
                 $mandatoryDirectivesForFields,
                 $typeResolverDecoratorInstance->getMandatoryDirectivesForFields($this)
+            );
+        }
+
+        return $mandatoryDirectivesForFields;
+    }
+
+    protected function getAllMandatoryDirectivesForDirectives(): array
+    {
+        if (is_null($this->mandatoryDirectivesForDirectives)) {
+            $this->mandatoryDirectivesForDirectives = $this->calculateAllMandatoryDirectivesForDirectives();
+        }
+        return $this->mandatoryDirectivesForDirectives;
+    }
+
+    protected function calculateAllMandatoryDirectivesForDirectives(): array
+    {
+        $mandatoryDirectivesForFields = [];
+        $instanceManager = InstanceManagerFacade::getInstance();
+        $typeResolverDecoratorClasses = $this->getAllTypeResolverDecoratorClassess();
+        foreach ($typeResolverDecoratorClasses as $typeResolverDecoratorClass) {
+            $typeResolverDecoratorInstance = $instanceManager->getInstance($typeResolverDecoratorClass);
+            // array_merge_recursive so that if 2 different decorators add a directive for the same field, the results are merged together, not override each other
+            $mandatoryDirectivesForFields = array_merge_recursive(
+                $mandatoryDirectivesForFields,
+                $typeResolverDecoratorInstance->getMandatoryDirectivesForDirectives($this)
             );
         }
 
