@@ -1,15 +1,16 @@
 <?php
 namespace PoP\ComponentModel\TypeResolvers;
 
-use PoP\ComponentModel\Engine_Vars;
 use PoP\ComponentModel\Error;
 use PoP\FieldQuery\QueryUtils;
 use PoP\FieldQuery\QuerySyntax;
 use PoP\FieldQuery\QueryHelpers;
 use PoP\ComponentModel\ErrorUtils;
+use PoP\ComponentModel\Engine_Vars;
 use PoP\ComponentModel\Environment;
 use PoP\FieldQuery\FieldQueryUtils;
 use League\Pipeline\PipelineBuilder;
+use PoP\Hooks\Facades\HooksAPIFacade;
 use PoP\ComponentModel\Feedback\Tokens;
 use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
@@ -22,14 +23,15 @@ use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
+use PoP\ComponentModel\Facades\Schema\SchemaDefinitionServiceFacade;
 use PoP\ComponentModel\DirectiveResolvers\DirectiveResolverInterface;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
-use PoP\ComponentModel\Facades\Schema\SchemaDefinitionServiceFacade;
 
 abstract class AbstractTypeResolver implements TypeResolverInterface
 {
     public const OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM = 'validateSchemaOnResultItem';
+    public const HOOK_RESOLVED_FIELD_NAMES = __CLASS__.':resolved_field_names';
 
     /**
      * Cache of which fieldResolvers will process the given field
@@ -1304,6 +1306,47 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $this->schemaDefinition[$typeSchemaKey][$entry][$fieldName] = $fieldSchemaDefinition;
     }
 
+    /**
+     * Return the fieldNames resolved by the fieldResolverClass, adding a hook to disable each of them (eg: to implement a private schema)
+     *
+     * @param string $extensionClass
+     * @return array
+     */
+    protected function getFieldNamesResolvedByFieldResolver(string $fieldResolverClass): array
+    {
+        // Merge the fieldNames resolved by this field resolver class, and the interfaces it implements
+        $fieldNames = array_merge(
+            $fieldResolverClass::getFieldNamesToResolve(),
+            $fieldResolverClass::getFieldNamesFromInterfaces()
+        );
+
+        // Execute a hook, allowing to filter them out (eg: removing fieldNames from a private schema)
+        $hooksAPI = HooksAPIFacade::getInstance();
+        $fieldNames = array_filter(
+            $fieldNames,
+            function($fieldName) use($hooksAPI, $fieldResolverClass) {
+                // Execute 2 filters: a generic one, and a specific one
+                if ($hooksAPI->applyFilters(
+                    self::HOOK_RESOLVED_FIELD_NAMES,
+                    true,
+                    $fieldName,
+                    $fieldResolverClass,
+                    $this
+                )) {
+                    return $hooksAPI->applyFilters(
+                        self::HOOK_RESOLVED_FIELD_NAMES.':'.$fieldName,
+                        true,
+                        $fieldName,
+                        $fieldResolverClass,
+                        $this
+                    );
+                }
+                return false;
+            }
+        );
+        return $fieldNames;
+    }
+
     protected function getAllFieldResolvers(): array
     {
         if (is_null($this->schemaFieldResolvers)) {
@@ -1327,10 +1370,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             do {
                 foreach ($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDRESOLVERS) as $extensionClass => $extensionPriority) {
                     // Process the fields which have not been processed yet
-                    $extensionClassFieldNames = array_merge(
-                        $extensionClass::getFieldNamesToResolve(),
-                        $extensionClass::getFieldNamesFromInterfaces()
-                    );
+                    $extensionClassFieldNames = $this->getFieldNamesResolvedByFieldResolver($extensionClass);
                     foreach (array_diff($extensionClassFieldNames, array_keys($schemaFieldResolvers)) as $fieldName) {
                         // Watch out here: no fieldArgs!!!! So this deals with the base case (static), not with all cases (runtime)
                         $schemaFieldResolvers[$fieldName] = $this->getFieldResolversForField($fieldName);
@@ -1528,10 +1568,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 // Important: do array_reverse to enable more specific hooks, which are initialized later on in the project, to be the chosen ones (if their priority is the same)
                 foreach (array_reverse($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDRESOLVERS)) as $extensionClass => $extensionPriority) {
                     // Check if this fieldResolver can process this field, and if its priority is bigger than the previous found instance attached to the same class
-                    $extensionClassFieldNames = array_merge(
-                        $extensionClass::getFieldNamesToResolve(),
-                        $extensionClass::getFieldNamesFromInterfaces()
-                    );
+                    $extensionClassFieldNames = $this->getFieldNamesResolvedByFieldResolver($extensionClass);
                     if (in_array($fieldName, $extensionClassFieldNames)) {
                         // Check that the fieldResolver can handle the field based on other parameters (eg: "version" in the fieldArgs)
                         $fieldResolver = $instanceManager->getInstance($extensionClass);
@@ -1604,10 +1641,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $class = get_called_class();
         do {
             foreach ($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDRESOLVERS) as $extensionClass => $extensionPriority) {
-                $extensionClassFieldNames = array_merge(
-                    $extensionClass::getFieldNamesToResolve(),
-                    $extensionClass::getFieldNamesFromInterfaces()
-                );
+                $extensionClassFieldNames = $this->getFieldNamesResolvedByFieldResolver($extensionClass);
                 $ret = array_merge(
                     $ret,
                     $extensionClassFieldNames
