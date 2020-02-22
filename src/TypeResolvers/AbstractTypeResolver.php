@@ -1322,23 +1322,25 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
         // Execute a hook, allowing to filter them out (eg: removing fieldNames from a private schema)
         $hooksAPI = HooksAPIFacade::getInstance();
+        $instanceManager = InstanceManagerFacade::getInstance();
+        $fieldResolver = $instanceManager->getInstance($fieldResolverClass);
         $fieldNames = array_filter(
             $fieldNames,
-            function($fieldName) use($hooksAPI, $fieldResolverClass) {
+            function($fieldName) use($hooksAPI, $fieldResolver) {
                 // Execute 2 filters: a generic one, and a specific one
                 if ($hooksAPI->applyFilters(
                     self::HOOK_RESOLVED_FIELD_NAMES,
                     true,
-                    $fieldName,
-                    $fieldResolverClass,
-                    $this
+                    $this,
+                    $fieldResolver,
+                    $fieldName
                 )) {
                     return $hooksAPI->applyFilters(
                         self::HOOK_RESOLVED_FIELD_NAMES.':'.$fieldName,
                         true,
-                        $fieldName,
-                        $fieldResolverClass,
-                        $this
+                        $this,
+                        $fieldResolver,
+                        $fieldName
                     );
                 }
                 return false;
