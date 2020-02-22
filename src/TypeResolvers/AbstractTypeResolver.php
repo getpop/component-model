@@ -31,7 +31,8 @@ use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFa
 abstract class AbstractTypeResolver implements TypeResolverInterface
 {
     public const OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM = 'validateSchemaOnResultItem';
-    public const HOOK_RESOLVED_FIELD_NAMES = __CLASS__.':resolved_field_names';
+    public const HOOK_ENABLED_FIELD_NAMES = __CLASS__.':enabled_field_names';
+    public const HOOK_ENABLED_DIRECTIVE_NAMES = __CLASS__.':resolved_directives_names';
 
     /**
      * Cache of which fieldResolvers will process the given field
@@ -659,6 +660,40 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return $allDirectives;
     }
 
+
+
+    /**
+     * Execute a hook to allow to disable directives (eg: to implement a private schema)
+     *
+     * @param array $directiveNameClasses
+     * @return array
+     */
+    protected function filterDirectiveNameClasses(array $directiveNameClasses): array
+    {
+        // Execute a hook, allowing to filter them out (eg: removing fieldNames from a private schema)
+        $hooksAPI = HooksAPIFacade::getInstance();
+        return array_filter(
+            $directiveNameClasses,
+            function($directiveName) use($hooksAPI) {
+                // Execute 2 filters: a generic one, and a specific one
+                if ($hooksAPI->applyFilters(
+                    self::HOOK_ENABLED_DIRECTIVE_NAMES,
+                    true,
+                    $this,
+                    $directiveName
+                )) {
+                    return $hooksAPI->applyFilters(
+                        self::HOOK_ENABLED_DIRECTIVE_NAMES.':'.$directiveName,
+                        true,
+                        $this
+                    );
+                }
+                return false;
+            },
+            ARRAY_FILTER_USE_KEY
+        );
+    }
+
     /**
      * Collect all directives for all fields, and then build a single directive pipeline for all fields,
      * including all directives, even if they don't apply to all fields
@@ -688,6 +723,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 if (is_null($this->fieldDirectivesFromFieldCache[$field])) {
                     // Get the directives from the field
                     $directives = $fieldQueryInterpreter->getDirectives($field);
+
                     // Add the mandatory directives defined for this field or for any field in this typeResolver
                     $fieldName = $fieldQueryInterpreter->getFieldName($field);
                     if ($mandatoryDirectivesForField = array_merge(
@@ -708,6 +744,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     );
                     // If the directives must be preceded by other directives, add them now
                     $directives = $this->addMandatoryDirectivesForDirectives($directives);
+
                     // Convert from directive to fieldDirective
                     $fieldDirectives = implode(
                         QuerySyntax::SYMBOL_FIELDDIRECTIVE_SEPARATOR,
@@ -1329,14 +1366,14 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             function($fieldName) use($hooksAPI, $fieldResolver) {
                 // Execute 2 filters: a generic one, and a specific one
                 if ($hooksAPI->applyFilters(
-                    self::HOOK_RESOLVED_FIELD_NAMES,
+                    self::HOOK_ENABLED_FIELD_NAMES,
                     true,
                     $this,
                     $fieldResolver,
                     $fieldName
                 )) {
                     return $hooksAPI->applyFilters(
-                        self::HOOK_RESOLVED_FIELD_NAMES.':'.$fieldName,
+                        self::HOOK_ENABLED_FIELD_NAMES.':'.$fieldName,
                         true,
                         $this,
                         $fieldResolver,
@@ -1629,6 +1666,9 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 // Continue iterating for the class parents
             } while ($class = get_parent_class($class));
         }
+
+        // Validate that the user has access to the directives (eg: can remove access to them for non logged-in users)
+        $directiveNameClasses = $this->filterDirectiveNameClasses($directiveNameClasses);
 
         return $directiveNameClasses;
     }
