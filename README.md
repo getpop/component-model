@@ -1272,7 +1272,7 @@ protected function getMutableonrequestDataloadQueryArgs($module, $props)
     
       // Set the logged-in user id
       $cmsapi = \PoP\CMS\FunctionAPI_Factory::getInstance();
-      $ret['author'] = $cmsapi->getCurrentUserId();
+      $ret['author'] = $cmsapi->getCurrentUserID();
       break;
   }
 
