@@ -25,7 +25,7 @@ abstract class AbstractComponentConfiguration
             );
             $selfProperty = $hooksAPI->applyFilters(
                 $hookName,
-                $callback
+                $callback()
             );
         }
     }
