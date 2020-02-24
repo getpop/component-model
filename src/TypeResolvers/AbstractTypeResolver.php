@@ -1451,10 +1451,12 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         foreach ($typeResolverDecoratorClasses as $typeResolverDecoratorClass) {
             $typeResolverDecoratorInstance = $instanceManager->getInstance($typeResolverDecoratorClass);
             // array_merge_recursive so that if 2 different decorators add a directive for the same field, the results are merged together, not override each other
-            $mandatoryDirectivesForFields = array_merge_recursive(
-                $mandatoryDirectivesForFields,
-                $typeResolverDecoratorInstance->getMandatoryDirectivesForFields($this)
-            );
+            if ($typeResolverDecoratorInstance->enabled($this)) {
+                $mandatoryDirectivesForFields = array_merge_recursive(
+                    $mandatoryDirectivesForFields,
+                    $typeResolverDecoratorInstance->getMandatoryDirectivesForFields($this)
+                );
+            }
         }
 
         return $mandatoryDirectivesForFields;
@@ -1476,10 +1478,12 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         foreach ($typeResolverDecoratorClasses as $typeResolverDecoratorClass) {
             $typeResolverDecoratorInstance = $instanceManager->getInstance($typeResolverDecoratorClass);
             // array_merge_recursive so that if 2 different decorators add a directive for the same directive, the results are merged together, not override each other
-            $mandatoryDirectivesForDirectives = array_merge_recursive(
-                $mandatoryDirectivesForDirectives,
-                $typeResolverDecoratorInstance->getMandatoryDirectivesForDirectives($this)
-            );
+            if ($typeResolverDecoratorInstance->enabled($this)) {
+                $mandatoryDirectivesForDirectives = array_merge_recursive(
+                    $mandatoryDirectivesForDirectives,
+                    $typeResolverDecoratorInstance->getMandatoryDirectivesForDirectives($this)
+                );
+            }
         }
 
         return $mandatoryDirectivesForDirectives;

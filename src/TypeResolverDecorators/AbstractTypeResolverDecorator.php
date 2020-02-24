@@ -13,6 +13,17 @@ abstract class AbstractTypeResolverDecorator implements TypeResolverDecoratorInt
     use AttachableExtensionTrait;
 
     /**
+     * Allow to disable the functionality
+     *
+     * @param TypeResolverInterface $typeResolver
+     * @return array
+     */
+    public function enabled(TypeResolverInterface $typeResolver): bool
+    {
+        return true;
+    }
+
+    /**
      * Return an array of fieldNames as keys, and, for each fieldName, an array of directives (including directive arguments) to be applied always on the field
      *
      * @param TypeResolverInterface $typeResolver
