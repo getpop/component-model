@@ -98,6 +98,6 @@ interface DirectiveResolverInterface
      *
      * @return void
      */
-    public function skipAddingToSchemaDefinition();
+    public function skipAddingToSchemaDefinition(): bool;
     public function getSchemaDefinitionForDirective(TypeResolverInterface $typeResolver): array;
 }

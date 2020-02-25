@@ -624,7 +624,12 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         return null;
     }
 
-    public function skipAddingToSchemaDefinition() {
+    /**
+     * Directives may not be directly visible in the schema, eg: because their name is duplicated across directives (eg: "cacheControl") or because they are used through code (eg: "validateIsUserLoggedIn")
+     *
+     * @return boolean
+     */
+    public function skipAddingToSchemaDefinition(): bool {
         return false;
     }
 
