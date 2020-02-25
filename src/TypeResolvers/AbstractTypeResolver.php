@@ -693,7 +693,8 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     return $hooksAPI->applyFilters(
                         self::getHookNameToFilterDirective($directiveName),
                         true,
-                        $this
+                        $this,
+                        $directiveName
                     );
                 }
                 return false;
