@@ -13,6 +13,15 @@ class ValidateDirectiveResolver extends AbstractValidateDirectiveResolver
     }
 
     /**
+     * Do show in the schema
+     *
+     * @return boolean
+     */
+    public function skipAddingToSchemaDefinition(): bool {
+        return false;
+    }
+
+    /**
      * Validating the directive can be done only once (and it is mandatory!)
      *
      * @return boolean
