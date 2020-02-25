@@ -680,24 +680,32 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     {
         // Execute a hook, allowing to filter them out (eg: removing fieldNames from a private schema)
         $hooksAPI = HooksAPIFacade::getInstance();
+        $instanceManager = InstanceManagerFacade::getInstance();
         return array_filter(
             $directiveNameClasses,
-            function($directiveName) use($hooksAPI) {
-                // Execute 2 filters: a generic one, and a specific one
-                if ($hooksAPI->applyFilters(
-                    self::getHookNameToFilterDirective(),
-                    true,
-                    $this,
-                    $directiveName
-                )) {
-                    return $hooksAPI->applyFilters(
-                        self::getHookNameToFilterDirective($directiveName),
+            function($directiveName) use($hooksAPI, $directiveNameClasses, $instanceManager) {
+                $directiveResolverClasses = $directiveNameClasses[$directiveName];
+                foreach ($directiveResolverClasses as $directiveResolverClass) {
+                    $directiveResolver = $instanceManager->getInstance($directiveResolverClass);
+                    // Execute 2 filters: a generic one, and a specific one
+                    if ($hooksAPI->applyFilters(
+                        self::getHookNameToFilterDirective(),
                         true,
                         $this,
+                        $directiveResolver,
                         $directiveName
-                    );
+                    )) {
+                        return $hooksAPI->applyFilters(
+                            self::getHookNameToFilterDirective($directiveName),
+                            true,
+                            $this,
+                            $directiveResolver,
+                            $directiveName
+                        );
+                    }
+                    return false;
                 }
-                return false;
+                return true;
             },
             ARRAY_FILTER_USE_KEY
         );
