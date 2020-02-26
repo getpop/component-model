@@ -31,8 +31,6 @@ use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFa
 abstract class AbstractTypeResolver implements TypeResolverInterface
 {
     public const OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM = 'validateSchemaOnResultItem';
-    public const HOOK_ENABLED_FIELD_NAMES = __CLASS__.':enabled_field_names';
-    public const HOOK_ENABLED_DIRECTIVE_NAMES = __CLASS__.':resolved_directives_names';
 
     /**
      * Cache of which fieldResolvers will process the given field
@@ -660,16 +658,6 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return $allDirectives;
     }
 
-    public static function getHookNameToFilterDirective(?string $directiveName = null): string
-    {
-        return self::HOOK_ENABLED_DIRECTIVE_NAMES.($directiveName ? ':'.$directiveName : '');
-    }
-
-    public static function getHookNameToFilterField(?string $fieldName = null): string
-    {
-        return self::HOOK_ENABLED_FIELD_NAMES.($fieldName ? ':'.$fieldName : '');
-    }
-
     /**
      * Execute a hook to allow to disable directives (eg: to implement a private schema)
      *
@@ -689,14 +677,14 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     $directiveResolver = $instanceManager->getInstance($directiveResolverClass);
                     // Execute 2 filters: a generic one, and a specific one
                     if ($hooksAPI->applyFilters(
-                        self::getHookNameToFilterDirective(),
+                        HookHelpers::getHookNameToFilterDirective(),
                         true,
                         $this,
                         $directiveResolver,
                         $directiveName
                     )) {
                         return $hooksAPI->applyFilters(
-                            self::getHookNameToFilterDirective($directiveName),
+                            HookHelpers::getHookNameToFilterDirective($directiveName),
                             true,
                             $this,
                             $directiveResolver,
@@ -1383,14 +1371,14 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             function($fieldName) use($hooksAPI, $fieldResolver) {
                 // Execute 2 filters: a generic one, and a specific one
                 if ($hooksAPI->applyFilters(
-                    self::getHookNameToFilterField(),
+                    HookHelpers::getHookNameToFilterField(),
                     true,
                     $this,
                     $fieldResolver,
                     $fieldName
                 )) {
                     return $hooksAPI->applyFilters(
-                        self::getHookNameToFilterField($fieldName),
+                        HookHelpers::getHookNameToFilterField($fieldName),
                         true,
                         $this,
                         $fieldResolver,
