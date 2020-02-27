@@ -52,6 +52,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     private $fieldDirectivesFromFieldCache = [];
     private $dissectedFieldForSchemaCache = [];
     private $directiveResolverInstanceCache = [];
+    private $fieldNamesResolvedByFieldResolver = [];
 
     public function getNamespace(): string
     {
@@ -1356,39 +1357,42 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
      */
     protected function getFieldNamesResolvedByFieldResolver(string $fieldResolverClass): array
     {
-        // Merge the fieldNames resolved by this field resolver class, and the interfaces it implements
-        $fieldNames = array_merge(
-            $fieldResolverClass::getFieldNamesToResolve(),
-            $fieldResolverClass::getFieldNamesFromInterfaces()
-        );
+        if (is_null($this->fieldNamesResolvedByFieldResolver[$fieldResolverClass])) {
+            // Merge the fieldNames resolved by this field resolver class, and the interfaces it implements
+            $fieldNames = array_merge(
+                $fieldResolverClass::getFieldNamesToResolve(),
+                $fieldResolverClass::getFieldNamesFromInterfaces()
+            );
 
-        // Execute a hook, allowing to filter them out (eg: removing fieldNames from a private schema)
-        $hooksAPI = HooksAPIFacade::getInstance();
-        $instanceManager = InstanceManagerFacade::getInstance();
-        $fieldResolver = $instanceManager->getInstance($fieldResolverClass);
-        $fieldNames = array_filter(
-            $fieldNames,
-            function($fieldName) use($hooksAPI, $fieldResolver) {
-                // Execute 2 filters: a generic one, and a specific one
-                if ($hooksAPI->applyFilters(
-                    HookHelpers::getHookNameToFilterField(),
-                    true,
-                    $this,
-                    $fieldResolver,
-                    $fieldName
-                )) {
-                    return $hooksAPI->applyFilters(
-                        HookHelpers::getHookNameToFilterField($fieldName),
+            // Execute a hook, allowing to filter them out (eg: removing fieldNames from a private schema)
+            $hooksAPI = HooksAPIFacade::getInstance();
+            $instanceManager = InstanceManagerFacade::getInstance();
+            $fieldResolver = $instanceManager->getInstance($fieldResolverClass);
+            $fieldNames = array_filter(
+                $fieldNames,
+                function($fieldName) use($hooksAPI, $fieldResolver) {
+                    // Execute 2 filters: a generic one, and a specific one
+                    if ($hooksAPI->applyFilters(
+                        HookHelpers::getHookNameToFilterField(),
                         true,
                         $this,
                         $fieldResolver,
                         $fieldName
-                    );
+                    )) {
+                        return $hooksAPI->applyFilters(
+                            HookHelpers::getHookNameToFilterField($fieldName),
+                            true,
+                            $this,
+                            $fieldResolver,
+                            $fieldName
+                        );
+                    }
+                    return false;
                 }
-                return false;
-            }
-        );
-        return $fieldNames;
+            );
+            $this->fieldNamesResolvedByFieldResolver[$fieldResolverClass] = $fieldNames;
+        }
+        return $this->fieldNamesResolvedByFieldResolver[$fieldResolverClass];
     }
 
     protected function getAllFieldResolvers(): array
