@@ -80,12 +80,12 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
             case 'namespace':
                 return $typeResolver->getNamespace();
             case 'qualifiedTypeName':
-                return $typeResolver->getQualifiedTypeName();
+                return $typeResolver->getNamespacedTypeName();
             case 'isType':
                 $typeName = $fieldArgs['type'];
                 // If the provided typeName contains the namespace separator, then compare by qualifiedType
                 if (strpos($typeName, SchemaDefinition::TOKEN_NAMESPACE_SEPARATOR) !== false) {
-                    return $typeName == $typeResolver->getQualifiedTypeName();
+                    return $typeName == $typeResolver->getNamespacedTypeName();
                 }
                 return $typeName == $typeResolver->getTypeName();
             case 'implements':
@@ -95,7 +95,7 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
                 $implementedInterfaceNames = array_map(
                     function($interfaceResolver) use($useQualified) {
                         if ($useQualified) {
-                            return $interfaceResolver->getQualifiedInterfaceName();
+                            return $interfaceResolver->getNamespacedInterfaceName();
                         }
                         return $interfaceResolver->getInterfaceName();
                     },

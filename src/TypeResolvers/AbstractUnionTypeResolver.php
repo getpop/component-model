@@ -221,9 +221,9 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
                 throw new Exception(
                     sprintf(
                         $translationAPI->__('UnionTypeResolver \'%s\' (\'%s\') must return results implementing interface \'%s\' (\'%s\'), however its following member TypeResolvers do not: \'%s\'', 'component-model'),
-                        $this->getMaybeQualifiedTypeName(),
+                        $this->getMaybeNamespacedTypeName(),
                         get_called_class(),
-                        $typeInterfaceResolver->getMaybeQualifiedInterfaceName(),
+                        $typeInterfaceResolver->getMaybeNamespacedInterfaceName(),
                         $typeInterfaceClass,
                         implode(
                             $translationAPI->__('\', \''),
@@ -232,7 +232,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
                                     $typeResolver = $instanceManager->getInstance($typeResolverClass);
                                     return sprintf(
                                         $translationAPI->__('%s (%s)'),
-                                        $typeResolver->getMaybeQualifiedTypeName(),
+                                        $typeResolver->getMaybeNamespacedTypeName(),
                                         $typeResolverClass
                                     );
                                 },
@@ -340,8 +340,8 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         $typeSchemaKey = $schemaDefinitionService->getTypeSchemaKey($this, $options);
 
         // Properties
-        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_NAME] = $this->getMaybeQualifiedTypeName();
-        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_NAMESPACED_NAME] = $this->getQualifiedTypeName();
+        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_NAME] = $this->getMaybeNamespacedTypeName();
+        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_NAMESPACED_NAME] = $this->getNamespacedTypeName();
         $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_ELEMENT_NAME] = $this->getTypeName();
         if ($description = $this->getSchemaTypeDescription()) {
             $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
@@ -351,14 +351,14 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         // If it returns an interface as type, add it to the schemaDefinition
         if ($typeInterfaceClass = $this->getSchemaTypeInterfaceClass()) {
             $typeInterfaceResolver = $instanceManager->getInstance($typeInterfaceClass);
-            $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_RESULTS_IMPLEMENT_INTERFACE] = $typeInterfaceResolver->getMaybeQualifiedInterfaceName();
+            $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_RESULTS_IMPLEMENT_INTERFACE] = $typeInterfaceResolver->getMaybeNamespacedInterfaceName();
         }
 
         // Iterate through the typeResolvers from all the pickers and get their schema definitions
         foreach ($this->getTypeResolverPickers() as $picker) {
             $pickerTypeResolver = $instanceManager->getInstance($picker->getTypeResolverClass());
             $pickerTypeSchemaDefinition = $pickerTypeResolver->getSchemaDefinition($stackMessages, $generalMessages, $options);
-            $pickerTypeName = $pickerTypeResolver->getMaybeQualifiedTypeName();
+            $pickerTypeName = $pickerTypeResolver->getMaybeNamespacedTypeName();
             $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_POSSIBLE_TYPES][$pickerTypeName] = $pickerTypeSchemaDefinition[$pickerTypeName];
         }
     }

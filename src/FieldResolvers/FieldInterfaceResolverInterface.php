@@ -19,7 +19,7 @@ interface FieldInterfaceResolverInterface extends FieldSchemaDefinitionResolverI
     public static function getImplementedInterfaceClasses(): array;
     public function getInterfaceName(): string;
     public function getNamespace(): string;
-    public function getQualifiedInterfaceName(): string;
-    public function getMaybeQualifiedInterfaceName(): string;
+    public function getNamespacedInterfaceName(): string;
+    public function getMaybeNamespacedInterfaceName(): string;
     public function getSchemaInterfaceDescription(): ?string;
 }

@@ -2,7 +2,6 @@
 namespace PoP\ComponentModel\FieldResolvers;
 
 use PoP\ComponentModel\Engine_Vars;
-use PoP\ComponentModel\Environment;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\ComponentModel\FieldResolvers\SchemaDefinitionResolverTrait;
 use PoP\ComponentModel\Schema\SchemaHelpers;
@@ -26,17 +25,17 @@ abstract class AbstractFieldInterfaceResolver implements FieldInterfaceResolverI
         return SchemaHelpers::convertNamespace(SchemaHelpers::getOwnerAndProjectFromNamespace(__NAMESPACE__));
     }
 
-    final public function getQualifiedInterfaceName(): string
+    final public function getNamespacedInterfaceName(): string
     {
         $namespace = $this->getNamespace();
         return ($namespace ? $namespace.SchemaDefinition::TOKEN_NAMESPACE_SEPARATOR : '').$this->getInterfaceName();
     }
 
-    final public function getMaybeQualifiedInterfaceName(): string
+    final public function getMaybeNamespacedInterfaceName(): string
     {
         $vars = Engine_Vars::getVars();
         return $vars['namespace-types-and-interfaces'] ?
-            $this->getQualifiedInterfaceName() :
+            $this->getNamespacedInterfaceName() :
             $this->getInterfaceName();
     }
 

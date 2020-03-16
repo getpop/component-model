@@ -9,8 +9,8 @@ interface TypeResolverInterface
     public function getID($resultItem);
     public function getTypeName(): string;
     public function getNamespace(): string;
-    public function getQualifiedTypeName(): string;
-    public function getMaybeQualifiedTypeName(): string;
+    public function getNamespacedTypeName(): string;
+    public function getMaybeNamespacedTypeName(): string;
     public function getTypeOutputName(): string;
     public function getTypeDataLoaderClass(): string;
     public function getSchemaTypeDescription(): ?string;

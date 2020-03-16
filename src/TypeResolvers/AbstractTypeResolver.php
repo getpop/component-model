@@ -59,24 +59,24 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return SchemaHelpers::convertNamespace(SchemaHelpers::getOwnerAndProjectFromNamespace(__NAMESPACE__));
     }
 
-    final public function getQualifiedTypeName(): string
+    final public function getNamespacedTypeName(): string
     {
         $namespace = $this->getNamespace();
         return ($namespace ? $namespace.SchemaDefinition::TOKEN_NAMESPACE_SEPARATOR : '').$this->getTypeName();
     }
 
-    final public function getMaybeQualifiedTypeName(): string
+    final public function getMaybeNamespacedTypeName(): string
     {
         $vars = Engine_Vars::getVars();
         return $vars['namespace-types-and-interfaces'] ?
-            $this->getQualifiedTypeName() :
+            $this->getNamespacedTypeName() :
             $this->getTypeName();
     }
 
     public function getTypeOutputName(): string
     {
         // First letter lowercase
-        return lcfirst($this->getMaybeQualifiedTypeName());
+        return lcfirst($this->getMaybeNamespacedTypeName());
     }
 
     public function getSchemaTypeDescription(): ?string
@@ -1195,9 +1195,9 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     {
         $schemaDefinitionService = SchemaDefinitionServiceFacade::getInstance();
         $typeSchemaKey = $schemaDefinitionService->getTypeSchemaKey($this, $options);
-        $typeName = $this->getMaybeQualifiedTypeName();
+        $typeName = $this->getMaybeNamespacedTypeName();
         $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_NAME] = $typeName;
-        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_NAMESPACED_NAME] = $this->getQualifiedTypeName();
+        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_NAMESPACED_NAME] = $this->getNamespacedTypeName();
         $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_ELEMENT_NAME] = $this->getTypeName();
 
         // Properties
@@ -1240,10 +1240,10 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             if ($interfaceImplementedInterfaceClasses = $interfaceInstance::getImplementedInterfaceClasses()) {
                 foreach ($interfaceImplementedInterfaceClasses as $interfaceImplementedInterfaceClass) {
                     $interfaceImplementedInterfaceInstance = $instanceManager->getInstance($interfaceImplementedInterfaceClass);
-                    $interfaceImplementedInterfaceNames[] = $interfaceImplementedInterfaceInstance->getMaybeQualifiedInterfaceName();
+                    $interfaceImplementedInterfaceNames[] = $interfaceImplementedInterfaceInstance->getMaybeNamespacedInterfaceName();
                 }
             }
-            $interfaceName = $interfaceInstance->getMaybeQualifiedInterfaceName();
+            $interfaceName = $interfaceInstance->getMaybeNamespacedInterfaceName();
             // Possible types: Because we are generating this list as we go along resolving all the types, simply have this value point to a reference in $generalMessages
             // Just by updating that variable, it will eventually be updated everywhere
             $generalMessages['interfaceGeneralTypes'][$interfaceName] = $generalMessages['interfaceGeneralTypes'][$interfaceName] ?? [];
@@ -1252,7 +1252,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             $interfacePossibleTypes[] = $typeName;
             $typeInterfaceDefinitions[$interfaceSchemaKey] = [
                 SchemaDefinition::ARGNAME_NAME => $interfaceName,
-                SchemaDefinition::ARGNAME_NAMESPACED_NAME => $interfaceInstance->getQualifiedInterfaceName(),
+                SchemaDefinition::ARGNAME_NAMESPACED_NAME => $interfaceInstance->getNamespacedInterfaceName(),
                 SchemaDefinition::ARGNAME_ELEMENT_NAME => $interfaceInstance->getInterfaceName(),
                 SchemaDefinition::ARGNAME_DESCRIPTION => $interfaceInstance->getSchemaInterfaceDescription(),
                 SchemaDefinition::ARGNAME_FIELDS => $interfaceFields,

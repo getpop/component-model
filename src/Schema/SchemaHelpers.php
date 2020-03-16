@@ -156,7 +156,7 @@ class SchemaHelpers
             // The convertedType may not be implemented yet (eg: Category), then skip
             if ($fieldTypeResolverClass = $typeResolver->resolveFieldTypeResolverClass($fieldName)) {
                 $fieldTypeResolver = $instanceManager->getInstance((string)$fieldTypeResolverClass);
-                $convertedType = $fieldTypeResolver->getMaybeQualifiedTypeName();
+                $convertedType = $fieldTypeResolver->getMaybeNamespacedTypeName();
             }
         }
         return TypeCastingHelpers::makeArray($convertedType, $arrayInstances);
