@@ -1,7 +1,6 @@
 <?php
 namespace PoP\ComponentModel\Schema;
 
-use PoP\ComponentModel\Environment;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\FieldResolvers\FieldInterfaceResolverInterface;
 

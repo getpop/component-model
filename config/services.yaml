@@ -87,6 +87,10 @@ services:
         class: \PoP\ComponentModel\Schema\TypeCastingExecuter
         public: true
 
+    type_registry:
+        class: \PoP\ComponentModel\Schema\TypeRegistry
+        public: true
+
     schema_definition_service:
         class: \PoP\ComponentModel\Schema\SchemaDefinitionService
         public: true
