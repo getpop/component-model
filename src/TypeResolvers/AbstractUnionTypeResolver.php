@@ -341,6 +341,8 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
 
         // Properties
         $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_NAME] = $this->getMaybeQualifiedTypeName();
+        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_NAMESPACED_NAME] = $this->getQualifiedTypeName();
+        $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_ELEMENT_NAME] = $this->getTypeName();
         if ($description = $this->getSchemaTypeDescription()) {
             $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
         }

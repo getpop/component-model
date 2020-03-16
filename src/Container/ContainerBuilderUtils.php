@@ -12,10 +12,10 @@ class ContainerBuilderUtils extends RootContainerBuilderUtils {
      * @param string $namespace
      * @return void
      */
-    public static function attachFieldResolversFromNamespace(string $namespace, bool $includeSubfolders = true): void
+    public static function attachFieldResolversFromNamespace(string $namespace, bool $includeSubfolders = true, int $priority = 10): void
     {
         foreach (self::getServiceClassesUnderNamespace($namespace, $includeSubfolders) as $serviceClass) {
-            $serviceClass::attach(AttachableExtensionGroups::FIELDRESOLVERS);
+            $serviceClass::attach(AttachableExtensionGroups::FIELDRESOLVERS, $priority);
         }
     }
 
@@ -25,10 +25,10 @@ class ContainerBuilderUtils extends RootContainerBuilderUtils {
      * @param string $namespace
      * @return void
      */
-    public static function attachDirectiveResolversFromNamespace(string $namespace, bool $includeSubfolders = true): void
+    public static function attachDirectiveResolversFromNamespace(string $namespace, bool $includeSubfolders = true, int $priority = 10): void
     {
         foreach (self::getServiceClassesUnderNamespace($namespace, $includeSubfolders) as $serviceClass) {
-            $serviceClass::attach(AttachableExtensionGroups::DIRECTIVERESOLVERS);
+            $serviceClass::attach(AttachableExtensionGroups::DIRECTIVERESOLVERS, $priority);
         }
     }
 
@@ -38,10 +38,10 @@ class ContainerBuilderUtils extends RootContainerBuilderUtils {
      * @param string $namespace
      * @return void
      */
-    public static function attachTypeResolverPickersFromNamespace(string $namespace, bool $includeSubfolders = true): void
+    public static function attachTypeResolverPickersFromNamespace(string $namespace, bool $includeSubfolders = true, int $priority = 10): void
     {
         foreach (self::getServiceClassesUnderNamespace($namespace, $includeSubfolders) as $serviceClass) {
-            $serviceClass::attach(AttachableExtensionGroups::TYPERESOLVERPICKERS);
+            $serviceClass::attach(AttachableExtensionGroups::TYPERESOLVERPICKERS, $priority);
         }
     }
 
@@ -51,10 +51,10 @@ class ContainerBuilderUtils extends RootContainerBuilderUtils {
      * @param string $namespace
      * @return void
      */
-    public static function attachTypeResolverDecoratorsFromNamespace(string $namespace, bool $includeSubfolders = true): void
+    public static function attachTypeResolverDecoratorsFromNamespace(string $namespace, bool $includeSubfolders = true, int $priority = 10): void
     {
         foreach (self::getServiceClassesUnderNamespace($namespace, $includeSubfolders) as $serviceClass) {
-            $serviceClass::attach(AttachableExtensionGroups::TYPERESOLVERDECORATORS);
+            $serviceClass::attach(AttachableExtensionGroups::TYPERESOLVERDECORATORS, $priority);
         }
     }
 }

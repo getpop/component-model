@@ -4,6 +4,8 @@ namespace PoP\ComponentModel\Schema;
 class SchemaDefinition {
     // Field/Directive Argument Names
     const ARGNAME_NAME = 'name';
+    const ARGNAME_NAMESPACED_NAME = 'namespacedName';
+    const ARGNAME_ELEMENT_NAME = 'elementName';
     const ARGNAME_TYPE = 'type';
     const ARGNAME_REFERENCED_TYPE = 'referencedType';
     const ARGNAME_DESCRIPTION = 'description';
