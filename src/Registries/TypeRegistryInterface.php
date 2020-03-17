@@ -1,5 +1,5 @@
 <?php
-namespace PoP\ComponentModel\Schema;
+namespace PoP\ComponentModel\Registries;
 
 interface TypeRegistryInterface
 {

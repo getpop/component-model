@@ -75,6 +75,14 @@ services:
         class: \PoP\ComponentModel\ModuleProcessors\ModuleProcessorManager
         public: true
 
+    type_registry:
+        class: \PoP\ComponentModel\Registries\TypeRegistry
+        public: true
+
+    directive_registry:
+        class: \PoP\ComponentModel\Registries\DirectiveRegistry
+        public: true
+
     feedback_message_store:
         class: \PoP\ComponentModel\Schema\FeedbackMessageStore
         public: true
@@ -85,10 +93,6 @@ services:
 
     type_casting_executer:
         class: \PoP\ComponentModel\Schema\TypeCastingExecuter
-        public: true
-
-    type_registry:
-        class: \PoP\ComponentModel\Schema\TypeRegistry
         public: true
 
     schema_definition_service:

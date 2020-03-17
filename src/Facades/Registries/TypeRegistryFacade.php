@@ -1,7 +1,7 @@
 <?php
-namespace PoP\ComponentModel\Facades\Schema;
+namespace PoP\ComponentModel\Facades\Registries;
 
-use PoP\ComponentModel\Schema\TypeRegistryInterface;
+use PoP\ComponentModel\Registries\TypeRegistryInterface;
 use PoP\Root\Container\ContainerBuilderFactory;
 
 class TypeRegistryFacade

@@ -46,6 +46,13 @@ class ContainerBuilderUtils extends RootContainerBuilderUtils {
     {
         foreach (self::getServiceClassesUnderNamespace($namespace, $includeSubfolders) as $serviceClass) {
             $serviceClass::attach(AttachableExtensionGroups::DIRECTIVERESOLVERS, $priority);
+
+            // Also register it in the registry
+            self::injectValuesIntoService(
+                'directive_registry',
+                'addDirectiveResolverClass',
+                $serviceClass
+            );
         }
     }
 
