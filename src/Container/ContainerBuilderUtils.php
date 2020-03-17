@@ -42,12 +42,12 @@ class ContainerBuilderUtils extends RootContainerBuilderUtils {
      * @param string $namespace
      * @return void
      */
-    public static function attachDirectiveResolversFromNamespace(string $namespace, bool $includeSubfolders = true, int $priority = 10): void
+    public static function attachAndRegisterDirectiveResolversFromNamespace(string $namespace, bool $includeSubfolders = true, int $priority = 10): void
     {
         foreach (self::getServiceClassesUnderNamespace($namespace, $includeSubfolders) as $serviceClass) {
             $serviceClass::attach(AttachableExtensionGroups::DIRECTIVERESOLVERS, $priority);
 
-            // Also register it in the registry
+            // Register the directive in the registry
             self::injectValuesIntoService(
                 'directive_registry',
                 'addDirectiveResolverClass',
