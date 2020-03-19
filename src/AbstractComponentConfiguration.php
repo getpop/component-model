@@ -19,13 +19,16 @@ abstract class AbstractComponentConfiguration
         if (!self::$initialized[$envVariable]) {
             self::$initialized[$envVariable] = true;
             $hooksAPI = HooksAPIFacade::getInstance();
+            $class = get_called_class();
             $hookName = self::getHookName(
-                get_called_class(),
+                $class,
                 $envVariable
             );
             $selfProperty = $hooksAPI->applyFilters(
                 $hookName,
-                $callback()
+                $callback(),
+                $class,
+                $envVariable
             );
         }
     }
