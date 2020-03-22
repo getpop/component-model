@@ -3,6 +3,9 @@ namespace PoP\ComponentModel\FieldResolvers;
 
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverInterface;
+use PoP\ComponentModel\Environment;
+use PoP\ComponentModel\Schema\SchemaDefinition;
+use PoP\Translation\Facades\TranslationAPIFacade;
 
 trait SchemaDefinitionResolverTrait
 {
@@ -45,7 +48,27 @@ trait SchemaDefinitionResolverTrait
         if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
             return $schemaDefinitionResolver->getSchemaFieldArgs($typeResolver, $fieldName);
         }
+        return $this->getBaseSchemaFieldArgs($typeResolver, $fieldName);
+    }
+
+    protected function getBaseSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): array
+    {
+        if (Environment::enableSemanticVersioningRestrictionsForFields()) {
+            return [
+                $this->getVersionRestrictionSchemaFieldArg(),
+            ];
+        }
         return [];
+    }
+
+    protected function getVersionRestrictionSchemaFieldArg(): array
+    {
+        $translationAPI = TranslationAPIFacade::getInstance();
+        return [
+            SchemaDefinition::ARGNAME_NAME => SchemaDefinition::ARGNAME_VERSION_RESTRICTION,
+            SchemaDefinition::ARGNAME_TYPE => SchemaDefinition::TYPE_STRING,
+            SchemaDefinition::ARGNAME_DESCRIPTION => $translationAPI->__('The version to restrict to, using the semantic versioning restriction rules used by Composer (https://getcomposer.org/doc/articles/versions.md)', 'component-model'),
+        ];
     }
 
     public function getSchemaFieldDeprecationDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
