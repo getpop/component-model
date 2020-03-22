@@ -31,6 +31,11 @@ trait SelfSchemaDefinitionResolverTrait
         return null;
     }
 
+    public function getSchemaFieldVersion(TypeResolverInterface $typeResolver, string $fieldName): ?string
+    {
+        return null;
+    }
+
     public function getSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): array
     {
         return [];
