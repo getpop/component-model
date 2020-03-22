@@ -270,8 +270,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             }
         }
 
-        $versionConstraintEnabled = Environment::enableSemanticVersioningConstraintsForFields();
-
         // If we found a resolver for this fieldName, get all its properties from it
         if ($schemaDefinitionResolver) {
             if ($type = $schemaDefinitionResolver->getSchemaFieldType($typeResolver, $fieldName)) {
@@ -280,6 +278,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             if ($description = $schemaDefinitionResolver->getSchemaFieldDescription($typeResolver, $fieldName)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
             }
+            $versionConstraintEnabled = Environment::enableSemanticVersioningConstraintsForFields();
             if ($versionConstraintEnabled) {
                 if ($version = $schemaDefinitionResolver->getSchemaFieldVersion($typeResolver, $fieldName)) {
                     $schemaDefinition[SchemaDefinition::ARGNAME_VERSION] = $version;
@@ -293,7 +292,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 /**
                  * Add the "versionConstraint" param. Add it at the end, so it doesn't affect the order of params for "orderedSchemaFieldArgs"
                  */
-                if (Environment::enableSemanticVersioningConstraintsForFields()) {
+                if ($versionConstraintEnabled) {
                     $args[] = $this->getVersionConstraintSchemaFieldArg();
                 }
                 // Add the args under their name
