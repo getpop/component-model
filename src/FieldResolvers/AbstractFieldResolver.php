@@ -88,20 +88,18 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
     {
         if (Environment::enableSemanticVersioningRestrictionsForFields()) {
             /**
-             * If the field resolver has a version, and the requested query also has, check that they match
-             * Since using semantic versioning, we can't just check that the 2 versions are the same
+             * If this fieldResolver is tagged with a version...
              */
-            if ($versionRestriction = $fieldArgs[SchemaDefinition::ARGNAME_VERSION_RESTRICTION]) {
+            if ($schemaFieldVersion = $this->getSchemaFieldVersion($typeResolver, $fieldName)) {
                 /**
-                 * If this fieldResolver doesn't have versioning, then it accepts everything
+                 * If the query doesn't restrict the version, then do not process
                  */
-                $fieldSchemaDefinition = $this->getSchemaDefinitionForField($typeResolver, $fieldName, $fieldArgs);
-                $schemaFieldVersion = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_VERSION];
-                if (!$schemaFieldVersion) {
-                    return true;
+                $versionRestriction = $fieldArgs[SchemaDefinition::ARGNAME_VERSION_RESTRICTION];
+                if (!$versionRestriction) {
+                    return false;
                 }
                 /**
-                 * Check the version and the requested restriction match
+                 * Compare using semantic versioning restriction rules, as used by Composer
                  */
                 return Semver::satisfies($schemaFieldVersion, $versionRestriction);
             }
