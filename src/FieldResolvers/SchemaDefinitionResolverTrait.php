@@ -54,19 +54,19 @@ trait SchemaDefinitionResolverTrait
     protected function getBaseSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): array
     {
         $fieldArgs = [];
-        if (Environment::enableSemanticVersioningRestrictionsForFields()) {
-            $fieldArgs[] = $this->getVersionRestrictionSchemaFieldArg();
+        if (Environment::enableSemanticVersioningConstraintsForFields()) {
+            $fieldArgs[] = $this->getVersionConstraintSchemaFieldArg();
         }
         return $fieldArgs;
     }
 
-    protected function getVersionRestrictionSchemaFieldArg(): array
+    protected function getVersionConstraintSchemaFieldArg(): array
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         return [
-            SchemaDefinition::ARGNAME_NAME => SchemaDefinition::ARGNAME_VERSION_RESTRICTION,
+            SchemaDefinition::ARGNAME_NAME => SchemaDefinition::ARGNAME_VERSION_CONSTRAINT,
             SchemaDefinition::ARGNAME_TYPE => SchemaDefinition::TYPE_STRING,
-            SchemaDefinition::ARGNAME_DESCRIPTION => $translationAPI->__('The version to restrict to, using the semantic versioning restriction rules used by Composer (https://getcomposer.org/doc/articles/versions.md)', 'component-model'),
+            SchemaDefinition::ARGNAME_DESCRIPTION => $translationAPI->__('The version to restrict to, using the semantic versioning constraint rules used by Composer (https://getcomposer.org/doc/articles/versions.md)', 'component-model'),
         ];
     }
 

@@ -921,12 +921,12 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         /**
          * If the error happened from requesting a version that doesn't exist, show an appropriate error message
          */
-        if (Environment::enableSemanticVersioningRestrictionsForFields()) {
-            if ($versionRestriction = $fieldArgs[SchemaDefinition::ARGNAME_VERSION_RESTRICTION]) {
+        if (Environment::enableSemanticVersioningConstraintsForFields()) {
+            if ($versionConstraint = $fieldArgs[SchemaDefinition::ARGNAME_VERSION_CONSTRAINT]) {
                 $errorMessage = sprintf(
-                    $translationAPI->__('No FieldResolver resolves field \'%s\' and version restriction \'%s\'', 'pop-component-model'),
+                    $translationAPI->__('No FieldResolver resolves field \'%s\' and version constraint \'%s\'', 'pop-component-model'),
                     $fieldName,
-                    $versionRestriction
+                    $versionConstraint
                 );
             }
         }
