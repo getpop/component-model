@@ -900,15 +900,13 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     public function resolveSchemaValidationErrorDescriptions(string $field, array &$variables = null): array
     {
         // Get the value from a fieldResolver, from the first one that resolves it
-        // $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
-        // $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
+        list(
+            $validField,
+            $fieldName,
+            $fieldArgs,
+            $schemaErrors,
+        ) = $this->dissectFieldForSchema($field);
         if ($fieldResolvers = $this->getFieldResolversForField($field)) {
-            list(
-                $validField,
-                $fieldName,
-                $fieldArgs,
-                $schemaErrors,
-            ) = $this->dissectFieldForSchema($field);
             if ($maybeError = $fieldResolvers[0]->resolveSchemaValidationErrorDescription($this, $fieldName, $fieldArgs)) {
                 $schemaErrors[] = [
                     Tokens::PATH => [$field],
@@ -920,15 +918,28 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
         // If we reach here, no fieldResolver processes this field, which is an error
         $translationAPI = TranslationAPIFacade::getInstance();
-        $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
-        $fieldName = $fieldQueryInterpreter->getFieldName($field);
+        /**
+         * If the error happened from requesting a version that doesn't exist, show an appropriate error message
+         */
+        if (Environment::enableSemanticVersioningRestrictionsForFields()) {
+            if ($versionRestriction = $fieldArgs[SchemaDefinition::ARGNAME_VERSION_RESTRICTION]) {
+                $errorMessage = sprintf(
+                    $translationAPI->__('No FieldResolver resolves field \'%s\' and version restriction \'%s\'', 'pop-component-model'),
+                    $fieldName,
+                    $versionRestriction
+                );
+            }
+        }
+        if (!$errorMessage) {
+            $errorMessage = sprintf(
+                $translationAPI->__('No FieldResolver resolves field \'%s\'', 'pop-component-model'),
+                $fieldName
+            );
+        }
         return [
             [
                 Tokens::PATH => [$field],
-                Tokens::MESSAGE => sprintf(
-                    $translationAPI->__('No FieldResolver resolves field \'%s\'', 'pop-component-model'),
-                    $fieldName
-                ),
+                Tokens::MESSAGE => $errorMessage,
             ],
         ];
     }
