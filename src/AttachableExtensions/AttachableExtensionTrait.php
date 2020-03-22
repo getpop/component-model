@@ -13,6 +13,24 @@ trait AttachableExtensionTrait
         return [];
     }
 
+    /**
+     * The priority with which to attach to the class. The higher the priority, the sooner it will be processed
+     *
+     * @return integer|null
+     */
+    public static function getPriorityToAttachClasses(): ?int
+    {
+        return null;
+    }
+
+    /**
+     * There are 2 ways of setting a priority: either by configuration through parameter, or explicity defined in the class itself
+     * The priority in the class has priority (pun intended ;))
+     *
+     * @param string $group
+     * @param integer $priority
+     * @return void
+     */
     public static function attach(string $group, int $priority = 10)
     {
         $attachableExtensionManager = AttachableExtensionManagerFacade::getInstance();
@@ -22,7 +40,7 @@ trait AttachableExtensionTrait
                 $attachableClass,
                 $group,
                 $extensionClass,
-                $priority
+                $extensionClass::getPriorityToAttachClasses() ?? $priority
             );
         }
     }
