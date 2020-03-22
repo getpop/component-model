@@ -308,6 +308,23 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
 
     public function resolveSchemaValidationWarningDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
     {
+        /**
+         * If restricting the version, and this fieldResolver doesn't have any version, then show a warning
+         */
+        if ($versionRestriction = $fieldArgs[SchemaDefinition::ARGNAME_VERSION_RESTRICTION]) {
+            /**
+             * If this fieldResolver doesn't have versioning, then it accepts everything
+             */
+            $fieldSchemaDefinition = $this->getSchemaDefinitionForField($typeResolver, $fieldName, $fieldArgs);
+            if (!$fieldSchemaDefinition[SchemaDefinition::ARGNAME_VERSION]) {
+                $translationAPI = TranslationAPIFacade::getInstance();
+                return sprintf(
+                    $translationAPI->__('The FieldResolver used to process field with name \'%s\' doesn\'t define a version, so version constraint \'%s\' was ignored', 'component-model'),
+                    $fieldName,
+                    $versionRestriction
+                );
+            }
+        }
         return null;
     }
 
@@ -347,7 +364,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                     return $error->getErrorMessage() ?
                         $error->getErrorMessage() :
                         sprintf(
-                            $translationAPI->__('Validation with code \'%s\' failed', ''),
+                            $translationAPI->__('Validation with code \'%s\' failed', 'component-model'),
                             $error->getErrorCode()
                         );
                 }
