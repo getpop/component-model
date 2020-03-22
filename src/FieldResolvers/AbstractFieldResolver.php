@@ -1,6 +1,8 @@
 <?php
 namespace PoP\ComponentModel\FieldResolvers;
 
+use Composer\Semver\Semver;
+use PoP\ComponentModel\Environment;
 use PoP\FieldQuery\FieldQueryUtils;
 use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
@@ -11,7 +13,6 @@ use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\FieldResolvers\SchemaDefinitionResolverTrait;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverInterface;
-use Composer\Semver\Semver;
 
 abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSchemaDefinitionResolverInterface
 {
@@ -85,24 +86,25 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
      */
     public function resolveCanProcess(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): bool
     {
-        /**
-         * If the field resolver has a version, and the requested query also has, check that they match
-         * Since using semantic versioning, we can't just check that the 2 versions are the same
-         */
-        if ($versionRestriction = $fieldArgs[SchemaDefinition::ARGNAME_VERSION_RESTRICTION]) {
+        if (Environment::enableSemanticVersioningRestrictionsForFields()) {
             /**
-             * If this fieldResolver doesn't have versioning, then it accepts everything
+             * If the field resolver has a version, and the requested query also has, check that they match
+             * Since using semantic versioning, we can't just check that the 2 versions are the same
              */
-            $fieldSchemaDefinition = $this->getSchemaDefinitionForField($typeResolver, $fieldName, $fieldArgs);
-            $schemaFieldVersion = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_VERSION];
-            if (!$schemaFieldVersion) {
-                return true;
+            if ($versionRestriction = $fieldArgs[SchemaDefinition::ARGNAME_VERSION_RESTRICTION]) {
+                /**
+                 * If this fieldResolver doesn't have versioning, then it accepts everything
+                 */
+                $fieldSchemaDefinition = $this->getSchemaDefinitionForField($typeResolver, $fieldName, $fieldArgs);
+                $schemaFieldVersion = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_VERSION];
+                if (!$schemaFieldVersion) {
+                    return true;
+                }
+                /**
+                 * Check the version and the requested restriction match
+                 */
+                return Semver::satisfies($schemaFieldVersion, [$versionRestriction]);
             }
-            /**
-             * Check the version and the requested restriction match
-             */
-            return Semver::satisfies($schemaFieldVersion, [$versionRestriction]);
-
         }
         return true;
     }
@@ -270,6 +272,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             }
         }
 
+        $versionRestrictionEnabled = Environment::enableSemanticVersioningRestrictionsForFields();
+
         // If we found a resolver for this fieldName, get all its properties from it
         if ($schemaDefinitionResolver) {
             if ($type = $schemaDefinitionResolver->getSchemaFieldType($typeResolver, $fieldName)) {
@@ -278,8 +282,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             if ($description = $schemaDefinitionResolver->getSchemaFieldDescription($typeResolver, $fieldName)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
             }
-            if ($version = $schemaDefinitionResolver->getSchemaFieldVersion($typeResolver, $fieldName)) {
-                $schemaDefinition[SchemaDefinition::ARGNAME_VERSION] = $version;
+            if ($versionRestrictionEnabled) {
+                if ($version = $schemaDefinitionResolver->getSchemaFieldVersion($typeResolver, $fieldName)) {
+                    $schemaDefinition[SchemaDefinition::ARGNAME_VERSION] = $version;
+                }
             }
             if ($deprecationDescription = $schemaDefinitionResolver->getSchemaFieldDeprecationDescription($typeResolver, $fieldName, $fieldArgs)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATED] = true;
@@ -308,21 +314,23 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
 
     public function resolveSchemaValidationWarningDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
     {
-        /**
-         * If restricting the version, and this fieldResolver doesn't have any version, then show a warning
-         */
-        if ($versionRestriction = $fieldArgs[SchemaDefinition::ARGNAME_VERSION_RESTRICTION]) {
+        if (Environment::enableSemanticVersioningRestrictionsForFields()) {
             /**
-             * If this fieldResolver doesn't have versioning, then it accepts everything
+             * If restricting the version, and this fieldResolver doesn't have any version, then show a warning
              */
-            $fieldSchemaDefinition = $this->getSchemaDefinitionForField($typeResolver, $fieldName, $fieldArgs);
-            if (!$fieldSchemaDefinition[SchemaDefinition::ARGNAME_VERSION]) {
-                $translationAPI = TranslationAPIFacade::getInstance();
-                return sprintf(
-                    $translationAPI->__('The FieldResolver used to process field with name \'%s\' doesn\'t define a version, so version constraint \'%s\' was ignored', 'component-model'),
-                    $fieldName,
-                    $versionRestriction
-                );
+            if ($versionRestriction = $fieldArgs[SchemaDefinition::ARGNAME_VERSION_RESTRICTION]) {
+                /**
+                 * If this fieldResolver doesn't have versioning, then it accepts everything
+                 */
+                $fieldSchemaDefinition = $this->getSchemaDefinitionForField($typeResolver, $fieldName, $fieldArgs);
+                if (!$fieldSchemaDefinition[SchemaDefinition::ARGNAME_VERSION]) {
+                    $translationAPI = TranslationAPIFacade::getInstance();
+                    return sprintf(
+                        $translationAPI->__('The FieldResolver used to process field with name \'%s\' doesn\'t define a version, so version constraint \'%s\' was ignored', 'component-model'),
+                        $fieldName,
+                        $versionRestriction
+                    );
+                }
             }
         }
         return null;
