@@ -290,6 +290,12 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATIONDESCRIPTION] = $deprecationDescription;
             }
             if ($args = $schemaDefinitionResolver->getSchemaFieldArgs($typeResolver, $fieldName)) {
+                /**
+                 * Add the "versionConstraint" param. Add it at the end, so it doesn't affect the order of params for "orderedSchemaFieldArgs"
+                 */
+                if (Environment::enableSemanticVersioningConstraintsForFields()) {
+                    $args[] = $this->getVersionConstraintSchemaFieldArg();
+                }
                 // Add the args under their name
                 $nameArgs = [];
                 foreach ($args as $arg) {
@@ -303,6 +309,16 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             $schemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL] = true;
         }
         return $schemaDefinition;
+    }
+
+    protected function getVersionConstraintSchemaFieldArg(): array
+    {
+        $translationAPI = TranslationAPIFacade::getInstance();
+        return [
+            SchemaDefinition::ARGNAME_NAME => SchemaDefinition::ARGNAME_VERSION_CONSTRAINT,
+            SchemaDefinition::ARGNAME_TYPE => SchemaDefinition::TYPE_STRING,
+            SchemaDefinition::ARGNAME_DESCRIPTION => $translationAPI->__('The version to restrict to, using the semantic versioning constraint rules used by Composer (https://getcomposer.org/doc/articles/versions.md)', 'component-model'),
+        ];
     }
 
     public function enableOrderedSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): bool

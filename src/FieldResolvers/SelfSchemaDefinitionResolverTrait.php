@@ -7,8 +7,6 @@ use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverInterface;
 
 trait SelfSchemaDefinitionResolverTrait
 {
-    use SchemaDefinitionResolverTrait;
-
     /**
      * The object resolves its own schema definition
      *
@@ -40,7 +38,7 @@ trait SelfSchemaDefinitionResolverTrait
 
     public function getSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): array
     {
-        return $this->getBaseSchemaFieldArgs($typeResolver, $fieldName);
+        return [];
     }
 
     public function getSchemaFieldDeprecationDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
