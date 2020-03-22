@@ -53,12 +53,11 @@ trait SchemaDefinitionResolverTrait
 
     protected function getBaseSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): array
     {
+        $fieldArgs = [];
         if (Environment::enableSemanticVersioningRestrictionsForFields()) {
-            return [
-                $this->getVersionRestrictionSchemaFieldArg(),
-            ];
+            $fieldArgs[] = $this->getVersionRestrictionSchemaFieldArg();
         }
-        return [];
+        return $fieldArgs;
     }
 
     protected function getVersionRestrictionSchemaFieldArg(): array
