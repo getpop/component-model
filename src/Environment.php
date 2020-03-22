@@ -41,7 +41,7 @@ class Environment
      */
     public static function enableSemanticVersioningRestrictionsForFields(): bool
     {
-        return isset($_ENV['ENABLE_SEMANTIC_VERSIONING_RESTRICTIONS_FOR_FIELDS']) ? strtolower($_ENV['ENABLE_SEMANTIC_VERSIONING_RESTRICTIONS_FOR_FIELDS']) == "true" : true;
+        return isset($_ENV['ENABLE_SEMANTIC_VERSIONING_RESTRICTIONS_FOR_FIELDS']) ? strtolower($_ENV['ENABLE_SEMANTIC_VERSIONING_RESTRICTIONS_FOR_FIELDS']) == "true" : false;
     }
 }
 
