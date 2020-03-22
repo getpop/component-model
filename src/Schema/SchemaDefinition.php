@@ -10,6 +10,7 @@ class SchemaDefinition {
     const ARGNAME_REFERENCED_TYPE = 'referencedType';
     const ARGNAME_DESCRIPTION = 'description';
     const ARGNAME_VERSION = 'version';
+    const ARGNAME_VERSION_RESTRICTION = 'versionRestriction';
     const ARGNAME_MANDATORY = 'mandatory';
     const ARGNAME_ENUMVALUES = 'enumValues';
     const ARGNAME_DEPRECATED = 'deprecated';

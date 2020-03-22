@@ -11,6 +11,7 @@ use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\FieldResolvers\SchemaDefinitionResolverTrait;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverInterface;
+use Composer\Semver\Semver;
 
 abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSchemaDefinitionResolverInterface
 {
@@ -84,6 +85,25 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
      */
     public function resolveCanProcess(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): bool
     {
+        /**
+         * If the field resolver has a version, and the requested query also has, check that they match
+         * Since using semantic versioning, we can't just check that the 2 versions are the same
+         */
+        if ($versionRestriction = $fieldArgs[SchemaDefinition::ARGNAME_VERSION_RESTRICTION]) {
+            /**
+             * If this fieldResolver doesn't have versioning, then it accepts everything
+             */
+            $fieldSchemaDefinition = $this->getSchemaDefinitionForField($typeResolver, $fieldName, $fieldArgs);
+            $schemaFieldVersion = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_VERSION];
+            if (!$schemaFieldVersion) {
+                return true;
+            }
+            /**
+             * Check the version and the requested restriction match
+             */
+            return Semver::satisfies($schemaFieldVersion, [$versionRestriction]);
+
+        }
         return true;
     }
     public function resolveSchemaValidationErrorDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
