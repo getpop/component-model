@@ -103,7 +103,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 /**
                  * Check the version and the requested restriction match
                  */
-                return Semver::satisfies($schemaFieldVersion, [$versionRestriction]);
+                return Semver::satisfies($schemaFieldVersion, $versionRestriction);
             }
         }
         return true;
