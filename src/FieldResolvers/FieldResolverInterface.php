@@ -59,4 +59,5 @@ interface FieldResolverInterface
     public function resolveCanProcessResultItem(TypeResolverInterface $typeResolver, $resultItem, string $fieldName, array $fieldArgs = []): bool;
     public function enableOrderedSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): bool;
     public function getValidationErrorDescription(TypeResolverInterface $typeResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?string;
+    public function getFilteredSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): array;
 }
