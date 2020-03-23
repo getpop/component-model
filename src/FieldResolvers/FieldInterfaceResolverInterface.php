@@ -22,4 +22,5 @@ interface FieldInterfaceResolverInterface extends FieldSchemaDefinitionResolverI
     public function getNamespacedInterfaceName(): string;
     public function getMaybeNamespacedInterfaceName(): string;
     public function getSchemaInterfaceDescription(): ?string;
+    public function getSchemaInterfaceVersion(string $fieldName): ?string;
 }

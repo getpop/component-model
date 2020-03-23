@@ -1249,7 +1249,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             $interfaceFieldNames = $interfaceInstance::getFieldNamesToImplement();
             $interfaceFields = array_filter(
                 $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_FIELDS],
-                function($fieldName) use($interfaceFieldNames) {
+                function ($fieldName) use ($interfaceFieldNames) {
                     return in_array($fieldName, $interfaceFieldNames);
                 },
                 ARRAY_FILTER_USE_KEY
@@ -1262,6 +1262,16 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     $interfaceImplementedInterfaceNames[] = $interfaceImplementedInterfaceInstance->getMaybeNamespacedInterfaceName();
                 }
             }
+            // Add the versions to the fields, as coming from the interface
+            $interfaceFields = array_map(
+                function ($fieldSchemaDefinition) use ($interfaceInstance) {
+                    if ($version = $interfaceInstance->getSchemaInterfaceVersion($fieldSchemaDefinition[SchemaDefinition::ARGNAME_NAME])) {
+                        $fieldSchemaDefinition[SchemaDefinition::ARGNAME_VERSION] = $version;
+                    }
+                    return $fieldSchemaDefinition;
+                },
+                $interfaceFields
+            );
             $interfaceName = $interfaceInstance->getMaybeNamespacedInterfaceName();
             // Possible types: Because we are generating this list as we go along resolving all the types, simply have this value point to a reference in $generalMessages
             // Just by updating that variable, it will eventually be updated everywhere
@@ -1274,6 +1284,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 SchemaDefinition::ARGNAME_NAMESPACED_NAME => $interfaceInstance->getNamespacedInterfaceName(),
                 SchemaDefinition::ARGNAME_ELEMENT_NAME => $interfaceInstance->getInterfaceName(),
                 SchemaDefinition::ARGNAME_DESCRIPTION => $interfaceInstance->getSchemaInterfaceDescription(),
+                // SchemaDefinition::ARGNAME_VERSION => $interfaceInstance->getSchemaInterfaceVersion(),
                 SchemaDefinition::ARGNAME_FIELDS => $interfaceFields,
                 SchemaDefinition::ARGNAME_INTERFACES => $interfaceImplementedInterfaceNames,
                 // The list of types that implement this interface
