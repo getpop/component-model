@@ -13,6 +13,13 @@ interface SchemaDirectiveResolverInterface
      */
     public function getSchemaDirectiveDescription(TypeResolverInterface $typeResolver): ?string;
     /**
+     * The version of the directive, using semantic versioning
+     *
+     * @param TypeResolverInterface $typeResolver
+     * @return string|null
+     */
+    public function getSchemaDirectiveVersion(TypeResolverInterface $typeResolver): ?string;
+    /**
      * Indicates if the directive argument names can be omitted from the query, deducing them from the order in which they were defined in the schema
      *
      * @param TypeResolverInterface $typeResolver

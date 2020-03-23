@@ -5,6 +5,7 @@ use Composer\Semver\Semver;
 use PoP\ComponentModel\Environment;
 use PoP\FieldQuery\FieldQueryUtils;
 use PoP\ComponentModel\Schema\SchemaHelpers;
+use PoP\ComponentModel\Configuration\Request;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\Facades\Engine\EngineFacade;
@@ -12,8 +13,8 @@ use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\FieldResolvers\SchemaDefinitionResolverTrait;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
-use PoP\ComponentModel\Configuration\Request;
 use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverInterface;
+use PoP\ComponentModel\Schema\WithVersionConstraintFieldOrDirectiveResolverTrait;
 
 abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSchemaDefinitionResolverInterface
 {
@@ -22,6 +23,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
      */
     use AttachableExtensionTrait;
     use SchemaDefinitionResolverTrait;
+    use WithVersionConstraintFieldOrDirectiveResolverTrait;
 
     protected $enumValueArgumentValidationCache = [];
 
@@ -89,7 +91,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
     {
         if (Environment::enableSemanticVersioningConstraintsForFields()) {
             /**
-             * If this fieldResolver is tagged with a version...
+             * If this field is tagged with a version...
              */
             if ($schemaFieldVersion = $this->getSchemaFieldVersion($typeResolver, $fieldName)) {
                 /**
@@ -312,16 +314,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             $schemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL] = true;
         }
         return $schemaDefinition;
-    }
-
-    protected function getVersionConstraintSchemaFieldArg(): array
-    {
-        $translationAPI = TranslationAPIFacade::getInstance();
-        return [
-            SchemaDefinition::ARGNAME_NAME => SchemaDefinition::ARGNAME_VERSION_CONSTRAINT,
-            SchemaDefinition::ARGNAME_TYPE => SchemaDefinition::TYPE_STRING,
-            SchemaDefinition::ARGNAME_DESCRIPTION => $translationAPI->__('The version to restrict to, using the semantic versioning constraint rules used by Composer (https://getcomposer.org/doc/articles/versions.md)', 'component-model'),
-        ];
     }
 
     public function enableOrderedSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): bool

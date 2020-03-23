@@ -1,11 +1,13 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
 
+use Composer\Semver\Semver;
 use PoP\FieldQuery\QueryHelpers;
 use League\Pipeline\StageInterface;
 use PoP\ComponentModel\Environment;
 use PoP\ComponentModel\Feedback\Tokens;
 use PoP\ComponentModel\Schema\SchemaHelpers;
+use PoP\ComponentModel\Configuration\Request;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\FieldSymbols;
@@ -14,10 +16,13 @@ use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineUtils;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
+use PoP\ComponentModel\Schema\WithVersionConstraintFieldOrDirectiveResolverTrait;
 
 abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, SchemaDirectiveResolverInterface, StageInterface
 {
-    use AttachableExtensionTrait, RemoveIDsDataFieldsDirectiveResolverTrait;
+    use AttachableExtensionTrait;
+    use RemoveIDsDataFieldsDirectiveResolverTrait;
+    use WithVersionConstraintFieldOrDirectiveResolverTrait;
 
     const MESSAGE_EXPRESSIONS = 'expressions';
 
@@ -231,6 +236,27 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
      */
     public function resolveCanProcess(TypeResolverInterface $typeResolver, string $directiveName, array $directiveArgs = [], string $field, array &$variables): bool
     {
+        if (Environment::enableSemanticVersioningConstraintsForFields()) {
+            /**
+             * If this directive is tagged with a version...
+             */
+            if ($schemaDirectiveVersion = $this->getSchemaDirectiveVersion($typeResolver)) {
+                /**
+                 * If the query doesn't restrict the version, then do not process
+                 * Also can pass version constraint through URL param, which has these benefits:
+                 * 1. It applies on all directives in the query at the same time
+                 * 2. It can be used to visualize the schema for that version: /?query=fullSchema&versionConstraint=...
+                 */
+                $versionConstraint = $directiveArgs[SchemaDefinition::ARGNAME_VERSION_CONSTRAINT] ?? Request::getVersionConstraint();
+                if (!$versionConstraint) {
+                    return false;
+                }
+                /**
+                 * Compare using semantic versioning constraint rules, as used by Composer
+                 */
+                return Semver::satisfies($schemaDirectiveVersion, $versionConstraint);
+            }
+        }
         return true;
     }
 
@@ -338,6 +364,14 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         }
         // If we reached here, there is no data
         return false;
+    }
+
+    public function getSchemaDirectiveVersion(TypeResolverInterface $typeResolver): ?string
+    {
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
+            return $schemaDefinitionResolver->getSchemaDirectiveVersion($typeResolver);
+        }
+        return null;
     }
 
     public function enableOrderedSchemaDirectiveArgs(TypeResolverInterface $typeResolver): bool
@@ -658,6 +692,12 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             if ($description = $schemaDefinitionResolver->getSchemaDirectiveDescription($typeResolver)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
             }
+            $versionConstraintEnabled = Environment::enableSemanticVersioningConstraintsForFields();
+            if ($versionConstraintEnabled) {
+                if ($version = $schemaDefinitionResolver->getSchemaDirectiveVersion($typeResolver)) {
+                    $schemaDefinition[SchemaDefinition::ARGNAME_VERSION] = $version;
+                }
+            }
             if ($expressions = $schemaDefinitionResolver->getSchemaDirectiveExpressions($typeResolver)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_DIRECTIVE_EXPRESSIONS] = $expressions;
             }
@@ -666,6 +706,12 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATIONDESCRIPTION] = $deprecationDescription;
             }
             if ($args = $schemaDefinitionResolver->getSchemaDirectiveArgs($typeResolver)) {
+                /**
+                 * Add the "versionConstraint" param. Add it at the end, so it doesn't affect the order of params for "orderedSchemaDirectiveArgs"
+                 */
+                if ($versionConstraintEnabled) {
+                    $args[] = $this->getVersionConstraintSchemaFieldArg();
+                }
                 // Add the args under their name
                 $nameArgs = [];
                 foreach ($args as $arg) {

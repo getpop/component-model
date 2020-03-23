@@ -29,6 +29,10 @@ abstract class AbstractSchemaDirectiveResolver extends AbstractDirectiveResolver
     {
         return [];
     }
+    public function getSchemaDirectiveVersion(TypeResolverInterface $typeResolver): ?string
+    {
+        return null;
+    }
     public function enableOrderedSchemaDirectiveArgs(TypeResolverInterface $typeResolver): bool
     {
         return true;
