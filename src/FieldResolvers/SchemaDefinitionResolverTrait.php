@@ -35,14 +35,6 @@ trait SchemaDefinitionResolverTrait
         return null;
     }
 
-    public function getSchemaFieldVersion(TypeResolverInterface $typeResolver, string $fieldName): ?string
-    {
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
-            return $schemaDefinitionResolver->getSchemaFieldVersion($typeResolver, $fieldName);
-        }
-        return null;
-    }
-
     public function getSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): array
     {
         if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {

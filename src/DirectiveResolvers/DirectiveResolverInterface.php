@@ -107,4 +107,11 @@ interface DirectiveResolverInterface
      * @return boolean
      */
     public function decideCanProcessBasedOnVersionConstraint(TypeResolverInterface $typeResolver): bool;
+    /**
+     * The version of the directive, using semantic versioning
+     *
+     * @param TypeResolverInterface $typeResolver
+     * @return string|null
+     */
+    public function getSchemaDirectiveVersion(TypeResolverInterface $typeResolver): ?string;
 }

@@ -254,6 +254,9 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $this->decideCanProcessBasedOnVersionConstraint($typeResolver)
         ) {
             /**
+             * Please notice: we can get the fieldVersion directly from this instance, and not from the schemaDefinition,
+             * because the version is set at the FieldResolver level, and not the FieldInterfaceResolver,
+             * which is the other entity filling data inside the schemaDefinition object
              * If this directive is tagged with a version...
              */
             if ($schemaDirectiveVersion = $this->getSchemaDirectiveVersion($typeResolver)) {
@@ -391,9 +394,6 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
 
     public function getSchemaDirectiveVersion(TypeResolverInterface $typeResolver): ?string
     {
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
-            return $schemaDefinitionResolver->getSchemaDirectiveVersion($typeResolver);
-        }
         return null;
     }
 
@@ -750,11 +750,6 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             if ($description = $schemaDefinitionResolver->getSchemaDirectiveDescription($typeResolver)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
             }
-            if (Environment::enableSemanticVersionConstraints()) {
-                if ($version = $schemaDefinitionResolver->getSchemaDirectiveVersion($typeResolver)) {
-                    $schemaDefinition[SchemaDefinition::ARGNAME_VERSION] = $version;
-                }
-            }
             if ($expressions = $schemaDefinitionResolver->getSchemaDirectiveExpressions($typeResolver)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_DIRECTIVE_EXPRESSIONS] = $expressions;
             }
@@ -769,6 +764,18 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                     $nameArgs[$arg[SchemaDefinition::ARGNAME_NAME]] = $arg;
                 }
                 $schemaDefinition[SchemaDefinition::ARGNAME_ARGS] = $nameArgs;
+            }
+        }
+        /**
+         * Please notice: the version always comes from the directiveResolver, and not from the schemaDefinitionResolver
+         * That is because it is the implementer the one who knows what version it is, and not the one defining the interface
+         * If the interface changes, the implementer will need to change, so the version will be upgraded
+         * But it could also be that the contract doesn't change, but the implementation changes
+         * it's really not their responsibility
+         */
+        if (Environment::enableSemanticVersionConstraints()) {
+            if ($version = $this->getSchemaDirectiveVersion($typeResolver)) {
+                $schemaDefinition[SchemaDefinition::ARGNAME_VERSION] = $version;
             }
         }
         $this->addSchemaDefinitionForDirective($schemaDefinition);

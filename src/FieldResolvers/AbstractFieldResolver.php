@@ -310,11 +310,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 if ($description = $schemaDefinitionResolver->getSchemaFieldDescription($typeResolver, $fieldName)) {
                     $schemaDefinition[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
                 }
-                if (Environment::enableSemanticVersionConstraints()) {
-                    if ($version = $schemaDefinitionResolver->getSchemaFieldVersion($typeResolver, $fieldName)) {
-                        $schemaDefinition[SchemaDefinition::ARGNAME_VERSION] = $version;
-                    }
-                }
                 if ($deprecationDescription = $schemaDefinitionResolver->getSchemaFieldDeprecationDescription($typeResolver, $fieldName, $fieldArgs)) {
                     $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATED] = true;
                     $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATIONDESCRIPTION] = $deprecationDescription;
@@ -329,6 +324,19 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 }
                 $schemaDefinitionResolver->addSchemaDefinitionForField($schemaDefinition, $typeResolver, $fieldName);
             }
+            /**
+             * Please notice: the version always comes from the fieldResolver, and not from the schemaDefinitionResolver
+             * That is because it is the implementer the one who knows what version it is, and not the one defining the interface
+             * If the interface changes, the implementer will need to change, so the version will be upgraded
+             * But it could also be that the contract doesn't change, but the implementation changes
+             * In particular, Interfaces are schemaDefinitionResolver, but they must not indicate the version...
+             * it's really not their responsibility
+             */
+            if (Environment::enableSemanticVersionConstraints()) {
+                if ($version = $this->getSchemaFieldVersion($typeResolver, $fieldName)) {
+                    $schemaDefinition[SchemaDefinition::ARGNAME_VERSION] = $version;
+                }
+            }
             if (!is_null($this->resolveFieldTypeResolverClass($typeResolver, $fieldName, $fieldArgs))) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL] = true;
             }
@@ -340,6 +348,11 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
     public function enableOrderedSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): bool
     {
         return true;
+    }
+
+    public function getSchemaFieldVersion(TypeResolverInterface $typeResolver, string $fieldName): ?string
+    {
+        return null;
     }
 
     public function resolveSchemaValidationWarningDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
