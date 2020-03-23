@@ -15,7 +15,6 @@ use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\FieldResolvers\SchemaDefinitionResolverTrait;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverInterface;
-use PoP\ComponentModel\Schema\WithVersionConstraintFieldOrDirectiveResolverTrait;
 
 abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSchemaDefinitionResolverInterface
 {
@@ -24,7 +23,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
      */
     use AttachableExtensionTrait;
     use SchemaDefinitionResolverTrait;
-    use WithVersionConstraintFieldOrDirectiveResolverTrait;
 
     protected $enumValueArgumentValidationCache = [];
     protected $schemaDefinitionForFieldCache = [];
@@ -108,6 +106,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             $this->decideCanProcessBasedOnVersionConstraint($typeResolver)
         ) {
             /**
+             * Please notice: we can get the fieldVersion directly from this instance, and not from the schemaDefinition,
+             * because the version is set at the FieldResolver level, and not the FieldInterfaceResolver,
+             * which is the other entity filling data inside the schemaDefinition object
              * If this field is tagged with a version...
              */
             if ($schemaFieldVersion = $this->getSchemaFieldVersion($typeResolver, $fieldName)) {

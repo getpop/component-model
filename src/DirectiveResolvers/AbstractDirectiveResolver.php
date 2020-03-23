@@ -17,13 +17,11 @@ use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineUtils;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
-use PoP\ComponentModel\Schema\WithVersionConstraintFieldOrDirectiveResolverTrait;
 
 abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, SchemaDirectiveResolverInterface, StageInterface
 {
     use AttachableExtensionTrait;
     use RemoveIDsDataFieldsDirectiveResolverTrait;
-    use WithVersionConstraintFieldOrDirectiveResolverTrait;
 
     const MESSAGE_EXPRESSIONS = 'expressions';
 
