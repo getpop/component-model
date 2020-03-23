@@ -929,7 +929,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         /**
          * If the error happened from requesting a version that doesn't exist, show an appropriate error message
          */
-        if (Environment::enableSemanticVersioningConstraintsForFields()) {
+        if (Environment::enableSemanticVersionConstraints()) {
             if ($versionConstraint = $fieldArgs[SchemaDefinition::ARGNAME_VERSION_CONSTRAINT]) {
                 $errorMessage = sprintf(
                     $translationAPI->__('No FieldResolver resolves field \'%s\' and version constraint \'%s\'', 'pop-component-model'),

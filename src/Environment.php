@@ -34,14 +34,15 @@ class Environment
     }
 
     /**
-     * Indicate if to enable to restrict a field by version, using the same semantic versioning constraint rules used by Composer
+     * Indicate if to enable to restrict a field and directive by version,
+     * using the same semantic versioning constraint rules used by Composer
      *
      * @see https://getcomposer.org/doc/articles/versions.md Composer's semver constraint rules
      * @return bool
      */
-    public static function enableSemanticVersioningConstraintsForFields(): bool
+    public static function enableSemanticVersionConstraints(): bool
     {
-        return isset($_ENV['ENABLE_SEMANTIC_VERSIONING_CONSTRAINTS_FOR_FIELDS']) ? strtolower($_ENV['ENABLE_SEMANTIC_VERSIONING_CONSTRAINTS_FOR_FIELDS']) == "true" : false;
+        return isset($_ENV['ENABLE_SEMANTIC_VERSION_CONSTRAINTS']) ? strtolower($_ENV['ENABLE_SEMANTIC_VERSION_CONSTRAINTS']) == "true" : false;
     }
 }
 

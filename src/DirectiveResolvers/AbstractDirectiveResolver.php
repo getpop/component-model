@@ -252,7 +252,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     {
         /** Check if to validate the version */
         if (
-            Environment::enableSemanticVersioningConstraintsForFields() &&
+            Environment::enableSemanticVersionConstraints() &&
             $this->decideCanProcessBasedOnVersionConstraint($typeResolver)
         ) {
             /**
@@ -419,7 +419,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         /**
          * Add the "versionConstraint" param. Add it at the end, so it doesn't affect the order of params for "orderedSchemaDirectiveArgs"
          */
-        if (Environment::enableSemanticVersioningConstraintsForFields()) {
+        if (Environment::enableSemanticVersionConstraints()) {
             $schemaDirectiveArgs[] = $this->getVersionConstraintSchemaFieldOrDirectiveArg();
         }
         return $schemaDirectiveArgs;
@@ -443,7 +443,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
 
     public function resolveSchemaDirectiveWarningDescription(TypeResolverInterface $typeResolver): ?string
     {
-        if (Environment::enableSemanticVersioningConstraintsForFields()) {
+        if (Environment::enableSemanticVersionConstraints()) {
             /**
              * If restricting the version, and this fieldResolver doesn't have any version, then show a warning
              */
@@ -751,7 +751,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             if ($description = $schemaDefinitionResolver->getSchemaDirectiveDescription($typeResolver)) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
             }
-            if (Environment::enableSemanticVersioningConstraintsForFields()) {
+            if (Environment::enableSemanticVersionConstraints()) {
                 if ($version = $schemaDefinitionResolver->getSchemaDirectiveVersion($typeResolver)) {
                     $schemaDefinition[SchemaDefinition::ARGNAME_VERSION] = $version;
                 }

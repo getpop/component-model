@@ -104,7 +104,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
     {
         /** Check if to validate the version */
         if (
-            Environment::enableSemanticVersioningConstraintsForFields() &&
+            Environment::enableSemanticVersionConstraints() &&
             $this->decideCanProcessBasedOnVersionConstraint($typeResolver)
         ) {
             /**
@@ -309,7 +309,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 if ($description = $schemaDefinitionResolver->getSchemaFieldDescription($typeResolver, $fieldName)) {
                     $schemaDefinition[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
                 }
-                if (Environment::enableSemanticVersioningConstraintsForFields()) {
+                if (Environment::enableSemanticVersionConstraints()) {
                     if ($version = $schemaDefinitionResolver->getSchemaFieldVersion($typeResolver, $fieldName)) {
                         $schemaDefinition[SchemaDefinition::ARGNAME_VERSION] = $version;
                     }
@@ -342,7 +342,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         /**
          * Add the "versionConstraint" param. Add it at the end, so it doesn't affect the order of params for "orderedSchemaFieldArgs"
          */
-        if (Environment::enableSemanticVersioningConstraintsForFields()) {
+        if (Environment::enableSemanticVersionConstraints()) {
             $schemaFieldArgs[] = $this->getVersionConstraintSchemaFieldOrDirectiveArg();
         }
         return $schemaFieldArgs;
@@ -355,7 +355,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
 
     public function resolveSchemaValidationWarningDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
     {
-        if (Environment::enableSemanticVersioningConstraintsForFields()) {
+        if (Environment::enableSemanticVersionConstraints()) {
             /**
              * If restricting the version, and this fieldResolver doesn't have any version, then show a warning
              */
