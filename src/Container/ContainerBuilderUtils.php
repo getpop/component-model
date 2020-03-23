@@ -48,11 +48,12 @@ class ContainerBuilderUtils extends RootContainerBuilderUtils {
      */
     public static function attachAndRegisterDirectiveResolversFromNamespace(string $namespace, bool $includeSubfolders = true, int $priority = 10): void
     {
+        $isContainerCached = ContainerBuilderFactory::isCached();
         foreach (self::getServiceClassesUnderNamespace($namespace, $includeSubfolders) as $serviceClass) {
             $serviceClass::attach(AttachableExtensionGroups::DIRECTIVERESOLVERS, $priority);
 
             // Register the directive in the registry. If cached, do not execute or it will throw exception
-            if (!ContainerBuilderFactory::isCached()) {
+            if (!$isContainerCached) {
                 self::injectValuesIntoService(
                     'directive_registry',
                     'addDirectiveResolverClass',
