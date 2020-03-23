@@ -13,6 +13,10 @@ abstract class AbstractSchemaDirectiveResolver extends AbstractDirectiveResolver
     {
         return null;
     }
+    public function getSchemaDirectiveWarningDescription(TypeResolverInterface $typeResolver): ?string
+    {
+        return null;
+    }
     public function getSchemaDirectiveDeprecationDescription(TypeResolverInterface $typeResolver): ?string
     {
         return null;

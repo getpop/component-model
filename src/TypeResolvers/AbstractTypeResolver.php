@@ -458,6 +458,14 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     continue;
                 }
 
+                // Check for warnings
+                if ($warningDescription = $directiveResolverInstance->getSchemaDirectiveWarningDescription($this)) {
+                    $schemaWarnings[] = [
+                        Tokens::PATH => [$fieldDirective],
+                        Tokens::MESSAGE => $warningDescription,
+                    ];
+                }
+
                 // Check for deprecations
                 if ($deprecationDescription = $directiveResolverInstance->getSchemaDirectiveDeprecationDescription($this)) {
                     $schemaDeprecations[] = [

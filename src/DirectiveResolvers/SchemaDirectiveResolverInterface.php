@@ -35,6 +35,13 @@ interface SchemaDirectiveResolverInterface
      */
     public function getSchemaDirectiveExpressions(TypeResolverInterface $typeResolver): array;
     /**
+     * Raise warnings concerning the directive
+     *
+     * @param TypeResolverInterface $typeResolver
+     * @return string|null
+     */
+    public function getSchemaDirectiveWarningDescription(TypeResolverInterface $typeResolver): ?string;
+    /**
      * Indicate if the directive has been deprecated, why, when, and/or how it must be replaced
      *
      * @param TypeResolverInterface $typeResolver

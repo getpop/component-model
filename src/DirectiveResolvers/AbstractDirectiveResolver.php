@@ -364,6 +364,14 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         return null;
     }
 
+    public function getSchemaDirectiveWarningDescription(TypeResolverInterface $typeResolver): ?string
+    {
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
+            return $schemaDefinitionResolver->getSchemaDirectiveWarningDescription($typeResolver);
+        }
+        return null;
+    }
+
     public function getSchemaDirectiveExpressions(TypeResolverInterface $typeResolver): array
     {
         if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
