@@ -107,4 +107,11 @@ interface DirectiveResolverInterface
      * @return array
      */
     public function getFilteredSchemaDirectiveArgs(TypeResolverInterface $typeResolver): array;
+    /**
+     * Define if to use the version to decide if to process the directive or not
+     *
+     * @param TypeResolverInterface $typeResolver
+     * @return boolean
+     */
+    public function decideCanProcessBasedOnVersionConstraint(TypeResolverInterface $typeResolver): bool;
 }

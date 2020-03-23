@@ -229,6 +229,17 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     }
 
     /**
+     * Define if to use the version to decide if to process the directive or not
+     *
+     * @param TypeResolverInterface $typeResolver
+     * @return boolean
+     */
+    public function decideCanProcessBasedOnVersionConstraint(TypeResolverInterface $typeResolver): bool
+    {
+        return false;
+    }
+
+    /**
      * By default, the directiveResolver instance can process the directive
      * This function can be overriden to force certain value on the directive args before it can be executed
      *
@@ -239,7 +250,11 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
      */
     public function resolveCanProcess(TypeResolverInterface $typeResolver, string $directiveName, array $directiveArgs = [], string $field, array &$variables): bool
     {
-        if (Environment::enableSemanticVersioningConstraintsForFields()) {
+        /** Check if to validate the version */
+        if (
+            Environment::enableSemanticVersioningConstraintsForFields() &&
+            $this->decideCanProcessBasedOnVersionConstraint($typeResolver)
+        ) {
             /**
              * If this directive is tagged with a version...
              */
@@ -436,12 +451,12 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 /**
                  * If this fieldResolver doesn't have versioning, then it accepts everything
                  */
-                $directiveSchemaDefinition = $this->getSchemaDefinitionForDirective($typeResolver);
-                if (!$directiveSchemaDefinition[SchemaDefinition::ARGNAME_VERSION]) {
+                if (!$this->decideCanProcessBasedOnVersionConstraint($typeResolver)) {
                     $translationAPI = TranslationAPIFacade::getInstance();
                     return sprintf(
-                        $translationAPI->__('The DirectiveResolver used to process directive \'%s\' doesn\'t define a version, so version constraint \'%s\' was ignored', 'component-model'),
+                        $translationAPI->__('The DirectiveResolver used to process directive \'%s\', of version \'%s\', does not pay attention to the version constraint; hence, argument \'versionConstraint\', with value \'%s\', was ignored', 'component-model'),
                         $this->getDirectiveName(),
+                        $this->getSchemaDirectiveVersion($typeResolver) ?? '',
                         $versionConstraint
                     );
                 }

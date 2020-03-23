@@ -82,6 +82,17 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
     }
 
     /**
+     * Define if to use the version to decide if to process the field or not
+     *
+     * @param TypeResolverInterface $typeResolver
+     * @return boolean
+     */
+    public function decideCanProcessBasedOnVersionConstraint(TypeResolverInterface $typeResolver): bool
+    {
+        return false;
+    }
+
+    /**
      * Indicates if the fieldResolver can process this combination of fieldName and fieldArgs
      * It is required to support a multiverse of fields: different fieldResolvers can resolve the field, based on the required version (passed through $fieldArgs['branch'])
      *
@@ -91,7 +102,11 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
      */
     public function resolveCanProcess(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): bool
     {
-        if (Environment::enableSemanticVersioningConstraintsForFields()) {
+        /** Check if to validate the version */
+        if (
+            Environment::enableSemanticVersioningConstraintsForFields() &&
+            $this->decideCanProcessBasedOnVersionConstraint($typeResolver)
+        ) {
             /**
              * If this field is tagged with a version...
              */
@@ -348,12 +363,12 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 /**
                  * If this fieldResolver doesn't have versioning, then it accepts everything
                  */
-                $fieldSchemaDefinition = $this->getSchemaDefinitionForField($typeResolver, $fieldName, $fieldArgs);
-                if (!$fieldSchemaDefinition[SchemaDefinition::ARGNAME_VERSION]) {
+                if (!$this->decideCanProcessBasedOnVersionConstraint($typeResolver)) {
                     $translationAPI = TranslationAPIFacade::getInstance();
                     return sprintf(
-                        $translationAPI->__('The FieldResolver used to process field with name \'%s\' doesn\'t define a version, so version constraint \'%s\' was ignored', 'component-model'),
+                        $translationAPI->__('The FieldResolver used to process field with name \'%s\', of version \'%s\', does not pay attention to the version constraint; hence, argument \'versionConstraint\', with value \'%s\', was ignored', 'component-model'),
                         $fieldName,
+                        $this->getSchemaFieldVersion($typeResolver, $fieldName) ?? '',
                         $versionConstraint
                     );
                 }

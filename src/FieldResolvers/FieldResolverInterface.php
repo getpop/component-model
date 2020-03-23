@@ -60,4 +60,11 @@ interface FieldResolverInterface
     public function enableOrderedSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): bool;
     public function getValidationErrorDescription(TypeResolverInterface $typeResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?string;
     public function getFilteredSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): array;
+    /**
+     * Define if to use the version to decide if to process the field or not
+     *
+     * @param TypeResolverInterface $typeResolver
+     * @return boolean
+     */
+    public function decideCanProcessBasedOnVersionConstraint(TypeResolverInterface $typeResolver): bool;
 }
