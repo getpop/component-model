@@ -248,7 +248,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
      * @param array $directiveArgs
      * @return boolean
      */
-    public function resolveCanProcess(TypeResolverInterface $typeResolver, string $directiveName, array $directiveArgs = [], string $field, array &$variables): bool
+    public function resolveCanProcess(TypeResolverInterface $typeResolver, string $directiveName, array $directiveArgs, string $field, array &$variables): bool
     {
         /** Check if to validate the version */
         if (
