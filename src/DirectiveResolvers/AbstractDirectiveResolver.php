@@ -286,14 +286,16 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     public function resolveSchemaValidationErrorDescription(TypeResolverInterface $typeResolver, string $directiveName, array $directiveArgs = []): ?string
     {
         // Iterate all the mandatory fieldArgs and, if they are not present, throw an error
-        if ($schemaDirectiveArgs = $this->getFilteredSchemaDirectiveArgs($typeResolver)) {
-            if ($mandatoryArgs = SchemaHelpers::getSchemaMandatoryFieldArgs($schemaDirectiveArgs)) {
-                if ($maybeError = $this->validateNotMissingDirectiveArguments(
-                    SchemaHelpers::getSchemaFieldArgNames($mandatoryArgs),
-                    $directiveName,
-                    $directiveArgs
-                )) {
-                    return $maybeError;
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
+            if ($schemaDirectiveArgs = $schemaDefinitionResolver->getFilteredSchemaDirectiveArgs($typeResolver)) {
+                if ($mandatoryArgs = SchemaHelpers::getSchemaMandatoryFieldArgs($schemaDirectiveArgs)) {
+                    if ($maybeError = $this->validateNotMissingDirectiveArguments(
+                        SchemaHelpers::getSchemaFieldArgNames($mandatoryArgs),
+                        $directiveName,
+                        $directiveArgs
+                    )) {
+                        return $maybeError;
+                    }
                 }
             }
         }
@@ -415,13 +417,12 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
 
     public function getFilteredSchemaDirectiveArgs(TypeResolverInterface $typeResolver): array
     {
-        $schemaDirectiveArgs = $this->getSchemaDirectiveArgs($typeResolver);
-        /**
-         * Add the "versionConstraint" param. Add it at the end, so it doesn't affect the order of params for "orderedSchemaDirectiveArgs"
-         */
-        if (Environment::enableSemanticVersionConstraints()) {
-            $schemaDirectiveArgs[] = $this->getVersionConstraintSchemaFieldOrDirectiveArg();
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
+            $schemaDirectiveArgs = $schemaDefinitionResolver->getSchemaDirectiveArgs($typeResolver);
+        } else {
+            $schemaDirectiveArgs = [];
         }
+        $this->maybeAddVersionConstraintSchemaFieldOrDirectiveArg($schemaDirectiveArgs);
         return $schemaDirectiveArgs;
     }
 
@@ -763,7 +764,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATED] = true;
                 $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATIONDESCRIPTION] = $deprecationDescription;
             }
-            if ($args = $this->getFilteredSchemaDirectiveArgs($typeResolver)) {
+            if ($args = $schemaDefinitionResolver->getFilteredSchemaDirectiveArgs($typeResolver)) {
                 // Add the args under their name
                 $nameArgs = [];
                 foreach ($args as $arg) {

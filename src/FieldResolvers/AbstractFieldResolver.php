@@ -318,7 +318,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                     $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATED] = true;
                     $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATIONDESCRIPTION] = $deprecationDescription;
                 }
-                if ($args = $this->getFilteredSchemaFieldArgs($typeResolver, $fieldName)) {
+                if ($args = $schemaDefinitionResolver->getFilteredSchemaFieldArgs($typeResolver, $fieldName)) {
                     // Add the args under their name
                     $nameArgs = [];
                     foreach ($args as $arg) {
@@ -334,18 +334,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             $this->schemaDefinitionForFieldCache[$key] = $schemaDefinition;
         }
         return $this->schemaDefinitionForFieldCache[$key];
-    }
-
-    public function getFilteredSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): array
-    {
-        $schemaFieldArgs = $this->getSchemaFieldArgs($typeResolver, $fieldName);
-        /**
-         * Add the "versionConstraint" param. Add it at the end, so it doesn't affect the order of params for "orderedSchemaFieldArgs"
-         */
-        if (Environment::enableSemanticVersionConstraints()) {
-            $schemaFieldArgs[] = $this->getVersionConstraintSchemaFieldOrDirectiveArg();
-        }
-        return $schemaFieldArgs;
     }
 
     public function enableOrderedSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): bool

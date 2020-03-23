@@ -2,9 +2,12 @@
 namespace PoP\ComponentModel\DirectiveResolvers;
 
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
+use PoP\ComponentModel\Schema\WithVersionConstraintFieldOrDirectiveResolverTrait;
 
 abstract class AbstractSchemaDirectiveResolver extends AbstractDirectiveResolver implements SchemaDirectiveResolverInterface
 {
+    use WithVersionConstraintFieldOrDirectiveResolverTrait;
+
     public function getSchemaDefinitionResolver(TypeResolverInterface $typeResolver): ?SchemaDirectiveResolverInterface
     {
         return $this;
@@ -28,6 +31,12 @@ abstract class AbstractSchemaDirectiveResolver extends AbstractDirectiveResolver
     public function getSchemaDirectiveArgs(TypeResolverInterface $typeResolver): array
     {
         return [];
+    }
+    public function getFilteredSchemaDirectiveArgs(TypeResolverInterface $typeResolver): array
+    {
+        $schemaDirectiveArgs = $this->getSchemaDirectiveArgs($typeResolver);
+        $this->maybeAddVersionConstraintSchemaFieldOrDirectiveArg($schemaDirectiveArgs);
+        return $schemaDirectiveArgs;
     }
     public function getSchemaDirectiveVersion(TypeResolverInterface $typeResolver): ?string
     {

@@ -4,9 +4,12 @@ namespace PoP\ComponentModel\FieldResolvers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverInterface;
+use PoP\ComponentModel\Schema\WithVersionConstraintFieldOrDirectiveResolverTrait;
 
 trait SelfSchemaDefinitionResolverTrait
 {
+    use WithVersionConstraintFieldOrDirectiveResolverTrait;
+
     /**
      * The object resolves its own schema definition
      *
@@ -39,6 +42,16 @@ trait SelfSchemaDefinitionResolverTrait
     public function getSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): array
     {
         return [];
+    }
+
+    public function getFilteredSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): array
+    {
+        $schemaFieldArgs = $this->getSchemaFieldArgs($typeResolver, $fieldName);
+        /**
+         * Add the "versionConstraint" param. Add it at the end, so it doesn't affect the order of params for "orderedSchemaFieldArgs"
+         */
+        $this->maybeAddVersionConstraintSchemaFieldOrDirectiveArg($schemaFieldArgs);
+        return $schemaFieldArgs;
     }
 
     public function getSchemaFieldDeprecationDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string

@@ -10,6 +10,7 @@ interface FieldSchemaDefinitionResolverInterface
     public function getSchemaFieldDescription(TypeResolverInterface $typeResolver, string $fieldName): ?string;
     public function getSchemaFieldVersion(TypeResolverInterface $typeResolver, string $fieldName): ?string;
     public function getSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): array;
+    public function getFilteredSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): array;
     public function getSchemaFieldDeprecationDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string;
     public function addSchemaDefinitionForField(array &$schemaDefinition, TypeResolverInterface $typeResolver, string $fieldName): void;
 }

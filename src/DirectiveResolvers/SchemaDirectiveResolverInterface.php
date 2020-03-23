@@ -35,6 +35,13 @@ interface SchemaDirectiveResolverInterface
      */
     public function getSchemaDirectiveArgs(TypeResolverInterface $typeResolver): array;
     /**
+     * Filtered Schema Directive Arguments
+     *
+     * @param TypeResolverInterface $typeResolver
+     * @return array
+     */
+    public function getFilteredSchemaDirectiveArgs(TypeResolverInterface $typeResolver): array;
+    /**
      * Expressions set by the directive
      *
      * @param TypeResolverInterface $typeResolver

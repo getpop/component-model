@@ -589,9 +589,11 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     {
         // Get the fieldDirective argument types, to know to what type it will cast the value
         $directiveArgNameTypes = [];
-        if ($directiveSchemaDefinitionArgs = $directiveResolver->getFilteredSchemaDirectiveArgs($typeResolver)) {
-            foreach ($directiveSchemaDefinitionArgs as $directiveSchemaDefinitionArg) {
-                $directiveArgNameTypes[$directiveSchemaDefinitionArg[SchemaDefinition::ARGNAME_NAME]] = $directiveSchemaDefinitionArg[SchemaDefinition::ARGNAME_TYPE];
+        if ($directiveSchemaDefinitionResolver = $directiveResolver->getSchemaDefinitionResolver($typeResolver)) {
+            if ($directiveSchemaDefinitionArgs = $directiveSchemaDefinitionResolver->getFilteredSchemaDirectiveArgs($typeResolver)) {
+                foreach ($directiveSchemaDefinitionArgs as $directiveSchemaDefinitionArg) {
+                    $directiveArgNameTypes[$directiveSchemaDefinitionArg[SchemaDefinition::ARGNAME_NAME]] = $directiveSchemaDefinitionArg[SchemaDefinition::ARGNAME_TYPE];
+                }
             }
         }
         return $directiveArgNameTypes;
