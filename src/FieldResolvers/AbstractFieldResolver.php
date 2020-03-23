@@ -27,6 +27,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
     use WithVersionConstraintFieldOrDirectiveResolverTrait;
 
     protected $enumValueArgumentValidationCache = [];
+    protected $schemaDefinitionForFieldCache = [];
 
     public static function getImplementedInterfaceClasses(): array
     {
@@ -263,56 +264,61 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
      */
     public function getSchemaDefinitionForField(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): array
     {
-        $schemaDefinition = [
-            SchemaDefinition::ARGNAME_NAME => $fieldName,
-        ];
-        // Find which is the $schemaDefinitionResolver that will satisfy this schema definition
-        // First try the one declared by the fieldResolver
-        $maybeSchemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver);
-        if (!is_null($maybeSchemaDefinitionResolver) && in_array($fieldName, $maybeSchemaDefinitionResolver::getFieldNamesToResolve())) {
-            $schemaDefinitionResolver = $maybeSchemaDefinitionResolver;
-        } else {
-            // Otherwise, try through all of its interfaces
-            $instanceManager = InstanceManagerFacade::getInstance();
-            foreach (self::getInterfaceClasses() as $interfaceClass) {
-                if (in_array($fieldName, $interfaceClass::getFieldNamesToImplement())) {
-                    $schemaDefinitionResolver = $instanceManager->getInstance($interfaceClass);
-                    break;
+        // First check if the value was cached
+        $key = $typeResolver->getNamespacedTypeName().'|'.$fieldName.'|'.json_encode($fieldArgs);
+        if (is_null($this->schemaDefinitionForFieldCache[$key])) {
+            $schemaDefinition = [
+                SchemaDefinition::ARGNAME_NAME => $fieldName,
+            ];
+            // Find which is the $schemaDefinitionResolver that will satisfy this schema definition
+            // First try the one declared by the fieldResolver
+            $maybeSchemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver);
+            if (!is_null($maybeSchemaDefinitionResolver) && in_array($fieldName, $maybeSchemaDefinitionResolver::getFieldNamesToResolve())) {
+                $schemaDefinitionResolver = $maybeSchemaDefinitionResolver;
+            } else {
+                // Otherwise, try through all of its interfaces
+                $instanceManager = InstanceManagerFacade::getInstance();
+                foreach (self::getInterfaceClasses() as $interfaceClass) {
+                    if (in_array($fieldName, $interfaceClass::getFieldNamesToImplement())) {
+                        $schemaDefinitionResolver = $instanceManager->getInstance($interfaceClass);
+                        break;
+                    }
                 }
             }
-        }
 
-        // If we found a resolver for this fieldName, get all its properties from it
-        if ($schemaDefinitionResolver) {
-            if ($type = $schemaDefinitionResolver->getSchemaFieldType($typeResolver, $fieldName)) {
-                $schemaDefinition[SchemaDefinition::ARGNAME_TYPE] = $type;
-            }
-            if ($description = $schemaDefinitionResolver->getSchemaFieldDescription($typeResolver, $fieldName)) {
-                $schemaDefinition[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
-            }
-            if (Environment::enableSemanticVersioningConstraintsForFields()) {
-                if ($version = $schemaDefinitionResolver->getSchemaFieldVersion($typeResolver, $fieldName)) {
-                    $schemaDefinition[SchemaDefinition::ARGNAME_VERSION] = $version;
+            // If we found a resolver for this fieldName, get all its properties from it
+            if ($schemaDefinitionResolver) {
+                if ($type = $schemaDefinitionResolver->getSchemaFieldType($typeResolver, $fieldName)) {
+                    $schemaDefinition[SchemaDefinition::ARGNAME_TYPE] = $type;
                 }
-            }
-            if ($deprecationDescription = $schemaDefinitionResolver->getSchemaFieldDeprecationDescription($typeResolver, $fieldName, $fieldArgs)) {
-                $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATED] = true;
-                $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATIONDESCRIPTION] = $deprecationDescription;
-            }
-            if ($args = $this->getFilteredSchemaFieldArgs($typeResolver, $fieldName)) {
-                // Add the args under their name
-                $nameArgs = [];
-                foreach ($args as $arg) {
-                    $nameArgs[$arg[SchemaDefinition::ARGNAME_NAME]] = $arg;
+                if ($description = $schemaDefinitionResolver->getSchemaFieldDescription($typeResolver, $fieldName)) {
+                    $schemaDefinition[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
                 }
-                $schemaDefinition[SchemaDefinition::ARGNAME_ARGS] = $nameArgs;
+                if (Environment::enableSemanticVersioningConstraintsForFields()) {
+                    if ($version = $schemaDefinitionResolver->getSchemaFieldVersion($typeResolver, $fieldName)) {
+                        $schemaDefinition[SchemaDefinition::ARGNAME_VERSION] = $version;
+                    }
+                }
+                if ($deprecationDescription = $schemaDefinitionResolver->getSchemaFieldDeprecationDescription($typeResolver, $fieldName, $fieldArgs)) {
+                    $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATED] = true;
+                    $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATIONDESCRIPTION] = $deprecationDescription;
+                }
+                if ($args = $this->getFilteredSchemaFieldArgs($typeResolver, $fieldName)) {
+                    // Add the args under their name
+                    $nameArgs = [];
+                    foreach ($args as $arg) {
+                        $nameArgs[$arg[SchemaDefinition::ARGNAME_NAME]] = $arg;
+                    }
+                    $schemaDefinition[SchemaDefinition::ARGNAME_ARGS] = $nameArgs;
+                }
+                $schemaDefinitionResolver->addSchemaDefinitionForField($schemaDefinition, $typeResolver, $fieldName);
             }
-            $schemaDefinitionResolver->addSchemaDefinitionForField($schemaDefinition, $typeResolver, $fieldName);
+            if (!is_null($this->resolveFieldTypeResolverClass($typeResolver, $fieldName, $fieldArgs))) {
+                $schemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL] = true;
+            }
+            $this->schemaDefinitionForFieldCache[$key] = $schemaDefinition;
         }
-        if (!is_null($this->resolveFieldTypeResolverClass($typeResolver, $fieldName, $fieldArgs))) {
-            $schemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL] = true;
-        }
-        return $schemaDefinition;
+        return $this->schemaDefinitionForFieldCache[$key];
     }
 
     public function getFilteredSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): array
