@@ -459,7 +459,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 }
 
                 // Check for warnings
-                if ($warningDescription = $directiveResolverInstance->getSchemaDirectiveWarningDescription($this)) {
+                if ($warningDescription = $directiveResolverInstance->resolveSchemaDirectiveWarningDescription($this)) {
                     $schemaWarnings[] = [
                         Tokens::PATH => [$fieldDirective],
                         Tokens::MESSAGE => $warningDescription,

@@ -6,7 +6,7 @@ use PoP\Translation\Facades\TranslationAPIFacade;
 
 trait WithVersionConstraintFieldOrDirectiveResolverTrait
 {
-    protected function getVersionConstraintSchemaFieldArg(): array
+    protected function getVersionConstraintSchemaFieldOrDirectiveArg(): array
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         return [

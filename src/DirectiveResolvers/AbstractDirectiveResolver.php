@@ -30,7 +30,9 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     protected $directiveArgsForSchema = [];
     protected $directiveArgsForResultItems = [];
     protected $nestedDirectivePipelineData;
-    public function __construct($directive = null) {
+
+    public function __construct($directive = null)
+    {
         // If the directive is not provided, then it directly the directive name
         // This allows to instantiate the directive through the DependencyInjection component
         $this->directive = $directive ?? $this->getDirectiveName();
@@ -263,6 +265,8 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     public function resolveSchemaValidationErrorDescription(TypeResolverInterface $typeResolver, string $directiveName, array $directiveArgs = []): ?string
     {
         // Iterate all the mandatory fieldArgs and, if they are not present, throw an error
+        // $directiveSchemaDefinition = $this->getSchemaDefinitionForDirective($typeResolver);
+        // if ($schemaDirectiveArgs = $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) {
         if ($schemaDirectiveArgs = $this->getSchemaDirectiveArgs($typeResolver)) {
             if ($mandatoryArgs = SchemaHelpers::getSchemaMandatoryFieldArgs($schemaDirectiveArgs)) {
                 if ($maybeError = $this->validateNotMissingDirectiveArguments(
@@ -404,6 +408,30 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             return $schemaDefinitionResolver->getSchemaDirectiveWarningDescription($typeResolver);
         }
         return null;
+    }
+
+    public function resolveSchemaDirectiveWarningDescription(TypeResolverInterface $typeResolver): ?string
+    {
+        if (Environment::enableSemanticVersioningConstraintsForFields()) {
+            /**
+             * If restricting the version, and this fieldResolver doesn't have any version, then show a warning
+             */
+            if ($versionConstraint = $this->directiveArgsForSchema[SchemaDefinition::ARGNAME_VERSION_CONSTRAINT]) {
+                /**
+                 * If this fieldResolver doesn't have versioning, then it accepts everything
+                 */
+                $directiveSchemaDefinition = $this->getSchemaDefinitionForDirective($typeResolver);
+                if (!$directiveSchemaDefinition[SchemaDefinition::ARGNAME_VERSION]) {
+                    $translationAPI = TranslationAPIFacade::getInstance();
+                    return sprintf(
+                        $translationAPI->__('The DirectiveResolver used to process directive \'%s\' doesn\'t define a version, so version constraint \'%s\' was ignored', 'component-model'),
+                        $this->getDirectiveName(),
+                        $versionConstraint
+                    );
+                }
+            }
+        }
+        return $this->getSchemaDirectiveWarningDescription($typeResolver);
     }
 
     public function getSchemaDirectiveExpressions(TypeResolverInterface $typeResolver): array
@@ -705,13 +733,14 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATED] = true;
                 $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATIONDESCRIPTION] = $deprecationDescription;
             }
-            if ($args = $schemaDefinitionResolver->getSchemaDirectiveArgs($typeResolver)) {
-                /**
-                 * Add the "versionConstraint" param. Add it at the end, so it doesn't affect the order of params for "orderedSchemaDirectiveArgs"
-                 */
-                if ($versionConstraintEnabled) {
-                    $args[] = $this->getVersionConstraintSchemaFieldArg();
-                }
+            $args = $schemaDefinitionResolver->getSchemaDirectiveArgs($typeResolver);
+            /**
+             * Add the "versionConstraint" param. Add it at the end, so it doesn't affect the order of params for "orderedSchemaDirectiveArgs"
+             */
+            if ($versionConstraintEnabled) {
+                $args[] = $this->getVersionConstraintSchemaFieldOrDirectiveArg();
+            }
+            if ($args) {
                 // Add the args under their name
                 $nameArgs = [];
                 foreach ($args as $arg) {

@@ -294,13 +294,14 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATED] = true;
                 $schemaDefinition[SchemaDefinition::ARGNAME_DEPRECATIONDESCRIPTION] = $deprecationDescription;
             }
-            if ($args = $schemaDefinitionResolver->getSchemaFieldArgs($typeResolver, $fieldName)) {
-                /**
-                 * Add the "versionConstraint" param. Add it at the end, so it doesn't affect the order of params for "orderedSchemaFieldArgs"
-                 */
-                if ($versionConstraintEnabled) {
-                    $args[] = $this->getVersionConstraintSchemaFieldArg();
-                }
+            $args = $schemaDefinitionResolver->getSchemaFieldArgs($typeResolver, $fieldName);
+            /**
+             * Add the "versionConstraint" param. Add it at the end, so it doesn't affect the order of params for "orderedSchemaFieldArgs"
+             */
+            if ($versionConstraintEnabled) {
+                $args[] = $this->getVersionConstraintSchemaFieldOrDirectiveArg();
+            }
+            if ($args) {
                 // Add the args under their name
                 $nameArgs = [];
                 foreach ($args as $arg) {
