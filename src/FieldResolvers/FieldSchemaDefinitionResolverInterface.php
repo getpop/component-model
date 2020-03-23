@@ -1,5 +1,6 @@
 <?php
 namespace PoP\ComponentModel\FieldResolvers;
+
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
 interface FieldSchemaDefinitionResolverInterface
