@@ -453,7 +453,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 if (!$this->decideCanProcessBasedOnVersionConstraint($typeResolver)) {
                     $translationAPI = TranslationAPIFacade::getInstance();
                     return sprintf(
-                        $translationAPI->__('The DirectiveResolver used to process directive \'%s\', of version \'%s\', does not pay attention to the version constraint; hence, argument \'versionConstraint\', with value \'%s\', was ignored', 'component-model'),
+                        $translationAPI->__('The DirectiveResolver used to process directive \'%s\' (which has version \'%s\') does not pay attention to the version constraint; hence, argument \'versionConstraint\', with value \'%s\', was ignored', 'component-model'),
                         $this->getDirectiveName(),
                         $this->getSchemaDirectiveVersion($typeResolver) ?? '',
                         $versionConstraint

@@ -368,7 +368,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 if (!$this->decideCanProcessBasedOnVersionConstraint($typeResolver)) {
                     $translationAPI = TranslationAPIFacade::getInstance();
                     return sprintf(
-                        $translationAPI->__('The FieldResolver used to process field with name \'%s\', of version \'%s\', does not pay attention to the version constraint; hence, argument \'versionConstraint\', with value \'%s\', was ignored', 'component-model'),
+                        $translationAPI->__('The FieldResolver used to process field with name \'%s\' (which has version \'%s\') does not pay attention to the version constraint; hence, argument \'versionConstraint\', with value \'%s\', was ignored', 'component-model'),
                         $fieldName,
                         $this->getSchemaFieldVersion($typeResolver, $fieldName) ?? '',
                         $versionConstraint
