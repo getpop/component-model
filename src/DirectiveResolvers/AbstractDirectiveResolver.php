@@ -1,6 +1,7 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
 
+use Exception;
 use Composer\Semver\Semver;
 use PoP\FieldQuery\QueryHelpers;
 use League\Pipeline\StageInterface;
@@ -255,8 +256,13 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 }
                 /**
                  * Compare using semantic versioning constraint rules, as used by Composer
+                 * If passing a wrong value to validate against (eg: "saraza" instead of "1.0.0"), it will throw an Exception
                  */
-                return Semver::satisfies($schemaDirectiveVersion, $versionConstraint);
+                try {
+                    return Semver::satisfies($schemaDirectiveVersion, $versionConstraint);
+                } catch (Exception $e) {
+                    return false;
+                }
             }
         }
         return true;

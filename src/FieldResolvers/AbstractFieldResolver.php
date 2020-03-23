@@ -1,6 +1,7 @@
 <?php
 namespace PoP\ComponentModel\FieldResolvers;
 
+use Exception;
 use Composer\Semver\Semver;
 use PoP\ComponentModel\Environment;
 use PoP\FieldQuery\FieldQueryUtils;
@@ -106,8 +107,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 }
                 /**
                  * Compare using semantic versioning constraint rules, as used by Composer
+                 * If passing a wrong value to validate against (eg: "saraza" instead of "1.0.0"), it will throw an Exception
                  */
-                return Semver::satisfies($schemaFieldVersion, $versionConstraint);
+                try {
+                    return Semver::satisfies($schemaFieldVersion, $versionConstraint);
+                } catch (Exception $e) {
+                    return false;
+                }
             }
         }
         return true;
