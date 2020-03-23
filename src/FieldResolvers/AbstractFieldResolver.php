@@ -12,6 +12,7 @@ use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\FieldResolvers\SchemaDefinitionResolverTrait;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
+use PoP\ComponentModel\Configuration\Request;
 use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverInterface;
 
 abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSchemaDefinitionResolverInterface
@@ -93,8 +94,11 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             if ($schemaFieldVersion = $this->getSchemaFieldVersion($typeResolver, $fieldName)) {
                 /**
                  * If the query doesn't restrict the version, then do not process
+                 * Also can pass version constraint through URL param, which has these benefits:
+                 * 1. It applies on all fields in the query at the same time
+                 * 2. It can be used to visualize the schema for that version: /?query=fullSchema&versionConstraint=...
                  */
-                $versionConstraint = $fieldArgs[SchemaDefinition::ARGNAME_VERSION_CONSTRAINT];
+                $versionConstraint = $fieldArgs[SchemaDefinition::ARGNAME_VERSION_CONSTRAINT] ?? Request::getVersionConstraint();
                 if (!$versionConstraint) {
                     return false;
                 }
