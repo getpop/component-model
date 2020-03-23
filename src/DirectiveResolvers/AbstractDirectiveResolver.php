@@ -1,5 +1,6 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
+
 use PoP\FieldQuery\QueryHelpers;
 use League\Pipeline\StageInterface;
 use PoP\ComponentModel\Environment;
@@ -24,7 +25,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     protected $directiveArgsForSchema = [];
     protected $directiveArgsForResultItems = [];
     protected $nestedDirectivePipelineData;
-    function __construct($directive = null) {
+    public function __construct($directive = null) {
         // If the directive is not provided, then it directly the directive name
         // This allows to instantiate the directive through the DependencyInjection component
         $this->directive = $directive ?? $this->getDirectiveName();
