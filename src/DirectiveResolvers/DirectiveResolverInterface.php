@@ -100,4 +100,11 @@ interface DirectiveResolverInterface
      */
     public function skipAddingToSchemaDefinition(): bool;
     public function getSchemaDefinitionForDirective(TypeResolverInterface $typeResolver): array;
+    /**
+     * Filtered Schema Directive Arguments
+     *
+     * @param TypeResolverInterface $typeResolver
+     * @return array
+     */
+    public function getFilteredSchemaDirectiveArgs(TypeResolverInterface $typeResolver): array;
 }
