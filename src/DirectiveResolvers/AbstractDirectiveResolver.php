@@ -420,7 +420,10 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         } else {
             $schemaDirectiveArgs = [];
         }
-        $this->maybeAddVersionConstraintSchemaFieldOrDirectiveArg($schemaDirectiveArgs);
+        $this->maybeAddVersionConstraintSchemaFieldOrDirectiveArg(
+            $schemaDirectiveArgs,
+            !empty($this->getSchemaDirectiveVersion($typeResolver))
+        );
         return $schemaDirectiveArgs;
     }
 

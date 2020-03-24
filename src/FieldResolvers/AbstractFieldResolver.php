@@ -355,6 +355,11 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         return null;
     }
 
+    protected function hasSchemaFieldVersion(TypeResolverInterface $typeResolver, string $fieldName): bool
+    {
+        return !empty($this->getSchemaFieldVersion($typeResolver, $fieldName));
+    }
+
     public function resolveSchemaValidationWarningDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
     {
         if (Environment::enableSemanticVersionConstraints()) {

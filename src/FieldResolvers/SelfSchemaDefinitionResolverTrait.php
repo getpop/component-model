@@ -8,6 +8,7 @@ use PoP\ComponentModel\Schema\WithVersionConstraintFieldOrDirectiveResolverTrait
 
 trait SelfSchemaDefinitionResolverTrait
 {
+    use SchemaDefinitionResolverTrait;
     use WithVersionConstraintFieldOrDirectiveResolverTrait;
 
     /**
@@ -45,7 +46,10 @@ trait SelfSchemaDefinitionResolverTrait
         /**
          * Add the "versionConstraint" param. Add it at the end, so it doesn't affect the order of params for "orderedSchemaFieldArgs"
          */
-        $this->maybeAddVersionConstraintSchemaFieldOrDirectiveArg($schemaFieldArgs);
+        $this->maybeAddVersionConstraintSchemaFieldOrDirectiveArg(
+            $schemaFieldArgs,
+            $this->hasSchemaFieldVersion($typeResolver, $fieldName)
+        );
         return $schemaFieldArgs;
     }
 

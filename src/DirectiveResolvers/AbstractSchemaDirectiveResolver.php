@@ -35,7 +35,10 @@ abstract class AbstractSchemaDirectiveResolver extends AbstractDirectiveResolver
     public function getFilteredSchemaDirectiveArgs(TypeResolverInterface $typeResolver): array
     {
         $schemaDirectiveArgs = $this->getSchemaDirectiveArgs($typeResolver);
-        $this->maybeAddVersionConstraintSchemaFieldOrDirectiveArg($schemaDirectiveArgs);
+        $this->maybeAddVersionConstraintSchemaFieldOrDirectiveArg(
+            $schemaDirectiveArgs,
+            !empty($this->getSchemaDirectiveVersion($typeResolver))
+        );
         return $schemaDirectiveArgs;
     }
     public function enableOrderedSchemaDirectiveArgs(TypeResolverInterface $typeResolver): bool

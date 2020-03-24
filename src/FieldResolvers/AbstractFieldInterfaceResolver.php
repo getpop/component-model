@@ -2,9 +2,10 @@
 namespace PoP\ComponentModel\FieldResolvers;
 
 use PoP\ComponentModel\Engine_Vars;
-use PoP\ComponentModel\Schema\SchemaDefinition;
-use PoP\ComponentModel\FieldResolvers\SchemaDefinitionResolverTrait;
 use PoP\ComponentModel\Schema\SchemaHelpers;
+use PoP\ComponentModel\Schema\SchemaDefinition;
+use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
+use PoP\ComponentModel\FieldResolvers\SchemaDefinitionResolverTrait;
 
 abstract class AbstractFieldInterfaceResolver implements FieldInterfaceResolverInterface
 {
@@ -42,6 +43,23 @@ abstract class AbstractFieldInterfaceResolver implements FieldInterfaceResolverI
     public function getSchemaInterfaceDescription(): ?string
     {
         return null;
+    }
+
+    /**
+     * The fieldResolver will determine if it has a version or not, however the signature
+     * of the fields comes from the interface. Only if there's a version will fieldArg "versionConstraint"
+     * be added to the field. Hence, the interface must always say it has a version.
+     * This will make fieldArg "versionConstraint" be always added to fields implementing an interface,
+     * even if they do not have a version. However, the other way around, to say `false`,
+     * would not allow any field implementing an interface to be versioned. So this way is better.
+     *
+     * @param TypeResolverInterface $typeResolver
+     * @param string $fieldName
+     * @return boolean
+     */
+    protected function hasSchemaFieldVersion(TypeResolverInterface $typeResolver, string $fieldName): bool
+    {
+        return true;
     }
 
     // public function getSchemaInterfaceVersion(string $fieldName): ?string
