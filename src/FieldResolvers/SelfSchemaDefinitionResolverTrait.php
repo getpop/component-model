@@ -8,7 +8,6 @@ use PoP\ComponentModel\Schema\WithVersionConstraintFieldOrDirectiveResolverTrait
 
 trait SelfSchemaDefinitionResolverTrait
 {
-    use SchemaDefinitionResolverTrait;
     use WithVersionConstraintFieldOrDirectiveResolverTrait;
 
     /**
@@ -39,6 +38,8 @@ trait SelfSchemaDefinitionResolverTrait
     {
         return [];
     }
+
+    abstract protected function hasSchemaFieldVersion(TypeResolverInterface $typeResolver, string $fieldName): bool;
 
     public function getFilteredSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): array
     {
