@@ -3,6 +3,8 @@ namespace PoP\ComponentModel;
 
 class Environment
 {
+    public const ENABLE_SCHEMA_ENTITY_REGISTRIES = 'ENABLE_SCHEMA_ENTITY_REGISTRIES';
+
     /**
      * Indicate: If a directive fails, then remove the affected IDs/fields from the upcoming stages of the directive pipeline execution
      *
@@ -43,6 +45,19 @@ class Environment
     public static function enableSemanticVersionConstraints(): bool
     {
         return isset($_ENV['ENABLE_SEMANTIC_VERSION_CONSTRAINTS']) ? strtolower($_ENV['ENABLE_SEMANTIC_VERSION_CONSTRAINTS']) == "true" : false;
+    }
+
+    /**
+     * Indicate if to keep the several entities that make up a schema (types, directives) in a registry
+     * This functionality is not used by PoP itself, hence it defaults to `false`
+     * It can be used by making a mapping from type name to type resolver class, as to reference a type
+     * by a name, if needed (eg: to save in the application's configuration)
+     *
+     * @return bool
+     */
+    public static function enableSchemaEntityRegistries(): bool
+    {
+        return isset($_ENV[self::ENABLE_SCHEMA_ENTITY_REGISTRIES]) ? strtolower($_ENV[self::ENABLE_SCHEMA_ENTITY_REGISTRIES]) == "true" : false;
     }
 }
 

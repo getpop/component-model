@@ -3,6 +3,9 @@ namespace PoP\ComponentModel;
 
 use PoP\Hooks\Facades\HooksAPIFacade;
 
+/**
+ * Base class providing an access layer to an environment variable, enabling to override its value
+ */
 abstract class AbstractComponentConfiguration
 {
     protected static $initialized = [];

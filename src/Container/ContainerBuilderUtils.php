@@ -3,6 +3,7 @@ namespace PoP\ComponentModel\Container;
 
 use PoP\Root\Container\ContainerBuilderFactory;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups;
+use PoP\ComponentModel\ComponentConfiguration;
 use PoP\ComponentModel\Facades\Registries\DirectiveRegistryFacade;
 use PoP\ComponentModel\Facades\Registries\TypeRegistryFacade;
 use PoP\Root\Container\ContainerBuilderUtils as RootContainerBuilderUtils;
@@ -17,6 +18,12 @@ class ContainerBuilderUtils extends RootContainerBuilderUtils {
      */
     public static function registerTypeResolversFromNamespace(string $namespace, bool $includeSubfolders = true): void
     {
+        /**
+         * Check the registries are enabled
+         */
+        if (!ComponentConfiguration::enableSchemaEntityRegistries()) {
+            return;
+        }
         /**
          * We can't save this output into the cached container through `injectValuesIntoService`,
          * because the container must be compiled to call `getServiceClassesUnderNamespace`, and once
@@ -53,6 +60,10 @@ class ContainerBuilderUtils extends RootContainerBuilderUtils {
     public static function attachAndRegisterDirectiveResolversFromNamespace(string $namespace, bool $includeSubfolders = true, int $priority = 10): void
     {
         /**
+         * Check the registries are enabled
+         */
+        $enableSchemaEntityRegistries = ComponentConfiguration::enableSchemaEntityRegistries();
+        /**
          * We can't save this output into the cached container through `injectValuesIntoService`,
          * because the container must be compiled to call `getServiceClassesUnderNamespace`, and once
          * compiled can't add more data.
@@ -60,12 +71,14 @@ class ContainerBuilderUtils extends RootContainerBuilderUtils {
          * which is executed in `beforeBoot` at the vey beginning (through `maybeCompileAndCacheContainer`)
          * Hence, the values are injected into the service directly, and not through its proxy
          */
-        $directiveRegistry = DirectiveRegistryFacade::getInstance();
+        $directiveRegistry = $enableSchemaEntityRegistries ? DirectiveRegistryFacade::getInstance() : null;
         foreach (self::getServiceClassesUnderNamespace($namespace, $includeSubfolders) as $serviceClass) {
             $serviceClass::attach(AttachableExtensionGroups::DIRECTIVERESOLVERS, $priority);
 
             // Register the directive in the registry. If cached, do not execute or it will throw exception
-            $directiveRegistry->addDirectiveResolverClass($serviceClass);
+            if ($enableSchemaEntityRegistries) {
+                $directiveRegistry->addDirectiveResolverClass($serviceClass);
+            }
         }
     }
 
