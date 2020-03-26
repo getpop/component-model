@@ -27,7 +27,7 @@ abstract class AbstractValidateDirectiveResolver extends AbstractGlobalDirective
     protected function validateAndFilterFields(TypeResolverInterface $typeResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$variables, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {
         // Validate that the schema and the provided data match, eg: passing mandatory values
-        // (Such as fieldArg "status" for field "is-status")
+        // (Such as fieldArg "status" for field "isStatus")
         // Combine all the datafields under all IDs
         $dataFields = $failedDataFields = [];
         foreach ($idsDataFields as $id => $data_fields) {
