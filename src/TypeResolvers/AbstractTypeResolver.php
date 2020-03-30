@@ -162,15 +162,19 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         /**
-        * All directives are placed somewhere in the pipeline. There are 3 positions:
-        * 1. At the beginning, before Validate directive
-        * 2. In the middle, between the Validate and Resolve directives
-        * 3. At the end, after the ResolveAndMerge directive
+        * All directives are placed somewhere in the pipeline. There are 5 positions:
+        * 1. At the beginning
+        * 2. Before Validate directive
+        * 3. Between the Validate and Resolve directives
+        * 4. After the ResolveAndMerge directive
+        * 4. At the end
         */
         $directiveInstancesByPosition = $fieldDirectivesByPosition = $directiveFieldsByPosition = [
+            PipelinePositions::BEGINNING => [],
             PipelinePositions::BEFORE_VALIDATE => [],
             PipelinePositions::AFTER_VALIDATE_BEFORE_RESOLVE => [],
             PipelinePositions::AFTER_RESOLVE => [],
+            PipelinePositions::END => [],
         ];
 
         // Resolve from directive into their actual object instance.
