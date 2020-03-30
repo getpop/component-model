@@ -16,7 +16,7 @@ abstract class AbstractValidateDirectiveResolver extends AbstractGlobalDirective
      */
     public function getPipelinePosition(): string
     {
-        return PipelinePositions::MIDDLE;
+        return PipelinePositions::AFTER_VALIDATE_BEFORE_RESOLVE;
     }
 
     public function resolveDirective(TypeResolverInterface $typeResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$resultIDItems, array &$unionDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$dbDeprecations, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)

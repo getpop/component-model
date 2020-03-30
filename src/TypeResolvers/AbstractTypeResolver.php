@@ -168,9 +168,9 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         * 3. At the end, after the ResolveAndMerge directive
         */
         $directiveInstancesByPosition = $fieldDirectivesByPosition = $directiveFieldsByPosition = [
-            PipelinePositions::FRONT => [],
-            PipelinePositions::MIDDLE => [],
-            PipelinePositions::BACK => [],
+            PipelinePositions::BEFORE_VALIDATE => [],
+            PipelinePositions::AFTER_VALIDATE_BEFORE_RESOLVE => [],
+            PipelinePositions::AFTER_RESOLVE => [],
         ];
 
         // Resolve from directive into their actual object instance.

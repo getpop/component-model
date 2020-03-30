@@ -17,13 +17,13 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
     }
 
     /**
-     * This directive must be the first one of the group at the back
+     * This directive must be the first one of its group
      *
      * @return void
      */
     public function getPipelinePosition(): string
     {
-        return PipelinePositions::BACK;
+        return PipelinePositions::AFTER_RESOLVE;
     }
 
     /**

@@ -12,7 +12,7 @@ namespace PoP\ComponentModel\TypeResolvers;
  */
 class PipelinePositions
 {
-    public const FRONT = 'front';
-    public const MIDDLE = 'middle';
-    public const BACK = 'back';
+    public const BEFORE_VALIDATE = 'before-validate';
+    public const AFTER_VALIDATE_BEFORE_RESOLVE = 'after-validate-before-resolve';
+    public const AFTER_RESOLVE = 'after_resolve';
 }
