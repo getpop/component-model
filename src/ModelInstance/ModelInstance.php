@@ -107,8 +107,8 @@ class ModelInstance implements ModelInstanceInterface
             // so only in these exceptional cases the identifier will add this parameter
             $components[] = $this->translationAPI->__('mangled:', 'component-model').$mangled;
         }
-        if ($vars['skip-fieldargs-from-outputkey']) {
-            $components[] = $this->translationAPI->__('skip-fieldargs-from-outputkey', 'component-model');
+        if ($vars['only-fieldname-as-outputkey']) {
+            $components[] = $this->translationAPI->__('only-fieldname-as-outputkey', 'component-model');
         }
 
         // Allow for plug-ins to add their own vars. Eg: URE source parameter

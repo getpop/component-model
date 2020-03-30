@@ -1016,7 +1016,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     {
         // GraphQL: Use fieldName only
         $vars = Engine_Vars::getVars();
-        if ($vars['skip-fieldargs-from-outputkey']) {
+        if ($vars['only-fieldname-as-outputkey']) {
             return $this->getFieldName($field);
         }
         return parent::getNoAliasFieldOutputKey($field);
