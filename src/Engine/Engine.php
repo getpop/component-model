@@ -27,6 +27,7 @@ use PoP\ComponentModel\Facades\ModuleFilters\ModuleFilterManagerFacade;
 use PoP\ComponentModel\Facades\DataStructure\DataStructureManagerFacade;
 use PoP\ComponentModel\Settings\SiteConfigurationProcessorManagerFactory;
 use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
+use PoP\ComponentModel\ComponentConfiguration;
 
 class Engine implements EngineInterface
 {
@@ -213,7 +214,7 @@ class Engine implements EngineInterface
 
     public function getModelPropsModuletree(array $module)
     {
-        if ($useCache = ServerUtils::useCache()) {
+        if ($useCache = ComponentConfiguration::useComponentModelCache()) {
             $cachemanager = PersistentCacheFacade::getInstance();
             $useCache = !is_null($cachemanager);
         }
@@ -388,7 +389,7 @@ class Engine implements EngineInterface
 
     public function getModuleDatasetSettings(array $module, $model_props, array &$props)
     {
-        if ($useCache = ServerUtils::useCache()) {
+        if ($useCache = ComponentConfiguration::useComponentModelCache()) {
             $cachemanager = PersistentCacheFacade::getInstance();
             $useCache = !is_null($cachemanager);
         }
@@ -507,7 +508,7 @@ class Engine implements EngineInterface
             if ($vars['mangled']) {
                 $meta[Request::URLPARAM_MANGLED] = $vars['mangled'];
             }
-            if (ServerUtils::enableConfigByParams() && $vars['config']) {
+            if (ComponentConfiguration::enableConfigByParams() && $vars['config']) {
                 $meta[POP_URLPARAM_CONFIG] = $vars['config'];
             }
             if ($vars['stratum']) {
@@ -759,7 +760,7 @@ class Engine implements EngineInterface
     public function getModuleData($root_module, $root_model_props, $root_props)
     {
         $instanceManager = InstanceManagerFacade::getInstance();
-        if ($useCache = ServerUtils::useCache()) {
+        if ($useCache = ComponentConfiguration::useComponentModelCache()) {
             $cachemanager = PersistentCacheFacade::getInstance();
             $useCache = !is_null($cachemanager);
         }

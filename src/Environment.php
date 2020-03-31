@@ -4,6 +4,8 @@ namespace PoP\ComponentModel;
 class Environment
 {
     public const ENABLE_SCHEMA_ENTITY_REGISTRIES = 'ENABLE_SCHEMA_ENTITY_REGISTRIES';
+    public const USE_COMPONENT_MODEL_CACHE = 'USE_COMPONENT_MODEL_CACHE';
+    public const ENABLE_CONFIG_BY_PARAMS = 'ENABLE_CONFIG_BY_PARAMS';
 
     /**
      * Indicate: If a directive fails, then remove the affected IDs/fields from the upcoming stages of the directive pipeline execution
@@ -58,6 +60,26 @@ class Environment
     public static function enableSchemaEntityRegistries(): bool
     {
         return isset($_ENV[self::ENABLE_SCHEMA_ENTITY_REGISTRIES]) ? strtolower($_ENV[self::ENABLE_SCHEMA_ENTITY_REGISTRIES]) == "true" : false;
+    }
+
+    /**
+     * Indicate if caching is enabled
+     *
+     * @return void
+     */
+    public static function useComponentModelCache(): bool
+    {
+        return isset($_ENV[self::USE_COMPONENT_MODEL_CACHE]) ? strtolower($_ENV[self::USE_COMPONENT_MODEL_CACHE]) == "true" : false;
+    }
+
+    /**
+     * Indicate if the configuration can be set through params
+     *
+     * @return boolean
+     */
+    public static function enableConfigByParams(): bool
+    {
+        return isset($_ENV[self::ENABLE_CONFIG_BY_PARAMS]) ? strtolower($_ENV[self::ENABLE_CONFIG_BY_PARAMS]) == "true" : false;
     }
 }
 
