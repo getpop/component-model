@@ -28,6 +28,12 @@ class Cache implements CacheInterface
         return $this->cacheItemPool->getItem($this->getKey($id, $type));
     }
 
+    public function hasCache($id, $type)
+    {
+        $cacheItem = $this->getCacheItem($id, $type);
+        return $cacheItem->isHit();
+    }
+
     public function getCache($id, $type)
     {
         $cacheItem = $this->getCacheItem($id, $type);

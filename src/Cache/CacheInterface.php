@@ -3,6 +3,7 @@ namespace PoP\ComponentModel\Cache;
 
 interface CacheInterface
 {
+    public function hasCache($id, $type);
     public function getCache($id, $type);
     public function storeCache($id, $type, $content);
     public function getCacheByModelInstance($type);
