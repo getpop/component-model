@@ -49,12 +49,22 @@ class Cache implements CacheInterface
         return false;
     }
 
-    public function storeCache($id, $type, $content)
+    /**
+     * Store the cache
+     *
+     * @param [type] $id key under which to store the cache
+     * @param [type] $type the type of the cache, used to distinguish groups of caches
+     * @param [type] $content the value to cache
+     * @param [type] $time time after which the cache expires, in seconds
+     * @return void
+     */
+    public function storeCache($id, $type, $content, $time = null)
     {
         // Before saving the cache, replace the data specific to this execution with generic placeholders
         $content = $this->replaceCurrentExecutionDataWithPlaceholders($content);
         $cacheItem = $this->getCacheItem($id, $type);
         $cacheItem->set($content);
+        $cacheItem->expiresAfter($time);
         $this->saveCache($cacheItem);
     }
 
