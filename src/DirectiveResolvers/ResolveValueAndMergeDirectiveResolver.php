@@ -12,7 +12,8 @@ use PoP\ComponentModel\Feedback\Tokens;
 class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResolver
 {
     const DIRECTIVE_NAME = 'resolveValueAndMerge';
-    public static function getDirectiveName(): string {
+    public static function getDirectiveName(): string
+    {
         return self::DIRECTIVE_NAME;
     }
 

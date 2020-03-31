@@ -8,7 +8,8 @@ use PoP\ComponentModel\DirectiveResolvers\AbstractValidateDirectiveResolver;
 class ValidateDirectiveResolver extends AbstractValidateDirectiveResolver
 {
     const DIRECTIVE_NAME = 'validate';
-    public static function getDirectiveName(): string {
+    public static function getDirectiveName(): string
+    {
         return self::DIRECTIVE_NAME;
     }
 
