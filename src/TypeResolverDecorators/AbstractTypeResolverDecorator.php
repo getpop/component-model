@@ -40,7 +40,7 @@ abstract class AbstractTypeResolverDecorator implements TypeResolverDecoratorInt
      * @param TypeResolverInterface $typeResolver
      * @return array
      */
-    public function getMandatoryDirectivesForDirectives(TypeResolverInterface $typeResolver): array
+    public function getPrecedingMandatoryDirectivesForDirectives(TypeResolverInterface $typeResolver): array
     {
         return [];
     }

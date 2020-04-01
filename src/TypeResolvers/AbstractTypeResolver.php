@@ -1520,7 +1520,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             if ($typeResolverDecoratorInstance->enabled($this)) {
                 $mandatoryDirectivesForDirectives = array_merge_recursive(
                     $mandatoryDirectivesForDirectives,
-                    $typeResolverDecoratorInstance->getMandatoryDirectivesForDirectives($this)
+                    $typeResolverDecoratorInstance->getPrecedingMandatoryDirectivesForDirectives($this)
                 );
             }
         }
