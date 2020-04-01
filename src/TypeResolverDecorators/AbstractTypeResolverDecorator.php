@@ -35,12 +35,25 @@ abstract class AbstractTypeResolverDecorator implements TypeResolverDecoratorInt
     }
 
     /**
-     * Return an array of directiveName as keys, and, for each directiveName, an array of directives (including directive arguments) to be applied before
+     * Return an array of directiveName as keys, and, for each directiveName,
+     * an array of directives (including directive arguments) to be applied before
      *
      * @param TypeResolverInterface $typeResolver
      * @return array
      */
     public function getPrecedingMandatoryDirectivesForDirectives(TypeResolverInterface $typeResolver): array
+    {
+        return [];
+    }
+
+    /**
+     * Return an array of directiveName as keys, and, for each directiveName,
+     * an array of directives (including directive arguments) to be applied after
+     *
+     * @param TypeResolverInterface $typeResolver
+     * @return array
+     */
+    public function getSucceedingMandatoryDirectivesForDirectives(TypeResolverInterface $typeResolver): array
     {
         return [];
     }
