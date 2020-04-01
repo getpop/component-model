@@ -44,7 +44,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     protected $schemaFieldResolvers;
     protected $typeResolverDecoratorClasses;
     protected $mandatoryDirectivesForFields;
-    protected $mandatoryDirectivesForDirectives;
+    protected $precedingMandatoryDirectivesForDirectives;
     protected $interfaceClasses;
     protected $interfaceResolverInstances;
 
@@ -651,14 +651,14 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     protected function addMandatoryDirectivesForDirectives(array $directives): array
     {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
-        $mandatoryDirectivesForDirectives = $this->getAllMandatoryDirectivesForDirectives();
+        $precedingMandatoryDirectivesForDirectives = $this->getAllPrecedingMandatoryDirectivesForDirectives();
         $allDirectives = [];
         foreach ($directives as $directive) {
             $directiveName = $fieldQueryInterpreter->getDirectiveName($directive);
             // If there are mandatory directives to be added, then we must also check if they, themselves, also must be added their own mandatory directives!
             if ($mandatoryDirectivesForDirective = array_merge(
-                $mandatoryDirectivesForDirectives[FieldSymbols::ANY_FIELD] ?? [],
-                $mandatoryDirectivesForDirectives[$directiveName] ?? []
+                $precedingMandatoryDirectivesForDirectives[FieldSymbols::ANY_FIELD] ?? [],
+                $precedingMandatoryDirectivesForDirectives[$directiveName] ?? []
             )) {
                 $allDirectives = array_merge(
                     $allDirectives,
@@ -1501,31 +1501,31 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return $mandatoryDirectivesForFields;
     }
 
-    protected function getAllMandatoryDirectivesForDirectives(): array
+    protected function getAllPrecedingMandatoryDirectivesForDirectives(): array
     {
-        if (is_null($this->mandatoryDirectivesForDirectives)) {
-            $this->mandatoryDirectivesForDirectives = $this->calculateAllMandatoryDirectivesForDirectives();
+        if (is_null($this->precedingMandatoryDirectivesForDirectives)) {
+            $this->precedingMandatoryDirectivesForDirectives = $this->calculateAllPrecedingMandatoryDirectivesForDirectives();
         }
-        return $this->mandatoryDirectivesForDirectives;
+        return $this->precedingMandatoryDirectivesForDirectives;
     }
 
-    protected function calculateAllMandatoryDirectivesForDirectives(): array
+    protected function calculateAllPrecedingMandatoryDirectivesForDirectives(): array
     {
-        $mandatoryDirectivesForDirectives = [];
+        $precedingMandatoryDirectivesForDirectives = [];
         $instanceManager = InstanceManagerFacade::getInstance();
         $typeResolverDecoratorClasses = $this->getAllTypeResolverDecoratorClassess();
         foreach ($typeResolverDecoratorClasses as $typeResolverDecoratorClass) {
             $typeResolverDecoratorInstance = $instanceManager->getInstance($typeResolverDecoratorClass);
             // array_merge_recursive so that if 2 different decorators add a directive for the same directive, the results are merged together, not override each other
             if ($typeResolverDecoratorInstance->enabled($this)) {
-                $mandatoryDirectivesForDirectives = array_merge_recursive(
-                    $mandatoryDirectivesForDirectives,
+                $precedingMandatoryDirectivesForDirectives = array_merge_recursive(
+                    $precedingMandatoryDirectivesForDirectives,
                     $typeResolverDecoratorInstance->getPrecedingMandatoryDirectivesForDirectives($this)
                 );
             }
         }
 
-        return $mandatoryDirectivesForDirectives;
+        return $precedingMandatoryDirectivesForDirectives;
     }
 
     protected function getAllTypeResolverDecoratorClassess(): array
