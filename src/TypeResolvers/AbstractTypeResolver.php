@@ -879,6 +879,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             $directivePipeline->resolveDirectivePipeline(
                 $this,
                 $pipelineIDsDataFields,
+                $directiveResolverInstances,
                 $resultIDItems,
                 $unionDBKeyIDs,
                 $dbItems,

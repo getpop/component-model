@@ -499,6 +499,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         list(
             $typeResolver,
             $pipelineIDsDataFields,
+            $pipelineDirectiveResolverInstances,
             $resultIDItems,
             $unionDBKeyIDs,
             $dbItems,
@@ -516,12 +517,16 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         // Extract the head, keep passing down the rest
         $idsDataFields = $pipelineIDsDataFields[0];
         array_shift($pipelineIDsDataFields);
+        // The $pipelineDirectiveResolverInstances is the series of directives executed in the pipeline
+        // The current stage is at the head. Remove it
+        array_shift($pipelineDirectiveResolverInstances);
 
         // // 2. Validate operation
         // $this->validateDirective(
         //     $typeResolver,
         //     $idsDataFields,
         //     $pipelineIDsDataFields,
+        //     $pipelineDirectiveResolverInstances,
         //     $resultIDItems,
         //     $dbItems,
         //     $previousDBItems,
@@ -543,6 +548,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 $typeResolver,
                 $idsDataFields,
                 $pipelineIDsDataFields,
+                $pipelineDirectiveResolverInstances,
                 $resultIDItems,
                 $unionDBKeyIDs,
                 $dbItems,
@@ -562,6 +568,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         return DirectivePipelineUtils::convertArgumentsToPayload(
             $typeResolver,
             $pipelineIDsDataFields,
+            $pipelineDirectiveResolverInstances,
             $resultIDItems,
             $unionDBKeyIDs,
             $dbItems,
