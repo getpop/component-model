@@ -28,7 +28,7 @@ class Environment
     }
 
     /**
-     * Indicate: If a directive fails, then stop execution of the directive pipeline altogether
+     * Maybe enable using namespaces
      *
      * @return bool
      */
