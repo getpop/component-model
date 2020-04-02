@@ -6,6 +6,6 @@ use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
 interface SchemaDefinitionServiceInterface
 {
-    public function getInterfaceSchemaKey(FieldInterfaceResolverInterface $interfaceResolver, array $options = []): string;
-    public function getTypeSchemaKey(TypeResolverInterface $typeResolver, array $options = []): string;
+    public function getInterfaceSchemaKey(FieldInterfaceResolverInterface $interfaceResolver): string;
+    public function getTypeSchemaKey(TypeResolverInterface $typeResolver): string;
 }

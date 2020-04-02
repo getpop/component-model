@@ -337,7 +337,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
     {
         $instanceManager = InstanceManagerFacade::getInstance();
         $schemaDefinitionService = SchemaDefinitionServiceFacade::getInstance();
-        $typeSchemaKey = $schemaDefinitionService->getTypeSchemaKey($this, $options);
+        $typeSchemaKey = $schemaDefinitionService->getTypeSchemaKey($this);
 
         // Properties
         $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_NAME] = $this->getMaybeNamespacedTypeName();
@@ -368,7 +368,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         parent::processFlatShapeSchemaDefinition($options);
 
         $schemaDefinitionService = SchemaDefinitionServiceFacade::getInstance();
-        $typeSchemaKey = $schemaDefinitionService->getTypeSchemaKey($this, $options);
+        $typeSchemaKey = $schemaDefinitionService->getTypeSchemaKey($this);
 
         // Replace the UnionTypeResolver's types with their typeNames
         $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_POSSIBLE_TYPES] = array_keys(
