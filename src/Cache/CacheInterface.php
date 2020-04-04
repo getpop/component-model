@@ -5,6 +5,8 @@ interface CacheInterface
 {
     public function hasCache($id, $type);
     public function getCache($id, $type);
+    public function getComponentModelCache($id, $type);
+
     /**
      * Store the cache
      *
@@ -15,6 +17,7 @@ interface CacheInterface
      * @return void
      */
     public function storeCache($id, $type, $content, $time = null);
+    public function storeComponentModelCache($id, $type, $content, $time = null);
     public function getCacheByModelInstance($type);
     public function storeCacheByModelInstance($type, $content);
 }

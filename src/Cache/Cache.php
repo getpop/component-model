@@ -37,6 +37,12 @@ class Cache implements CacheInterface
     public function getCache($id, $type)
     {
         $cacheItem = $this->getCacheItem($id, $type);
+        return $cacheItem->get();
+    }
+
+    public function getComponentModelCache($id, $type)
+    {
+        $cacheItem = $this->getCacheItem($id, $type);
         if ($cacheItem->isHit()) {
 
             // Return the file contents
@@ -60,6 +66,23 @@ class Cache implements CacheInterface
      */
     public function storeCache($id, $type, $content, $time = null)
     {
+        $cacheItem = $this->getCacheItem($id, $type);
+        $cacheItem->set($content);
+        $cacheItem->expiresAfter($time);
+        $this->saveCache($cacheItem);
+    }
+
+    /**
+     * Store the cache
+     *
+     * @param [type] $id key under which to store the cache
+     * @param [type] $type the type of the cache, used to distinguish groups of caches
+     * @param [type] $content the value to cache
+     * @param [type] $time time after which the cache expires, in seconds
+     * @return void
+     */
+    public function storeComponentModelCache($id, $type, $content, $time = null)
+    {
         // Before saving the cache, replace the data specific to this execution with generic placeholders
         $content = $this->replaceCurrentExecutionDataWithPlaceholders($content);
         $cacheItem = $this->getCacheItem($id, $type);
@@ -81,7 +104,7 @@ class Cache implements CacheInterface
 
     public function getCacheByModelInstance($type)
     {
-        return $this->getCache($this->modelInstance->getModelInstanceId(), $type);
+        return $this->getComponentModelCache($this->modelInstance->getModelInstanceId(), $type);
     }
 
     public function storeCacheByModelInstance($type, $content)
