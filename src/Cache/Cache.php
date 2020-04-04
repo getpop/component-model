@@ -34,6 +34,11 @@ class Cache implements CacheInterface
         return $cacheItem->isHit();
     }
 
+    public function deleteCache($id, $type): void
+    {
+        $this->cacheItemPool->deleteItem($this->getKey($id, $type));
+    }
+
     /**
      * If the item is not cached, it will return `null`
      * @see https://www.php-fig.org/psr/psr-6/

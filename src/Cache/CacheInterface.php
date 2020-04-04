@@ -12,6 +12,7 @@ interface CacheInterface
      * @param [type] $type
      * @return mixed
      */
+    public function deleteCache($id, $type): void;
     public function getCache($id, $type);
     public function getComponentModelCache($id, $type);
 
