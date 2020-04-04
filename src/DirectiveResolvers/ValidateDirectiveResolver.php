@@ -4,6 +4,7 @@ namespace PoP\ComponentModel\DirectiveResolvers;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\DirectiveResolvers\AbstractValidateDirectiveResolver;
+use PoP\ComponentModel\TypeResolvers\PipelinePositions;
 
 class ValidateDirectiveResolver extends AbstractValidateDirectiveResolver
 {
@@ -14,7 +15,17 @@ class ValidateDirectiveResolver extends AbstractValidateDirectiveResolver
     }
 
     /**
-     * Do show in the schema
+     * This directive must be the first one of the group at the middle
+     *
+     * @return void
+     */
+    public function getPipelinePosition(): string
+    {
+        return PipelinePositions::AFTER_VALIDATE_BEFORE_RESOLVE;
+    }
+
+    /**
+     * Do not show in the schema
      *
      * @return boolean
      */

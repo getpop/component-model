@@ -3,6 +3,7 @@ namespace PoP\ComponentModel\DirectiveResolvers;
 
 use PoP\ComponentModel\Feedback\Tokens;
 use PoP\Translation\Facades\TranslationAPIFacade;
+use PoP\ComponentModel\TypeResolvers\PipelinePositions;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\DirectiveResolvers\AbstractValidateDirectiveResolver;
 
@@ -15,6 +16,20 @@ abstract class AbstractValidateConditionDirectiveResolver extends AbstractValida
      */
     public function skipAddingToSchemaDefinition(): bool {
         return true;
+    }
+
+    /**
+     * If validating a directive, place it after resolveAndMerge
+     * Otherwise, before
+     *
+     * @return void
+     */
+    public function getPipelinePosition(): string
+    {
+        if ($this->isValidatingDirective()) {
+            return PipelinePositions::AFTER_RESOLVE;
+        }
+        return PipelinePositions::AFTER_VALIDATE_BEFORE_RESOLVE;
     }
 
     /**
@@ -51,11 +66,25 @@ abstract class AbstractValidateConditionDirectiveResolver extends AbstractValida
      */
     abstract protected function validateCondition(TypeResolverInterface $typeResolver): bool;
 
+    /**
+     * Show a different error message depending on if we are validating the whole field, or a directive
+     * By default, validate the whole field
+     *
+     * @return boolean
+     */
+    protected function isValidatingDirective(): bool
+    {
+        return false;
+    }
+
     protected function getValidationFailedMessage(TypeResolverInterface $typeResolver, array $failedDataFields): string
     {
         $translationAPI = TranslationAPIFacade::getInstance();
+        $errorMessage = $this->isValidatingDirective() ?
+            $translationAPI->__('Validation failed for directives in fields \'%s\'', 'component-model') :
+            $translationAPI->__('Validation failed for fields \'%s\'', 'component-model');
         return sprintf(
-            $translationAPI->__('Validation failed for fields \'%s\'', 'component-model'),
+            $errorMessage,
             implode(
                 $translationAPI->__('\', \''),
                 $failedDataFields
