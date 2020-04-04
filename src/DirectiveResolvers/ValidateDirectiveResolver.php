@@ -26,6 +26,16 @@ class ValidateDirectiveResolver extends AbstractValidateDirectiveResolver
     }
 
     /**
+     * Execute only once
+     *
+     * @return boolean
+     */
+    public function canExecuteMultipleTimesInField(): bool
+    {
+        return false;
+    }
+
+    /**
      * This directive must be the first one of the group at the middle
      *
      * @return void
