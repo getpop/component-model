@@ -2,7 +2,7 @@
 namespace PoP\ComponentModel\Engine;
 
 use Exception;
-use PoP\ComponentModel\Utils;
+use PoP\ComponentModel\Misc\RequestUtils;
 use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\Misc\GeneralUtils;
 use PoP\ComponentModel\DataloadUtils;
@@ -141,7 +141,7 @@ class Engine implements EngineInterface
     {
         if ($has_extra_routes = !empty($this->getExtraRoutes())) {
             $model_instance_id = ModelInstanceFacade::getInstance()->getModelInstanceId();
-            $current_uri = removeDomain(Utils::getCurrentUrl());
+            $current_uri = removeDomain(RequestUtils::getCurrentUrl());
         }
 
         return array($has_extra_routes, $model_instance_id, $current_uri);
@@ -446,7 +446,7 @@ class Engine implements EngineInterface
         $meta = array(
             POP_CONSTANT_ENTRYMODULE => $this->getEntryModule()[1],
             POP_UNIQUEID => POP_CONSTANT_UNIQUE_ID,
-            GD_URLPARAM_URL => Utils::getCurrentUrl(),
+            GD_URLPARAM_URL => RequestUtils::getCurrentUrl(),
             'modelinstanceid' => ModelInstanceFacade::getInstance()->getModelInstanceId(),
         );
 
@@ -471,11 +471,11 @@ class Engine implements EngineInterface
         }
 
         // Any errors? Send them back
-        if (Utils::$errors) {
-            if (count(Utils::$errors) > 1) {
-                $meta[GD_URLPARAM_ERROR] = TranslationAPIFacade::getInstance()->__('Ops, there were some errors:', 'pop-engine').implode('<br/>', Utils::$errors);
+        if (RequestUtils::$errors) {
+            if (count(RequestUtils::$errors) > 1) {
+                $meta[GD_URLPARAM_ERROR] = TranslationAPIFacade::getInstance()->__('Ops, there were some errors:', 'pop-engine').implode('<br/>', RequestUtils::$errors);
             } else {
-                $meta[GD_URLPARAM_ERROR] = TranslationAPIFacade::getInstance()->__('Ops, there was an error: ', 'pop-engine').Utils::$errors[0];
+                $meta[GD_URLPARAM_ERROR] = TranslationAPIFacade::getInstance()->__('Ops, there was an error: ', 'pop-engine').RequestUtils::$errors[0];
             }
         }
 
@@ -496,7 +496,7 @@ class Engine implements EngineInterface
     public function getSiteMeta()
     {
         $meta = array();
-        if (Utils::fetchingSite()) {
+        if (RequestUtils::fetchingSite()) {
             $vars = ApplicationState::getVars();
             $meta[GD_URLPARAM_VERSION] = $vars['version'];
             $meta[GD_URLPARAM_DATAOUTPUTMODE] = $vars['dataoutputmode'];

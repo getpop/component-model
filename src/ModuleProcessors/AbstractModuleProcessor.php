@@ -12,7 +12,7 @@ use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
 use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\DataloadUtils;
-use PoP\ComponentModel\Utils;
+use PoP\ComponentModel\Misc\RequestUtils;
 use PoP\ComponentModel\Misc\GeneralUtils;
 use PoP\ComponentModel\ModuleProcessors\DataloadingConstants;
 use PoP\ComponentModel\Settings\SettingsManagerFactory;
@@ -874,7 +874,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         // (such as done to set-up checkpoint configuration for POP_USERSTANCE_ROUTE_ADDOREDITSTANCE, or within POPUSERLOGIN_CHECKPOINTCONFIGURATION_REQUIREUSERSTATEONDOINGPOST)
         // if ($checkpoint_configuration = $this->getDataaccessCheckpointConfiguration($module, $props)) {
         if ($checkpoints = $this->getDataaccessCheckpoints($module, $props)) {
-            // if (Utils::checkpointValidationRequired($checkpoint_configuration)) {
+            // if (RequestUtils::checkpointValidationRequired($checkpoint_configuration)) {
 
             // Pass info for PoP Engine
             // $ret[GD_DATALOAD_DATAACCESSCHECKPOINTS] = $checkpoint_configuration['checkpoints'];
@@ -885,7 +885,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         // To trigger the actionexecuter, its own checkpoints must be successful
         // if ($checkpoint_configuration = $this->getActionexecutionCheckpointConfiguration($module, $props)) {
         if ($checkpoints = $this->getActionexecutionCheckpoints($module, $props)) {
-            // if (Utils::checkpointValidationRequired($checkpoint_configuration)) {
+            // if (RequestUtils::checkpointValidationRequired($checkpoint_configuration)) {
 
             // Pass info for PoP Engine
             // $ret[GD_DATALOAD_ACTIONEXECUTIONCHECKPOINTS] = $checkpoint_configuration['checkpoints'];
@@ -1020,7 +1020,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         $ret = GeneralUtils::addQueryArgs([
             ModuleFilterManager::URLPARAM_MODULEFILTER => \PoP\ComponentModel\ModuleFilters\ModulePaths::NAME,
             ModulePaths::URLPARAM_MODULEPATHS.'[]' => $stringified_module_propagation_current_path,
-        ], Utils::getCurrentUrl());
+        ], RequestUtils::getCurrentUrl());
 
         // If we are in the API currently, stay in the API
         $vars = ApplicationState::getVars();
