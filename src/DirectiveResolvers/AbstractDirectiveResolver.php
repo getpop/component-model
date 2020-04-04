@@ -367,14 +367,14 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     }
 
     /**
-     * By default, a directive can be executed multiple times for "Query" type directives
+     * By default, a directive can be executed only one time for "Schema" and "System" type directives
      * (eg: <translate(en,es),translate(es,en)>), and not for "Schema" type ones
      *
      * @return boolean
      */
     public function canExecuteMultipleTimesInField(): bool
     {
-        return $this->getDirectiveType() == DirectiveTypes::QUERY;
+        return !($this->getDirectiveType() == DirectiveTypes::SYSTEM || $this->getDirectiveType() == DirectiveTypes::SCHEMA);
     }
 
     /**
