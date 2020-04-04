@@ -4,6 +4,14 @@ namespace PoP\ComponentModel\Cache;
 interface CacheInterface
 {
     public function hasCache($id, $type);
+    /**
+     * If the item is not cached, it will return `null`
+     * @see https://www.php-fig.org/psr/psr-6/
+     *
+     * @param [type] $id
+     * @param [type] $type
+     * @return mixed
+     */
     public function getCache($id, $type);
     public function getComponentModelCache($id, $type);
 
