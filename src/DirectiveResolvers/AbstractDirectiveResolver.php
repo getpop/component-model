@@ -17,6 +17,7 @@ use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineUtils;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
+use PoP\ComponentModel\Directives\DirectiveTypes;
 
 abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, SchemaDirectiveResolverInterface, StageInterface
 {
@@ -35,6 +36,18 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         // If the directive is not provided, then it directly the directive name
         // This allows to instantiate the directive through the DependencyInjection component
         $this->directive = $directive ?? $this->getDirectiveName();
+    }
+
+    /**
+     * Directives can be either of type "Schema" or "Query" and,
+     * depending on one case or the other, might be exposed to the user.
+     * By default, use the Query type
+     *
+     * @return string
+     */
+    public function getDirectiveType(): string
+    {
+        return DirectiveTypes::QUERY;
     }
 
     /**
@@ -354,13 +367,14 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     }
 
     /**
-     * By default, a directive can be executed multiple times in the field (eg: <translate(en,es),translate(es,en)>)
+     * By default, a directive can be executed multiple times for "Query" type directives
+     * (eg: <translate(en,es),translate(es,en)>), and not for "Schema" type ones
      *
      * @return boolean
      */
     public function canExecuteMultipleTimesInField(): bool
     {
-        return true;
+        return $this->getDirectiveType() == DirectiveTypes::QUERY;
     }
 
     /**
@@ -736,11 +750,14 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     }
 
     /**
-     * Directives may not be directly visible in the schema, eg: because their name is duplicated across directives (eg: "cacheControl") or because they are used through code (eg: "validateIsUserLoggedIn")
+     * Directives may not be directly visible in the schema,
+     * eg: because their name is duplicated across directives (eg: "cacheControl")
+     * or because they are used through code (eg: "validateIsUserLoggedIn")
      *
      * @return boolean
      */
-    public function skipAddingToSchemaDefinition(): bool {
+    public function skipAddingToSchemaDefinition(): bool
+    {
         return false;
     }
 
@@ -749,6 +766,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         $directiveName = $this->getDirectiveName();
         $schemaDefinition = [
             SchemaDefinition::ARGNAME_NAME => $directiveName,
+            SchemaDefinition::ARGNAME_DIRECTIVE_TYPE => $this->getDirectiveType(),
             SchemaDefinition::ARGNAME_DIRECTIVE_PIPELINE_POSITION => $this->getPipelinePosition(),
             SchemaDefinition::ARGNAME_DIRECTIVE_CAN_EXECUTE_MULTIPLE_TIMES => $this->canExecuteMultipleTimesInField(),
             SchemaDefinition::ARGNAME_DIRECTIVE_NEEDS_DATA_TO_EXECUTE => $this->needsIDsDataFieldsToExecute(),

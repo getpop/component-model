@@ -1,12 +1,23 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
 
+use PoP\ComponentModel\Directives\DirectiveTypes;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\DirectiveResolvers\RemoveIDsDataFieldsDirectiveResolverTrait;
 
 abstract class AbstractValidateDirectiveResolver extends AbstractGlobalDirectiveResolver
 {
     use RemoveIDsDataFieldsDirectiveResolverTrait;
+
+    /**
+     * Validations are by default a "Schema" type directive
+     *
+     * @return string
+     */
+    public function getDirectiveType(): string
+    {
+        return DirectiveTypes::SCHEMA;
+    }
 
     public function resolveDirective(TypeResolverInterface $typeResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$succeedingPipelineDirectiveResolverInstances, array &$resultIDItems, array &$unionDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$dbDeprecations, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
     {

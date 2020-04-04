@@ -14,6 +14,14 @@ interface DirectiveResolverInterface
      */
     public static function getFieldNamesToApplyTo(): array;
     /**
+     * Directives can be either of type "Schema" or "Query" and,
+     * depending on one case or the other, might be exposed to the user.
+     * By default, use the Query type
+     *
+     * @return string
+     */
+    public function getDirectiveType(): string;
+    /**
      * Extract and validate the directive arguments
      *
      * @param TypeResolverInterface $typeResolver

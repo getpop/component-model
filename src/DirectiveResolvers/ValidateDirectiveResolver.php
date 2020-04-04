@@ -24,14 +24,14 @@ class ValidateDirectiveResolver extends AbstractValidateDirectiveResolver
         return PipelinePositions::AFTER_VALIDATE_BEFORE_RESOLVE;
     }
 
-    /**
-     * Do not show in the schema
-     *
-     * @return boolean
-     */
-    public function skipAddingToSchemaDefinition(): bool {
-        return false;
-    }
+    // /**
+    //  * Do not show in the schema
+    //  *
+    //  * @return boolean
+    //  */
+    // public function skipAddingToSchemaDefinition(): bool {
+    //     return true;
+    // }
 
     /**
      * Validating the directive can be done only once (and it is mandatory!)
