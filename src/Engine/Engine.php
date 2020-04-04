@@ -4,7 +4,7 @@ namespace PoP\ComponentModel\Engine;
 use Exception;
 use PoP\ComponentModel\Utils;
 use PoP\ComponentModel\State\ApplicationState;
-use PoP\ComponentModel\GeneralUtils;
+use PoP\ComponentModel\Misc\GeneralUtils;
 use PoP\ComponentModel\DataloadUtils;
 use PoP\Hooks\Facades\HooksAPIFacade;
 use PoP\ComponentModel\Modules\ModuleUtils;

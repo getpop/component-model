@@ -1,7 +1,7 @@
 <?php
 namespace PoP\ComponentModel\FieldResolvers;
 
-use PoP\ComponentModel\GeneralUtils;
+use PoP\ComponentModel\Misc\GeneralUtils;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\TypeDataLoaders\TypeQueryableDataLoaderInterface;

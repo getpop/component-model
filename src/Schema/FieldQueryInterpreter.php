@@ -1,11 +1,11 @@
 <?php
 namespace PoP\ComponentModel\Schema;
+
 use PoP\FieldQuery\QueryUtils;
 use PoP\FieldQuery\QuerySyntax;
 use PoP\FieldQuery\QueryHelpers;
 use PoP\ComponentModel\ErrorUtils;
 use PoP\FieldQuery\FieldQueryUtils;
-use PoP\ComponentModel\GeneralUtils;
 use PoP\QueryParsing\QueryParserInterface;
 use PoP\Translation\TranslationAPIInterface;
 use PoP\ComponentModel\Schema\SchemaDefinition;
@@ -15,6 +15,7 @@ use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\DirectiveResolvers\DirectiveResolverInterface;
 use PoP\ComponentModel\Feedback\Tokens;
 use PoP\ComponentModel\State\ApplicationState;
+use PoP\ComponentModel\Misc\GeneralUtils;
 
 class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implements FieldQueryInterpreterInterface
 {
@@ -473,7 +474,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             foreach ($fieldOrDirectiveArgs as $directiveArgName => $directiveArgValue) {
                 $directiveArgValue = $this->maybeResolveFieldArgumentValueForResultItem($typeResolver, $resultItem, $directiveArgValue, $variables, $expressions);
                 // Validate it
-                if (\PoP\ComponentModel\GeneralUtils::isError($directiveArgValue)) {
+                if (GeneralUtils::isError($directiveArgValue)) {
                     $error = $directiveArgValue;
                     if ($errorData = $error->getErrorData()) {
                         $errorFieldOrDirective = $errorData[ErrorUtils::ERRORDATA_FIELD_NAME];

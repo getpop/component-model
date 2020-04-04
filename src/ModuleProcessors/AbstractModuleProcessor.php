@@ -13,7 +13,7 @@ use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
 use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\DataloadUtils;
 use PoP\ComponentModel\Utils;
-use PoP\ComponentModel\GeneralUtils;
+use PoP\ComponentModel\Misc\GeneralUtils;
 use PoP\ComponentModel\ModuleProcessors\DataloadingConstants;
 use PoP\ComponentModel\Settings\SettingsManagerFactory;
 use PoP\ComponentModel\Configuration\Request;
