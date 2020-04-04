@@ -1,6 +1,6 @@
 <?php
 namespace PoP\ComponentModel\DataStructure;
-use PoP\ComponentModel\Engine_Vars;
+use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 
 class DataStructureManager implements DataStructureManagerInterface
@@ -20,7 +20,7 @@ class DataStructureManager implements DataStructureManagerInterface
         };
 
         // Return the one saved in the vars
-        $vars = Engine_Vars::getVars();
+        $vars = ApplicationState::getVars();
         $name = $vars['datastructure'];
         if ($name && isset($this->formatters[$name])) {
             return $this->formatters[$name];

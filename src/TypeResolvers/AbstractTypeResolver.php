@@ -6,7 +6,7 @@ use PoP\FieldQuery\QueryUtils;
 use PoP\FieldQuery\QuerySyntax;
 use PoP\FieldQuery\QueryHelpers;
 use PoP\ComponentModel\ErrorUtils;
-use PoP\ComponentModel\Engine_Vars;
+use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\Environment;
 use PoP\FieldQuery\FieldQueryUtils;
 use League\Pipeline\PipelineBuilder;
@@ -68,7 +68,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
     final public function getMaybeNamespacedTypeName(): string
     {
-        $vars = Engine_Vars::getVars();
+        $vars = ApplicationState::getVars();
         return $vars['namespace-types-and-interfaces'] ?
             $this->getNamespacedTypeName() :
             $this->getTypeName();

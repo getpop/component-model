@@ -3,7 +3,7 @@ namespace PoP\ComponentModel\Engine;
 
 use Exception;
 use PoP\ComponentModel\Utils;
-use PoP\ComponentModel\Engine_Vars;
+use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\GeneralUtils;
 use PoP\ComponentModel\DataloadUtils;
 use PoP\Hooks\Facades\HooksAPIFacade;
@@ -118,7 +118,7 @@ class Engine implements EngineInterface
         $this->extra_routes = array();
 
         // The API cannot use getExtraRoutes()!!!!! Because the fields can't be applied to different resources! (Eg: author/leo/ and author/leo/?route=posts)
-        $vars = Engine_Vars::getVars();
+        $vars = ApplicationState::getVars();
         if ($vars['scheme'] == POP_SCHEME_API) {
             return $this->extra_routes;
         }
@@ -161,7 +161,7 @@ class Engine implements EngineInterface
 
             // To obtain the nature for each URI, we use a hack: change the current URI and create a new WP object, which will process the query_vars and from there obtain the nature
             // First make a backup of the current URI to set it again later
-            $vars = &Engine_Vars::$vars;
+            $vars = &ApplicationState::$vars;
             $current_route = $vars['route'];
 
             // Process each extra URI, and merge its results with all others
@@ -256,7 +256,7 @@ class Engine implements EngineInterface
 
     protected function processAndGenerateData()
     {
-        $vars = Engine_Vars::getVars();
+        $vars = ApplicationState::getVars();
 
         // Externalize logic into function so it can be overridden by PoP Web Platform Engine
         $dataoutputitems = $vars['dataoutputitems'];
@@ -362,7 +362,7 @@ class Engine implements EngineInterface
 
     protected function addSharedMeta()
     {
-        $vars = Engine_Vars::getVars();
+        $vars = ApplicationState::getVars();
 
         // Externalize logic into function so it can be overridden by PoP Web Platform Engine
         $dataoutputitems = $vars['dataoutputitems'];
@@ -400,7 +400,7 @@ class Engine implements EngineInterface
         $processor = $moduleprocessor_manager->getProcessor($module);
 
         // From the state we know if to process static/staful content or both
-        $vars = Engine_Vars::getVars();
+        $vars = ApplicationState::getVars();
         $dataoutputmode = $vars['dataoutputmode'];
 
         // Templates: What modules must be executed after call to loadMore is back with data:
@@ -497,7 +497,7 @@ class Engine implements EngineInterface
     {
         $meta = array();
         if (Utils::fetchingSite()) {
-            $vars = Engine_Vars::getVars();
+            $vars = ApplicationState::getVars();
             $meta[GD_URLPARAM_VERSION] = $vars['version'];
             $meta[GD_URLPARAM_DATAOUTPUTMODE] = $vars['dataoutputmode'];
             $meta[GD_URLPARAM_DATABASESOUTPUTMODE] = $vars['dboutputmode'];
@@ -769,7 +769,7 @@ class Engine implements EngineInterface
         $root_processor = $moduleprocessor_manager->getProcessor($root_module);
 
         // From the state we know if to process static/staful content or both
-        $vars = Engine_Vars::getVars();
+        $vars = ApplicationState::getVars();
         $datasources = $vars['datasources'];
         $dataoutputmode = $vars['dataoutputmode'];
         $dataoutputitems = $vars['dataoutputitems'];
@@ -1221,7 +1221,7 @@ class Engine implements EngineInterface
     {
         $instanceManager = InstanceManagerFacade::getInstance();
 
-        $vars = Engine_Vars::getVars();
+        $vars = ApplicationState::getVars();
 
         // Save all database elements here, under typeResolver
         $databases = $unionDBKeyIDs = $combinedUnionDBKeyIDs = $previousDBItems = $dbErrors = $dbWarnings = $dbDeprecations = $schemaErrors = $schemaWarnings = $schemaDeprecations = array();
@@ -1598,7 +1598,7 @@ class Engine implements EngineInterface
         // Do not add the "database", "userstatedatabase" entries unless there are values in them
         // Otherwise, it messes up integrating the current databases in the webplatform with those from the response when deep merging them
         if ($entries) {
-            $vars = Engine_Vars::getVars();
+            $vars = ApplicationState::getVars();
             $dboutputmode = $vars['dboutputmode'];
 
             // Combine all the databases or send them separate
@@ -1628,7 +1628,7 @@ class Engine implements EngineInterface
     protected function maybeCombineAndAddSchemaEntries(&$ret, $name, $entries) {
 
         if ($entries) {
-            $vars = Engine_Vars::getVars();
+            $vars = ApplicationState::getVars();
             $dboutputmode = $vars['dboutputmode'];
 
             // Combine all the databases or send them separate

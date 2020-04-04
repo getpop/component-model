@@ -10,7 +10,7 @@ use PoP\ComponentModel\ModuleFilters\ModulePaths;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
-use PoP\ComponentModel\Engine_Vars;
+use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\DataloadUtils;
 use PoP\ComponentModel\Utils;
 use PoP\ComponentModel\GeneralUtils;
@@ -1008,7 +1008,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
     public function executeAction(array $module, array &$props)
     {
         // By default, execute only if the module is targeted for execution and doing POST
-        $vars = Engine_Vars::getVars();
+        $vars = ApplicationState::getVars();
         return doingPost() && $vars['actionpath'] == ModulePathHelpersFacade::getInstance()->getStringifiedModulePropagationCurrentPath($module);
     }
 
@@ -1023,7 +1023,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         ], Utils::getCurrentUrl());
 
         // If we are in the API currently, stay in the API
-        $vars = Engine_Vars::getVars();
+        $vars = ApplicationState::getVars();
         if ($scheme = $vars['scheme']) {
             $ret = GeneralUtils::addQueryArgs([
                 GD_URLPARAM_SCHEME => $scheme,

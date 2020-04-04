@@ -1,7 +1,7 @@
 <?php
 namespace PoP\ComponentModel\FieldResolvers;
 
-use PoP\ComponentModel\Engine_Vars;
+use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
@@ -34,7 +34,7 @@ abstract class AbstractFieldInterfaceResolver implements FieldInterfaceResolverI
 
     final public function getMaybeNamespacedInterfaceName(): string
     {
-        $vars = Engine_Vars::getVars();
+        $vars = ApplicationState::getVars();
         return $vars['namespace-types-and-interfaces'] ?
             $this->getNamespacedInterfaceName() :
             $this->getInterfaceName();

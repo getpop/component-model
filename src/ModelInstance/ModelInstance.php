@@ -1,9 +1,11 @@
 <?php
 namespace PoP\ComponentModel\ModelInstance;
+
 use PoP\Hooks\HooksAPIInterface;
 use PoP\Definitions\Facades\DefinitionManagerFacade;
 use PoP\ComponentModel\Info\ApplicationInfoInterface;
 use PoP\Translation\TranslationAPIInterface;
+use PoP\ComponentModel\State\ApplicationState;
 
 class ModelInstance implements ModelInstanceInterface
 {
@@ -64,7 +66,7 @@ class ModelInstance implements ModelInstanceInterface
     {
         $components = array();
 
-        $vars = \PoP\ComponentModel\Engine_Vars::getVars();
+        $vars = ApplicationState::getVars();
 
         // There will always be a nature. Add it.
         $nature = $vars['nature'];

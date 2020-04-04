@@ -2,6 +2,7 @@
 namespace PoP\ComponentModel\ModuleFilters;
 
 use PoP\ComponentModel\ModulePath\ModulePathManagerInterface;
+use PoP\ComponentModel\ModulePath\ModulePathUtils;
 
 class ModulePaths extends AbstractModuleFilter
 {
@@ -19,7 +20,7 @@ class ModulePaths extends AbstractModuleFilter
 
     protected function init()
     {
-        $this->paths = \PoP\ComponentModel\Engine_Vars::getModulePaths();
+        $this->paths = ModulePathUtils::getModulePaths();
         $this->propagation_unsettled_paths = $this->paths;
         $this->backlog_unsettled_paths = array();
     }

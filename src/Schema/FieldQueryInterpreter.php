@@ -14,7 +14,7 @@ use PoP\ComponentModel\TypeResolvers\AbstractTypeResolver;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\DirectiveResolvers\DirectiveResolverInterface;
 use PoP\ComponentModel\Feedback\Tokens;
-use PoP\ComponentModel\Engine_Vars;
+use PoP\ComponentModel\State\ApplicationState;
 
 class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implements FieldQueryInterpreterInterface
 {
@@ -786,7 +786,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             // Expected input is similar to GraphQL: https://graphql.org/learn/queries/#variables
             // If not passed the variables parameter, use $_REQUEST["variables"] by default
             if (is_null($variables)) {
-                $vars = Engine_Vars::getVars();
+                $vars = ApplicationState::getVars();
                 $variables = $vars['variables'];
             }
             $variableName = substr($fieldArgValue, strlen(QuerySyntax::SYMBOL_VARIABLE_PREFIX));
@@ -1015,7 +1015,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     protected function getNoAliasFieldOutputKey(string $field): string
     {
         // GraphQL: Use fieldName only
-        $vars = Engine_Vars::getVars();
+        $vars = ApplicationState::getVars();
         if ($vars['only-fieldname-as-outputkey']) {
             return $this->getFieldName($field);
         }

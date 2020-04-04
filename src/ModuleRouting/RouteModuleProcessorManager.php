@@ -2,12 +2,12 @@
 namespace PoP\ComponentModel\ModuleRouting;
 
 use PoP\ModuleRouting\AbstractRouteModuleProcessorManager;
-use PoP\ComponentModel\Engine_Vars;
+use PoP\ComponentModel\State\ApplicationState;
 
 class RouteModuleProcessorManager extends AbstractRouteModuleProcessorManager
 {
     public function getVars(): array
     {
-        return Engine_Vars::getVars();
+        return ApplicationState::getVars();
     }
 }

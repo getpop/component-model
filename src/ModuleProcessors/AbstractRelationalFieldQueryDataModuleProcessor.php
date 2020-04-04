@@ -3,6 +3,7 @@ namespace PoP\ComponentModel\ModuleProcessors;
 
 use PoP\FieldQuery\QueryHelpers;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
+use PoP\ComponentModel\State\ApplicationState;
 
 abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQueryDataModuleProcessor
 {
@@ -13,7 +14,7 @@ abstract class AbstractRelationalFieldQueryDataModuleProcessor extends AbstractQ
             return $moduleAtts['fields'];
         }
         // If it is a normal module, it is the first added, then simply get the fields from $vars
-        $vars = \PoP\ComponentModel\Engine_Vars::getVars();
+        $vars = ApplicationState::getVars();
         return $vars['query'] ?? [];
     }
 
