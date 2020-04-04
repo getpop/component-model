@@ -1,10 +1,11 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
 
+use PoP\ComponentModel\Directives\DirectiveTypes;
 use PoP\Translation\Facades\TranslationAPIFacade;
+use PoP\ComponentModel\TypeResolvers\PipelinePositions;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\DirectiveResolvers\AbstractValidateDirectiveResolver;
-use PoP\ComponentModel\TypeResolvers\PipelinePositions;
 
 class ValidateDirectiveResolver extends AbstractValidateDirectiveResolver
 {
@@ -15,6 +16,16 @@ class ValidateDirectiveResolver extends AbstractValidateDirectiveResolver
     }
 
     /**
+     * This is a system directive
+     *
+     * @return string
+     */
+    public function getDirectiveType(): string
+    {
+        return DirectiveTypes::SYSTEM;
+    }
+
+    /**
      * This directive must be the first one of the group at the middle
      *
      * @return void
@@ -22,25 +33,6 @@ class ValidateDirectiveResolver extends AbstractValidateDirectiveResolver
     public function getPipelinePosition(): string
     {
         return PipelinePositions::AFTER_VALIDATE_BEFORE_RESOLVE;
-    }
-
-    // /**
-    //  * Do not show in the schema
-    //  *
-    //  * @return boolean
-    //  */
-    // public function skipAddingToSchemaDefinition(): bool {
-    //     return true;
-    // }
-
-    /**
-     * Validating the directive can be done only once (and it is mandatory!)
-     *
-     * @return boolean
-     */
-    public function canExecuteMultipleTimesInField(): bool
-    {
-        return false;
     }
 
     protected function validateFields(TypeResolverInterface $typeResolver, array $dataFields, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations, array &$variables, array &$failedDataFields): void

@@ -1,13 +1,14 @@
 <?php
 namespace PoP\ComponentModel\DirectiveResolvers;
 
+use PoP\ComponentModel\Feedback\Tokens;
 use PoP\ComponentModel\Misc\GeneralUtils;
+use PoP\ComponentModel\Directives\DirectiveTypes;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\PipelinePositions;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
-use PoP\ComponentModel\Feedback\Tokens;
 
 class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResolver
 {
@@ -18,6 +19,16 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
     }
 
     /**
+     * This is a system directive
+     *
+     * @return string
+     */
+    public function getDirectiveType(): string
+    {
+        return DirectiveTypes::SYSTEM;
+    }
+
+    /**
      * This directive must be the first one of its group
      *
      * @return void
@@ -25,16 +36,6 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
     public function getPipelinePosition(): string
     {
         return PipelinePositions::AFTER_RESOLVE;
-    }
-
-    /**
-     * Resolving the value can be executed only once (and it is mandatory!)
-     *
-     * @return boolean
-     */
-    public function canExecuteMultipleTimesInField(): bool
-    {
-        return false;
     }
 
     public function resolveDirective(TypeResolverInterface $typeResolver, array &$idsDataFields, array &$succeedingPipelineIDsDataFields, array &$succeedingPipelineDirectiveResolverInstances, array &$resultIDItems, array &$unionDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$dbDeprecations, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)

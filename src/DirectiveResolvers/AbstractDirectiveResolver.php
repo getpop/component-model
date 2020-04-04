@@ -754,11 +754,14 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
      * eg: because their name is duplicated across directives (eg: "cacheControl")
      * or because they are used through code (eg: "validateIsUserLoggedIn")
      *
+     * By default, do not expose System directives (resolveAndMerge and validate)
+     *
      * @return boolean
      */
     public function skipAddingToSchemaDefinition(): bool
     {
-        return false;
+        // Do not expose system directives!
+        return $this->getDirectiveType() == DirectiveTypes::SYSTEM;
     }
 
     public function getSchemaDefinitionForDirective(TypeResolverInterface $typeResolver): array
