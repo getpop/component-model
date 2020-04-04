@@ -17,20 +17,26 @@ trait ReplaceCurrentExecutionDataWithPlaceholdersTrait
     {
         $replacements = $this->getCacheReplacements();
         return str_replace(
-            array_keys($replacements), 
-            array_values($replacements), 
+            array_keys($replacements),
+            array_values($replacements),
             $content
         );
     }
 
     protected function replacePlaceholdersWithCurrentExecutionData($content)
     {
+        /**
+         * Content may be null if it had not been cached
+         */
+        if (is_null($content)) {
+            return null;
+        }
         // Replace the placeholder for the uniqueId with the current uniqueId
         // Do the same with all dynamic constants, so that we can generate a proper ETag also when retrieving the cached value
         $replacements = $this->getCacheReplacements();
         return str_replace(
-            array_values($replacements), 
-            array_keys($replacements), 
+            array_values($replacements),
+            array_keys($replacements),
             $content
         );
     }

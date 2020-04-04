@@ -42,17 +42,10 @@ class Cache implements CacheInterface
 
     public function getComponentModelCache($id, $type)
     {
-        $cacheItem = $this->getCacheItem($id, $type);
-        if ($cacheItem->isHit()) {
+        $content = $this->getCache($id, $type);
 
-            // Return the file contents
-            $content = $cacheItem->get();
-
-            // Inject the current request data in place of the placeholders (pun not intended!)
-            return $this->replacePlaceholdersWithCurrentExecutionData($content);
-        }
-
-        return false;
+        // Inject the current request data in place of the placeholders (pun not intended!)
+        return $this->replacePlaceholdersWithCurrentExecutionData($content);
     }
 
     /**
@@ -85,10 +78,7 @@ class Cache implements CacheInterface
     {
         // Before saving the cache, replace the data specific to this execution with generic placeholders
         $content = $this->replaceCurrentExecutionDataWithPlaceholders($content);
-        $cacheItem = $this->getCacheItem($id, $type);
-        $cacheItem->set($content);
-        $cacheItem->expiresAfter($time);
-        $this->saveCache($cacheItem);
+        $this->storeCache($id, $type, $content, $time);
     }
 
     /**
