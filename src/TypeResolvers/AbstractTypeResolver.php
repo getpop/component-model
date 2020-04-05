@@ -76,8 +76,8 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
     public function getTypeOutputName(): string
     {
-        // First letter lowercase
-        return lcfirst($this->getMaybeNamespacedTypeName());
+        // Do not make the first letter lowercase, or namespaced names look bad
+        return $this->getMaybeNamespacedTypeName();
     }
 
     public function getSchemaTypeDescription(): ?string
