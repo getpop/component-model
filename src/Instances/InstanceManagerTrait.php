@@ -1,5 +1,6 @@
 <?php
 namespace PoP\ComponentModel\Instances;
+
 use PoP\Root\Container\ContainerBuilderFactory;
 
 trait InstanceManagerTrait
