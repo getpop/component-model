@@ -162,7 +162,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
     protected function getTypeResolverClassesFromPickers(array $typeResolverPickers): array
     {
         return array_map(
-            function($typeResolverPicker) {
+            function ($typeResolverPicker) {
                 return $typeResolverPicker->getTypeResolverClass();
             },
             $typeResolverPickers
@@ -191,7 +191,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
             $extensionPickerClassPriorities = array_reverse($attachableExtensionManager->getExtensionClasses($class, \PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups::TYPERESOLVERPICKERS));
             $classPickerPriorities = array_values($extensionPickerClassPriorities);
             $classPickerClasses = array_keys($extensionPickerClassPriorities);
-            $classPickers = array_map(function($extensionClass) use($instanceManager) {
+            $classPickers = array_map(function ($extensionClass) use ($instanceManager) {
                 return $instanceManager->getInstance($extensionClass);
             }, $classPickerClasses);
 
@@ -210,7 +210,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
             $typeResolverClasses = $this->getTypeResolverClassesFromPickers($typeResolverPickers);
             $notImplementingInterfaceTypeResolverClasses = array_filter(
                 $typeResolverClasses,
-                function($typeResolverClass) use($typeInterfaceClass, $instanceManager) {
+                function ($typeResolverClass) use ($typeInterfaceClass, $instanceManager) {
                     $typeResolver = $instanceManager->getInstance($typeResolverClass);
                     return !in_array($typeInterfaceClass, $typeResolver->getAllImplementedInterfaceClasses());
                 }
@@ -228,7 +228,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
                         implode(
                             $translationAPI->__('\', \''),
                             array_map(
-                                function($typeResolverClass) use($instanceManager, $translationAPI) {
+                                function ($typeResolverClass) use ($instanceManager, $translationAPI) {
                                     $typeResolver = $instanceManager->getInstance($typeResolverClass);
                                     return sprintf(
                                         $translationAPI->__('%s (%s)'),
@@ -276,7 +276,6 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         // This is not a problem by making the corresponding field processors inherit from each other, so that the more specific object also handles
         // the fields for the more general ones (eg: TypeResolver_OrganizationUsers extends TypeResolver_CommunityUsers, and TypeResolver_CommunityUsers extends UserTypeResolver)
         foreach ($this->getTypeResolverPickers() as $maybePicker) {
-
             if ($maybePicker->isInstanceOfType($resultItem)) {
                 // Found it!
                 return $maybePicker;

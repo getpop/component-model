@@ -67,7 +67,6 @@ class ModuleFilterManager implements ModuleFilterManagerInterface
         if ($this->selected_filter_name) {
             return $this->selected_filter_name;
         } elseif ($selectedModuleFilterName = $_REQUEST[self::URLPARAM_MODULEFILTER]) {
-
             // Only valid if there's a corresponding moduleFilter
             if (in_array($selectedModuleFilterName, array_keys($this->modulefilters))) {
                 return $selectedModuleFilterName;

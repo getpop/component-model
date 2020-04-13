@@ -14,7 +14,8 @@ class ModulePaths extends AbstractModuleFilter
     protected $backlog_unsettled_paths;
 
     protected $modulePathManager;
-    public function __construct(ModulePathManagerInterface $modulePathManager) {
+    public function __construct(ModulePathManagerInterface $modulePathManager)
+    {
         $this->modulePathManager = $modulePathManager;
     }
 

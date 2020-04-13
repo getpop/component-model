@@ -48,7 +48,7 @@ abstract class AbstractTypeQueryableDataLoader extends AbstractTypeDataLoader im
         $query = $this->getQuery($query_args);
 
         // Allow URE to modify the role, limiting selected users and excluding others, like 'subscriber'
-        $query = HooksAPIFacade::getInstance()->applyFilters(self::class.':gd_dataload_query', $query, $data_properties);
+        $query = HooksAPIFacade::getInstance()->applyFilters(self::class . ':gd_dataload_query', $query, $data_properties);
 
         // Apply filtering of the data
         if ($filtering_modules = $data_properties[DataloadingConstants::QUERYARGSFILTERINGMODULES]) {
@@ -95,7 +95,7 @@ abstract class AbstractTypeQueryableDataLoader extends AbstractTypeDataLoader im
 
     public function getQuery($query_args): array
     {
-    	// Use all the query params already provided in the query args
+        // Use all the query params already provided in the query args
         $query = $query_args;
 
         // Allow to check for "loading-latest"

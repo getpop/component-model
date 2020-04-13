@@ -8,7 +8,8 @@ use PoP\ComponentModel\Facades\Registries\DirectiveRegistryFacade;
 use PoP\ComponentModel\Facades\Registries\TypeRegistryFacade;
 use PoP\Root\Container\ContainerBuilderUtils as RootContainerBuilderUtils;
 
-class ContainerBuilderUtils extends RootContainerBuilderUtils {
+class ContainerBuilderUtils extends RootContainerBuilderUtils
+{
 
     /**
      * Register all typeResolvers located under the specified namespace

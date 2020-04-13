@@ -18,7 +18,7 @@ abstract class AbstractQueryableFieldResolver extends AbstractDBDataFieldResolve
             $filterqueryargs_modules = $moduleprocessor_manager->getProcessor((array)$filterDataloadingModule)->getDataloadQueryArgsFilteringModules($filterDataloadingModule);
             $schemaDefinitions = array_merge(
                 $schemaDefinitions,
-                GeneralUtils::arrayFlatten(array_map(function($module) use($moduleprocessor_manager) {
+                GeneralUtils::arrayFlatten(array_map(function ($module) use ($moduleprocessor_manager) {
                     return $moduleprocessor_manager->getProcessor($module)->getFilterInputSchemaDefinitionItems($module);
                 }, $filterqueryargs_modules))
             );

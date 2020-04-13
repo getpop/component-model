@@ -65,7 +65,6 @@ trait QueryDataModuleProcessorTrait
             $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
             global $pop_filterinputprocessor_manager;
             foreach ($active_filterqueryargs_modules as $submodule) {
-
                 $submodule_processor = $moduleprocessor_manager->getProcessor($submodule);
                 $value = $submodule_processor->getValue($submodule, $source);
                 if ($filterInput = $submodule_processor->getFilterInput($submodule)) {
@@ -91,7 +90,7 @@ trait QueryDataModuleProcessorTrait
             // Check if if we're currently filtering by any filtercomponent
             $modules = array_filter(
                 $filterqueryargs_modules,
-                function($module) use($moduleprocessor_manager, $source) {
+                function ($module) use ($moduleprocessor_manager, $source) {
                     return !is_null($moduleprocessor_manager->getProcessor($module)->getValue($module, $source));
                 }
             );
@@ -106,7 +105,7 @@ trait QueryDataModuleProcessorTrait
         $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
         return array_values(array_filter(
             $this->getDatasetmoduletreeSectionFlattenedModules($module),
-            function($module) use($moduleprocessor_manager) {
+            function ($module) use ($moduleprocessor_manager) {
                 return $moduleprocessor_manager->getProcessor($module) instanceof \PoP\ComponentModel\ModuleProcessors\DataloadQueryArgsFilterInputModuleProcessorInterface;
             }
         ));

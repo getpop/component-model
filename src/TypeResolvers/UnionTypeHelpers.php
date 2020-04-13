@@ -21,7 +21,7 @@ class UnionTypeHelpers
 
     public static function getUnionTypeCollectionName(string $type): string
     {
-        return UnionTypeSymbols::UNION_TYPE_NAME_PREFIX.$type;
+        return UnionTypeSymbols::UNION_TYPE_NAME_PREFIX . $type;
     }
 
     /**
@@ -64,8 +64,8 @@ class UnionTypeHelpers
     public static function getDBObjectComposedTypeAndID(TypeResolverInterface $typeResolver, $id): string
     {
         return
-            $typeResolver->getTypeOutputName().
-            UnionTypeSymbols::DBOBJECT_COMPOSED_TYPE_ID_SEPARATOR.
+            $typeResolver->getTypeOutputName() .
+            UnionTypeSymbols::DBOBJECT_COMPOSED_TYPE_ID_SEPARATOR .
             $id;
     }
 

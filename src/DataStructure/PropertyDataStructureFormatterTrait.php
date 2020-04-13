@@ -58,6 +58,6 @@ trait PropertyDataStructureFormatterTrait
 
     protected function printDataEntry(string $property, $value)
     {
-        echo $property.'='.$value.PHP_EOL;
+        echo $property . '=' . $value . PHP_EOL;
     }
 }

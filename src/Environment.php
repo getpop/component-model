@@ -82,4 +82,3 @@ class Environment
         return isset($_ENV[self::ENABLE_CONFIG_BY_PARAMS]) ? strtolower($_ENV[self::ENABLE_CONFIG_BY_PARAMS]) == "true" : false;
     }
 }
-

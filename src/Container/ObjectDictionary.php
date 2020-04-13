@@ -1,7 +1,8 @@
 <?php
 namespace PoP\ComponentModel\Container;
 
-class ObjectDictionary implements ObjectDictionaryInterface {
+class ObjectDictionary implements ObjectDictionaryInterface
+{
 
     protected $dictionary;
 

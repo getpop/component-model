@@ -63,7 +63,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     final public function getNamespacedTypeName(): string
     {
         $namespace = $this->getNamespace();
-        return ($namespace ? $namespace.SchemaDefinition::TOKEN_NAMESPACE_SEPARATOR : '').$this->getTypeName();
+        return ($namespace ? $namespace . SchemaDefinition::TOKEN_NAMESPACE_SEPARATOR : '') . $this->getTypeName();
     }
 
     final public function getMaybeNamespacedTypeName(): string
@@ -103,7 +103,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         // Add the type before the ID
         $dbObjectIDs = is_array($dbObjectIDOrIDs) ? $dbObjectIDOrIDs : [$dbObjectIDOrIDs];
         $qualifiedDBObjectIDs = array_map(
-            function($id) {
+            function ($id) {
                 return UnionTypeHelpers::getDBObjectComposedTypeAndID(
                     $this,
                     $id
@@ -127,18 +127,19 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     * setSelfAsExpression, cacheControl
     * Because it may be more convenient to add the directive or the class, there are 2 methods
     */
-    protected function getMandatoryDirectives() {
+    protected function getMandatoryDirectives()
+    {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         $dataloadingEngine = DataloadingEngineFacade::getInstance();
         return array_merge(
             array_map(
-                function($directiveClass) use($fieldQueryInterpreter) {
+                function ($directiveClass) use ($fieldQueryInterpreter) {
                     return $fieldQueryInterpreter->listFieldDirective($directiveClass::getDirectiveName());
                 },
                 $dataloadingEngine->getMandatoryDirectiveClasses()
             ),
             array_map(
-                function($directive) use($fieldQueryInterpreter) {
+                function ($directive) use ($fieldQueryInterpreter) {
                     return $fieldQueryInterpreter->listFieldDirective($directive);
                 },
                 $dataloadingEngine->getMandatoryDirectives()
@@ -249,7 +250,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         // Each item has 3 elements: the directiveResolverInstance, its fieldDirective, and the fields it affects
         $pipelineData = [];
         foreach ($directiveInstancesByPosition as $position => $directiveResolverInstances) {
-            for ($i=0; $i<count($directiveResolverInstances); $i++) {
+            for ($i = 0; $i < count($directiveResolverInstances); $i++) {
                 $pipelineData[] = [
                     'instance' => $directiveResolverInstances[$i],
                     'fieldDirective' => $fieldDirectivesByPosition[$position][$i],
@@ -286,7 +287,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         // Count how many times each directive is added
         $directiveCount = [];
         $directiveResolverInstanceFields = [];
-        for ($i=0; $i<count($fieldDirectives); $i++) {
+        for ($i = 0; $i < count($fieldDirectives); $i++) {
             // Because directives can be repeated inside a field (eg: <resize(50%),resize(50%)>),
             // then we deal with 2 variables:
             // 1. $fieldDirective: the actual directive
@@ -388,7 +389,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 }
 
                 // Consolidate the same directiveResolverInstances for different fields, as to do the validation only once on each of them
-                $instanceID = get_class($directiveResolverInstance).$enqueuedFieldDirective;
+                $instanceID = get_class($directiveResolverInstance) . $enqueuedFieldDirective;
                 if (!isset($directiveResolverInstanceFields[$instanceID])) {
                     $directiveResolverInstanceFields[$instanceID]['fieldDirective'] = $fieldDirective;
                     $directiveResolverInstanceFields[$instanceID]['enqueuedFieldDirective'] = $enqueuedFieldDirective;
@@ -411,7 +412,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 // If there is an existing error, then skip adding this resolver to the pipeline
                 if (!empty(array_filter(
                     $schemaErrors,
-                    function($schemaError) use($fieldDirective) {
+                    function ($schemaError) use ($fieldDirective) {
                         return $schemaError[Tokens::PATH][0] == $fieldDirective;
                     }
                 ))) {
@@ -626,7 +627,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             }
             $ids_data_fields = array_filter(
                 $ids_data_fields,
-                function($id) use($unresolvedResultItemIDs) {
+                function ($id) use ($unresolvedResultItemIDs) {
                     return !in_array($id, $unresolvedResultItemIDs);
                 },
                 ARRAY_FILTER_USE_KEY
@@ -699,7 +700,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $instanceManager = InstanceManagerFacade::getInstance();
         return array_filter(
             $directiveNameClasses,
-            function($directiveName) use($hooksAPI, $directiveNameClasses, $instanceManager) {
+            function ($directiveName) use ($hooksAPI, $directiveNameClasses, $instanceManager) {
                 $directiveResolverClasses = $directiveNameClasses[$directiveName];
                 foreach ($directiveResolverClasses as $directiveResolverClass) {
                     $directiveResolver = $instanceManager->getInstance($directiveResolverClass);
@@ -799,7 +800,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     // in which the "|" symbol could not be part of the field naturally
                     if (isset($fieldDirectiveCounter[$field][(string)$id][$fieldDirective])) {
                         // Increase counter and add to $fieldDirective
-                        $fieldDirective .= FieldSymbols::REPEATED_DIRECTIVE_COUNTER_SEPARATOR.(++$fieldDirectiveCounter[$field][(string)$id][$fieldDirective]);
+                        $fieldDirective .= FieldSymbols::REPEATED_DIRECTIVE_COUNTER_SEPARATOR . (++$fieldDirectiveCounter[$field][(string)$id][$fieldDirective]);
                     } else {
                         $fieldDirectiveCounter[$field][(string)$id][$fieldDirective] = 0;
                     }
@@ -1173,7 +1174,6 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             foreach ($connections as &$connection) {
                 // If it is a recursion or repeated there will be no schema
                 if (isset($connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA])) {
-
                     // Remove the typeSchema entry
                     unset($connection[SchemaDefinition::ARGNAME_TYPE_SCHEMA]);
                 }
@@ -1423,7 +1423,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             $fieldResolver = $instanceManager->getInstance($fieldResolverClass);
             $fieldNames = array_filter(
                 $fieldNames,
-                function($fieldName) use($hooksAPI, $fieldResolver) {
+                function ($fieldName) use ($hooksAPI, $fieldResolver) {
                     // Execute 2 filters: a generic one, and a specific one
                     if ($hooksAPI->applyFilters(
                         HookHelpers::getHookNameToFilterField(),
@@ -1615,7 +1615,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     {
         $instanceManager = InstanceManagerFacade::getInstance();
         return array_map(
-            function($interfaceClass) use($instanceManager) {
+            function ($interfaceClass) use ($instanceManager) {
                 return $instanceManager->getInstance($interfaceClass);
             },
             $this->getAllImplementedInterfaceClasses()

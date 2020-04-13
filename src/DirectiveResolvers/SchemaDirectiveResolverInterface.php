@@ -62,5 +62,4 @@ interface SchemaDirectiveResolverInterface
      * @return bool
      */
     public function isGlobal(TypeResolverInterface $typeResolver): bool;
-
 }

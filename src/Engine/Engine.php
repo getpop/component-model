@@ -99,12 +99,12 @@ class Engine implements EngineInterface
             // "userpostactivity-count":1
             // Comment Leo 22/10/2017: ?module=settings doesn't have 'nocache-fields'
             if ($this->nocache_fields) {
-                $commoncode = preg_replace('/"('.implode('|', $this->nocache_fields).')":[0-9]+,?/', '', $commoncode);
+                $commoncode = preg_replace('/"(' . implode('|', $this->nocache_fields) . ')":[0-9]+,?/', '', $commoncode);
             }
 
             // Allow plug-ins to replace their own non-needed content (eg: thumbprints, defined in Core)
             $commoncode = HooksAPIFacade::getInstance()->applyFilters('\PoP\ComponentModel\Engine:etag_header:commoncode', $commoncode);
-            header("ETag: ".hash('md5', $commoncode));
+            header("ETag: " . hash('md5', $commoncode));
         }
     }
 
@@ -473,9 +473,9 @@ class Engine implements EngineInterface
         // Any errors? Send them back
         if (RequestUtils::$errors) {
             if (count(RequestUtils::$errors) > 1) {
-                $meta[GD_URLPARAM_ERROR] = TranslationAPIFacade::getInstance()->__('Ops, there were some errors:', 'pop-engine').implode('<br/>', RequestUtils::$errors);
+                $meta[GD_URLPARAM_ERROR] = TranslationAPIFacade::getInstance()->__('Ops, there were some errors:', 'pop-engine') . implode('<br/>', RequestUtils::$errors);
             } else {
-                $meta[GD_URLPARAM_ERROR] = TranslationAPIFacade::getInstance()->__('Ops, there was an error: ', 'pop-engine').RequestUtils::$errors[0];
+                $meta[GD_URLPARAM_ERROR] = TranslationAPIFacade::getInstance()->__('Ops, there was an error: ', 'pop-engine') . RequestUtils::$errors[0];
             }
         }
 
@@ -753,7 +753,7 @@ class Engine implements EngineInterface
     protected function getModulePathKey($module_path, array $module)
     {
         $moduleFullName = ModuleUtils::getModuleFullName($module);
-        return $moduleFullName.'-'.implode('.', $module_path);
+        return $moduleFullName . '-' . implode('.', $module_path);
     }
 
     // This function is not private, so it can be accessed by the automated emails to regenerate the html for each user
@@ -1388,7 +1388,7 @@ class Engine implements EngineInterface
                         // If the type data resolver is union, the dbKey where the value is stored is contained in the ID itself,
                         // with format dbKey/ID. We must extract this information: assign the dbKey to $database_key, and remove the dbKey from the ID
                         $typeResolver_ids = array_map(
-                            function($composedID) {
+                            function ($composedID) {
                                 list(
                                     $database_key,
                                     $id
@@ -1509,9 +1509,9 @@ class Engine implements EngineInterface
                         ));
                         $qualifiedSubcomponentIDs = $subcomponentTypeResolver->getQualifiedDBObjectIDOrIDs($allSubcomponentIDs);
                         // Create a map, from ID to TypedID
-                        for ($i=0; $i<count($allSubcomponentIDs); $i++) {
-                            $typedSubcomponentIDs[$allSubcomponentIDs[$i]] = $qualifiedSubcomponentIDs[$i];
-                        }
+                    for ($i = 0; $i < count($allSubcomponentIDs); $i++) {
+                        $typedSubcomponentIDs[$allSubcomponentIDs[$i]] = $qualifiedSubcomponentIDs[$i];
+                    }
                     // }
 
                     $field_ids = [];
@@ -1524,7 +1524,7 @@ class Engine implements EngineInterface
                                 // Eg: /?query=content.comments.id. In this case, "content" is handled by UnionTypeResolver, and "comments" would not be found since its entry can't be added under "datasetmodulesettings.dbkeys", since the module (of class AbstractRelationalFieldQueryDataModuleProcessor) with a UnionTypeResolver can't resolve the 'succeeding-typeResolver' to set to its submodules
                                 // Having 'succeeding-typeResolver' being NULL, then it is not able to locate its data
                                 $typed_database_field_ids = array_map(
-                                    function($field_id) use($typedSubcomponentIDs) {
+                                    function ($field_id) use ($typedSubcomponentIDs) {
                                         return $typedSubcomponentIDs[$field_id];
                                     },
                                     $database_field_ids
@@ -1593,7 +1593,8 @@ class Engine implements EngineInterface
         }
     }
 
-    protected function maybeCombineAndAddDatabaseEntries(&$ret, $name, $entries) {
+    protected function maybeCombineAndAddDatabaseEntries(&$ret, $name, $entries)
+    {
 
         // Do not add the "database", "userstatedatabase" entries unless there are values in them
         // Otherwise, it messes up integrating the current databases in the webplatform with those from the response when deep merging them
@@ -1625,7 +1626,8 @@ class Engine implements EngineInterface
         }
     }
 
-    protected function maybeCombineAndAddSchemaEntries(&$ret, $name, $entries) {
+    protected function maybeCombineAndAddSchemaEntries(&$ret, $name, $entries)
+    {
 
         if ($entries) {
             $vars = ApplicationState::getVars();

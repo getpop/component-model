@@ -4,22 +4,22 @@ namespace PoP\ComponentModel\Misc;
 class GeneralUtils
 {
     // Taken from http://stackoverflow.com/questions/4356289/php-random-string-generator
-	public static function generateRandomString($length = 6, $addtime = true, $characters = 'abcdefghijklmnopqrstuvwxyz')
-	{
-	    $randomString = '';
-	    for ($i = 0; $i < $length; $i++) {
-	        $randomString .= $characters[rand(0, strlen($characters) - 1)];
-	    }
+    public static function generateRandomString($length = 6, $addtime = true, $characters = 'abcdefghijklmnopqrstuvwxyz')
+    {
+        $randomString = '';
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, strlen($characters) - 1)];
+        }
 
-	    if ($addtime) {
-	        $randomString .= time();
-	    }
-	    return $randomString;
-	}
+        if ($addtime) {
+            $randomString .= time();
+        }
+        return $randomString;
+    }
 
-	public static function isError($thing)
-	{
-		return $thing && $thing instanceof \PoP\ComponentModel\Error;
+    public static function isError($thing)
+    {
+        return $thing && $thing instanceof \PoP\ComponentModel\Error;
     }
 
     // Taken from https://gist.github.com/SeanCannon/6585889
@@ -62,8 +62,8 @@ class GeneralUtils
 
         // Note that this will url_encode all values
         $url_parts['query'] = http_build_query($params);
-        $port = ($url_parts['port'] == "80") ? "" : (":".$url_parts['port']);
-        return $url_parts['scheme'].'://'.$url_parts['host'].$port.$url_parts['path'].'?'.$url_parts['query'];
+        $port = ($url_parts['port'] == "80") ? "" : (":" . $url_parts['port']);
+        return $url_parts['scheme'] . '://' . $url_parts['host'] . $port . $url_parts['path'] . '?' . $url_parts['query'];
     }
 
     /**
@@ -90,7 +90,7 @@ class GeneralUtils
         // Remove the indicated keys
         $params = array_filter(
             $params,
-            function($param) use ($keys) {
+            function ($param) use ($keys) {
                 return in_array($param, $keys);
             },
             ARRAY_FILTER_USE_KEY
@@ -98,12 +98,12 @@ class GeneralUtils
 
         // Note that this will url_encode all values
         $url_parts['query'] = http_build_query($params);
-        $port = ($url_parts['port'] == "80") ? "" : (":".$url_parts['port']);
-        return $url_parts['scheme'].'://'.$url_parts['host'].$port.$url_parts['path'].($url_parts['query'] ? '?'.$url_parts['query'] : '');
+        $port = ($url_parts['port'] == "80") ? "" : (":" . $url_parts['port']);
+        return $url_parts['scheme'] . '://' . $url_parts['host'] . $port . $url_parts['path'] . ($url_parts['query'] ? '?' . $url_parts['query'] : '');
     }
 
     public static function maybeAddTrailingSlash(string $text): string
     {
-        return rtrim($text, '/\\').'/';
+        return rtrim($text, '/\\') . '/';
     }
 }

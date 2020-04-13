@@ -29,7 +29,7 @@ abstract class AbstractFieldInterfaceResolver implements FieldInterfaceResolverI
     final public function getNamespacedInterfaceName(): string
     {
         $namespace = $this->getNamespace();
-        return ($namespace ? $namespace.SchemaDefinition::TOKEN_NAMESPACE_SEPARATOR : '').$this->getInterfaceName();
+        return ($namespace ? $namespace . SchemaDefinition::TOKEN_NAMESPACE_SEPARATOR : '') . $this->getInterfaceName();
     }
 
     final public function getMaybeNamespacedInterfaceName(): string

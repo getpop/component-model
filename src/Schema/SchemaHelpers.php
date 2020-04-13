@@ -10,10 +10,11 @@ use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 
 class SchemaHelpers
 {
-    public static function getMissingFieldArgs(array $fieldArgProps, array $fieldArgs): array {
+    public static function getMissingFieldArgs(array $fieldArgProps, array $fieldArgs): array
+    {
         return array_values(array_filter(
             $fieldArgProps,
-            function($fieldArgProp) use($fieldArgs) {
+            function ($fieldArgProp) use ($fieldArgs) {
                 return !array_key_exists($fieldArgProp, $fieldArgs);
             }
         ));
@@ -23,7 +24,7 @@ class SchemaHelpers
     {
         return array_filter(
             $schemaFieldArgs,
-            function($schemaFieldArg) {
+            function ($schemaFieldArg) {
                 return isset($schemaFieldArg[SchemaDefinition::ARGNAME_MANDATORY]) && $schemaFieldArg[SchemaDefinition::ARGNAME_MANDATORY];
             }
         );
@@ -33,7 +34,7 @@ class SchemaHelpers
     {
         return array_filter(
             $schemaFieldArgs,
-            function($schemaFieldArg) {
+            function ($schemaFieldArg) {
                 return isset($schemaFieldArg[SchemaDefinition::ARGNAME_TYPE]) && $schemaFieldArg[SchemaDefinition::ARGNAME_TYPE] == SchemaDefinition::TYPE_ENUM;
             }
         );
@@ -43,7 +44,7 @@ class SchemaHelpers
     {
         // $schemaFieldArgs contains the name also as the key, keep only the values
         return array_values(array_map(
-            function($schemaFieldArg) {
+            function ($schemaFieldArg) {
                 return $schemaFieldArg[SchemaDefinition::ARGNAME_NAME];
             },
             $schemaFieldArgs
@@ -74,7 +75,7 @@ class SchemaHelpers
         // Remove deprecated ones
         return array_filter(
             $enumValueDefinitions,
-            function($enumValueDefinition) {
+            function ($enumValueDefinition) {
                 if ($enumValueDefinition[SchemaDefinition::ARGNAME_DEPRECATED]) {
                     return false;
                 }
@@ -86,7 +87,7 @@ class SchemaHelpers
     public static function getSchemaFieldArgEnumValueDefinitions(array $schemaFieldArgs)
     {
         $enumValuesOrDefinitions = array_map(
-            function($schemaFieldArg) {
+            function ($schemaFieldArg) {
                 return $schemaFieldArg[SchemaDefinition::ARGNAME_ENUMVALUES];
             },
             $schemaFieldArgs
@@ -175,7 +176,7 @@ class SchemaHelpers
         $firstSlashPos = strpos($namespace, '\\');
         if ($firstSlashPos !== false) {
             // Second slash: between project name and everything else
-            $secondSlashPos = strpos($namespace, '\\', $firstSlashPos+strlen('\\'));
+            $secondSlashPos = strpos($namespace, '\\', $firstSlashPos + strlen('\\'));
             if ($secondSlashPos !== false) {
                 // Remove everything else
                 return substr($namespace, 0, $secondSlashPos);

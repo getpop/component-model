@@ -10,9 +10,9 @@ class ProcessorItemUtils
         // $item[0]: class
         // $item[1]: name
         // $item[2]: extra atts (optional)
-        $itemFullName = $item[0].Constants::SEPARATOR_PROCESSORITEMFULLNAME.$item[1];
-        if (count($item) >=3) {
-            $itemFullName .= Constants::SEPARATOR_PROCESSORITEMFULLNAME.serialize($item[2]);
+        $itemFullName = $item[0] . Constants::SEPARATOR_PROCESSORITEMFULLNAME . $item[1];
+        if (count($item) >= 3) {
+            $itemFullName .= Constants::SEPARATOR_PROCESSORITEMFULLNAME . serialize($item[2]);
         }
 
         return $itemFullName;
@@ -35,7 +35,7 @@ class ProcessorItemUtils
                     substr(
                         $itemFullName,
                         strlen(
-                            $parts[0].Constants::SEPARATOR_PROCESSORITEMFULLNAME.$parts[1].Constants::SEPARATOR_PROCESSORITEMFULLNAME
+                            $parts[0] . Constants::SEPARATOR_PROCESSORITEMFULLNAME . $parts[1] . Constants::SEPARATOR_PROCESSORITEMFULLNAME
                         )
                     )
                 )

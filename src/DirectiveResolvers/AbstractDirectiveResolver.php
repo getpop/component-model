@@ -82,7 +82,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                         $expandedNestedFieldDirectives[] = $nestedFieldDirective;
                         $counters[$nestedFieldDirective] = 1;
                     } else {
-                        $expandedNestedFieldDirectives[] = $nestedFieldDirective.FieldSymbols::REPEATED_DIRECTIVE_COUNTER_SEPARATOR.$counters[$nestedFieldDirective];
+                        $expandedNestedFieldDirectives[] = $nestedFieldDirective . FieldSymbols::REPEATED_DIRECTIVE_COUNTER_SEPARATOR . $counters[$nestedFieldDirective];
                         $counters[$nestedFieldDirective]++;
                     }
                 }
@@ -262,8 +262,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     public function resolveCanProcess(TypeResolverInterface $typeResolver, string $directiveName, array $directiveArgs, string $field, array &$variables): bool
     {
         /** Check if to validate the version */
-        if (
-            Environment::enableSemanticVersionConstraints() &&
+        if (Environment::enableSemanticVersionConstraints() &&
             $this->decideCanProcessBasedOnVersionConstraint($typeResolver)
         ) {
             /**

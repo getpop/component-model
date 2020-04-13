@@ -81,12 +81,12 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         // Extract the args from the string into an array
         $fieldArgsStr = $this->getFieldArgs($field);
         // Remove the opening and closing brackets
-        $fieldArgsStr = substr($fieldArgsStr, strlen(QuerySyntax::SYMBOL_FIELDARGS_OPENING), strlen($fieldArgsStr)-strlen(QuerySyntax::SYMBOL_FIELDARGS_OPENING)-strlen(QuerySyntax::SYMBOL_FIELDARGS_CLOSING));
+        $fieldArgsStr = substr($fieldArgsStr, strlen(QuerySyntax::SYMBOL_FIELDARGS_OPENING), strlen($fieldArgsStr) - strlen(QuerySyntax::SYMBOL_FIELDARGS_OPENING) - strlen(QuerySyntax::SYMBOL_FIELDARGS_CLOSING));
         // Remove the white spaces before and after
         if ($fieldArgsStr = trim($fieldArgsStr)) {
             // Iterate all the elements, and extract them into the array
             if ($fieldArgElems = $this->queryParser->splitElements($fieldArgsStr, QuerySyntax::SYMBOL_FIELDARGS_ARGSEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING], QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING)) {
-                for ($i=0; $i<count($fieldArgElems); $i++) {
+                for ($i = 0; $i < count($fieldArgElems); $i++) {
                     $fieldArg = $fieldArgElems[$i];
                     // If there is no separator, then skip this arg, since it is not static (without the schema, we can't know which fieldArgName it is)
                     $separatorPos = QueryUtils::findFirstSymbolPosition($fieldArg, QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING], QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING);
@@ -166,14 +166,13 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         array $fieldOrDirectiveArgumentNameTypes,
         ?array $variables,
         array &$schemaWarnings
-    ): array
-    {
+    ): array {
         if ($orderedFieldOrDirectiveArgNamesEnabled) {
             $orderedFieldOrDirectiveArgNames = array_keys($fieldOrDirectiveArgumentNameTypes);
         }
         // $fieldOrDirectiveOutputKey = $this->getFieldOutputKey($fieldOrDirective);
         $fieldOrDirectiveArgs = [];
-        for ($i=0; $i<count($fieldOrDirectiveArgElems); $i++) {
+        for ($i = 0; $i < count($fieldOrDirectiveArgElems); $i++) {
             $fieldOrDirectiveArg = $fieldOrDirectiveArgElems[$i];
             // Either one of 2 formats are accepted:
             // 1. The key:value pair
@@ -189,7 +188,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                         Tokens::PATH => [$fieldOrDirective],
                         Tokens::MESSAGE => sprintf(
                             $this->translationAPI->__('The argument on position number %s (with value \'%s\') has its name missing, and %s. Please define the query using the \'key%svalue\' format. This argument has been ignored', 'pop-component-model'),
-                            $i+1,
+                            $i + 1,
                             $fieldOrDirectiveArgValue,
                             $errorMessage,
                             QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR
@@ -204,7 +203,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                     sprintf(
                         $this->translationAPI->__('In field or directive \'%s\', the argument on position number %s (with value \'%s\') is resolved as argument \'%s\'', 'pop-component-model'),
                         $fieldOrDirective,
-                        $i+1,
+                        $i + 1,
                         $fieldOrDirectiveArgValue,
                         $fieldOrDirectiveArgName
                     )
@@ -279,7 +278,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     protected function filterFieldArgs($fieldArgs): array
     {
         // If there was an error, the value will be NULL. In this case, remove it
-        return array_filter($fieldArgs, function($elem) {
+        return array_filter($fieldArgs, function ($elem) {
             // Remove only NULL values and Errors. Keep '', 0 and false
             return !is_null($elem) && !GeneralUtils::isError($elem);
         });
@@ -522,8 +521,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                 // 1. $forSchema = true: Cast all items except fields (eg: has-comments())
                 // 2. $forSchema = false: Should be cast only fields, however by now we can't tell which are fields and which are not, since fields have already been resolved to their value. Hence, cast everything (fieldArgValues that failed at the schema level will not be provided in the input array, so won't be validated twice)
                 // Otherwise, simply add the argValue directly, it will be eventually casted by the other function
-                if (
-                    ($forSchema && !$this->isFieldArgumentValueDynamic($argValue)) ||
+                if (($forSchema && !$this->isFieldArgumentValueDynamic($argValue)) ||
                     !$forSchema
                 ) {
                     // If the value is an array, and the type is a combination of types, then cast each element to the item type
@@ -533,7 +531,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
                     if ($fieldArgCurrentType == SchemaDefinition::TYPE_ARRAY && !is_null($fieldArgOtherTypes) && is_array($argValue)) {
                         // We can make combinations of combinations: array:array:string. So when iterating down, pass all other types after the current one
                         $argValue = array_map(
-                            function($arrayArgValueElem) use($fieldArgOtherTypes) {
+                            function ($arrayArgValueElem) use ($fieldArgOtherTypes) {
                                 return $this->typeCastingExecuter->cast($fieldArgOtherTypes, $arrayArgValueElem);
                             },
                             $argValue
@@ -657,7 +655,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     protected function castAndValidateDirectiveArguments(DirectiveResolverInterface $directiveResolver, TypeResolverInterface $typeResolver, array $castedDirectiveArgs, array &$failedCastingDirectiveArgErrorMessages, string $fieldDirective, array $directiveArgs, array &$schemaWarnings): array
     {
         // If any casting can't be done, show an error
-        if ($failedCastingDirectiveArgs = array_filter($castedDirectiveArgs, function($directiveArgValue) {
+        if ($failedCastingDirectiveArgs = array_filter($castedDirectiveArgs, function ($directiveArgValue) {
             return is_null($directiveArgValue);
         })) {
             $directiveName = $this->getFieldDirectiveName($fieldDirective);
@@ -695,7 +693,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     protected function castAndValidateFieldArguments(TypeResolverInterface $typeResolver, array $castedFieldArgs, array &$failedCastingFieldArgErrorMessages, string $field, array $fieldArgs, array &$schemaWarnings): array
     {
         // If any casting can't be done, show an error
-        if ($failedCastingFieldArgs = array_filter($castedFieldArgs, function($fieldArgValue) {
+        if ($failedCastingFieldArgs = array_filter($castedFieldArgs, function ($fieldArgValue) {
             return is_null($fieldArgValue);
         })) {
             // $fieldOutputKey = $this->getFieldOutputKey($field);
@@ -757,7 +755,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
 
                 // If it has quotes at the beginning and end, it's a string. Remove them
                 if ($this->isFieldArgumentValueWrappedWithStringSymbols($fieldArgValue)) {
-                    $fieldArgValue = substr($fieldArgValue, strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING), strlen($fieldArgValue)-strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING)-strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING));
+                    $fieldArgValue = substr($fieldArgValue, strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING), strlen($fieldArgValue) - strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING) - strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING));
                 }
 
                 // Chain functions. At any moment, if any of them throws an error, the result will be null so don't process anymore
@@ -776,7 +774,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     {
         return
             substr($fieldArgValue, 0, strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING)) == QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING &&
-            substr($fieldArgValue, -1*strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING)) == QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING;
+            substr($fieldArgValue, -1 * strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING)) == QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING;
     }
 
     protected function maybeConvertFieldArgumentVariableValue($fieldArgValue, ?array $variables)
@@ -809,7 +807,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     {
         // If surrounded by [...], it is an array
         if ($this->isFieldArgumentValueAnArrayRepresentedAsString($fieldArgValue)) {
-            $arrayValue = substr($fieldArgValue, strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING), strlen($fieldArgValue)-strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING)-strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING));
+            $arrayValue = substr($fieldArgValue, strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING), strlen($fieldArgValue) - strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING) - strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING));
             // Elements are split by ","
             $fieldArgValueElems = $this->queryParser->splitElements($arrayValue, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_SEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDDIRECTIVE_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING], QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING);
             // Watch out! If calling with value "[true,false]" it gets transformed to "[1,]" when passing the composed field around (it's converted back to string),
@@ -818,7 +816,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             if (substr($arrayValue, 0, strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_SEPARATOR)) == QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_SEPARATOR) {
                 array_unshift($fieldArgValueElems, '');
             }
-            if (substr($arrayValue, -1*strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_SEPARATOR)) == QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_SEPARATOR) {
+            if (substr($arrayValue, -1 * strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_SEPARATOR)) == QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_SEPARATOR) {
                 $fieldArgValueElems[] = '';
             }
             // Iterate all the elements and assign them to the fieldArgValue variable
@@ -849,7 +847,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         }
         if (is_array($fieldArgValue)) {
             // Resolve each element the same way
-            return $this->filterFieldArgs(array_map(function($arrayValueElem) use($variables) {
+            return $this->filterFieldArgs(array_map(function ($arrayValueElem) use ($variables) {
                 return $this->maybeConvertFieldArgumentValue($arrayValueElem, $variables);
             }, $fieldArgValue));
         }
@@ -874,7 +872,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     {
         // If it is an array, apply this function on all elements
         if (is_array($fieldArgValue)) {
-            return array_map(function($fieldArgValueElem) use($typeResolver, $resultItem, $variables, $expressions) {
+            return array_map(function ($fieldArgValueElem) use ($typeResolver, $resultItem, $variables, $expressions) {
                 return $this->maybeResolveFieldArgumentValueForResultItem($typeResolver, $resultItem, $fieldArgValueElem, $variables, $expressions);
             }, (array)$fieldArgValue);
         }
@@ -883,7 +881,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         if ($this->isFieldArgumentValueAnExpression($fieldArgValue)) {
             // Expressions: allow to pass a field argument "key:%input%", which is passed when executing the directive through $expressions
             // Trim it so that "% self %" is equivalent to "%self%". This is needed to set expressions through Symfony's DependencyInjection component (since %...% is reserved for its own parameters!)
-            $expressionName = trim(substr($fieldArgValue, strlen(QuerySyntax::SYMBOL_EXPRESSION_OPENING), strlen($fieldArgValue)-strlen(QuerySyntax::SYMBOL_EXPRESSION_OPENING)-strlen(QuerySyntax::SYMBOL_EXPRESSION_CLOSING)));
+            $expressionName = trim(substr($fieldArgValue, strlen(QuerySyntax::SYMBOL_EXPRESSION_OPENING), strlen($fieldArgValue) - strlen(QuerySyntax::SYMBOL_EXPRESSION_OPENING) - strlen(QuerySyntax::SYMBOL_EXPRESSION_CLOSING)));
             if (isset($expressions[$expressionName])) {
                 return $expressions[$expressionName];
             }
@@ -921,7 +919,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     {
         // If it is an array, apply this function on all elements
         if (is_array($fieldArgValue)) {
-            return GeneralUtils::arrayFlatten(array_filter(array_map(function($fieldArgValueElem) use($typeResolver, $variables) {
+            return GeneralUtils::arrayFlatten(array_filter(array_map(function ($fieldArgValueElem) use ($typeResolver, $variables) {
                 return $this->resolveFieldArgumentValueErrorDescriptionsForSchema($typeResolver, $fieldArgValueElem, $variables);
             }, $fieldArgValue)));
         }
@@ -929,7 +927,6 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         // If the result fieldArgValue is a string (i.e. not numeric), and it has brackets (...),
         // and is not wrapped with quotes, then it is a field. Validate it and resolve it
         if (!empty($fieldArgValue) && is_string($fieldArgValue) && !is_numeric($fieldArgValue) && !$this->isFieldArgumentValueWrappedWithStringSymbols($fieldArgValue)) {
-
             $fieldArgValue = (string)$fieldArgValue;
             // If it has the fieldArg brackets, and the last bracket is at the end, then it's a field!
             list(
@@ -938,7 +935,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             ) = QueryHelpers::listFieldArgsSymbolPositions($fieldArgValue);
 
             // If there is no "(" or ")", or if the ")" is not at the end, of if the "(" is at the beginning, then it's simply a string
-            if ($fieldArgsClosingSymbolPos !== (strlen($fieldArgValue)-strlen(QuerySyntax::SYMBOL_FIELDARGS_CLOSING)) || $fieldArgsOpeningSymbolPos === false || $fieldArgsOpeningSymbolPos === 0) {
+            if ($fieldArgsClosingSymbolPos !== (strlen($fieldArgValue) - strlen(QuerySyntax::SYMBOL_FIELDARGS_CLOSING)) || $fieldArgsOpeningSymbolPos === false || $fieldArgsOpeningSymbolPos === 0) {
                 return [];
             }
             // // If there is only one of them, it's a query error, so discard the query bit
@@ -983,7 +980,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     {
         // If it is an array, apply this function on all elements
         if (is_array($fieldArgValue)) {
-            return GeneralUtils::arrayFlatten(array_filter(array_map(function($fieldArgValueElem) use($typeResolver, $variables) {
+            return GeneralUtils::arrayFlatten(array_filter(array_map(function ($fieldArgValueElem) use ($typeResolver, $variables) {
                 return $this->resolveFieldArgumentValueWarningsForSchema($typeResolver, $fieldArgValueElem, $variables);
             }, $fieldArgValue)));
         }
@@ -1000,7 +997,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     {
         // If it is an array, apply this function on all elements
         if (is_array($fieldArgValue)) {
-            return GeneralUtils::arrayFlatten(array_filter(array_map(function($fieldArgValueElem) use($typeResolver, $variables) {
+            return GeneralUtils::arrayFlatten(array_filter(array_map(function ($fieldArgValueElem) use ($typeResolver, $variables) {
                 return $this->resolveFieldArgumentValueDeprecationsForSchema($typeResolver, $fieldArgValueElem, $variables);
             }, $fieldArgValue)));
         }

@@ -27,7 +27,7 @@ trait ModulePathProcessorTrait
         }
 
         // Stop iterating when the submodule starts a new cycle of loading data
-        $submodules = array_filter($this->getAllSubmodules($module), function($submodule) {
+        $submodules = array_filter($this->getAllSubmodules($module), function ($submodule) {
             return !$this->getModuleProcessor($submodule)->startDataloadingSection($submodule);
         });
         $submodules = $modulefilter_manager->removeExcludedSubmodules($module, $submodules);
@@ -62,7 +62,7 @@ trait ModulePathProcessorTrait
         }
 
         // Stop iterating when the submodule starts a new cycle of loading data
-        $submodules = array_filter($this->getAllSubmodules($module), function($submodule) {
+        $submodules = array_filter($this->getAllSubmodules($module), function ($submodule) {
             return !$this->getModuleProcessor($submodule)->startDataloadingSection($submodule);
         });
         $submodules = $modulefilter_manager->removeExcludedSubmodules($module, $submodules);

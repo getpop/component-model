@@ -22,9 +22,9 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
 {
     use ModulePathProcessorTrait;
 
-    public const HOOK_INIT_MODEL_PROPS = __CLASS__.':initModelProps';
-    public const HOOK_INIT_REQUEST_PROPS = __CLASS__.':initRequestProps';
-    public const HOOK_ADD_HEADDATASETMODULE_DATAPROPERTIES = __CLASS__.':addHeaddatasetmoduleDataProperties';
+    public const HOOK_INIT_MODEL_PROPS = __CLASS__ . ':initModelProps';
+    public const HOOK_INIT_REQUEST_PROPS = __CLASS__ . ':initRequestProps';
+    public const HOOK_ADD_HEADDATASETMODULE_DATAPROPERTIES = __CLASS__ . ':addHeaddatasetmoduleDataProperties';
 
     protected const MODULECOMPONENT_SUBMODULES = 'submodules';
     protected const MODULECOMPONENT_DOMAINSWITCHINGSUBMODULES = 'domain-switching-submodules';
@@ -548,7 +548,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         foreach ($this->getDomainSwitchingSubmodules($module) as $subcomponent_data_field => $subcomponent_modules) {
             $subcomponent_data_field_outputkey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($subcomponent_data_field);
             // Only modules which do not load data
-            $subcomponent_modules = array_filter($subcomponent_modules, function($submodule) use($moduleprocessor_manager) {
+            $subcomponent_modules = array_filter($subcomponent_modules, function ($submodule) use ($moduleprocessor_manager) {
                 return !$moduleprocessor_manager->getProcessor($submodule)->startDataloadingSection($submodule);
             });
             foreach ($subcomponent_modules as $subcomponent_module) {
@@ -559,7 +559,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
             foreach ($dataFieldTypeResolverOptionsConditionalSubmodules as $conditionalDataField => $subcomponent_modules) {
                 $subcomponent_data_field_outputkey = FieldQueryInterpreterFacade::getInstance()->getFieldOutputKey($conditionalDataField);
                 // Only modules which do not load data
-                $subcomponent_modules = array_filter($subcomponent_modules, function($submodule) use($moduleprocessor_manager) {
+                $subcomponent_modules = array_filter($subcomponent_modules, function ($submodule) use ($moduleprocessor_manager) {
                     return !$moduleprocessor_manager->getProcessor($submodule)->startDataloadingSection($submodule);
                 });
                 foreach ($subcomponent_modules as $subcomponent_module) {
@@ -569,7 +569,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         }
 
         // Only modules which do not load data
-        $submodules = array_filter($this->getSubmodules($module), function($submodule) use($moduleprocessor_manager) {
+        $submodules = array_filter($this->getSubmodules($module), function ($submodule) use ($moduleprocessor_manager) {
             return !$moduleprocessor_manager->getProcessor($submodule)->startDataloadingSection($submodule);
         });
         foreach ($submodules as $submodule) {
@@ -1019,7 +1019,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         $stringified_module_propagation_current_path = ModulePathHelpersFacade::getInstance()->getStringifiedModulePropagationCurrentPath($module);
         $ret = GeneralUtils::addQueryArgs([
             ModuleFilterManager::URLPARAM_MODULEFILTER => \PoP\ComponentModel\ModuleFilters\ModulePaths::NAME,
-            ModulePaths::URLPARAM_MODULEPATHS.'[]' => $stringified_module_propagation_current_path,
+            ModulePaths::URLPARAM_MODULEPATHS . '[]' => $stringified_module_propagation_current_path,
         ], RequestUtils::getCurrentUrl());
 
         // If we are in the API currently, stay in the API
@@ -1034,7 +1034,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         if ($extra_module_paths = $this->getProp($module, $props, 'dataload-source-add-modulepaths')) {
             foreach ($extra_module_paths as $modulepath) {
                 $ret = GeneralUtils::addQueryArgs([
-                    ModulePaths::URLPARAM_MODULEPATHS.'[]' => ModulePathHelpersFacade::getInstance()->stringifyModulePath($modulepath),
+                    ModulePaths::URLPARAM_MODULEPATHS . '[]' => ModulePathHelpersFacade::getInstance()->stringifyModulePath($modulepath),
                 ], $ret);
             }
         }
@@ -1085,7 +1085,6 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         $modulefilter_manager = ModuleFilterManagerFacade::getInstance();
         $modulefilter_manager->prepareForPropagation($module, $props);
         if ($submodules = $this->getModulesToPropagateDataProperties($module)) {
-
             // Calculate in 2 steps:
             // First step: The conditional-on-data-field-submodules must have their data-fields added under entry "conditional-data-fields"
             if ($conditionalOnDataFieldSubmodules = $this->getConditionalOnDataFieldSubmodules($module)) {
@@ -1094,7 +1093,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                 foreach ($conditionalOnDataFieldSubmodules as $conditionDataField => $conditionalSubmodules) {
                     // Calculate those fields which are certainly to be propagated, and not part of the direct submodules
                     // Using this really ugly way because, for comparing modules, using `array_diff` and `intersect` fail
-                    for ($i=count($conditionalSubmodules)-1; $i>=0; $i--) {
+                    for ($i = count($conditionalSubmodules) - 1; $i >= 0; $i--) {
                         // If this submodule is also in the direct ones, then it's not conditional anymore
                         if (in_array($conditionalSubmodules[$i], $directSubmodules)) {
                             array_splice($conditionalSubmodules, $i, 1);
@@ -1106,7 +1105,6 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                         // Propagate only if the submodule doesn't load data. If it does, this is the end of the data line, and the submodule is the beginning of a new datasetmoduletree
                         if (!$submodule_processor->startDataloadingSection($submodule, $props[$moduleFullName][POP_PROPS_SUBMODULES])) {
                             if ($submodule_ret = $submodule_processor->$propagate_fn($submodule, $props[$moduleFullName][POP_PROPS_SUBMODULES])) {
-
                                 // Chain the "data-fields" from the sublevels under the current "conditional-data-fields"
                                 // Move from "data-fields" to "conditional-data-fields"
                                 if ($submodule_ret['data-fields']) {
@@ -1208,8 +1206,8 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
             if ($subcomponent_modules_data_properties['data-fields']) {
                 $subcomponent_modules_data_properties['data-fields'] = array_unique($subcomponent_modules_data_properties['data-fields']);
                 $ret['subcomponents'][$subcomponent_data_field]['data-fields'] = array_values(array_unique(array_merge(
-                        $ret['subcomponents'][$subcomponent_data_field]['data-fields'] ?? [],
-                        $subcomponent_modules_data_properties['data-fields']
+                    $ret['subcomponents'][$subcomponent_data_field]['data-fields'] ?? [],
+                    $subcomponent_modules_data_properties['data-fields']
                 )));
             }
             if ($subcomponent_modules_data_properties['conditional-data-fields']) {

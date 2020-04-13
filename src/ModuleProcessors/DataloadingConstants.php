@@ -1,7 +1,8 @@
 <?php
 namespace PoP\ComponentModel\ModuleProcessors;
 
-class DataloadingConstants {
+class DataloadingConstants
+{
     const SKIPDATALOAD = 'skip-data-load';
     const DATASOURCE = 'datasource';
     const QUERYARGS = 'query-args';

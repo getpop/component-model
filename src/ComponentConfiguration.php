@@ -43,9 +43,9 @@ class ComponentConfiguration extends AbstractComponentConfiguration
     }
 
     /**
-     * Obtain the override configuration for a key, with possible values being only 
+     * Obtain the override configuration for a key, with possible values being only
      * `true` or `false`, or `null` if that key is not set
-     * 
+     *
      * @param $key the key to get the value
      */
     public static function getOverrideConfiguration(string $key): ?bool

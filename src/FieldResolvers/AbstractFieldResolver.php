@@ -102,8 +102,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
     public function resolveCanProcess(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): bool
     {
         /** Check if to validate the version */
-        if (
-            Environment::enableSemanticVersionConstraints() &&
+        if (Environment::enableSemanticVersionConstraints() &&
             $this->decideCanProcessBasedOnVersionConstraint($typeResolver)
         ) {
             /**
@@ -222,7 +221,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
 
     protected function validateEnumFieldArguments(array $enumArgs, string $fieldName, array $fieldArgs = []): array
     {
-        $key = serialize($enumArgs).'|'.$fieldName.serialize($fieldArgs);
+        $key = serialize($enumArgs) . '|' . $fieldName . serialize($fieldArgs);
         if (!isset($this->enumValueArgumentValidationCache[$key])) {
             $this->enumValueArgumentValidationCache[$key] = $this->doValidateEnumFieldArguments($enumArgs, $fieldName, $fieldArgs);
         }
@@ -234,7 +233,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         $errors = $deprecations = [];
         $fieldArgumentNames = SchemaHelpers::getSchemaFieldArgNames($enumArgs);
         $schemaFieldArgumentEnumValueDefinitions = SchemaHelpers::getSchemaFieldArgEnumValueDefinitions($enumArgs);
-        for ($i=0; $i<count($fieldArgumentNames); $i++) {
+        for ($i = 0; $i < count($fieldArgumentNames); $i++) {
             $fieldArgumentName = $fieldArgumentNames[$i];
             $fieldArgumentValue = $fieldArgs[$fieldArgumentName];
             if (!is_null($fieldArgumentValue)) {
@@ -282,7 +281,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
     public function getSchemaDefinitionForField(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): array
     {
         // First check if the value was cached
-        $key = $typeResolver->getNamespacedTypeName().'|'.$fieldName.'|'.json_encode($fieldArgs);
+        $key = $typeResolver->getNamespacedTypeName() . '|' . $fieldName . '|' . json_encode($fieldArgs);
         if (is_null($this->schemaDefinitionForFieldCache[$key])) {
             $schemaDefinition = [
                 SchemaDefinition::ARGNAME_NAME => $fieldName,

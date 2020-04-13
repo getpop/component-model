@@ -30,4 +30,3 @@ class Request
         return $_REQUEST[self::URLPARAM_VERSION_CONSTRAINT];
     }
 }
-

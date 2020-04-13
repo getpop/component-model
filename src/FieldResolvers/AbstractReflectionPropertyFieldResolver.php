@@ -37,7 +37,7 @@ abstract class AbstractReflectionPropertyFieldResolver extends AbstractDBDataFie
             $class = get_called_class();
             $reflectionProperties = $reflectionInstance->getProperties($class::getReflectionPropertyFilters());
             self::$reflectionFieldNames = array_map(
-                function($property) {
+                function ($property) {
                     return $property->getName();
                 },
                 $reflectionProperties
@@ -55,25 +55,25 @@ abstract class AbstractReflectionPropertyFieldResolver extends AbstractDBDataFie
      */
     public static function extractDescriptionText(string $docComment): string
     {
-    	// Remove "/**" and "*/". Taken from https://www.php.net/manual/en/reflectionclass.getdoccomment.php
-    	$docComment = trim(substr($docComment, 3, -2));
-		// The comments are split on '*'
-		$docCommentLines = explode("*", $docComment);
-		$docCommentDescLines = [];
-		for ($count=1; $count<count($docCommentLines); $count++) {
-			// The comment line. Carriage return and line feed are removed from the line
+        // Remove "/**" and "*/". Taken from https://www.php.net/manual/en/reflectionclass.getdoccomment.php
+        $docComment = trim(substr($docComment, 3, -2));
+        // The comments are split on '*'
+        $docCommentLines = explode("*", $docComment);
+        $docCommentDescLines = [];
+        for ($count = 1; $count < count($docCommentLines); $count++) {
+            // The comment line. Carriage return and line feed are removed from the line
             $docCommentLines[$count] = str_replace(array("\r", "\n"), '', trim($docCommentLines[$count]));
             // If it is an empty line, skip it
             if (!$docCommentLines[$count]) {
                 continue;
             }
-			// If the line is empty or starts with a @, then it's a param, we reached the end of the description
-			if (substr($docCommentLines[$count], 0, 1) == '@') {
+            // If the line is empty or starts with a @, then it's a param, we reached the end of the description
+            if (substr($docCommentLines[$count], 0, 1) == '@') {
                 break;
-			}
-		    // The line is added to the description
-    		$docCommentDescLines[] = $docCommentLines[$count];
-		}
+            }
+            // The line is added to the description
+            $docCommentDescLines[] = $docCommentLines[$count];
+        }
         $translationAPI = TranslationAPIFacade::getInstance();
         return implode($translationAPI->__('. '), $docCommentDescLines);
     }

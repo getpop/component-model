@@ -13,11 +13,11 @@ trait FilterInputModuleProcessorTrait
      */
     public function getFilterInputSchemaDefinitionItems(array $module): array
     {
-    	$schemaDefinitionItems = [
+        $schemaDefinitionItems = [
             $this->getFilterInputSchemaDefinition($module),
         ];
         $this->modifyFilterSchemaDefinitionItems($schemaDefinitionItems, $module);
-    	return $schemaDefinitionItems;
+        return $schemaDefinitionItems;
     }
 
     /**
@@ -44,8 +44,8 @@ trait FilterInputModuleProcessorTrait
      */
     protected function getFilterInputSchemaDefinition(array $module): array
     {
-    	$schemaDefinition = [
-    		SchemaDefinition::ARGNAME_NAME => $this->getName($module),
+        $schemaDefinition = [
+            SchemaDefinition::ARGNAME_NAME => $this->getName($module),
         ];
         if ($filterSchemaDefinitionResolver = $this->getFilterInputSchemaDefinitionResolver($module)) {
             if ($type = $filterSchemaDefinitionResolver->getSchemaFilterInputType($module)) {

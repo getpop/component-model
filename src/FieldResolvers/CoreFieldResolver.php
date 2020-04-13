@@ -12,7 +12,7 @@ class CoreFieldResolver extends AbstractDBDataFieldResolver
     public static function getClassesToAttachTo(): array
     {
         return [
-        	AbstractTypeResolver::class,
+            AbstractTypeResolver::class,
         ];
     }
 

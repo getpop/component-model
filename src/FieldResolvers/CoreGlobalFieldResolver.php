@@ -101,7 +101,7 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
                 // If the provided interface contains the namespace separator, then compare by qualifiedInterface
                 $useQualified = strpos($interface, SchemaDefinition::TOKEN_NAMESPACE_SEPARATOR) !== false;
                 $implementedInterfaceNames = array_map(
-                    function($interfaceResolver) use($useQualified) {
+                    function ($interfaceResolver) use ($useQualified) {
                         if ($useQualified) {
                             return $interfaceResolver->getNamespacedInterfaceName();
                         }

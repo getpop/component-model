@@ -1,7 +1,8 @@
 <?php
 namespace PoP\ComponentModel\Schema;
 
-class SchemaDefinition {
+class SchemaDefinition
+{
     // Field/Directive Argument Names
     const ARGNAME_NAME = 'name';
     const ARGNAME_NAMESPACED_NAME = 'namespacedName';
