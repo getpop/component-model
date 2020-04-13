@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace PoP\ComponentModel\Facades\AttachableExtensions;
 
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionManagerInterface;

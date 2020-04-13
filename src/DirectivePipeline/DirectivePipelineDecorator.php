@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace PoP\ComponentModel\DirectivePipeline;
 use League\Pipeline\PipelineInterface;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;

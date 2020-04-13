@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace PoP\ComponentModel\DataStructure;
 
 abstract class AbstractDataStructureFormatter implements DataStructureFormatterInterface

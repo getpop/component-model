@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace PoP\ComponentModel\Schema;
 
 use PoP\FieldQuery\QueryUtils;
@@ -79,25 +82,26 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     {
         $fieldArgs = [];
         // Extract the args from the string into an array
-        $fieldArgsStr = $this->getFieldArgs($field);
-        // Remove the opening and closing brackets
-        $fieldArgsStr = substr($fieldArgsStr, strlen(QuerySyntax::SYMBOL_FIELDARGS_OPENING), strlen($fieldArgsStr) - strlen(QuerySyntax::SYMBOL_FIELDARGS_OPENING) - strlen(QuerySyntax::SYMBOL_FIELDARGS_CLOSING));
-        // Remove the white spaces before and after
-        if ($fieldArgsStr = trim($fieldArgsStr)) {
-            // Iterate all the elements, and extract them into the array
-            if ($fieldArgElems = $this->queryParser->splitElements($fieldArgsStr, QuerySyntax::SYMBOL_FIELDARGS_ARGSEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING], QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING)) {
-                for ($i = 0; $i < count($fieldArgElems); $i++) {
-                    $fieldArg = $fieldArgElems[$i];
-                    // If there is no separator, then skip this arg, since it is not static (without the schema, we can't know which fieldArgName it is)
-                    $separatorPos = QueryUtils::findFirstSymbolPosition($fieldArg, QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING], QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING);
-                    if ($separatorPos === false) {
-                        continue;
+        if ($fieldArgsStr = $this->getFieldArgs($field)) {
+            // Remove the opening and closing brackets
+            $fieldArgsStr = substr($fieldArgsStr, strlen(QuerySyntax::SYMBOL_FIELDARGS_OPENING), strlen($fieldArgsStr) - strlen(QuerySyntax::SYMBOL_FIELDARGS_OPENING) - strlen(QuerySyntax::SYMBOL_FIELDARGS_CLOSING));
+            // Remove the white spaces before and after
+            if ($fieldArgsStr = trim($fieldArgsStr)) {
+                // Iterate all the elements, and extract them into the array
+                if ($fieldArgElems = $this->queryParser->splitElements($fieldArgsStr, QuerySyntax::SYMBOL_FIELDARGS_ARGSEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING], QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING)) {
+                    for ($i = 0; $i < count($fieldArgElems); $i++) {
+                        $fieldArg = $fieldArgElems[$i];
+                        // If there is no separator, then skip this arg, since it is not static (without the schema, we can't know which fieldArgName it is)
+                        $separatorPos = QueryUtils::findFirstSymbolPosition($fieldArg, QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR, [QuerySyntax::SYMBOL_FIELDARGS_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_OPENING], [QuerySyntax::SYMBOL_FIELDARGS_CLOSING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUEARRAY_CLOSING], QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_OPENING, QuerySyntax::SYMBOL_FIELDARGS_ARGVALUESTRING_CLOSING);
+                        if ($separatorPos === false) {
+                            continue;
+                        }
+                        $fieldArgName = trim(substr($fieldArg, 0, $separatorPos));
+                        $fieldArgValue = trim(substr($fieldArg, $separatorPos + strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR)));
+                        // If the field is an array in its string representation, convert it to array
+                        $fieldArgValue = $this->maybeConvertFieldArgumentValue($fieldArgValue, $variables);
+                        $fieldArgs[$fieldArgName] = $fieldArgValue;
                     }
-                    $fieldArgName = trim(substr($fieldArg, 0, $separatorPos));
-                    $fieldArgValue = trim(substr($fieldArg, $separatorPos + strlen(QuerySyntax::SYMBOL_FIELDARGS_ARGKEYVALUESEPARATOR)));
-                    // If the field is an array in its string representation, convert it to array
-                    $fieldArgValue = $this->maybeConvertFieldArgumentValue($fieldArgValue, $variables);
-                    $fieldArgs[$fieldArgName] = $fieldArgValue;
                 }
             }
         }

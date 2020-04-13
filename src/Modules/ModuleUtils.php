@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace PoP\ComponentModel\Modules;
 use PoP\ComponentModel\ItemProcessors\ProcessorItemUtils;
 

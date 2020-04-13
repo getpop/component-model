@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace PoP\ComponentModel\Facades\Schema;
 
 use PoP\ComponentModel\Schema\SchemaDefinitionServiceInterface;

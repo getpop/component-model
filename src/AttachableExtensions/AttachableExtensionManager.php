@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace PoP\ComponentModel\AttachableExtensions;
 
 class AttachableExtensionManager implements AttachableExtensionManagerInterface

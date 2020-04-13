@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace PoP\ComponentModel\State;
 
 use PoP\Routing\RouteNatures;
@@ -29,17 +32,17 @@ class ApplicationState
         $route = $routingManager->getCurrentRoute();
 
         // Convert them to lower to make it insensitive to upper/lower case values
-        $output = strtolower($_REQUEST[\GD_URLPARAM_OUTPUT]);
+        $output = strtolower($_REQUEST[\GD_URLPARAM_OUTPUT] ?? '');
         $dataoutputitems = $_REQUEST[\GD_URLPARAM_DATAOUTPUTITEMS];
-        $datasources = strtolower($_REQUEST[\GD_URLPARAM_DATASOURCES]);
-        $datastructure = strtolower($_REQUEST[\GD_URLPARAM_DATASTRUCTURE]);
-        $dataoutputmode = strtolower($_REQUEST[\GD_URLPARAM_DATAOUTPUTMODE]);
-        $dboutputmode = strtolower($_REQUEST[\GD_URLPARAM_DATABASESOUTPUTMODE]);
-        $target = strtolower($_REQUEST[\GD_URLPARAM_TARGET]);
+        $datasources = strtolower($_REQUEST[\GD_URLPARAM_DATASOURCES] ?? '');
+        $datastructure = strtolower($_REQUEST[\GD_URLPARAM_DATASTRUCTURE] ?? '');
+        $dataoutputmode = strtolower($_REQUEST[\GD_URLPARAM_DATAOUTPUTMODE] ?? '');
+        $dboutputmode = strtolower($_REQUEST[\GD_URLPARAM_DATABASESOUTPUTMODE] ?? '');
+        $target = strtolower($_REQUEST[\GD_URLPARAM_TARGET] ?? '');
         $mangled = Request::isMangled() ? '' : Request::URLPARAMVALUE_MANGLED_NONE;
         $actions = isset($_REQUEST[\GD_URLPARAM_ACTIONS]) ?
             array_map('strtolower', $_REQUEST[\GD_URLPARAM_ACTIONS]) : [];
-        $scheme = strtolower($_REQUEST[\GD_URLPARAM_SCHEME]);
+        $scheme = strtolower($_REQUEST[\GD_URLPARAM_SCHEME] ?? '');
         // The version could possibly be set from outside
         $version = ServerUtils::enableVersionByParams() ?
             $_REQUEST[\GD_URLPARAM_VERSION] ?? ApplicationInfoFacade::getInstance()->getVersion() :

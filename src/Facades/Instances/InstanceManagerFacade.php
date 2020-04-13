@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace PoP\ComponentModel\Facades\Instances;
 
 use PoP\ComponentModel\Instances\InstanceManagerInterface;

@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace PoP\ComponentModel\DataStructure;
 
 abstract class AbstractJSONDataStructureFormatter extends AbstractDataStructureFormatter
@@ -10,10 +13,10 @@ abstract class AbstractJSONDataStructureFormatter extends AbstractDataStructureF
 
     protected function printData(&$data)
     {
-        echo json_encode($data, $this->getJsonEncodeType());
+        echo json_encode($data, $this->getJsonEncodeType() ?? 0);
     }
 
-    protected function getJsonEncodeType()
+    protected function getJsonEncodeType(): ?int
     {
         return null;
     }
