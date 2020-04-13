@@ -16,7 +16,7 @@ Component model for PoP, over which the component-based architecture is based.
 Via Composer
 
 ``` bash
-$ composer require getpop/component-model dev-master
+composer require getpop/component-model dev-master
 ```
 
 **Note:** Your `composer.json` file must have the configuration below to accept minimum stability `"dev"` (there are no releases for PoP yet, and the code is installed directly from the `master` branch):
@@ -768,6 +768,7 @@ For instance, the API response below contains a component hierarchy with two mod
   }
 }
 ```
+
 ### Definition of a Module
 
 Every module has a unique name that identifies it, defined as a constant:
@@ -1298,6 +1299,7 @@ function getFilter($module)
 }
 ```
 -->
+
 ##### Defining the QueryInputOutputHandler
 
 After fetching data, we can communicate state (eg: are there more results? what's the next paging number? etc) through [QueryInputOutputHandler](#queryhandler) objects, defined through function `getQueryhandler`. By default, it returns object with name `GD_DATALOAD_QUERYHANDLER_ACTIONEXECUTION`, needed when executing an operation (see section [Data-Posting and Operations](#data-posting-and-operations)):
@@ -1450,6 +1452,7 @@ function getDomainSwitchingSubmodules($module)
   return $ret;
 }
 ```
+
 ### Dataloader
 
 The dataloader object is in charge of fetching database data. It knows what type of data it must fetch (posts, users, comments, etc) and how to do it. All dataloaders inherit from class `Dataloader`. Given an array of IDs, it must fetch the corresponding objects from the database, through function `executeGetData`:
@@ -1849,6 +1852,7 @@ function prepareDataPropertiesAfterActionexecution($module, &$props, &$data_prop
   }
 }
 ```
+
 ### Checkpoints
 
 A "checkpoint" is a condition that must be satisfied when performing an operation-access validation. These validations do not include content validations, such as checking if the user has filled-in the form correctly; instead, they are used to find out if the user can access a certain page or functionality, such as checking if the user is logged in to access the user account page, checking if the user IP has been whitelisted to execute special scripts, etc.
@@ -2002,7 +2006,6 @@ Will be added soon...
 
 Will be added soon...
 
-
 ## Change log
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed recently.
@@ -2010,7 +2013,7 @@ Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed re
 ## Testing
 
 ``` bash
-$ composer test
+composer test
 ```
 
 ## Contributing
