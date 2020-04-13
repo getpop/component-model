@@ -20,9 +20,9 @@
     "require": {
         "php": "~7.1",
         "composer/semver": "^1.5",
-        "getpop/definitions": "dev-master",
-        "getpop/field-query": "dev-master",
-        "getpop/migrate-component-model": "^1.0@dev",
+        "getpop/definitions": "~0.1",
+        "getpop/field-query": "~0.1",
+        "getpop/migrate-component-model": "~0.1",
         "jrfnl/php-cast-to-type": "^2.0",
         "league/pipeline": "^1.0",
         "symfony/cache": "^4.3"
