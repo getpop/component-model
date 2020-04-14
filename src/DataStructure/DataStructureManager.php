@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace PoP\ComponentModel\DataStructure;
+
 use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 
