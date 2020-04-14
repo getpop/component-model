@@ -11,7 +11,7 @@ use PoP\FieldQuery\QueryHelpers;
 use PoP\ComponentModel\ErrorUtils;
 use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\Environment;
-use PoP\FieldQuery\FieldQueryUtils;
+use PoP\ComponentModel\Schema\FieldQueryUtils;
 use League\Pipeline\PipelineBuilder;
 use PoP\Hooks\Facades\HooksAPIFacade;
 use PoP\ComponentModel\Feedback\Tokens;

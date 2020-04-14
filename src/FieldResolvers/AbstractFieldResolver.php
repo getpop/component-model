@@ -7,7 +7,7 @@ namespace PoP\ComponentModel\FieldResolvers;
 use Exception;
 use Composer\Semver\Semver;
 use PoP\ComponentModel\Environment;
-use PoP\FieldQuery\FieldQueryUtils;
+use PoP\ComponentModel\Schema\FieldQueryUtils;
 use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Configuration\Request;
 use PoP\ComponentModel\Schema\SchemaDefinition;
