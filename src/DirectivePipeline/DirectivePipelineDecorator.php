@@ -9,7 +9,7 @@ use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 class DirectivePipelineDecorator
 {
     private $pipeline;
-    function __construct(PipelineInterface $pipeline)
+    public function __construct(PipelineInterface $pipeline)
     {
         $this->pipeline = $pipeline;
     }
