@@ -14,6 +14,8 @@ class Request
      * What version constraint to use for the API
      */
     const URLPARAM_VERSION_CONSTRAINT = SchemaDefinition::ARGNAME_VERSION_CONSTRAINT;
+    const URLPARAM_VERSION_CONSTRAINT_FOR_FIELDS = 'fieldVersionConstraints';
+    const URLPARAM_VERSION_CONSTRAINT_FOR_DIRECTIVES = 'directiveVersionConstraints';
 
     public static function isMangled(): bool
     {
@@ -24,12 +26,32 @@ class Request
     }
 
     /**
-     * Indicates the version constraint for fields in the query
+     * Indicates the version constraint for all fields/directives in the query
      *
      * @return string|null
      */
     public static function getVersionConstraint(): ?string
     {
         return $_REQUEST[self::URLPARAM_VERSION_CONSTRAINT];
+    }
+
+    /**
+     * Indicates the version constraints for specific fields in the schema
+     *
+     * @return string|null
+     */
+    public static function getVersionConstraintsForFields(): ?array
+    {
+        return $_REQUEST[self::URLPARAM_VERSION_CONSTRAINT_FOR_FIELDS];
+    }
+
+    /**
+     * Indicates the version constraints for specific directives in the schema
+     *
+     * @return string|null
+     */
+    public static function getVersionConstraintsForDirectives(): ?array
+    {
+        return $_REQUEST[self::URLPARAM_VERSION_CONSTRAINT_FOR_DIRECTIVES];
     }
 }

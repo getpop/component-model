@@ -20,6 +20,7 @@ use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineUtils;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
+use PoP\ComponentModel\Misc\RequestHelpers;
 use PoP\ComponentModel\Directives\DirectiveTypes;
 
 abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, SchemaDirectiveResolverInterface, StageInterface
@@ -269,19 +270,26 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $this->decideCanProcessBasedOnVersionConstraint($typeResolver)
         ) {
             /**
-             * Please notice: we can get the fieldVersion directly from this instance, and not from the schemaDefinition,
-             * because the version is set at the FieldResolver level, and not the FieldInterfaceResolver,
-             * which is the other entity filling data inside the schemaDefinition object
+             * Please notice: we can get the fieldVersion directly from this instance,
+             * and not from the schemaDefinition, because the version is set at the FieldResolver level,
+             * and not the FieldInterfaceResolver, which is the other entity filling data
+             * inside the schemaDefinition object.
              * If this directive is tagged with a version...
              */
             if ($schemaDirectiveVersion = $this->getSchemaDirectiveVersion($typeResolver)) {
                 /**
-                 * If the query doesn't restrict the version, then do not process
-                 * Also can pass version constraint through URL param, which has these benefits:
-                 * 1. It applies on all directives in the query at the same time
-                 * 2. It can be used to visualize the schema for that version: /?query=fullSchema&versionConstraint=...
+                 * Get versionConstraint in this order:
+                 * 1. Passed as directive argument
+                 * 2. Through param `directiveVersionConstraints[$directiveName]`: specific to the directive
+                 * 3. Through param `versionConstraint`: applies to all fields and directives in the query
                  */
-                $versionConstraint = $directiveArgs[SchemaDefinition::ARGNAME_VERSION_CONSTRAINT] ?? Request::getVersionConstraint();
+                $versionConstraint =
+                    $directiveArgs[SchemaDefinition::ARGNAME_VERSION_CONSTRAINT]
+                    ?? RequestHelpers::getVersionConstraintsForDirective(static::getDirectiveName())
+                    ?? Request::getVersionConstraint();
+                /**
+                 * If the query doesn't restrict the version, then do not process
+                 */
                 if (!$versionConstraint) {
                     return false;
                 }

@@ -17,6 +17,7 @@ use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\FieldResolvers\SchemaDefinitionResolverTrait;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
+use PoP\ComponentModel\Misc\RequestHelpers;
 use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverInterface;
 use PoP\ComponentModel\Misc\GeneralUtils;
 
@@ -109,19 +110,29 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             $this->decideCanProcessBasedOnVersionConstraint($typeResolver)
         ) {
             /**
-             * Please notice: we can get the fieldVersion directly from this instance, and not from the schemaDefinition,
-             * because the version is set at the FieldResolver level, and not the FieldInterfaceResolver,
-             * which is the other entity filling data inside the schemaDefinition object
+             * Please notice: we can get the fieldVersion directly from this instance,
+             * and not from the schemaDefinition, because the version is set at the FieldResolver level,
+             * and not the FieldInterfaceResolver, which is the other entity filling data
+             * inside the schemaDefinition object.
              * If this field is tagged with a version...
              */
             if ($schemaFieldVersion = $this->getSchemaFieldVersion($typeResolver, $fieldName)) {
                 /**
-                 * If the query doesn't restrict the version, then do not process
-                 * Also can pass version constraint through URL param, which has these benefits:
-                 * 1. It applies on all fields in the query at the same time
-                 * 2. It can be used to visualize the schema for that version: /?query=fullSchema&versionConstraint=...
+                 * Get versionConstraint in this order:
+                 * 1. Passed as field argument
+                 * 2. Through param `fieldVersionConstraints[$fieldName]`: specific to the field
+                 * 3. Through param `versionConstraint`: applies to all fields and directives in the query
                  */
-                $versionConstraint = $fieldArgs[SchemaDefinition::ARGNAME_VERSION_CONSTRAINT] ?? Request::getVersionConstraint();
+                $versionConstraint =
+                    $fieldArgs[SchemaDefinition::ARGNAME_VERSION_CONSTRAINT]
+                    ?? RequestHelpers::getVersionConstraintsForField(
+                        $typeResolver->getMaybeNamespacedTypeName(),
+                        $fieldName
+                    )
+                    ?? Request::getVersionConstraint();
+                /**
+                 * If the query doesn't restrict the version, then do not process
+                 */
                 if (!$versionConstraint) {
                     return false;
                 }
