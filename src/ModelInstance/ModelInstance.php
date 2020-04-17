@@ -119,10 +119,10 @@ class ModelInstance implements ModelInstanceInterface
             $components[] = $this->translationAPI->__('version-constraint:', 'component-model') . $versionConstraint;
         }
         if ($fieldVersionConstraints = $vars['field-version-constraints']) {
-            $components[] = $this->translationAPI->__('field-version-constraints:', 'component-model') . $fieldVersionConstraints;
+            $components[] = $this->translationAPI->__('field-version-constraints:', 'component-model') . json_encode($fieldVersionConstraints);
         }
         if ($directiveVersionConstraints = $vars['directive-version-constraints']) {
-            $components[] = $this->translationAPI->__('directive-version-constraints:', 'component-model') . $directiveVersionConstraints;
+            $components[] = $this->translationAPI->__('directive-version-constraints:', 'component-model') . json_encode($directiveVersionConstraints);
         }
 
         // Allow for plug-ins to add their own vars. Eg: URE source parameter
