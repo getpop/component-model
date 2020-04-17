@@ -10,9 +10,8 @@ use PoP\FieldQuery\QueryHelpers;
 use League\Pipeline\StageInterface;
 use PoP\ComponentModel\Environment;
 use PoP\ComponentModel\Feedback\Tokens;
-use PoP\ComponentModel\Misc\RequestHelpers;
+use PoP\ComponentModel\Versioning\VersioningHelpers;
 use PoP\ComponentModel\Schema\SchemaHelpers;
-use PoP\ComponentModel\Configuration\Request;
 use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\ComponentModel\Directives\DirectiveTypes;
@@ -287,7 +286,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                  */
                 $versionConstraint =
                     $directiveArgs[SchemaDefinition::ARGNAME_VERSION_CONSTRAINT]
-                    ?? RequestHelpers::getVersionConstraintsForDirective(static::getDirectiveName())
+                    ?? VersioningHelpers::getVersionConstraintsForDirective(static::getDirectiveName())
                     ?? $vars['version-constraint'];
                 /**
                  * If the query doesn't restrict the version, then do not process

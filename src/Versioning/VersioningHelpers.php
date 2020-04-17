@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PoP\ComponentModel\Misc;
+namespace PoP\ComponentModel\Versioning;
 
 use PoP\ComponentModel\Feedback\Tokens;
-use PoP\ComponentModel\Configuration\Request;
 use PoP\ComponentModel\State\ApplicationState;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
 
-class RequestHelpers
+class VersioningHelpers
 {
     /**
      * Token used to separate the type from the field for setting version constraints

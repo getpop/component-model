@@ -8,9 +8,8 @@ use Exception;
 use Composer\Semver\Semver;
 use PoP\ComponentModel\Environment;
 use PoP\ComponentModel\Misc\GeneralUtils;
-use PoP\ComponentModel\Misc\RequestHelpers;
+use PoP\ComponentModel\Versioning\VersioningHelpers;
 use PoP\ComponentModel\Schema\SchemaHelpers;
-use PoP\ComponentModel\Configuration\Request;
 use PoP\ComponentModel\Schema\FieldQueryUtils;
 use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\Schema\SchemaDefinition;
@@ -128,11 +127,11 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                  */
                 $versionConstraint =
                     $fieldArgs[SchemaDefinition::ARGNAME_VERSION_CONSTRAINT]
-                    ?? RequestHelpers::getVersionConstraintsForField(
+                    ?? VersioningHelpers::getVersionConstraintsForField(
                         $typeResolver->getNamespacedTypeName(),
                         $fieldName
                     )
-                    ?? RequestHelpers::getVersionConstraintsForField(
+                    ?? VersioningHelpers::getVersionConstraintsForField(
                         $typeResolver->getTypeName(),
                         $fieldName
                     )
