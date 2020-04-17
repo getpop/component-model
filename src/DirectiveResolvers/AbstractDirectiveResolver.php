@@ -10,9 +10,12 @@ use PoP\FieldQuery\QueryHelpers;
 use League\Pipeline\StageInterface;
 use PoP\ComponentModel\Environment;
 use PoP\ComponentModel\Feedback\Tokens;
+use PoP\ComponentModel\Misc\RequestHelpers;
 use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Configuration\Request;
+use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\Schema\SchemaDefinition;
+use PoP\ComponentModel\Directives\DirectiveTypes;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\FieldSymbols;
 use PoP\ComponentModel\TypeResolvers\PipelinePositions;
@@ -20,8 +23,6 @@ use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineUtils;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
-use PoP\ComponentModel\Misc\RequestHelpers;
-use PoP\ComponentModel\Directives\DirectiveTypes;
 
 abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, SchemaDirectiveResolverInterface, StageInterface
 {
@@ -277,6 +278,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
              * If this directive is tagged with a version...
              */
             if ($schemaDirectiveVersion = $this->getSchemaDirectiveVersion($typeResolver)) {
+                $vars = ApplicationState::getVars();
                 /**
                  * Get versionConstraint in this order:
                  * 1. Passed as directive argument
@@ -286,7 +288,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 $versionConstraint =
                     $directiveArgs[SchemaDefinition::ARGNAME_VERSION_CONSTRAINT]
                     ?? RequestHelpers::getVersionConstraintsForDirective(static::getDirectiveName())
-                    ?? Request::getVersionConstraint();
+                    ?? $vars['version-constraint'];
                 /**
                  * If the query doesn't restrict the version, then do not process
                  */

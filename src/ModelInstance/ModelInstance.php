@@ -115,6 +115,15 @@ class ModelInstance implements ModelInstanceInterface
         if ($vars['only-fieldname-as-outputkey']) {
             $components[] = $this->translationAPI->__('only-fieldname-as-outputkey', 'component-model');
         }
+        if ($versionConstraint = $vars['version-constraint']) {
+            $components[] = $this->translationAPI->__('version-constraint:', 'component-model') . $versionConstraint;
+        }
+        if ($fieldVersionConstraints = $vars['field-version-constraints']) {
+            $components[] = $this->translationAPI->__('field-version-constraints:', 'component-model') . $fieldVersionConstraints;
+        }
+        if ($directiveVersionConstraints = $vars['directive-version-constraints']) {
+            $components[] = $this->translationAPI->__('directive-version-constraints:', 'component-model') . $directiveVersionConstraints;
+        }
 
         // Allow for plug-ins to add their own vars. Eg: URE source parameter
         return (array)$this->hooksAPI->applyFilters(

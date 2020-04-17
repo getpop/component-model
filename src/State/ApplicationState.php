@@ -171,6 +171,9 @@ class ApplicationState
             'variables' => $variables,
             'only-fieldname-as-outputkey' => false,
             'namespace-types-and-interfaces' => Environment::namespaceTypesAndInterfaces(),
+            'version-constraint' => Request::getVersionConstraint(),
+            'field-version-constraints' => Request::getVersionConstraintsForFields(),
+            'directive-version-constraints' => Request::getVersionConstraintsForDirectives(),
         );
 
         if (ComponentConfiguration::enableConfigByParams()) {

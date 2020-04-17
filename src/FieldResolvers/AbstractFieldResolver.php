@@ -7,9 +7,12 @@ namespace PoP\ComponentModel\FieldResolvers;
 use Exception;
 use Composer\Semver\Semver;
 use PoP\ComponentModel\Environment;
-use PoP\ComponentModel\Schema\FieldQueryUtils;
+use PoP\ComponentModel\Misc\GeneralUtils;
+use PoP\ComponentModel\Misc\RequestHelpers;
 use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Configuration\Request;
+use PoP\ComponentModel\Schema\FieldQueryUtils;
+use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\Facades\Engine\EngineFacade;
@@ -17,9 +20,7 @@ use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\FieldResolvers\SchemaDefinitionResolverTrait;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
-use PoP\ComponentModel\Misc\RequestHelpers;
 use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverInterface;
-use PoP\ComponentModel\Misc\GeneralUtils;
 
 abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSchemaDefinitionResolverInterface
 {
@@ -117,6 +118,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
              * If this field is tagged with a version...
              */
             if ($schemaFieldVersion = $this->getSchemaFieldVersion($typeResolver, $fieldName)) {
+                $vars = ApplicationState::getVars();
                 /**
                  * Get versionConstraint in this order:
                  * 1. Passed as field argument
@@ -134,7 +136,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                         $typeResolver->getTypeName(),
                         $fieldName
                     )
-                    ?? Request::getVersionConstraint();
+                    ?? $vars['version-constraint'];
                 /**
                  * If the query doesn't restrict the version, then do not process
                  */

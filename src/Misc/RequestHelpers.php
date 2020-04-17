@@ -6,6 +6,7 @@ namespace PoP\ComponentModel\Misc;
 
 use PoP\ComponentModel\Feedback\Tokens;
 use PoP\ComponentModel\Configuration\Request;
+use PoP\ComponentModel\State\ApplicationState;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\Facades\Schema\FeedbackMessageStoreFacade;
 
@@ -30,7 +31,8 @@ class RequestHelpers
         self::$versionConstraintsForFields = [];
         $schemaWarnings = [];
         $translationAPI = TranslationAPIFacade::getInstance();
-        foreach ((Request::getVersionConstraintsForFields() ?? []) as $typeField => $versionConstraint) {
+        $vars = ApplicationState::getVars();
+        foreach (($vars['field-version-constraints'] ?? []) as $typeField => $versionConstraint) {
             // All fields are defined as "$type.$fieldName". If not, it's an error
             $entry = explode(self::TYPE_FIELD_SEPARATOR, $typeField);
             if (count($entry) != 2) {
@@ -83,7 +85,8 @@ class RequestHelpers
     public static function getVersionConstraintsForDirective(string $directiveName): ?string
     {
         if (is_null(self::$versionConstraintsForDirectives)) {
-            self::$versionConstraintsForDirectives = Request::getVersionConstraintsForDirectives() ?? [];
+            $vars = ApplicationState::getVars();
+            self::$versionConstraintsForDirectives = $vars['directive-version-constraints'];
         }
         return self::$versionConstraintsForDirectives[$directiveName];
     }
