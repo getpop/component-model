@@ -120,13 +120,18 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 /**
                  * Get versionConstraint in this order:
                  * 1. Passed as field argument
-                 * 2. Through param `fieldVersionConstraints[$fieldName]`: specific to the field
-                 * 3. Through param `versionConstraint`: applies to all fields and directives in the query
+                 * 2. Through param `fieldVersionConstraints[$fieldName]`: specific to the namespaced type + field
+                 * 3. Through param `fieldVersionConstraints[$fieldName]`: specific to the type + field
+                 * 4. Through param `versionConstraint`: applies to all fields and directives in the query
                  */
                 $versionConstraint =
                     $fieldArgs[SchemaDefinition::ARGNAME_VERSION_CONSTRAINT]
                     ?? RequestHelpers::getVersionConstraintsForField(
-                        $typeResolver->getMaybeNamespacedTypeName(),
+                        $typeResolver->getNamespacedTypeName(),
+                        $fieldName
+                    )
+                    ?? RequestHelpers::getVersionConstraintsForField(
+                        $typeResolver->getTypeName(),
                         $fieldName
                     )
                     ?? Request::getVersionConstraint();
