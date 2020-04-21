@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PoP\ComponentModel;
+namespace PoP\ComponentModel\ComponentConfiguration;
 
 use PoP\Hooks\Facades\HooksAPIFacade;
 
