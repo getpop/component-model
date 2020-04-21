@@ -956,16 +956,24 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         if (Environment::enableSemanticVersionConstraints()) {
             if ($versionConstraint = $fieldArgs[SchemaDefinition::ARGNAME_VERSION_CONSTRAINT]) {
                 $errorMessage = sprintf(
-                    $translationAPI->__('No FieldResolver resolves field \'%s\' and version constraint \'%s\'', 'pop-component-model'),
+                    $translationAPI->__(
+                        'No FieldResolver resolves field \'%s\' and version constraint \'%s\' for type \'%s\'',
+                        'pop-component-model'
+                    ),
                     $fieldName,
-                    $versionConstraint
+                    $versionConstraint,
+                    $this->getMaybeNamespacedTypeName()
                 );
             }
         }
         if (!$errorMessage) {
             $errorMessage = sprintf(
-                $translationAPI->__('No FieldResolver resolves field \'%s\'', 'pop-component-model'),
-                $fieldName
+                $translationAPI->__(
+                    'No FieldResolver resolves field \'%s\' for type \'%s\'',
+                    'pop-component-model'
+                ),
+                $fieldName,
+                $this->getMaybeNamespacedTypeName()
             );
         }
         return [
