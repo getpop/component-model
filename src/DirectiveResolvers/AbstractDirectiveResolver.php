@@ -329,14 +329,14 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             /**
              * Validate mandatory values
              */
-            if ($mandatoryArgs = SchemaHelpers::getSchemaMandatoryFieldArgs($schemaDirectiveArgs)) {
-                if ($maybeError = $this->validateNotMissingDirectiveArguments(
-                    SchemaHelpers::getSchemaFieldArgNames($mandatoryArgs),
-                    $directiveName,
-                    $directiveArgs
-                )) {
-                    return $maybeError;
-                }
+            if ($maybeError = $this->maybeValidateNotMissingFieldOrDirectiveArguments(
+                $typeResolver,
+                $directiveName,
+                $directiveArgs,
+                $schemaDirectiveArgs,
+                ResolverTypes::DIRECTIVE
+            )) {
+                return $maybeError;
             }
 
             /**
@@ -353,25 +353,6 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                     return $maybeError;
                 }
             }
-        }
-        return null;
-    }
-
-    protected function validateNotMissingDirectiveArguments(array $directiveArgumentProperties, string $directiveName, array $directiveArgs = []): ?string
-    {
-        if ($missing = SchemaHelpers::getMissingFieldArgs($directiveArgumentProperties, $directiveArgs)) {
-            $translationAPI = TranslationAPIFacade::getInstance();
-            return count($missing) == 1 ?
-                sprintf(
-                    $translationAPI->__('Directive argument \'%s\' cannot be empty, so directive \'%s\' has been ignored', 'pop-component-model'),
-                    $missing[0],
-                    $directiveName
-                ) :
-                sprintf(
-                    $translationAPI->__('Directive arguments \'%s\' cannot be empty, so directive \'%s\' has been ignored', 'pop-component-model'),
-                    implode($translationAPI->__('\', \''), $missing),
-                    $directiveName
-                );
         }
         return null;
     }

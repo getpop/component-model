@@ -165,14 +165,14 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             /**
              * Validate mandatory values
              */
-            if ($mandatoryArgs = SchemaHelpers::getSchemaMandatoryFieldArgs($schemaFieldArgs)) {
-                if ($maybeError = $this->validateNotMissingFieldArguments(
-                    SchemaHelpers::getSchemaFieldArgNames($mandatoryArgs),
-                    $fieldName,
-                    $fieldArgs
-                )) {
-                    return $maybeError;
-                }
+            if ($maybeError = $this->maybeValidateNotMissingFieldOrDirectiveArguments(
+                $typeResolver,
+                $fieldName,
+                $fieldArgs,
+                $schemaFieldArgs,
+                ResolverTypes::FIELD
+            )) {
+                return $maybeError;
             }
 
             /**
@@ -203,25 +203,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             )) {
                 return $maybeDeprecation;
             }
-        }
-        return null;
-    }
-
-    protected function validateNotMissingFieldArguments(array $fieldArgumentProperties, string $fieldName, array $fieldArgs = []): ?string
-    {
-        if ($missing = SchemaHelpers::getMissingFieldArgs($fieldArgumentProperties, $fieldArgs)) {
-            $translationAPI = TranslationAPIFacade::getInstance();
-            return count($missing) == 1 ?
-                sprintf(
-                    $translationAPI->__('Field argument \'%s\' cannot be empty, so field \'%s\' has been ignored', 'pop-component-model'),
-                    $missing[0],
-                    $fieldName
-                ) :
-                sprintf(
-                    $translationAPI->__('Field arguments \'%s\' cannot be empty, so field \'%s\' has been ignored', 'pop-component-model'),
-                    implode($translationAPI->__('\', \''), $missing),
-                    $fieldName
-                );
         }
         return null;
     }

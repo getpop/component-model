@@ -14,6 +14,42 @@ trait FieldOrDirectiveResolverTrait
 {
     protected $enumValueArgumentValidationCache = [];
 
+    protected function maybeValidateNotMissingFieldOrDirectiveArguments(TypeResolverInterface $typeResolver, string $fieldOrDirectiveName, array $fieldOrDirectiveArgs, array $schemaFieldOrDirectiveArgs, string $type): ?string
+    {
+        if ($mandatoryArgs = SchemaHelpers::getSchemaMandatoryFieldArgs($schemaFieldOrDirectiveArgs)) {
+            if ($maybeError = $this->validateNotMissingFieldOrDirectiveArguments(
+                SchemaHelpers::getSchemaFieldArgNames($mandatoryArgs),
+                $fieldOrDirectiveName,
+                $fieldOrDirectiveArgs,
+                $type
+            )) {
+                return $maybeError;
+            }
+        }
+        return null;
+    }
+
+    protected function validateNotMissingFieldOrDirectiveArguments(array $fieldOrDirectiveArgumentProperties, string $fieldOrDirectiveName, array $fieldOrDirectiveArgs, string $type): ?string
+    {
+        if ($missing = SchemaHelpers::getMissingFieldArgs($fieldOrDirectiveArgumentProperties, $fieldOrDirectiveArgs)) {
+            $translationAPI = TranslationAPIFacade::getInstance();
+            return count($missing) == 1 ?
+                sprintf(
+                    $translationAPI->__('Argument \'%1$s\' cannot be empty, so %2$s \'%3$s\' has been ignored', 'component-model'),
+                    $missing[0],
+                    $type == ResolverTypes::FIELD ? $translationAPI->__('field', 'component-model') : $translationAPI->__('directive', 'component-model'),
+                    $fieldOrDirectiveName
+                ) :
+                sprintf(
+                    $translationAPI->__('Arguments \'%1$s\' cannot be empty, so %2$s \'%3$s\' has been ignored', 'component-model'),
+                    implode($translationAPI->__('\', \''), $missing),
+                    $type == ResolverTypes::FIELD ? $translationAPI->__('field', 'component-model') : $translationAPI->__('directive', 'component-model'),
+                    $fieldOrDirectiveName
+                );
+        }
+        return null;
+    }
+
     /**
      * Important: The validations below can only be done if no fieldArg contains a field!
      * That is because this is a schema error, so we still don't have the $resultItem against which to resolve the field
