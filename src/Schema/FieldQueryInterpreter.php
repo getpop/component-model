@@ -333,7 +333,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         // Cast the values to their appropriate type. If casting fails, the value returns as null
         $directiveArgs = $this->castAndValidateDirectiveArgumentsForSchema($directiveResolver, $typeResolver, $fieldDirective, $directiveArgs, $schemaWarnings, $disableDynamicFields);
         // Enable the directiveResolver to add its own code validations
-        $directiveArgs = $directiveResolver->validateDirectiveArgumentsForSchema($typeResolver, $directiveArgs, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+        $directiveArgs = $directiveResolver->validateDirectiveArgumentsForSchema($typeResolver, $directiveName, $directiveArgs, $schemaErrors, $schemaWarnings, $schemaDeprecations);
 
         // If there's an error, those args will be removed. Then, re-create the fieldDirective to pass it to the function below
         if ($schemaErrors) {

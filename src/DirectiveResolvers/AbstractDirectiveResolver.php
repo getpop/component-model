@@ -186,7 +186,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     }
 
     /**
-     * By default, do nothing
+     * By default, validate if there are deprecated fields
      *
      * @param TypeResolverInterface $typeResolver
      * @param array $directiveArgs
@@ -195,8 +195,18 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
      * @param array $schemaDeprecations
      * @return array
      */
-    public function validateDirectiveArgumentsForSchema(TypeResolverInterface $typeResolver, array $directiveArgs, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    public function validateDirectiveArgumentsForSchema(TypeResolverInterface $typeResolver, string $directiveName, array $directiveArgs, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
     {
+        if ($maybeDeprecation = $this->resolveSchemaDirectiveDeprecationDescription(
+            $typeResolver,
+            $directiveName,
+            $directiveArgs
+        )) {
+            $schemaDeprecations[] = [
+                Tokens::PATH => [$this->directive],
+                Tokens::MESSAGE => $maybeDeprecation,
+            ];
+        }
         return $directiveArgs;
     }
 
@@ -480,6 +490,35 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     {
         if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
             return $schemaDefinitionResolver->getSchemaDirectiveDeprecationDescription($typeResolver);
+        }
+        return null;
+    }
+
+    public function resolveSchemaDirectiveDeprecationDescription(TypeResolverInterface $typeResolver, string $directiveName, array $directiveArgs = []): ?string
+    {
+        $directiveSchemaDefinition = $this->getSchemaDefinitionForDirective($typeResolver);
+        if ($schemaFieldArgs = $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) {
+            // Important: The validations below can only be done if no fieldArg contains a field!
+            // That is because this is a schema error, so we still don't have the $resultItem against which to resolve the field
+            // For instance, this doesn't work: /?query=arrayItem(posts(),3)
+            // In that case, the validation will be done inside ->resolveValue(), and will be treated as a $dbError, not a $schemaError
+            if (!FieldQueryUtils::isAnyFieldArgumentValueAField($directiveArgs)) {
+                // Iterate all the enum types and check that the provided values is one of them, or throw an error
+                if ($enumArgs = SchemaHelpers::getSchemaEnumTypeFieldArgs($schemaFieldArgs)) {
+                    list(
+                        $maybeError,
+                        $maybeDeprecation
+                    ) = $this->validateEnumFieldOrDirectiveArguments(
+                        $enumArgs,
+                        $directiveName,
+                        $directiveArgs,
+                        ResolverTypes::DIRECTIVE
+                    );
+                    if ($maybeDeprecation) {
+                        return $maybeDeprecation;
+                    }
+                }
+            }
         }
         return null;
     }
