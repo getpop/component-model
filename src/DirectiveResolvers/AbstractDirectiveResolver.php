@@ -335,7 +335,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 if ($enumArgs = SchemaHelpers::getSchemaEnumTypeFieldArgs($schemaDirectiveArgs)) {
                     list(
                         $maybeError,
-                    ) = $this->validateEnumFieldArguments(
+                    ) = $this->validateEnumFieldOrDirectiveArguments(
                         $enumArgs,
                         $directiveName,
                         $directiveArgs

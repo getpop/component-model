@@ -181,7 +181,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 if ($enumArgs = SchemaHelpers::getSchemaEnumTypeFieldArgs($schemaFieldArgs)) {
                     list(
                         $maybeError,
-                    ) = $this->validateEnumFieldArguments(
+                    ) = $this->validateEnumFieldOrDirectiveArguments(
                         $enumArgs,
                         $fieldName,
                         $fieldArgs
@@ -208,7 +208,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                     list(
                         $maybeError,
                         $maybeDeprecation
-                    ) = $this->validateEnumFieldArguments(
+                    ) = $this->validateEnumFieldOrDirectiveArguments(
                         $enumArgs,
                         $fieldName,
                         $fieldArgs
