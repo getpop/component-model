@@ -24,6 +24,7 @@ use PoP\ComponentModel\Resolvers\FieldOrDirectiveResolverTrait;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineUtils;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
+use PoP\ComponentModel\Resolvers\ResolverTypes;
 
 abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, SchemaDirectiveResolverInterface, StageInterface
 {
@@ -338,7 +339,8 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                     ) = $this->validateEnumFieldOrDirectiveArguments(
                         $enumArgs,
                         $directiveName,
-                        $directiveArgs
+                        $directiveArgs,
+                        ResolverTypes::DIRECTIVE
                     );
                     if ($maybeError) {
                         return $maybeError;

@@ -11,6 +11,7 @@ use PoP\ComponentModel\Misc\GeneralUtils;
 use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Schema\FieldQueryUtils;
 use PoP\ComponentModel\State\ApplicationState;
+use PoP\ComponentModel\Resolvers\ResolverTypes;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\Facades\Engine\EngineFacade;
@@ -184,7 +185,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                     ) = $this->validateEnumFieldOrDirectiveArguments(
                         $enumArgs,
                         $fieldName,
-                        $fieldArgs
+                        $fieldArgs,
+                        ResolverTypes::FIELD
                     );
                     if ($maybeError) {
                         return $maybeError;
@@ -211,7 +213,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                     ) = $this->validateEnumFieldOrDirectiveArguments(
                         $enumArgs,
                         $fieldName,
-                        $fieldArgs
+                        $fieldArgs,
+                        ResolverTypes::FIELD
                     );
                     if ($maybeDeprecation) {
                         return $maybeDeprecation;
