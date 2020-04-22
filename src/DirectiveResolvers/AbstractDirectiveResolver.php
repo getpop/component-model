@@ -324,9 +324,11 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
 
     public function resolveSchemaValidationErrorDescription(TypeResolverInterface $typeResolver, string $directiveName, array $directiveArgs = []): ?string
     {
-        // Iterate all the mandatory fieldArgs and, if they are not present, throw an error
         $directiveSchemaDefinition = $this->getSchemaDefinitionForDirective($typeResolver);
         if ($schemaDirectiveArgs = $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) {
+            /**
+             * Validate mandatory values
+             */
             if ($mandatoryArgs = SchemaHelpers::getSchemaMandatoryFieldArgs($schemaDirectiveArgs)) {
                 if ($maybeError = $this->validateNotMissingDirectiveArguments(
                     SchemaHelpers::getSchemaFieldArgNames($mandatoryArgs),
@@ -337,24 +339,18 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 }
             }
 
-            // Important: The validations below can only be done if no directiveArg contains a directivefield!
-            // That is because this is a schema error, so we still don't have the $resultItem against which to resolve the field
-            // For instance, this doesn't work: /?query=arrayItem(posts(),3)
-            // In that case, the validation will be done inside ->resolveValue(), and will be treated as a $dbError, not a $schemaError
-            if (!FieldQueryUtils::isAnyFieldArgumentValueAField($directiveArgs)) {
-                // Iterate all the enum types and check that the provided values is one of them, or throw an error
-                if ($enumArgs = SchemaHelpers::getSchemaEnumTypeFieldArgs($schemaDirectiveArgs)) {
-                    list(
-                        $maybeError,
-                    ) = $this->validateEnumFieldOrDirectiveArguments(
-                        $enumArgs,
-                        $directiveName,
-                        $directiveArgs,
-                        ResolverTypes::DIRECTIVE
-                    );
-                    if ($maybeError) {
-                        return $maybeError;
-                    }
+            /**
+             * Validate enums
+             */
+            if ($schemaDirectiveArgs = $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) {
+                if (list($maybeError, $maybeDeprecation) = $this->maybeValidateEnumFieldOrDirectiveArguments(
+                    $typeResolver,
+                    $directiveName,
+                    $directiveArgs,
+                    $schemaDirectiveArgs,
+                    ResolverTypes::DIRECTIVE
+                )) {
+                    return $maybeError;
                 }
             }
         }
@@ -498,26 +494,14 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     {
         $directiveSchemaDefinition = $this->getSchemaDefinitionForDirective($typeResolver);
         if ($schemaDirectiveArgs = $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) {
-            // Important: The validations below can only be done if no fieldArg contains a field!
-            // That is because this is a schema error, so we still don't have the $resultItem against which to resolve the field
-            // For instance, this doesn't work: /?query=arrayItem(posts(),3)
-            // In that case, the validation will be done inside ->resolveValue(), and will be treated as a $dbError, not a $schemaError
-            if (!FieldQueryUtils::isAnyFieldArgumentValueAField($directiveArgs)) {
-                // Iterate all the enum types and check that the provided values is one of them, or throw an error
-                if ($enumArgs = SchemaHelpers::getSchemaEnumTypeFieldArgs($schemaDirectiveArgs)) {
-                    list(
-                        $maybeError,
-                        $maybeDeprecation
-                    ) = $this->validateEnumFieldOrDirectiveArguments(
-                        $enumArgs,
-                        $directiveName,
-                        $directiveArgs,
-                        ResolverTypes::DIRECTIVE
-                    );
-                    if ($maybeDeprecation) {
-                        return $maybeDeprecation;
-                    }
-                }
+            if (list($maybeError, $maybeDeprecation) = $this->maybeValidateEnumFieldOrDirectiveArguments(
+                $typeResolver,
+                $directiveName,
+                $directiveArgs,
+                $schemaDirectiveArgs,
+                ResolverTypes::DIRECTIVE
+            )) {
+                return $maybeDeprecation;
             }
         }
         return null;

@@ -162,7 +162,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
     {
         $fieldSchemaDefinition = $this->getSchemaDefinitionForField($typeResolver, $fieldName, $fieldArgs);
         if ($schemaFieldArgs = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) {
-            // Iterate all the mandatory fieldArgs and, if they are not present, throw an error
+            /**
+             * Validate mandatory values
+             */
             if ($mandatoryArgs = SchemaHelpers::getSchemaMandatoryFieldArgs($schemaFieldArgs)) {
                 if ($maybeError = $this->validateNotMissingFieldArguments(
                     SchemaHelpers::getSchemaFieldArgNames($mandatoryArgs),
@@ -173,25 +175,17 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 }
             }
 
-            // Important: The validations below can only be done if no fieldArg contains a field!
-            // That is because this is a schema error, so we still don't have the $resultItem against which to resolve the field
-            // For instance, this doesn't work: /?query=arrayItem(posts(),3)
-            // In that case, the validation will be done inside ->resolveValue(), and will be treated as a $dbError, not a $schemaError
-            if (!FieldQueryUtils::isAnyFieldArgumentValueAField($fieldArgs)) {
-                // Iterate all the enum types and check that the provided values is one of them, or throw an error
-                if ($enumArgs = SchemaHelpers::getSchemaEnumTypeFieldArgs($schemaFieldArgs)) {
-                    list(
-                        $maybeError,
-                    ) = $this->validateEnumFieldOrDirectiveArguments(
-                        $enumArgs,
-                        $fieldName,
-                        $fieldArgs,
-                        ResolverTypes::FIELD
-                    );
-                    if ($maybeError) {
-                        return $maybeError;
-                    }
-                }
+            /**
+             * Validate enums
+             */
+            if (list($maybeError, $maybeDeprecation) = $this->maybeValidateEnumFieldOrDirectiveArguments(
+                $typeResolver,
+                $fieldName,
+                $fieldArgs,
+                $schemaFieldArgs,
+                ResolverTypes::FIELD
+            )) {
+                return $maybeError;
             }
         }
         return null;
@@ -200,26 +194,14 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
     {
         $fieldSchemaDefinition = $this->getSchemaDefinitionForField($typeResolver, $fieldName, $fieldArgs);
         if ($schemaFieldArgs = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) {
-            // Important: The validations below can only be done if no fieldArg contains a field!
-            // That is because this is a schema error, so we still don't have the $resultItem against which to resolve the field
-            // For instance, this doesn't work: /?query=arrayItem(posts(),3)
-            // In that case, the validation will be done inside ->resolveValue(), and will be treated as a $dbError, not a $schemaError
-            if (!FieldQueryUtils::isAnyFieldArgumentValueAField($fieldArgs)) {
-                // Iterate all the enum types and check that the provided values is one of them, or throw an error
-                if ($enumArgs = SchemaHelpers::getSchemaEnumTypeFieldArgs($schemaFieldArgs)) {
-                    list(
-                        $maybeError,
-                        $maybeDeprecation
-                    ) = $this->validateEnumFieldOrDirectiveArguments(
-                        $enumArgs,
-                        $fieldName,
-                        $fieldArgs,
-                        ResolverTypes::FIELD
-                    );
-                    if ($maybeDeprecation) {
-                        return $maybeDeprecation;
-                    }
-                }
+            if (list($maybeError, $maybeDeprecation) = $this->maybeValidateEnumFieldOrDirectiveArguments(
+                $typeResolver,
+                $fieldName,
+                $fieldArgs,
+                $schemaFieldArgs,
+                ResolverTypes::FIELD
+            )) {
+                return $maybeDeprecation;
             }
         }
         return null;

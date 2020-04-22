@@ -5,14 +5,45 @@ declare(strict_types=1);
 namespace PoP\ComponentModel\Resolvers;
 
 use PoP\ComponentModel\Schema\SchemaHelpers;
+use PoP\ComponentModel\Schema\FieldQueryUtils;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
+use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
 trait FieldOrDirectiveResolverTrait
 {
     protected $enumValueArgumentValidationCache = [];
 
-    protected function validateEnumFieldOrDirectiveArguments(array $enumArgs, string $fieldOrDirectiveName, array $fieldOrDirectiveArgs, string $type): array
+    /**
+     * Important: The validations below can only be done if no fieldArg contains a field!
+     * That is because this is a schema error, so we still don't have the $resultItem against which to resolve the field
+     * For instance, this doesn't work: /?query=arrayItem(posts(),3)
+     * In that case, the validation will be done inside ->resolveValue(),
+     * and will be treated as a $dbError, not a $schemaError
+     *
+     * @param TypeResolverInterface $typeResolver
+     * @param string $directiveName
+     * @param array $directiveArgs
+     * @param array $schemaDirectiveArgs
+     * @return string|null
+     */
+    protected function maybeValidateEnumFieldOrDirectiveArguments(TypeResolverInterface $typeResolver, string $fieldOrDirectiveName, array $fieldOrDirectiveArgs, array $schemaFieldOrDirectiveArgs, string $type): ?array
+    {
+        if (!FieldQueryUtils::isAnyFieldArgumentValueAField($fieldOrDirectiveArgs)) {
+            // Iterate all the enum types and check that the provided values is one of them, or throw an error
+            if ($enumArgs = SchemaHelpers::getSchemaEnumTypeFieldArgs($schemaFieldOrDirectiveArgs)) {
+                return $this->validateEnumFieldOrDirectiveArguments(
+                    $enumArgs,
+                    $fieldOrDirectiveName,
+                    $fieldOrDirectiveArgs,
+                    $type
+                );
+            }
+        }
+        return null;
+    }
+
+    protected function validateEnumFieldOrDirectiveArguments(array $enumArgs, string $fieldOrDirectiveName, array $fieldOrDirectiveArgs, string $type): ?array
     {
         $key = serialize($enumArgs) . '|' . $fieldOrDirectiveName . serialize($fieldOrDirectiveArgs);
         if (!isset($this->enumValueArgumentValidationCache[$key])) {
@@ -20,7 +51,7 @@ trait FieldOrDirectiveResolverTrait
         }
         return $this->enumValueArgumentValidationCache[$key];
     }
-    protected function doValidateEnumFieldOrDirectiveArguments(array $enumArgs, string $fieldOrDirectiveName, array $fieldOrDirectiveArgs, string $type): array
+    protected function doValidateEnumFieldOrDirectiveArguments(array $enumArgs, string $fieldOrDirectiveName, array $fieldOrDirectiveArgs, string $type): ?array
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         $errors = $deprecations = [];
@@ -62,9 +93,12 @@ trait FieldOrDirectiveResolverTrait
         //     return implode($translationAPI->__('. '), $errors);
         // }
         // Array of 2 items: errors and deprecations
-        return [
-            $errors ? implode($translationAPI->__('. '), $errors) : null,
-            $deprecations ? implode($translationAPI->__('. '), $deprecations) : null,
-        ];
+        if ($errors || $deprecations) {
+            return [
+                $errors ? implode($translationAPI->__('. '), $errors) : null,
+                $deprecations ? implode($translationAPI->__('. '), $deprecations) : null,
+            ];
+        }
+        return null;
     }
 }
