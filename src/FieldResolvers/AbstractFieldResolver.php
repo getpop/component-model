@@ -8,15 +8,16 @@ use Exception;
 use Composer\Semver\Semver;
 use PoP\ComponentModel\Environment;
 use PoP\ComponentModel\Misc\GeneralUtils;
-use PoP\ComponentModel\Versioning\VersioningHelpers;
 use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\Schema\FieldQueryUtils;
 use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\Facades\Engine\EngineFacade;
+use PoP\ComponentModel\Versioning\VersioningHelpers;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
+use PoP\ComponentModel\Resolvers\FieldOrDirectiveResolverTrait;
 use PoP\ComponentModel\FieldResolvers\SchemaDefinitionResolverTrait;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverInterface;
@@ -28,6 +29,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
      */
     use AttachableExtensionTrait;
     use SchemaDefinitionResolverTrait;
+    use FieldOrDirectiveResolverTrait;
 
     protected $enumValueArgumentValidationCache = [];
     protected $schemaDefinitionForFieldCache = [];
@@ -237,60 +239,6 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 );
         }
         return null;
-    }
-
-    protected function validateEnumFieldArguments(array $enumArgs, string $fieldName, array $fieldArgs = []): array
-    {
-        $key = serialize($enumArgs) . '|' . $fieldName . serialize($fieldArgs);
-        if (!isset($this->enumValueArgumentValidationCache[$key])) {
-            $this->enumValueArgumentValidationCache[$key] = $this->doValidateEnumFieldArguments($enumArgs, $fieldName, $fieldArgs);
-        }
-        return $this->enumValueArgumentValidationCache[$key];
-    }
-    protected function doValidateEnumFieldArguments(array $enumArgs, string $fieldName, array $fieldArgs = []): array
-    {
-        $translationAPI = TranslationAPIFacade::getInstance();
-        $errors = $deprecations = [];
-        $fieldArgumentNames = SchemaHelpers::getSchemaFieldArgNames($enumArgs);
-        $schemaFieldArgumentEnumValueDefinitions = SchemaHelpers::getSchemaFieldArgEnumValueDefinitions($enumArgs);
-        for ($i = 0; $i < count($fieldArgumentNames); $i++) {
-            $fieldArgumentName = $fieldArgumentNames[$i];
-            $fieldArgumentValue = $fieldArgs[$fieldArgumentName];
-            if (!is_null($fieldArgumentValue)) {
-                // Each fieldArgumentEnumValue is an array with item "name" for sure, and maybe also "description", "deprecated" and "deprecationDescription"
-                $schemaFieldArgumentEnumValues = $schemaFieldArgumentEnumValueDefinitions[$fieldArgumentName];
-                $fieldArgumentValueDefinition = $schemaFieldArgumentEnumValues[$fieldArgumentValue];
-                if (is_null($fieldArgumentValueDefinition)) {
-                    // Remove deprecated ones and extract their names
-                    $fieldArgumentEnumValues = SchemaHelpers::removeDeprecatedEnumValuesFromSchemaDefinition($schemaFieldArgumentEnumValues);
-                    $fieldArgumentEnumValues = array_keys($fieldArgumentEnumValues);
-                    $errors[] = sprintf(
-                        $translationAPI->__('Value \'%s\' for argument \'%s\' in field \'%s\' is not allowed (the only allowed values are: \'%s\')', 'component-model'),
-                        $fieldArgumentValue,
-                        $fieldArgumentName,
-                        $fieldName,
-                        implode($translationAPI->__('\', \''), $fieldArgumentEnumValues)
-                    );
-                } elseif ($fieldArgumentValueDefinition[SchemaDefinition::ARGNAME_DEPRECATED]) {
-                    // Check if this enumValue is deprecated
-                    $deprecations[] = sprintf(
-                        $translationAPI->__('Value \'%s\' for argument \'%s\' in field \'%s\' is deprecated: \'%s\'', 'component-model'),
-                        $fieldArgumentValue,
-                        $fieldArgumentName,
-                        $fieldName,
-                        $fieldArgumentValueDefinition[SchemaDefinition::ARGNAME_DEPRECATIONDESCRIPTION]
-                    );
-                }
-            }
-        }
-        // if ($errors) {
-        //     return implode($translationAPI->__('. '), $errors);
-        // }
-        // Array of 2 items: errors and deprecations
-        return [
-            $errors ? implode($translationAPI->__('. '), $errors) : null,
-            $deprecations ? implode($translationAPI->__('. '), $deprecations) : null,
-        ];
     }
 
     /**

@@ -10,15 +10,17 @@ use PoP\FieldQuery\QueryHelpers;
 use League\Pipeline\StageInterface;
 use PoP\ComponentModel\Environment;
 use PoP\ComponentModel\Feedback\Tokens;
-use PoP\ComponentModel\Versioning\VersioningHelpers;
 use PoP\ComponentModel\Schema\SchemaHelpers;
+use PoP\ComponentModel\Schema\FieldQueryUtils;
 use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\ComponentModel\Directives\DirectiveTypes;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\FieldSymbols;
+use PoP\ComponentModel\Versioning\VersioningHelpers;
 use PoP\ComponentModel\TypeResolvers\PipelinePositions;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
+use PoP\ComponentModel\Resolvers\FieldOrDirectiveResolverTrait;
 use PoP\ComponentModel\DirectivePipeline\DirectivePipelineUtils;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
@@ -27,6 +29,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
 {
     use AttachableExtensionTrait;
     use RemoveIDsDataFieldsDirectiveResolverTrait;
+    use FieldOrDirectiveResolverTrait;
 
     const MESSAGE_EXPRESSIONS = 'expressions';
 
@@ -311,14 +314,33 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     public function resolveSchemaValidationErrorDescription(TypeResolverInterface $typeResolver, string $directiveName, array $directiveArgs = []): ?string
     {
         // Iterate all the mandatory fieldArgs and, if they are not present, throw an error
-        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
-            if ($schemaDirectiveArgs = $schemaDefinitionResolver->getFilteredSchemaDirectiveArgs($typeResolver)) {
-                if ($mandatoryArgs = SchemaHelpers::getSchemaMandatoryFieldArgs($schemaDirectiveArgs)) {
-                    if ($maybeError = $this->validateNotMissingDirectiveArguments(
-                        SchemaHelpers::getSchemaFieldArgNames($mandatoryArgs),
+        $directiveSchemaDefinition = $this->getSchemaDefinitionForDirective($typeResolver);
+        if ($schemaDirectiveArgs = $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) {
+            if ($mandatoryArgs = SchemaHelpers::getSchemaMandatoryFieldArgs($schemaDirectiveArgs)) {
+                if ($maybeError = $this->validateNotMissingDirectiveArguments(
+                    SchemaHelpers::getSchemaFieldArgNames($mandatoryArgs),
+                    $directiveName,
+                    $directiveArgs
+                )) {
+                    return $maybeError;
+                }
+            }
+
+            // Important: The validations below can only be done if no directiveArg contains a directivefield!
+            // That is because this is a schema error, so we still don't have the $resultItem against which to resolve the field
+            // For instance, this doesn't work: /?query=arrayItem(posts(),3)
+            // In that case, the validation will be done inside ->resolveValue(), and will be treated as a $dbError, not a $schemaError
+            if (!FieldQueryUtils::isAnyFieldArgumentValueAField($directiveArgs)) {
+                // Iterate all the enum types and check that the provided values is one of them, or throw an error
+                if ($enumArgs = SchemaHelpers::getSchemaEnumTypeFieldArgs($schemaDirectiveArgs)) {
+                    list(
+                        $maybeError,
+                    ) = $this->validateEnumFieldArguments(
+                        $enumArgs,
                         $directiveName,
                         $directiveArgs
-                    )) {
+                    );
+                    if ($maybeError) {
                         return $maybeError;
                     }
                 }
