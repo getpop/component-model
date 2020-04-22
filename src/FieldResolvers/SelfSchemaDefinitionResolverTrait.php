@@ -7,7 +7,7 @@ namespace PoP\ComponentModel\FieldResolvers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverInterface;
-use PoP\ComponentModel\Schema\WithVersionConstraintFieldOrDirectiveResolverTrait;
+use PoP\ComponentModel\Resolvers\WithVersionConstraintFieldOrDirectiveResolverTrait;
 
 trait SelfSchemaDefinitionResolverTrait
 {
