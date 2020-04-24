@@ -1507,12 +1507,26 @@ class Engine implements EngineInterface
         $this->maybeCombineAndAddDatabaseEntries($ret, 'dbWarnings', $dbWarnings);
         $this->maybeCombineAndAddDatabaseEntries($ret, 'dbDeprecations', $dbDeprecations);
         $this->maybeCombineAndAddDatabaseEntries($ret, 'dbNotices', $dbNotices);
-        $this->maybeCombineAndAddDatabaseEntries($ret, 'dbTraces', $dbTraces);
         $this->maybeCombineAndAddSchemaEntries($ret, 'schemaErrors', $schemaErrors);
         $this->maybeCombineAndAddSchemaEntries($ret, 'schemaWarnings', $schemaWarnings);
         $this->maybeCombineAndAddSchemaEntries($ret, 'schemaDeprecations', $schemaDeprecations);
         $this->maybeCombineAndAddSchemaEntries($ret, 'schemaNotices', $schemaNotices);
-        $this->maybeCombineAndAddSchemaEntries($ret, 'schemaTraces', $schemaTraces);
+
+        // Execute a hook to process the traces (in advance, we don't do anything with them)
+        HooksAPIFacade::getInstance()->doAction(
+            '\PoP\ComponentModel\Engine:traces:schema',
+            $schemaTraces
+        );
+        HooksAPIFacade::getInstance()->doAction(
+            '\PoP\ComponentModel\Engine:traces:db',
+            $dbTraces
+        );
+        if (ServerUtils::showTracesInResponse()) {
+            $this->maybeCombineAndAddDatabaseEntries($ret, 'dbTraces', $dbTraces);
+            $this->maybeCombineAndAddSchemaEntries($ret, 'schemaTraces', $schemaTraces);
+        }
+
+        // Show logs only if both enabled, and passing the action in the URL
         if (ServerUtils::enableShowLogs()) {
             if (in_array(POP_ACTION_SHOW_LOGS, $vars['actions'])) {
                 $ret['logEntries'] = $feedbackMessageStore->getLogEntries();
