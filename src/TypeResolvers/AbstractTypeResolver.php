@@ -576,9 +576,9 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     $schemaErrors[] = [
                         Tokens::PATH => [$fieldDirective],
                         Tokens::MESSAGE => sprintf(
-                            $translationAPI->__('Directive \'%s\' can be executed only once within field \'%s\'', 'component-model'),
+                            $translationAPI->__('Directive \'%s\' can be executed only once for field(s) \'%s\'', 'component-model'),
                             $fieldDirective,
-                            $field
+                            implode('\', \'', $alreadyProcessingFields)
                         ),
                     ];
                     if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
