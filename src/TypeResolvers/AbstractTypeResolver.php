@@ -557,13 +557,17 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
             // Validate if the directive can be executed multiple times on each field
             if (!$directiveResolverInstance->canExecuteMultipleTimesInField()) {
-                $directiveFieldTrack[$directiveName] = $directiveFieldTrack[$directiveName] ?? [];
                 // Check if the directive is already processing any of the fields
                 $directiveName = $fieldQueryInterpreter->getFieldDirectiveName($fieldDirective);
-                if ($alreadyProcessingFields = array_intersect(
-                    $directiveFieldTrack[$directiveName],
+                $alreadyProcessingFields = array_intersect(
+                    $directiveFieldTrack[$directiveName] ?? [],
                     $directiveResolverFields
-                )) {
+                );
+                $directiveFieldTrack[$directiveName] = array_unique(array_merge(
+                    $directiveFieldTrack[$directiveName] ?? [],
+                    $directiveResolverFields
+                ));
+                if ($alreadyProcessingFields) {
                     // Remove the fields from this iteration, and add an error
                     $directiveResolverFields = array_diff(
                         $directiveResolverFields,
