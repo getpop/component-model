@@ -81,14 +81,21 @@ interface DirectiveResolverInterface
      */
     public function needsIDsDataFieldsToExecute(): bool;
     /**
-     * Validate that the directive can be applied to all passed fields
+     * Execute the directive
      *
      * @param TypeResolverInterface $typeResolver
-     * @param array $resultIDItems
      * @param array $idsDataFields
+     * @param array $succeedingPipelineIDsDataFields
+     * @param array $succeedingPipelineDirectiveResolverInstances
+     * @param array $resultIDItems
+     * @param array $unionDBKeyIDs
      * @param array $dbItems
+     * @param array $previousDBItems
+     * @param array $variables
+     * @param array $messages
      * @param array $dbErrors
      * @param array $dbWarnings
+     * @param array $dbDeprecations
      * @param array $schemaErrors
      * @param array $schemaWarnings
      * @param array $schemaDeprecations
