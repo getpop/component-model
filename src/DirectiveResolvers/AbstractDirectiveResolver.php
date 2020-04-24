@@ -68,15 +68,23 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         return false;
     }
 
-    public function dissectAndValidateDirectiveForSchema(TypeResolverInterface $typeResolver, array &$fieldDirectiveFields, array &$variables, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
-    {
+    public function dissectAndValidateDirectiveForSchema(
+        TypeResolverInterface $typeResolver,
+        array &$fieldDirectiveFields,
+        array &$variables,
+        array &$schemaErrors,
+        array &$schemaWarnings,
+        array &$schemaDeprecations,
+        array &$schemaNotices,
+        array &$schemaTraces
+    ): array {
         $translationAPI = TranslationAPIFacade::getInstance();
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
 
         // If it has nestedDirectives, extract them and validate them
         $nestedFieldDirectives = $fieldQueryInterpreter->getFieldDirectives($this->directive, false);
         if ($nestedFieldDirectives) {
-            $nestedDirectiveSchemaErrors = $nestedDirectiveSchemaWarnings = $nestedDirectiveSchemaDeprecations = [];
+            $nestedDirectiveSchemaErrors = $nestedDirectiveSchemaWarnings = $nestedDirectiveSchemaDeprecations = $nestedDirectiveSchemaNotices = $nestedDirectiveSchemaTraces = [];
             $nestedFieldDirectives = QueryHelpers::splitFieldDirectives($nestedFieldDirectives);
             // Support repeated fields by adding a counter next to them
             if (count($nestedFieldDirectives) != count(array_unique($nestedFieldDirectives))) {
@@ -99,7 +107,17 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             foreach ($nestedFieldDirectives as $nestedFieldDirective) {
                 $nestedFieldDirectiveFields[$nestedFieldDirective] = $fieldDirectiveFields[$this->directive];
             }
-            $this->nestedDirectivePipelineData = $typeResolver->resolveDirectivesIntoPipelineData($nestedFieldDirectives, $nestedFieldDirectiveFields, true, $variables, $nestedDirectiveSchemaErrors, $nestedDirectiveSchemaWarnings, $nestedDirectiveSchemaDeprecations);
+            $this->nestedDirectivePipelineData = $typeResolver->resolveDirectivesIntoPipelineData(
+                $nestedFieldDirectives,
+                $nestedFieldDirectiveFields,
+                true,
+                $variables,
+                $nestedDirectiveSchemaErrors,
+                $nestedDirectiveSchemaWarnings,
+                $nestedDirectiveSchemaDeprecations,
+                $nestedDirectiveSchemaNotices,
+                $nestedDirectiveSchemaTraces
+            );
             foreach ($nestedDirectiveSchemaDeprecations as $nestedDirectiveSchemaDeprecation) {
                 $schemaDeprecations[] = [
                     Tokens::PATH => array_merge([$this->directive], $nestedDirectiveSchemaDeprecation[Tokens::PATH]),
@@ -110,6 +128,18 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 $schemaWarnings[] = [
                     Tokens::PATH => array_merge([$this->directive], $nestedDirectiveSchemaWarning[Tokens::PATH]),
                     Tokens::MESSAGE => $nestedDirectiveSchemaWarning[Tokens::MESSAGE],
+                ];
+            }
+            foreach ($nestedDirectiveSchemaNotices as $nestedDirectiveSchemaNotice) {
+                $schemaNotices[] = [
+                    Tokens::PATH => array_merge([$this->directive], $nestedDirectiveSchemaNotice[Tokens::PATH]),
+                    Tokens::MESSAGE => $nestedDirectiveSchemaNotice[Tokens::MESSAGE],
+                ];
+            }
+            foreach ($nestedDirectiveSchemaTraces as $nestedDirectiveSchemaTrace) {
+                $schemaTraces[] = [
+                    Tokens::PATH => array_merge([$this->directive], $nestedDirectiveSchemaTrace[Tokens::PATH]),
+                    Tokens::MESSAGE => $nestedDirectiveSchemaTrace[Tokens::MESSAGE],
                 ];
             }
             // If there is any error, then we also can't proceed with the current directive
@@ -140,7 +170,13 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $directiveSchemaErrors,
             $directiveSchemaWarnings,
             $directiveSchemaDeprecations
-        ) = $fieldQueryInterpreter->extractDirectiveArgumentsForSchema($this, $typeResolver, $this->directive, $variables, $this->disableDynamicFieldsFromDirectiveArgs());
+        ) = $fieldQueryInterpreter->extractDirectiveArgumentsForSchema(
+            $this,
+            $typeResolver,
+            $this->directive,
+            $variables,
+            $this->disableDynamicFieldsFromDirectiveArgs()
+        );
 
         // Store the args, they may be used in `resolveDirective`
         $this->directiveArgsForSchema = $directiveArgs;
@@ -546,7 +582,8 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     {
         // 1. Extract the arguments from the payload
         // $pipelineIDsDataFields is an array containing all stages of the pipe
-        // The one corresponding to the current stage is at the head. Take it out from there, and keep passing down the rest of the array to the next stages
+        // The one corresponding to the current stage is at the head. Take it out from there,
+        // and keep passing down the rest of the array to the next stages
         list(
             $typeResolver,
             $pipelineIDsDataFields,
@@ -560,9 +597,13 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $dbErrors,
             $dbWarnings,
             $dbDeprecations,
+            $dbNotices,
+            $dbTraces,
             $schemaErrors,
             $schemaWarnings,
-            $schemaDeprecations
+            $schemaDeprecations,
+            $schemaNotices,
+            $schemaTraces
         ) = DirectivePipelineUtils::extractArgumentsFromPayload($payload);
 
         // Extract the head, keep passing down the rest
@@ -586,14 +627,19 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         //     $dbErrors,
         //     $dbWarnings,
         //     $dbDeprecations,
+        //     $dbNotices,
+        //     $dbTraces,
         //     $schemaErrors,
         //     $schemaWarnings,
-        //     $schemaDeprecations
+        //     $schemaDeprecations,
+        //     $schemaNotices,
+        //     $schemaTraces
         // );
 
         // 2. Execute operation.
         // First check that if the validation took away the elements, and so the directive can't execute anymore
-        // For instance, executing ?query=posts.id|title<default,translate(from:en,to:es)> will fail after directive "default", so directive "translate" must not even execute
+        // For instance, executing ?query=posts.id|title<default,translate(from:en,to:es)> will fail
+        // after directive "default", so directive "translate" must not even execute
         if (!$this->needsIDsDataFieldsToExecute() || $this->hasIDsDataFields($idsDataFields)) {
             $this->resolveDirective(
                 $typeResolver,
@@ -609,9 +655,13 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 $dbErrors,
                 $dbWarnings,
                 $dbDeprecations,
+                $dbNotices,
+                $dbTraces,
                 $schemaErrors,
                 $schemaWarnings,
-                $schemaDeprecations
+                $schemaDeprecations,
+                $schemaNotices,
+                $schemaTraces
             );
         }
 
@@ -629,9 +679,13 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             $dbErrors,
             $dbWarnings,
             $dbDeprecations,
+            $dbNotices,
+            $dbTraces,
             $schemaErrors,
             $schemaWarnings,
-            $schemaDeprecations
+            $schemaDeprecations,
+            $schemaNotices,
+            $schemaTraces
         );
     }
 
@@ -705,7 +759,8 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
 
 
     /**
-     * Depending on environment configuration, either show a warning, or show an error and remove the fields from the directive pipeline for further execution
+     * Depending on environment configuration, either show a warning,
+     * or show an error and remove the fields from the directive pipeline for further execution
      *
      * @param array $schemaErrors
      * @param array $schemaWarnings

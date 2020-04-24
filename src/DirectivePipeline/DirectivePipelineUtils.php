@@ -7,8 +7,27 @@ use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
 class DirectivePipelineUtils
 {
-    public static function convertArgumentsToPayload(TypeResolverInterface $typeResolver, array &$pipelineIDsDataFields, array &$pipelineDirectiveResolverInstances, array &$resultIDItems, array &$unionDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$dbDeprecations, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
-    {
+    public static function convertArgumentsToPayload(
+        TypeResolverInterface $typeResolver,
+        array &$pipelineIDsDataFields,
+        array &$pipelineDirectiveResolverInstances,
+        array &$resultIDItems,
+        array &$unionDBKeyIDs,
+        array &$dbItems,
+        array &$previousDBItems,
+        array &$variables,
+        array &$messages,
+        array &$dbErrors,
+        array &$dbWarnings,
+        array &$dbDeprecations,
+        array &$dbNotices,
+        array &$dbTraces,
+        array &$schemaErrors,
+        array &$schemaWarnings,
+        array &$schemaDeprecations,
+        array &$schemaNotices,
+        array &$schemaTraces
+    ): array {
         return [
             'typeResolver' => &$typeResolver,
             'pipelineIDsDataFields' => &$pipelineIDsDataFields,
@@ -22,9 +41,13 @@ class DirectivePipelineUtils
             'dbErrors' => &$dbErrors,
             'dbWarnings' => &$dbWarnings,
             'dbDeprecations' => &$dbDeprecations,
+            'dbNotices' => &$dbNotices,
+            'dbTraces' => &$dbTraces,
             'schemaErrors' => &$schemaErrors,
             'schemaWarnings' => &$schemaWarnings,
             'schemaDeprecations' => &$schemaDeprecations,
+            'schemaNotices' => &$schemaNotices,
+            'schemaTraces' => &$schemaTraces,
         ];
     }
 
@@ -43,9 +66,13 @@ class DirectivePipelineUtils
             &$payload['dbErrors'],
             &$payload['dbWarnings'],
             &$payload['dbDeprecations'],
+            &$payload['dbNotices'],
+            &$payload['dbTraces'],
             &$payload['schemaErrors'],
             &$payload['schemaWarnings'],
             &$payload['schemaDeprecations'],
+            &$payload['schemaNotices'],
+            &$payload['schemaTraces'],
         ];
     }
 }

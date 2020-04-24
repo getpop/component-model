@@ -161,9 +161,21 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
      * @param array $schemaErrors
      * @param array $schemaWarnings
      * @param array $schemaDeprecations
+     * @param array $schemaNotices
+     * @param array $schemaTraces
      * @return array
      */
-    public function resolveDirectivesIntoPipelineData(array $fieldDirectives, array &$fieldDirectiveFields, bool $areNestedDirectives, array &$variables, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
+    public function resolveDirectivesIntoPipelineData(
+        array $fieldDirectives,
+        array &$fieldDirectiveFields,
+        bool $areNestedDirectives,
+        array &$variables,
+        array &$schemaErrors,
+        array &$schemaWarnings,
+        array &$schemaDeprecations,
+        array &$schemaNotices,
+        array &$schemaTraces
+    ): array
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         /**
@@ -183,12 +195,21 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         ];
 
         // Resolve from directive into their actual object instance.
-        $directiveSchemaErrors = $directiveSchemaWarnings = $directiveSchemaDeprecations = [];
-        $directiveResolverInstanceData = $this->validateAndResolveInstances($fieldDirectives, $fieldDirectiveFields, $variables, $directiveSchemaErrors, $directiveSchemaWarnings, $directiveSchemaDeprecations);
+        $directiveSchemaErrors = $directiveSchemaWarnings = $directiveSchemaDeprecations = $directiveSchemaNotices = $directiveSchemaTraces = [];
+        $directiveResolverInstanceData = $this->validateAndResolveInstances(
+            $fieldDirectives,
+            $fieldDirectiveFields,
+            $variables,
+            $directiveSchemaErrors,
+            $directiveSchemaWarnings,
+            $directiveSchemaDeprecations,
+            $directiveSchemaNotices,
+            $directiveSchemaTraces
+        );
         // If it is a root directives, then add the fields where they appear into the errors/warnings/deprecations
         if (!$areNestedDirectives) {
-            // In the case of an error, Maybe prepend the field(s) containing the directive. Eg: when the directive name doesn't exist:
-            // /?query=id<skipanga>
+            // In the case of an error, Maybe prepend the field(s) containing the directive.
+            // Eg: when the directive name doesn't exist: /?query=id<skipanga>
             foreach ($directiveSchemaErrors as $directiveSchemaError) {
                 $directive = $directiveSchemaError[Tokens::PATH][0];
                 if ($directiveFields = $fieldDirectiveFields[$directive]) {
@@ -225,6 +246,30 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     $schemaDeprecations[] = $directiveSchemaDeprecation;
                 }
             }
+            foreach ($directiveSchemaNotices as $directiveSchemaNotice) {
+                $directive = $directiveSchemaNotice[Tokens::PATH][0];
+                if ($directiveFields = $fieldDirectiveFields[$directive]) {
+                    $fields = implode($translationAPI->__(', '), $directiveFields);
+                    $schemaNotices[] = [
+                        Tokens::PATH => array_merge([$fields], $directiveSchemaNotice[Tokens::PATH]),
+                        Tokens::MESSAGE => $directiveSchemaNotice[Tokens::MESSAGE],
+                    ];
+                } else {
+                    $schemaNotices[] = $directiveSchemaNotice;
+                }
+            }
+            foreach ($directiveSchemaTraces as $directiveSchemaTrace) {
+                $directive = $directiveSchemaTrace[Tokens::PATH][0];
+                if ($directiveFields = $fieldDirectiveFields[$directive]) {
+                    $fields = implode($translationAPI->__(', '), $directiveFields);
+                    $schemaTraces[] = [
+                        Tokens::PATH => array_merge([$fields], $directiveSchemaTrace[Tokens::PATH]),
+                        Tokens::MESSAGE => $directiveSchemaTrace[Tokens::MESSAGE],
+                    ];
+                } else {
+                    $schemaTraces[] = $directiveSchemaTrace;
+                }
+            }
         } else {
             $schemaErrors = array_merge(
                 $schemaErrors,
@@ -237,6 +282,14 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             $schemaDeprecations = array_merge(
                 $schemaDeprecations,
                 $directiveSchemaDeprecations
+            );
+            $schemaNotices = array_merge(
+                $schemaNotices,
+                $directiveSchemaNotices
+            );
+            $schemaTraces = array_merge(
+                $schemaTraces,
+                $directiveSchemaTraces
             );
         }
 
@@ -275,8 +328,16 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return $directivePipeline;
     }
 
-    protected function validateAndResolveInstances(array $fieldDirectives, array $fieldDirectiveFields, array &$variables, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
-    {
+    protected function validateAndResolveInstances(
+        array $fieldDirectives,
+        array $fieldDirectiveFields,
+        array &$variables,
+        array &$schemaErrors,
+        array &$schemaWarnings,
+        array &$schemaDeprecations,
+        array &$schemaNotices,
+        array &$schemaTraces
+    ): array {
         $translationAPI = TranslationAPIFacade::getInstance();
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
 
@@ -428,7 +489,16 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     $validFieldDirective,
                     $directiveName,
                     $directiveArgs,
-                ) = $directiveResolverInstance->dissectAndValidateDirectiveForSchema($this, $fieldDirectiveFields, $variables, $fieldSchemaErrors, $schemaWarnings, $schemaDeprecations);
+                ) = $directiveResolverInstance->dissectAndValidateDirectiveForSchema(
+                    $this,
+                    $fieldDirectiveFields,
+                    $variables,
+                    $fieldSchemaErrors,
+                    $schemaWarnings,
+                    $schemaDeprecations,
+                    $schemaNotices,
+                    $schemaTraces
+                );
                 if ($fieldSchemaErrors) {
                     $schemaErrors = array_merge(
                         $schemaErrors,
@@ -588,8 +658,24 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         );
     }
 
-    public function fillResultItems(array $ids_data_fields, array &$unionDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$dbDeprecations, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array
-    {
+    public function fillResultItems(
+        array $ids_data_fields,
+        array &$unionDBKeyIDs,
+        array &$dbItems,
+        array &$previousDBItems,
+        array &$variables,
+        array &$messages,
+        array &$dbErrors,
+        array &$dbWarnings,
+        array &$dbDeprecations,
+        array &$dbNotices,
+        array &$dbTraces,
+        array &$schemaErrors,
+        array &$schemaWarnings,
+        array &$schemaDeprecations,
+        array &$schemaNotices,
+        array &$schemaTraces
+    ): array {
         $instanceManager = InstanceManagerFacade::getInstance();
         $translationAPI = TranslationAPIFacade::getInstance();
 
@@ -641,7 +727,24 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $this->enqueueFillingResultItemsFromIDs($ids_data_fields);
 
         // Process them
-        $this->processFillingResultItemsFromIDs($resultIDItems, $unionDBKeyIDs, $dbItems, $previousDBItems, $variables, $messages, $dbErrors, $dbWarnings, $dbDeprecations, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+        $this->processFillingResultItemsFromIDs(
+            $resultIDItems,
+            $unionDBKeyIDs,
+            $dbItems,
+            $previousDBItems,
+            $variables,
+            $messages,
+            $dbErrors,
+            $dbWarnings,
+            $dbDeprecations,
+            $dbNotices,
+            $dbTraces,
+            $schemaErrors,
+            $schemaWarnings,
+            $schemaDeprecations,
+            $schemaNotices,
+            $schemaTraces
+        );
 
         return $resultIDItems;
     }
@@ -822,8 +925,24 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         }
     }
 
-    protected function processFillingResultItemsFromIDs(array &$resultIDItems, array &$unionDBKeyIDs, array &$dbItems, array &$previousDBItems, array &$variables, array &$messages, array &$dbErrors, array &$dbWarnings, array &$dbDeprecations, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations)
-    {
+    protected function processFillingResultItemsFromIDs(
+        array &$resultIDItems,
+        array &$unionDBKeyIDs,
+        array &$dbItems,
+        array &$previousDBItems,
+        array &$variables,
+        array &$messages,
+        array &$dbErrors,
+        array &$dbWarnings,
+        array &$dbDeprecations,
+        array &$dbNotices,
+        array &$dbTraces,
+        array &$schemaErrors,
+        array &$schemaWarnings,
+        array &$schemaDeprecations,
+        array &$schemaNotices,
+        array &$schemaTraces
+    ): void {
         // Iterate while there are directives with data to be processed
         while (!empty($this->fieldDirectiveIDFields)) {
             $fieldDirectiveIDFields = $this->fieldDirectiveIDFields;
@@ -863,7 +982,17 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             $idFieldDirectiveIDFields = array_unique($idFieldDirectiveIDFields);
 
             // Validate and resolve the directives into instances and fields they operate on
-            $directivePipelineData = $this->resolveDirectivesIntoPipelineData($fieldDirectives, $fieldDirectiveFields, false, $variables, $schemaErrors, $schemaWarnings, $schemaDeprecations);
+            $directivePipelineData = $this->resolveDirectivesIntoPipelineData(
+                $fieldDirectives,
+                $fieldDirectiveFields,
+                false,
+                $variables,
+                $schemaErrors,
+                $schemaWarnings,
+                $schemaDeprecations,
+                $schemaNotices,
+                $schemaTraces
+            );
 
             // From the fields, reconstitute the $idsDataFields for each directive, and build the array to pass to the pipeline, for each directive (stage)
             $directiveResolverInstances = $pipelineIDsDataFields = [];
@@ -908,9 +1037,13 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 $dbErrors,
                 $dbWarnings,
                 $dbDeprecations,
+                $dbNotices,
+                $dbTraces,
                 $schemaErrors,
                 $schemaWarnings,
-                $schemaDeprecations
+                $schemaDeprecations,
+                $schemaNotices,
+                $schemaTraces
             );
         }
     }

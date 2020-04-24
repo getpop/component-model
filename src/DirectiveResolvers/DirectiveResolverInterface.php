@@ -33,7 +33,16 @@ interface DirectiveResolverInterface
      * @param array $schemaDeprecations
      * @return array
      */
-    public function dissectAndValidateDirectiveForSchema(TypeResolverInterface $typeResolver, array &$fieldDirectiveFields, array &$variables, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array;
+    public function dissectAndValidateDirectiveForSchema(
+        TypeResolverInterface $typeResolver,
+        array &$fieldDirectiveFields,
+        array &$variables,
+        array &$schemaErrors,
+        array &$schemaWarnings,
+        array &$schemaDeprecations,
+        array &$schemaNotices,
+        array &$schemaTraces
+    ): array;
 
     /**
      * Enable the directiveResolver to validate the directive arguments in a custom way
@@ -115,9 +124,13 @@ interface DirectiveResolverInterface
         array &$dbErrors,
         array &$dbWarnings,
         array &$dbDeprecations,
+        array &$dbNotices,
+        array &$dbTraces,
         array &$schemaErrors,
         array &$schemaWarnings,
-        array &$schemaDeprecations
+        array &$schemaDeprecations,
+        array &$schemaNotices,
+        array &$schemaTraces
     ): void;
     /**
      * Get an instance of the object defining the schema for this fieldResolver

@@ -1227,7 +1227,7 @@ class Engine implements EngineInterface
         $vars = ApplicationState::getVars();
 
         // Save all database elements here, under typeResolver
-        $databases = $unionDBKeyIDs = $combinedUnionDBKeyIDs = $previousDBItems = $dbErrors = $dbWarnings = $dbDeprecations = $schemaErrors = $schemaWarnings = $schemaDeprecations = array();
+        $databases = $unionDBKeyIDs = $combinedUnionDBKeyIDs = $previousDBItems = $dbErrors = $dbWarnings = $dbDeprecations = $dbNotices = $dbTraces = $schemaErrors = $schemaWarnings = $schemaDeprecations = $schemaNotices = $schemaTraces = array();
         $this->nocache_fields = array();
         // $format = $vars['format'];
         // $route = $vars['route'];
@@ -1271,19 +1271,41 @@ class Engine implements EngineInterface
             $database_key = $typeResolver->getTypeOutputName();
 
             // Execute the typeResolver for all combined ids
-            $iterationDBItems = $iterationDBErrors = $iterationDBWarnings = $iterationDBDeprecations = $iterationSchemaErrors = $iterationSchemaWarnings = $iterationSchemaDeprecations = array();
+            $iterationDBItems = $iterationDBErrors = $iterationDBWarnings = $iterationDBDeprecations = $iterationDBNotices = $iterationDBTraces = $iterationSchemaErrors = $iterationSchemaWarnings = $iterationSchemaDeprecations = $iterationSchemaNotices = $iterationSchemaTraces = array();
             $isUnionTypeResolver = $typeResolver instanceof UnionTypeResolverInterface;
-            $resultIDItems = $typeResolver->fillResultItems($ids_data_fields, $combinedUnionDBKeyIDs, $iterationDBItems, $previousDBItems, $variables, $messages, $iterationDBErrors, $iterationDBWarnings, $iterationDBDeprecations, $iterationSchemaErrors, $iterationSchemaWarnings, $iterationSchemaDeprecations);
+            $resultIDItems = $typeResolver->fillResultItems(
+                $ids_data_fields,
+                $combinedUnionDBKeyIDs,
+                $iterationDBItems,
+                $previousDBItems,
+                $variables,
+                $messages,
+                $iterationDBErrors,
+                $iterationDBWarnings,
+                $iterationDBDeprecations,
+                $iterationDBNotices,
+                $iterationDBTraces,
+                $iterationSchemaErrors,
+                $iterationSchemaWarnings,
+                $iterationSchemaDeprecations,
+                $iterationSchemaNotices,
+                $iterationSchemaTraces
+            );
 
-            // Save in the database under the corresponding database-key (this way, different dataloaders, like 'list-users' and 'author',
+            // Save in the database under the corresponding database-key
+            // (this way, different dataloaders, like 'list-users' and 'author',
             // can both save their results under database key 'users'
-            // Plugin PoP User Login: Also save those results which depend on the logged-in user. These are treated separately because:
-            // 1: They contain personal information, so it must be erased from the front-end as soon as the user logs out
+            // Plugin PoP User Login: Also save those results which depend on the logged-in user.
+            // These are treated separately because:
+            // 1: They contain personal information, so it must be erased from the front-end
+            // as soon as the user logs out
             // 2: These results make the page state-full, so this page is not cacheable
-            // By splitting the results into state-full and state-less, we can split all functionality into cacheable and non-cacheable,
+            // By splitting the results into state-full and state-less, we can split all functionality
+            // into cacheable and non-cacheable,
             // thus caching most of the website even for logged-in users
             if ($iterationDBItems) {
-                // Conditional data fields: Store the loaded IDs/fields in an object, to avoid fetching them again in later iterations on the same typeResolver
+                // Conditional data fields: Store the loaded IDs/fields in an object,
+                // to avoid fetching them again in later iterations on the same typeResolver
                 // To find out if they were loaded, validate against the DBObject, to see if it has those properties
                 foreach ($ids_data_fields as $id => $data_fields) {
                     foreach ($data_fields['conditional'] as $conditionDataField => $conditionalDataFields) {
@@ -1331,6 +1353,18 @@ class Engine implements EngineInterface
                     $this->addDatasetToDatabase($dbDeprecations[$dbname], $typeResolver, $database_key, $entries, $resultIDItems, true);
                 }
             }
+            if ($iterationDBNotices) {
+                $dbNameNoticeEntries = $this->moveEntriesUnderDBName($iterationDBNotices, true, $typeResolver);
+                foreach ($dbNameNoticeEntries as $dbname => $entries) {
+                    $this->addDatasetToDatabase($dbNotices[$dbname], $typeResolver, $database_key, $entries, $resultIDItems, true);
+                }
+            }
+            if ($iterationDBTraces) {
+                $dbNameTraceEntries = $this->moveEntriesUnderDBName($iterationDBTraces, true, $typeResolver);
+                foreach ($dbNameTraceEntries as $dbname => $entries) {
+                    $this->addDatasetToDatabase($dbTraces[$dbname], $typeResolver, $database_key, $entries, $resultIDItems, true);
+                }
+            }
 
             $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();
             $storeSchemaErrors = $feedbackMessageStore->retrieveAndClearSchemaErrors();
@@ -1374,8 +1408,29 @@ class Engine implements EngineInterface
                     );
                 }
             }
+            if ($iterationSchemaNotices) {
+                $iterationSchemaNotices = array_intersect_key($iterationSchemaNotices, array_unique(array_map('serialize', $iterationSchemaNotices)));
+                $dbNameSchemaNoticeEntries = $this->moveEntriesUnderDBName($iterationSchemaNotices, false, $typeResolver);
+                foreach ($dbNameSchemaNoticeEntries as $dbname => $entries) {
+                    $schemaNotices[$dbname][$database_key] = array_merge(
+                        $schemaNotices[$dbname][$database_key] ?? [],
+                        $entries
+                    );
+                }
+            }
+            if ($iterationSchemaTraces) {
+                $iterationSchemaTraces = array_intersect_key($iterationSchemaTraces, array_unique(array_map('serialize', $iterationSchemaTraces)));
+                $dbNameSchemaTraceEntries = $this->moveEntriesUnderDBName($iterationSchemaTraces, false, $typeResolver);
+                foreach ($dbNameSchemaTraceEntries as $dbname => $entries) {
+                    $schemaTraces[$dbname][$database_key] = array_merge(
+                        $schemaTraces[$dbname][$database_key] ?? [],
+                        $entries
+                    );
+                }
+            }
 
-            // Important: query like this: obtain keys first instead of iterating directly on array, because it will keep adding elements
+            // Important: query like this: obtain keys first instead of iterating directly on array,
+            // because it will keep adding elements
             $typeResolver_dbdata = $this->dbdata[$typeResolver_class];
             foreach (array_keys($typeResolver_dbdata) as $module_path_key) {
                 $typeResolver_data = &$this->dbdata[$typeResolver_class][$module_path_key];
@@ -1385,11 +1440,14 @@ class Engine implements EngineInterface
                 // Check if it has subcomponents, and then bring this data
                 if ($subcomponents_data_properties = $typeResolver_data['subcomponents']) {
                     $typeResolver_ids = $typeResolver_data['ids'];
-                    // The unionTypeResolver doesn't know how to resolver the subcomponents, since the fields (eg: "authors") are attached to the target typeResolver, not to the unionTypeResolver
+                    // The unionTypeResolver doesn't know how to resolver the subcomponents, since the fields
+                    // (eg: "authors") are attached to the target typeResolver, not to the unionTypeResolver
                     // Then, iterate through all the target typeResolvers, and have each of them process their data
                     if ($isUnionTypeResolver) {
-                        // If the type data resolver is union, the dbKey where the value is stored is contained in the ID itself,
-                        // with format dbKey/ID. We must extract this information: assign the dbKey to $database_key, and remove the dbKey from the ID
+                        // If the type data resolver is union, the dbKey where the value is stored
+                        // is contained in the ID itself, with format dbKey/ID.
+                        // We must extract this information: assign the dbKey to $database_key,
+                        // and remove the dbKey from the ID
                         $typeResolver_ids = array_map(
                             function ($composedID) {
                                 list(
@@ -1401,7 +1459,8 @@ class Engine implements EngineInterface
                             $typeResolver_ids
                         );
 
-                        // If it's a unionTypeResolver, get the typeResolver for each resultItem to obtain the subcomponent typeResolver
+                        // If it's a unionTypeResolver, get the typeResolver for each resultItem
+                        // to obtain the subcomponent typeResolver
                         $resultItemTypeResolvers = $typeResolver->getResultItemIDTargetTypeResolvers($typeResolver_ids);
                         $iterationTypeResolverIDs = [];
                         foreach ($typeResolver_ids as $id) {
@@ -1447,9 +1506,13 @@ class Engine implements EngineInterface
         $this->maybeCombineAndAddDatabaseEntries($ret, 'dbErrors', $dbErrors);
         $this->maybeCombineAndAddDatabaseEntries($ret, 'dbWarnings', $dbWarnings);
         $this->maybeCombineAndAddDatabaseEntries($ret, 'dbDeprecations', $dbDeprecations);
+        $this->maybeCombineAndAddDatabaseEntries($ret, 'dbNotices', $dbNotices);
+        $this->maybeCombineAndAddDatabaseEntries($ret, 'dbTraces', $dbTraces);
         $this->maybeCombineAndAddSchemaEntries($ret, 'schemaErrors', $schemaErrors);
         $this->maybeCombineAndAddSchemaEntries($ret, 'schemaWarnings', $schemaWarnings);
         $this->maybeCombineAndAddSchemaEntries($ret, 'schemaDeprecations', $schemaDeprecations);
+        $this->maybeCombineAndAddSchemaEntries($ret, 'schemaNotices', $schemaNotices);
+        $this->maybeCombineAndAddSchemaEntries($ret, 'schemaTraces', $schemaTraces);
         if (ServerUtils::enableShowLogs()) {
             if (in_array(POP_ACTION_SHOW_LOGS, $vars['actions'])) {
                 $ret['logEntries'] = $feedbackMessageStore->getLogEntries();

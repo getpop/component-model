@@ -55,9 +55,13 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
         array &$dbErrors,
         array &$dbWarnings,
         array &$dbDeprecations,
+        array &$dbNotices,
+        array &$dbTraces,
         array &$schemaErrors,
         array &$schemaWarnings,
-        array &$schemaDeprecations
+        array &$schemaDeprecations,
+        array &$schemaNotices,
+        array &$schemaTraces
     ): void {
         // Iterate data, extract into final results
         if ($resultIDItems) {

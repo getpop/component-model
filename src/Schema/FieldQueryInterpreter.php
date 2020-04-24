@@ -321,14 +321,25 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         ];
     }
 
-    public function extractDirectiveArgumentsForSchema(DirectiveResolverInterface $directiveResolver, TypeResolverInterface $typeResolver, string $fieldDirective, ?array $variables = null, bool $disableDynamicFields = false): array
-    {
+    public function extractDirectiveArgumentsForSchema(
+        DirectiveResolverInterface $directiveResolver,
+        TypeResolverInterface $typeResolver,
+        string $fieldDirective,
+        ?array $variables = null,
+        bool $disableDynamicFields = false
+    ): array {
         $schemaErrors = [];
         $schemaWarnings = [];
         $schemaDeprecations = [];
         $validAndResolvedDirective = $fieldDirective;
         $directiveName = $this->getFieldDirectiveName($fieldDirective);
-        $extractedDirectiveArgs = $directiveArgs = $this->extractDirectiveArguments($directiveResolver, $typeResolver, $fieldDirective, $variables, $schemaWarnings);
+        $extractedDirectiveArgs = $directiveArgs = $this->extractDirectiveArguments(
+            $directiveResolver,
+            $typeResolver,
+            $fieldDirective,
+            $variables,
+            $schemaWarnings
+        );
         $directiveArgs = $this->validateExtractedFieldOrDirectiveArgumentsForSchema($typeResolver, $fieldDirective, $directiveArgs, $variables, $schemaErrors, $schemaWarnings, $schemaDeprecations);
         // Cast the values to their appropriate type. If casting fails, the value returns as null
         $directiveArgs = $this->castAndValidateDirectiveArgumentsForSchema($directiveResolver, $typeResolver, $fieldDirective, $directiveArgs, $schemaWarnings, $disableDynamicFields);
