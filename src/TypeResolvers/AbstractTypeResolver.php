@@ -349,7 +349,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
         $instances = [];
         // Count how many times each directive is added
-        $directiveCount = [];
+        $directiveFieldTrack = [];
         $directiveResolverInstanceFields = [];
         for ($i = 0; $i < count($fieldDirectives); $i++) {
             // Because directives can be repeated inside a field (eg: <resize(50%),resize(50%)>),
@@ -452,7 +452,8 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     continue;
                 }
 
-                // Consolidate the same directiveResolverInstances for different fields, as to do the validation only once on each of them
+                // Consolidate the same directiveResolverInstances for different fields,
+                // as to do the validation only once on each of them
                 $instanceID = get_class($directiveResolverInstance) . $enqueuedFieldDirective;
                 if (!isset($directiveResolverInstanceFields[$instanceID])) {
                     $directiveResolverInstanceFields[$instanceID]['fieldDirective'] = $fieldDirective;
@@ -554,30 +555,44 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 }
             }
 
-            // Validate if the directive can be executed multiple times
-            $directiveName = $fieldQueryInterpreter->getFieldDirectiveName($fieldDirective);
-            $directiveCount[$directiveName] = isset($directiveCount[$directiveName]) ? $directiveCount[$directiveName] + 1 : 1;
-            if ($directiveCount[$directiveName] > 1 && !$directiveResolverInstance->canExecuteMultipleTimesInField()) {
-                $schemaErrors[] = [
-                    Tokens::PATH => [$fieldDirective],
-                    Tokens::MESSAGE => sprintf(
-                        $translationAPI->__('Directive \'%s\' can be executed only once within field \'%s\', so the current execution (number %s) has been ignored', 'pop-component-model'),
-                        $fieldDirective,
-                        $field,
-                        $directiveCount[$directiveName]
-                    ),
-                ];
-                if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
+            // Validate if the directive can be executed multiple times on each field
+            if (!$directiveResolverInstance->canExecuteMultipleTimesInField()) {
+                $directiveFieldTrack[$directiveName] = $directiveFieldTrack[$directiveName] ?? [];
+                // Check if the directive is already processing any of the fields
+                $directiveName = $fieldQueryInterpreter->getFieldDirectiveName($fieldDirective);
+                if ($alreadyProcessingFields = array_intersect(
+                    $directiveFieldTrack[$directiveName],
+                    $directiveResolverFields
+                )) {
+                    // Remove the fields from this iteration, and add an error
+                    $directiveResolverFields = array_diff(
+                        $directiveResolverFields,
+                        $alreadyProcessingFields
+                    );
                     $schemaErrors[] = [
                         Tokens::PATH => [$fieldDirective],
                         Tokens::MESSAGE => sprintf(
-                            $stopDirectivePipelineExecutionPlaceholder,
-                            $fieldDirective
+                            $translationAPI->__('Directive \'%s\' can be executed only once within field \'%s\'', 'component-model'),
+                            $fieldDirective,
+                            $field
                         ),
                     ];
-                    break;
+                    if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
+                        $schemaErrors[] = [
+                            Tokens::PATH => [$fieldDirective],
+                            Tokens::MESSAGE => sprintf(
+                                $stopDirectivePipelineExecutionPlaceholder,
+                                $fieldDirective
+                            ),
+                        ];
+                        break;
+                    }
+                    // If after removing the duplicated fields there are still others, process them
+                    // Otherwise, skip
+                    if (!$directiveResolverFields) {
+                        continue;
+                    }
                 }
-                continue;
             }
 
             // Directive is valid. Add it under its instanceID, which enables to add fields under the same directiveResolverInstance
@@ -994,7 +1009,8 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 $schemaTraces
             );
 
-            // From the fields, reconstitute the $idsDataFields for each directive, and build the array to pass to the pipeline, for each directive (stage)
+            // From the fields, reconstitute the $idsDataFields for each directive,
+            // and build the array to pass to the pipeline, for each directive (stage)
             $directiveResolverInstances = $pipelineIDsDataFields = [];
             foreach ($directivePipelineData as $pipelineStageData) {
                 $directiveResolverInstance = $pipelineStageData['instance'];
