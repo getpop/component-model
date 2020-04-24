@@ -8,4 +8,5 @@ class Tokens
 {
     const PATH = 'path';
     const MESSAGE = 'message';
+    const EXTENSIONS = 'extensions';
 }
