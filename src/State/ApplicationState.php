@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PoP\ComponentModel\State;
 
 use PoP\Routing\RouteNatures;
-use PoP\ComponentModel\Environment;
 use PoP\Hooks\Facades\HooksAPIFacade;
 use PoP\ComponentModel\Configuration\Request;
 use PoP\Routing\Facades\RoutingManagerFacade;
@@ -170,7 +169,7 @@ class ApplicationState
             'version' => $version,
             'variables' => $variables,
             'only-fieldname-as-outputkey' => false,
-            'namespace-types-and-interfaces' => Environment::namespaceTypesAndInterfaces(),
+            'namespace-types-and-interfaces' => ComponentConfiguration::namespaceTypesAndInterfaces(),
             'version-constraint' => Request::getVersionConstraint(),
             'field-version-constraints' => Request::getVersionConstraintsForFields(),
             'directive-version-constraints' => Request::getVersionConstraintsForDirectives(),

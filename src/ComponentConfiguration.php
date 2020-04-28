@@ -18,6 +18,7 @@ class ComponentConfiguration extends AbstractComponentConfiguration
     private static $enableConfigByParams;
     private static $useComponentModelCache;
     private static $enableSchemaEntityRegistries;
+    private static $namespaceTypesAndInterfaces;
 
     /**
      * Initialize component configuration
@@ -133,6 +134,22 @@ class ComponentConfiguration extends AbstractComponentConfiguration
         $envVariable = Environment::ENABLE_SCHEMA_ENTITY_REGISTRIES;
         $selfProperty = &self::$enableSchemaEntityRegistries;
         $callback = [Environment::class, 'enableSchemaEntityRegistries'];
+
+        // Initialize property from the environment/hook
+        self::maybeInitEnvironmentVariable(
+            $envVariable,
+            $selfProperty,
+            $callback
+        );
+        return $selfProperty;
+    }
+
+    public static function namespaceTypesAndInterfaces(): bool
+    {
+        // Define properties
+        $envVariable = Environment::NAMESPACE_TYPES_AND_INTERFACES;
+        $selfProperty = &self::$namespaceTypesAndInterfaces;
+        $callback = [Environment::class, 'namespaceTypesAndInterfaces'];
 
         // Initialize property from the environment/hook
         self::maybeInitEnvironmentVariable(
