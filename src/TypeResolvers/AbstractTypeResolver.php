@@ -1514,6 +1514,13 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
     protected function addFieldSchemaDefinition(FieldResolverInterface $fieldResolver, string $fieldName, array $stackMessages, array &$generalMessages, array $options = [])
     {
+        /**
+         * Fields may not be directly visible in the schema
+         */
+        if ($fieldResolver->skipAddingToSchemaDefinition($this, $fieldName)) {
+            return;
+        }
+        
         $instanceManager = InstanceManagerFacade::getInstance();
 
         // Watch out! We are passing empty $fieldArgs to generate the schema!

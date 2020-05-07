@@ -35,6 +35,16 @@ interface FieldResolverInterface
      * @return void
      */
     public function getSchemaDefinitionResolver(TypeResolverInterface $typeResolver): ?FieldSchemaDefinitionResolverInterface;
+    /**
+     * Fields may not be directly visible in the schema,
+     * eg: because they are used only by the application, and must not
+     * be exposed to the user (eg: "accessControlLists")
+     *
+     * @param TypeResolverInterface $typeResolver
+     * @param string $fieldName
+     * @return boolean
+     */
+    public function skipAddingToSchemaDefinition(TypeResolverInterface $typeResolver, string $fieldName): bool;
     public function getSchemaDefinitionForField(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): array;
     public function getSchemaFieldVersion(TypeResolverInterface $typeResolver, string $fieldName): ?string;
     /**

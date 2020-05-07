@@ -8,8 +8,6 @@ use Exception;
 use Composer\Semver\Semver;
 use PoP\ComponentModel\Environment;
 use PoP\ComponentModel\Misc\GeneralUtils;
-use PoP\ComponentModel\Schema\SchemaHelpers;
-use PoP\ComponentModel\Schema\FieldQueryUtils;
 use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\Resolvers\ResolverTypes;
 use PoP\ComponentModel\Schema\SchemaDefinition;
@@ -205,6 +203,20 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             }
         }
         return null;
+    }
+
+    /**
+     * Fields may not be directly visible in the schema,
+     * eg: because they are used only by the application, and must not
+     * be exposed to the user (eg: "accessControlLists")
+     *
+     * @param TypeResolverInterface $typeResolver
+     * @param string $fieldName
+     * @return boolean
+     */
+    public function skipAddingToSchemaDefinition(TypeResolverInterface $typeResolver, string $fieldName): bool
+    {
+        return false;
     }
 
     /**
