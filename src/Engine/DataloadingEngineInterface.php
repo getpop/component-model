@@ -10,5 +10,6 @@ interface DataloadingEngineInterface
     public function getMandatoryDirectives(): array;
     public function addMandatoryDirective(string $directive): void;
     public function addMandatoryDirectiveClass(string $directiveClass): void;
+    public function addMandatoryDirectives(array $directives): void;
     public function addMandatoryDirectiveClasses(array $directiveClasses): void;
 }
