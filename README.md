@@ -20,6 +20,14 @@ Via Composer
 composer require getpop/component-model
 ```
 
+## Usage
+
+Initialize the component:
+
+``` php
+\PoP\ComponentModel\Component::initialize();
+```
+
 ## Main Concepts
 
 ### Everything is a Module
