@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PoP\ComponentModel\Container;
 
-use PoP\Root\Container\ContainerBuilderFactory;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups;
 use PoP\ComponentModel\ComponentConfiguration;
 use PoP\ComponentModel\Facades\Registries\DirectiveRegistryFacade;
