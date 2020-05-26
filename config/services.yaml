@@ -106,11 +106,3 @@ services:
     route_module_processor_manager:
         class: \PoP\ComponentModel\ModuleRouting\RouteModuleProcessorManager
         public: true
-
-    PoP\ComponentModel\FieldResolvers\:
-        resource: '../src/FieldResolvers/*'
-        public: true
-
-    PoP\ComponentModel\DirectiveResolvers\:
-        resource: '../src/DirectiveResolvers/*'
-        public: true

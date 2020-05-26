@@ -14,7 +14,7 @@ class ServiceConfiguration
 {
     use PHPServiceConfigurationTrait;
 
-    protected static function configure()
+    protected static function configure(): void
     {
         // If `isMangled`, disable the definitions
         if (!Request::isMangled()) {

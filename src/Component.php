@@ -39,6 +39,7 @@ class Component extends AbstractComponent
     {
         parent::doInitialize($skipSchema);
         self::initYAMLServices(dirname(__DIR__));
+        self::maybeInitYAMLSchemaServices(dirname(__DIR__), $skipSchema);
         ServiceConfiguration::initialize();
     }
 
