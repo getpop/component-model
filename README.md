@@ -25,7 +25,9 @@ composer require getpop/component-model
 Initialize the component:
 
 ``` php
-\PoP\ComponentModel\Component::initialize();
+\PoP\Root\ComponentLoader::initializeComponents([
+    \PoP\ComponentModel\Component::class,
+]);
 ```
 
 ## Main Concepts
