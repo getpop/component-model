@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace PoP\ComponentModel;
 
-use PoP\ComponentModel\ComponentConfiguration\AbstractComponentConfiguration;
+use PoP\ComponentModel\ComponentConfiguration\ComponentConfigurationTrait;
 
-class ComponentConfiguration extends AbstractComponentConfiguration
+class ComponentConfiguration
 {
+    use ComponentConfigurationTrait;
+
     /**
      * Map with the configuration passed by params
      *
@@ -82,7 +84,7 @@ class ComponentConfiguration extends AbstractComponentConfiguration
         $callback = [Environment::class, 'enableConfigByParams'];
 
         // Initialize property from the environment/hook
-        self::maybeInitEnvironmentVariable(
+        self::maybeInitializeConfigurationValue(
             $envVariable,
             $selfProperty,
             $callback
@@ -111,7 +113,7 @@ class ComponentConfiguration extends AbstractComponentConfiguration
         $callback = [Environment::class, 'useComponentModelCache'];
 
         // Initialize property from the environment/hook
-        self::maybeInitEnvironmentVariable(
+        self::maybeInitializeConfigurationValue(
             $envVariable,
             $selfProperty,
             $callback
@@ -136,7 +138,7 @@ class ComponentConfiguration extends AbstractComponentConfiguration
         $callback = [Environment::class, 'enableSchemaEntityRegistries'];
 
         // Initialize property from the environment/hook
-        self::maybeInitEnvironmentVariable(
+        self::maybeInitializeConfigurationValue(
             $envVariable,
             $selfProperty,
             $callback
@@ -152,7 +154,7 @@ class ComponentConfiguration extends AbstractComponentConfiguration
         $callback = [Environment::class, 'namespaceTypesAndInterfaces'];
 
         // Initialize property from the environment/hook
-        self::maybeInitEnvironmentVariable(
+        self::maybeInitializeConfigurationValue(
             $envVariable,
             $selfProperty,
             $callback
