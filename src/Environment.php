@@ -32,16 +32,6 @@ class Environment
     }
 
     /**
-     * Maybe enable using namespaces
-     *
-     * @return bool
-     */
-    public static function namespaceTypesAndInterfaces(): bool
-    {
-        return isset($_ENV[self::NAMESPACE_TYPES_AND_INTERFACES]) ? strtolower($_ENV[self::NAMESPACE_TYPES_AND_INTERFACES]) == "true" : false;
-    }
-
-    /**
      * Indicate if to enable to restrict a field and directive by version,
      * using the same semantic versioning constraint rules used by Composer
      *
@@ -51,38 +41,5 @@ class Environment
     public static function enableSemanticVersionConstraints(): bool
     {
         return isset($_ENV['ENABLE_SEMANTIC_VERSION_CONSTRAINTS']) ? strtolower($_ENV['ENABLE_SEMANTIC_VERSION_CONSTRAINTS']) == "true" : false;
-    }
-
-    /**
-     * Indicate if to keep the several entities that make up a schema (types, directives) in a registry
-     * This functionality is not used by PoP itself, hence it defaults to `false`
-     * It can be used by making a mapping from type name to type resolver class, as to reference a type
-     * by a name, if needed (eg: to save in the application's configuration)
-     *
-     * @return bool
-     */
-    public static function enableSchemaEntityRegistries(): bool
-    {
-        return isset($_ENV[self::ENABLE_SCHEMA_ENTITY_REGISTRIES]) ? strtolower($_ENV[self::ENABLE_SCHEMA_ENTITY_REGISTRIES]) == "true" : false;
-    }
-
-    /**
-     * Indicate if caching is enabled
-     *
-     * @return void
-     */
-    public static function useComponentModelCache(): bool
-    {
-        return isset($_ENV[self::USE_COMPONENT_MODEL_CACHE]) ? strtolower($_ENV[self::USE_COMPONENT_MODEL_CACHE]) == "true" : false;
-    }
-
-    /**
-     * Indicate if the configuration can be set through params
-     *
-     * @return boolean
-     */
-    public static function enableConfigByParams(): bool
-    {
-        return isset($_ENV[self::ENABLE_CONFIG_BY_PARAMS]) ? strtolower($_ENV[self::ENABLE_CONFIG_BY_PARAMS]) == "true" : false;
     }
 }

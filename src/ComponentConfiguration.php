@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PoP\ComponentModel;
 
+use PoP\ComponentModel\ComponentConfiguration\EnvironmentValueHelpers;
 use PoP\ComponentModel\ComponentConfiguration\ComponentConfigurationTrait;
 
 class ComponentConfiguration
@@ -81,12 +82,14 @@ class ComponentConfiguration
         // Define properties
         $envVariable = Environment::ENABLE_CONFIG_BY_PARAMS;
         $selfProperty = &self::$enableConfigByParams;
-        $callback = [Environment::class, 'enableConfigByParams'];
+        $defaultValue = false;
+        $callback = [EnvironmentValueHelpers::class, 'toBool'];
 
         // Initialize property from the environment/hook
         self::maybeInitializeConfigurationValue(
             $envVariable,
             $selfProperty,
+            $defaultValue,
             $callback
         );
         return $selfProperty;
@@ -110,12 +113,14 @@ class ComponentConfiguration
         // Define properties
         $envVariable = Environment::USE_COMPONENT_MODEL_CACHE;
         $selfProperty = &self::$useComponentModelCache;
-        $callback = [Environment::class, 'useComponentModelCache'];
+        $defaultValue = false;
+        $callback = [EnvironmentValueHelpers::class, 'toBool'];
 
         // Initialize property from the environment/hook
         self::maybeInitializeConfigurationValue(
             $envVariable,
             $selfProperty,
+            $defaultValue,
             $callback
         );
         return $selfProperty;
@@ -135,12 +140,14 @@ class ComponentConfiguration
         // Define properties
         $envVariable = Environment::ENABLE_SCHEMA_ENTITY_REGISTRIES;
         $selfProperty = &self::$enableSchemaEntityRegistries;
-        $callback = [Environment::class, 'enableSchemaEntityRegistries'];
+        $defaultValue = false;
+        $callback = [EnvironmentValueHelpers::class, 'toBool'];
 
         // Initialize property from the environment/hook
         self::maybeInitializeConfigurationValue(
             $envVariable,
             $selfProperty,
+            $defaultValue,
             $callback
         );
         return $selfProperty;
@@ -151,12 +158,14 @@ class ComponentConfiguration
         // Define properties
         $envVariable = Environment::NAMESPACE_TYPES_AND_INTERFACES;
         $selfProperty = &self::$namespaceTypesAndInterfaces;
-        $callback = [Environment::class, 'namespaceTypesAndInterfaces'];
+        $defaultValue = false;
+        $callback = [EnvironmentValueHelpers::class, 'toBool'];
 
         // Initialize property from the environment/hook
         self::maybeInitializeConfigurationValue(
             $envVariable,
             $selfProperty,
+            $defaultValue,
             $callback
         );
         return $selfProperty;

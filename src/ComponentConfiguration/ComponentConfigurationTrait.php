@@ -30,19 +30,27 @@ trait ComponentConfigurationTrait
     protected static function maybeInitializeConfigurationValue(
         string $envVariable,
         &$selfProperty,
-        callable $callback,
+        $defaultValue = null,
+        ?callable $callback = null,
         bool $useHook = true
     ): void {
         if (!self::$initialized[$envVariable]) {
             self::$initialized[$envVariable] = true;
 
+            $selfProperty = $defaultValue;
             // Initialize from configuration, environment or hook
             if (self::hasConfigurationValue($envVariable)) {
                 // Priority: option has been set in the $configuration
                 $selfProperty = self::getConfigurationValue($envVariable);
             } else {
                 // Get the value from the environment function
-                $selfProperty = $callback();
+                if (isset($_ENV[$envVariable])) {
+                    $selfProperty = $_ENV[$envVariable];
+                    // Modify the type of the variable, from string to bool/int/array
+                    if ($callback) {
+                        $selfProperty = $callback($selfProperty);
+                    }
+                }
                 // Allow to override the value with a hook
                 if ($useHook) {
                     $hooksAPI = HooksAPIFacade::getInstance();
