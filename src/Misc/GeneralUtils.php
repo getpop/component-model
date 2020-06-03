@@ -65,8 +65,10 @@ class GeneralUtils
 
         // Note that this will url_encode all values
         $url_parts['query'] = http_build_query($params);
-        $port = ($url_parts['port'] == "80") ? "" : (":" . $url_parts['port']);
-        return $url_parts['scheme'] . '://' . $url_parts['host'] . $port . $url_parts['path'] . '?' . $url_parts['query'];
+        // Check if schema/host are present, becase the URL can also be a relative path: /some-path/
+        $port = $url_parts['port'] ? (($url_parts['port'] == "80") ? "" : (":" . $url_parts['port'])) : '';
+        $scheme = $url_parts['scheme'] ? $url_parts['scheme'] . '://' : '';
+        return $scheme . $url_parts['host'] . $port . $url_parts['path'] . '?' . $url_parts['query'];
     }
 
     /**
