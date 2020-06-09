@@ -6,16 +6,16 @@ namespace PoP\ComponentModel\Schema;
 
 interface FeedbackMessageStoreInterface extends \PoP\FieldQuery\FeedbackMessageStoreInterface
 {
-    function addDBWarnings(array $dbWarnings);
-    function addDBDeprecations(array $dbDeprecations);
-    function addSchemaWarnings(array $schemaWarnings);
-    function retrieveAndClearResultItemDBWarnings($resultItemID): ?array;
-    function retrieveAndClearResultItemDBDeprecations($resultItemID): ?array;
-    function addSchemaError(string $dbKey, string $field, string $error);
-    function retrieveAndClearSchemaErrors(): array;
-    function retrieveAndClearSchemaWarnings(): array;
-    function getSchemaErrorsForField(string $dbKey, string $field): ?array;
-    function addLogEntry(string $entry): void;
-    function maybeAddLogEntry(string $entry): void;
-    function getLogEntries(): array;
+    public function addDBWarnings(array $dbWarnings);
+    public function addDBDeprecations(array $dbDeprecations);
+    public function addSchemaWarnings(array $schemaWarnings);
+    public function retrieveAndClearResultItemDBWarnings($resultItemID): ?array;
+    public function retrieveAndClearResultItemDBDeprecations($resultItemID): ?array;
+    public function addSchemaError(string $dbKey, string $field, string $error);
+    public function retrieveAndClearSchemaErrors(): array;
+    public function retrieveAndClearSchemaWarnings(): array;
+    public function getSchemaErrorsForField(string $dbKey, string $field): ?array;
+    public function addLogEntry(string $entry): void;
+    public function maybeAddLogEntry(string $entry): void;
+    public function getLogEntries(): array;
 }
