@@ -533,11 +533,16 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             // Maybe cast the value to the appropriate type. Eg: from string to boolean
             if ($fieldArgType = $fieldOrDirectiveArgNameTypes[$argName]) {
                 // There are 2 possibilities for casting:
-                // 1. $forSchema = true: Cast all items except fields (eg: has-comments())
+                // 1. $forSchema = true: Cast all items except fields (eg: hasComments()) or arrays with fields (eg: [hasComments()])
                 // 2. $forSchema = false: Should be cast only fields, however by now we can't tell which are fields and which are not, since fields have already been resolved to their value. Hence, cast everything (fieldArgValues that failed at the schema level will not be provided in the input array, so won't be validated twice)
                 // Otherwise, simply add the argValue directly, it will be eventually casted by the other function
-                if (($forSchema && !$this->isFieldArgumentValueDynamic($argValue)) ||
-                    !$forSchema
+                if (!$forSchema
+                    || (
+                        $forSchema && (
+                            (!is_array($argValue) && !$this->isFieldArgumentValueDynamic($argValue))
+                            || (is_array($argValue) && !FieldQueryUtils::isAnyFieldArgumentValueDynamic($argValue))
+                        )
+                    )
                 ) {
                     // If the value is an array, and the type is a combination of types, then cast each element to the item type
                     $fieldArgCurrentType = TypeCastingHelpers::getTypeCombinationCurrentElement($fieldArgType);
