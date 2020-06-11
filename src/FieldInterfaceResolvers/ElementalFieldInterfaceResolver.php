@@ -27,7 +27,6 @@ class ElementalFieldInterfaceResolver extends AbstractSchemaFieldInterfaceResolv
     {
         return [
             'id',
-            'self',
         ];
     }
 
@@ -35,7 +34,6 @@ class ElementalFieldInterfaceResolver extends AbstractSchemaFieldInterfaceResolv
     {
         $types = [
             'id' => SchemaDefinition::TYPE_ID,
-            'self' => SchemaDefinition::TYPE_ID,
         ];
         return $types[$fieldName] ?? parent::getSchemaFieldType($typeResolver, $fieldName);
     }
@@ -44,7 +42,6 @@ class ElementalFieldInterfaceResolver extends AbstractSchemaFieldInterfaceResolv
     {
         switch ($fieldName) {
             case 'id':
-            case 'self':
                 return true;
         }
         return parent::isSchemaFieldResponseNonNullable($typeResolver, $fieldName);
@@ -55,7 +52,6 @@ class ElementalFieldInterfaceResolver extends AbstractSchemaFieldInterfaceResolv
         $translationAPI = TranslationAPIFacade::getInstance();
         $descriptions = [
             'id' => $translationAPI->__('The object\'s unique identifier for its type', 'component-model'),
-            'self' => $translationAPI->__('The same object', 'component-model'),
         ];
         return $descriptions[$fieldName] ?? parent::getSchemaFieldDescription($typeResolver, $fieldName);
     }
