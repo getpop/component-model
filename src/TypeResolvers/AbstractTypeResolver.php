@@ -1439,14 +1439,29 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         foreach ($this->getAllImplementedInterfaceResolverInstances() as $interfaceInstance) {
             $interfaceSchemaKey = $schemaDefinitionService->getInterfaceSchemaKey($interfaceInstance);
 
-            // Conveniently get the fields from the schema, which have already been calculated above since they also include their interface fields
+            // Conveniently get the fields from the schema, which have already been calculated above
+            // since they also include their interface fields
             $interfaceFieldNames = $interfaceInstance::getFieldNamesToImplement();
+            // The Interface fields may be implemented as either FieldResolver fields or FieldResolver connections,
+            // Eg: Interface "Elemental" has field "id" and connection "self"
+            // Merge both cases into interface fields
             $interfaceFields = array_filter(
                 $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_FIELDS],
                 function ($fieldName) use ($interfaceFieldNames) {
                     return in_array($fieldName, $interfaceFieldNames);
                 },
                 ARRAY_FILTER_USE_KEY
+            );
+            $interfaceConnections = array_filter(
+                $this->schemaDefinition[$typeSchemaKey][SchemaDefinition::ARGNAME_CONNECTIONS],
+                function ($connectionName) use ($interfaceFieldNames) {
+                    return in_array($connectionName, $interfaceFieldNames);
+                },
+                ARRAY_FILTER_USE_KEY
+            );
+            $interfaceFields = array_merge(
+                $interfaceFields,
+                $interfaceConnections
             );
             // An interface can itself implement interfaces!
             $interfaceImplementedInterfaceNames = [];
