@@ -1315,7 +1315,17 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     if ($validationErrorDescription = $fieldResolver->getValidationErrorDescription($this, $resultItem, $fieldName, $fieldArgs)) {
                         return ErrorUtils::getValidationFailedError($fieldName, $fieldArgs, $validationErrorDescription);
                     }
-                    return $fieldResolver->resolveValue($this, $resultItem, $fieldName, $fieldArgs, $variables, $expressions, $options);
+                    // Resolve the value
+                    $value = $fieldResolver->resolveValue($this, $resultItem, $fieldName, $fieldArgs, $variables, $expressions, $options);
+                    // If it is null and the field is nonNullable, return an error
+                    if (is_null($value)) {
+                        $fieldSchemaDefinition = $fieldResolver->getSchemaDefinitionForField($this, $fieldName, $fieldArgs);
+                        if ($fieldSchemaDefinition[SchemaDefinition::ARGNAME_NON_NULLABLE]) {
+                            return ErrorUtils::getNonNullableFieldError($fieldName);
+                        }
+                    }
+                    // Everything is good, return the value
+                    return $value;
                 }
             }
             return ErrorUtils::getNoFieldResolverProcessesFieldError($this->getID($resultItem), $fieldName, $fieldArgs);
@@ -1520,7 +1530,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         if ($fieldResolver->skipAddingToSchemaDefinition($this, $fieldName)) {
             return;
         }
-        
+
         $instanceManager = InstanceManagerFacade::getInstance();
 
         // Watch out! We are passing empty $fieldArgs to generate the schema!
