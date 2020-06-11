@@ -32,6 +32,12 @@ trait SelfSchemaDefinitionResolverTrait
         return SchemaDefinition::TYPE_MIXED;
     }
 
+    public function isSchemaFieldResponseNonNullable(TypeResolverInterface $typeResolver, string $fieldName): bool
+    {
+        // By default, types are nullable
+        return false;
+    }
+
     public function getSchemaFieldDescription(TypeResolverInterface $typeResolver, string $fieldName): ?string
     {
         return null;

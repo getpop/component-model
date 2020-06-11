@@ -126,8 +126,16 @@ abstract class AbstractReflectionPropertyFieldResolver extends AbstractDBDataFie
 
     public function getSchemaFieldType(TypeResolverInterface $typeResolver, string $fieldName): ?string
     {
-        // TODO: If we are running PHP 7.4, the properties may be typed, so we can already get the type through reflection. Implement this!
+        // TODO: If we are running PHP 7.4, the properties may be typed,
+        // so we can already get the type through reflection. Implement this!
         return parent::getSchemaFieldType($typeResolver, $fieldName);
+    }
+
+    public function isSchemaFieldResponseNonNullable(TypeResolverInterface $typeResolver, string $fieldName): bool
+    {
+        // TODO: If we are running PHP 7.4, the properties may be typed,
+        // so we can already get the type through reflection. Implement this!
+        return parent::isSchemaFieldResponseNonNullable($typeResolver, $fieldName);
     }
 
     public function getSchemaFieldDescription(TypeResolverInterface $typeResolver, string $fieldName): ?string

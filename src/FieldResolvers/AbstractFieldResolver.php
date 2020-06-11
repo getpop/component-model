@@ -253,6 +253,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 if ($type = $schemaDefinitionResolver->getSchemaFieldType($typeResolver, $fieldName)) {
                     $schemaDefinition[SchemaDefinition::ARGNAME_TYPE] = $type;
                 }
+                if ($schemaDefinitionResolver->isSchemaFieldResponseNonNullable($typeResolver, $fieldName)) {
+                    $schemaDefinition[SchemaDefinition::ARGNAME_NON_NULLABLE] = true;
+                }
                 if ($description = $schemaDefinitionResolver->getSchemaFieldDescription($typeResolver, $fieldName)) {
                     $schemaDefinition[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
                 }

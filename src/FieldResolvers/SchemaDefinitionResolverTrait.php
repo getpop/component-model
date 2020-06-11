@@ -30,6 +30,14 @@ trait SchemaDefinitionResolverTrait
         return null;
     }
 
+    public function isSchemaFieldResponseNonNullable(TypeResolverInterface $typeResolver, string $fieldName): bool
+    {
+        if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {
+            return $schemaDefinitionResolver->isSchemaFieldResponseNonNullable($typeResolver, $fieldName);
+        }
+        return false;
+    }
+
     public function getSchemaFieldDescription(TypeResolverInterface $typeResolver, string $fieldName): ?string
     {
         if ($schemaDefinitionResolver = $this->getSchemaDefinitionResolver($typeResolver)) {

@@ -10,6 +10,7 @@ interface FieldSchemaDefinitionResolverInterface
 {
     public static function getFieldNamesToResolve(): array;
     public function getSchemaFieldType(TypeResolverInterface $typeResolver, string $fieldName): ?string;
+    public function isSchemaFieldResponseNonNullable(TypeResolverInterface $typeResolver, string $fieldName): bool;
     public function getSchemaFieldDescription(TypeResolverInterface $typeResolver, string $fieldName): ?string;
     public function getSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): array;
     public function getFilteredSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): array;

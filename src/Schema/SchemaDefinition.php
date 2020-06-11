@@ -11,6 +11,7 @@ class SchemaDefinition
     const ARGNAME_NAMESPACED_NAME = 'namespacedName';
     const ARGNAME_ELEMENT_NAME = 'elementName';
     const ARGNAME_TYPE = 'type';
+    const ARGNAME_NON_NULLABLE = 'nonNullable';
     const ARGNAME_REFERENCED_TYPE = 'referencedType';
     const ARGNAME_DESCRIPTION = 'description';
     const ARGNAME_VERSION = 'version';

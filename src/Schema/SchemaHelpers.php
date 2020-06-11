@@ -147,8 +147,19 @@ class SchemaHelpers
         ];
     }
 
-    public static function convertTypeIDToTypeName(string $type, TypeResolverInterface $typeResolver, string $fieldName): string
-    {
+    /**
+     * If the internal type is "id", convert it to its type name
+     *
+     * @param string $type
+     * @param TypeResolverInterface $typeResolver
+     * @param string $fieldName
+     * @return string
+     */
+    public static function convertTypeIDToTypeName(
+        string $type,
+        TypeResolverInterface $typeResolver,
+        string $fieldName
+    ): string {
         list (
             $arrayInstances,
             $convertedType
