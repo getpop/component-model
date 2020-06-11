@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace PoP\ComponentModel\Schema;
 
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
-use PoP\ComponentModel\FieldResolvers\FieldInterfaceResolverInterface;
+use PoP\ComponentModel\FieldInterfaceResolvers\FieldInterfaceResolverInterface;
 
 class SchemaDefinitionService implements SchemaDefinitionServiceInterface
 {

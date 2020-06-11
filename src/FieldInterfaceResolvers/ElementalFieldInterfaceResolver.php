@@ -7,7 +7,7 @@ namespace PoP\ComponentModel\FieldInterfaceResolvers;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
-use PoP\ComponentModel\FieldResolvers\AbstractSchemaFieldInterfaceResolver;
+use PoP\ComponentModel\FieldInterfaceResolvers\AbstractSchemaFieldInterfaceResolver;
 
 class ElementalFieldInterfaceResolver extends AbstractSchemaFieldInterfaceResolver
 {

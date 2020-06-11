@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PoP\ComponentModel\FieldResolvers;
+namespace PoP\ComponentModel\FieldInterfaceResolvers;
 
 use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverInterface;
 
