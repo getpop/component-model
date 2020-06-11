@@ -9,6 +9,7 @@ use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\AbstractTypeResolver;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\FieldResolvers\AbstractDBDataFieldResolver;
+use PoP\ComponentModel\FieldInterfaceResolvers\IdentifiableFieldInterfaceResolver;
 
 class CoreFieldResolver extends AbstractDBDataFieldResolver
 {
@@ -16,6 +17,13 @@ class CoreFieldResolver extends AbstractDBDataFieldResolver
     {
         return [
             AbstractTypeResolver::class,
+        ];
+    }
+
+    public static function getImplementedInterfaceClasses(): array
+    {
+        return [
+            IdentifiableFieldInterfaceResolver::class,
         ];
     }
 
