@@ -9,9 +9,9 @@ use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\FieldResolvers\AbstractSchemaFieldInterfaceResolver;
 
-class IdentifiableFieldInterfaceResolver extends AbstractSchemaFieldInterfaceResolver
+class ElementalFieldInterfaceResolver extends AbstractSchemaFieldInterfaceResolver
 {
-    public const NAME = 'Identifiable';
+    public const NAME = 'Elemental';
     public function getInterfaceName(): string
     {
         return self::NAME;
