@@ -11,7 +11,7 @@ use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\FieldResolvers\AbstractDBDataFieldResolver;
 use PoP\ComponentModel\FieldInterfaceResolvers\ElementalFieldInterfaceResolver;
 
-class CoreFieldResolver extends AbstractDBDataFieldResolver
+class ElementalFieldResolver extends AbstractDBDataFieldResolver
 {
     public static function getClassesToAttachTo(): array
     {
