@@ -52,7 +52,6 @@ class SchemaDefinition
     // Field/Directive Argument Types
     const TYPE_MIXED = 'mixed';
     const TYPE_ID = 'id';
-    // const TYPE_UNRESOLVED_ID = 'unresolved_id';
     const TYPE_STRING = 'string';
     const TYPE_INT = 'int';
     const TYPE_FLOAT = 'float';
