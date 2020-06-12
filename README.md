@@ -1685,7 +1685,7 @@ class FieldResolver_Posts_Hook extends \PoP\Engine\FieldResolver_HookBase {
     switch ($field) 
     {
       case 'disclaimer':
-        return \PoP\Engine\MetaManager::getPostMeta($fieldprocessor->getId($post), "disclaimer", true);
+        return \PoP\Engine\MetaManager::getCustomPostMeta($fieldprocessor->getId($post), "disclaimer", true);
     }
 
     return parent::getValue($resultitem, $field, $fieldprocessor);
