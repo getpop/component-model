@@ -103,7 +103,7 @@ class GeneralUtils
 
         // Note that this will url_encode all values
         $url_parts['query'] = http_build_query($params);
-        $port = ($url_parts['port'] == "80") ? "" : (":" . $url_parts['port']);
+        $port = (!$url_parts['port'] || $url_parts['port'] == "80") ? "" : (":" . $url_parts['port']);
         return $url_parts['scheme'] . '://' . $url_parts['host'] . $port . $url_parts['path'] . ($url_parts['query'] ? '?' . $url_parts['query'] : '');
     }
 
