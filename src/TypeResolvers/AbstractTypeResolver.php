@@ -671,7 +671,8 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return new Error(
             'unresolved-resultitem-id',
             sprintf(
-                $translationAPI->__('The DataLoader can\'t load data for object with ID \'%s\'', 'pop-component-model'),
+                $translationAPI->__('The DataLoader can\'t load data for object of type \'%s\' with ID \'%s\'', 'pop-component-model'),
+                $this->getTypeOutputName(),
                 $resultItemID
             )
         );
