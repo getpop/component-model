@@ -9,6 +9,11 @@ use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
 trait EnumTypeSchemaDefinitionResolverTrait
 {
+    protected function getSchemaDefinitionEnumName(TypeResolverInterface $typeResolver, string $fieldName): ?string
+    {
+        return null;
+    }
+
     protected function getSchemaDefinitionEnumValues(TypeResolverInterface $typeResolver, string $fieldName): ?array
     {
         return null;
@@ -53,6 +58,10 @@ trait EnumTypeSchemaDefinitionResolverTrait
                 $enums[$enumValue] = $enum;
             }
             $schemaDefinition[SchemaDefinition::ARGNAME_ENUMVALUES] = $enums;
+            // Indicate the unique name, to unify all types to the same Enum
+            if ($enumName = $this->getSchemaDefinitionEnumName($typeResolver, $fieldName)) {
+                $schemaDefinition[SchemaDefinition::ARGNAME_ENUMNAME] = $enumName;
+            }
         }
     }
 
