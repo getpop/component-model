@@ -7,7 +7,9 @@ namespace PoP\ComponentModel\FieldResolvers;
 use Exception;
 use Composer\Semver\Semver;
 use PoP\ComponentModel\Environment;
+use PoP\Hooks\Facades\HooksAPIFacade;
 use PoP\ComponentModel\Misc\GeneralUtils;
+use PoP\ComponentModel\Schema\HookHelpers;
 use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\Resolvers\ResolverTypes;
 use PoP\ComponentModel\Schema\SchemaDefinition;
@@ -289,6 +291,19 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             if (!is_null($this->resolveFieldTypeResolverClass($typeResolver, $fieldName, $fieldArgs))) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL] = true;
             }
+            // Hook to override the values, eg: by the Field Deprecation List
+            $hooksAPI = HooksAPIFacade::getInstance();
+            $hookName = HookHelpers::getSchemaDefinitionForFieldHookName(
+                $typeResolver,
+                $fieldName
+            );
+            $schemaDefinition = $hooksAPI->applyFilters(
+                $hookName,
+                $schemaDefinition,
+                $typeResolver,
+                $fieldName,
+                $fieldArgs
+            );
             $this->schemaDefinitionForFieldCache[$key] = $schemaDefinition;
         }
         return $this->schemaDefinitionForFieldCache[$key];
