@@ -91,7 +91,7 @@ class SchemaHelpers
     {
         $enumValuesOrDefinitions = array_map(
             function ($schemaFieldArg) {
-                return $schemaFieldArg[SchemaDefinition::ARGNAME_ENUMVALUES];
+                return $schemaFieldArg[SchemaDefinition::ARGNAME_ENUM_VALUES];
             },
             $schemaFieldArgs
         );

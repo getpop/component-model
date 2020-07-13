@@ -57,10 +57,10 @@ trait EnumTypeSchemaDefinitionResolverTrait
                 }
                 $enums[$enumValue] = $enum;
             }
-            $schemaDefinition[SchemaDefinition::ARGNAME_ENUMVALUES] = $enums;
+            $schemaDefinition[SchemaDefinition::ARGNAME_ENUM_VALUES] = $enums;
             // Indicate the unique name, to unify all types to the same Enum
             if ($enumName = $this->getSchemaDefinitionEnumName($typeResolver, $fieldName)) {
-                $schemaDefinition[SchemaDefinition::ARGNAME_ENUMNAME] = $enumName;
+                $schemaDefinition[SchemaDefinition::ARGNAME_ENUM_NAME] = $enumName;
             }
         }
     }
