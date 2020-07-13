@@ -17,6 +17,7 @@ class SchemaDefinition
     const ARGNAME_VERSION = 'version';
     const ARGNAME_VERSION_CONSTRAINT = 'versionConstraint';
     const ARGNAME_MANDATORY = 'mandatory';
+    const ARGNAME_INPUT_OBJECT_NAME = 'inputObjectName';
     const ARGNAME_ENUM_NAME = 'enumName';
     const ARGNAME_ENUM_VALUES = 'enumValues';
     const ARGNAME_DEPRECATED = 'deprecated';
