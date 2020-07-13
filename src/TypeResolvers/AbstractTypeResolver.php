@@ -60,13 +60,15 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
     public function getNamespace(): string
     {
-        return SchemaHelpers::convertNamespace(SchemaHelpers::getOwnerAndProjectFromNamespace(__NAMESPACE__));
+        return SchemaHelpers::getSchemaNamespace(__NAMESPACE__);
     }
 
     final public function getNamespacedTypeName(): string
     {
-        $namespace = $this->getNamespace();
-        return ($namespace ? $namespace . SchemaDefinition::TOKEN_NAMESPACE_SEPARATOR : '') . $this->getTypeName();
+        return SchemaHelpers::getSchemaNamespacedName(
+            $this->getNamespace(),
+            $this->getTypeName()
+        );
     }
 
     final public function getMaybeNamespacedTypeName(): string

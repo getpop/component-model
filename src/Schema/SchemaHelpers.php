@@ -177,6 +177,13 @@ class SchemaHelpers
         return TypeCastingHelpers::makeArray($convertedType, $arrayInstances);
     }
 
+    public static function getSchemaNamespace(string $namespace): string
+    {
+        return self::convertNamespace(
+            self::getOwnerAndProjectFromNamespace($namespace)
+        );
+    }
+
     /**
      * Following PSR-4, namespaces must contain the owner (eg: "PoP") and project name (eg: "ComponentModel")
      * Extract these 2 elements to namespace the types/interfaces
@@ -184,7 +191,7 @@ class SchemaHelpers
      * @param string $namespace
      * @return string
      */
-    public static function getOwnerAndProjectFromNamespace(string $namespace): string
+    protected static function getOwnerAndProjectFromNamespace(string $namespace): string
     {
         // First slash: between owner and project name
         $firstSlashPos = strpos($namespace, '\\');
@@ -199,8 +206,13 @@ class SchemaHelpers
         return $namespace;
     }
 
-    public static function convertNamespace(string $namespace): string
+    protected static function convertNamespace(string $namespace): string
     {
         return str_replace('\\', SchemaDefinition::TOKEN_NAMESPACE_SEPARATOR, $namespace);
+    }
+
+    public static function getSchemaNamespacedName(string $schemaNamespace, string $name): string
+    {
+        return ($schemaNamespace ? $schemaNamespace . SchemaDefinition::TOKEN_NAMESPACE_SEPARATOR : '') . $name;
     }
 }

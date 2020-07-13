@@ -26,13 +26,15 @@ abstract class AbstractFieldInterfaceResolver implements FieldInterfaceResolverI
 
     public function getNamespace(): string
     {
-        return SchemaHelpers::convertNamespace(SchemaHelpers::getOwnerAndProjectFromNamespace(__NAMESPACE__));
+        return SchemaHelpers::getSchemaNamespace(__NAMESPACE__);
     }
 
     final public function getNamespacedInterfaceName(): string
     {
-        $namespace = $this->getNamespace();
-        return ($namespace ? $namespace . SchemaDefinition::TOKEN_NAMESPACE_SEPARATOR : '') . $this->getInterfaceName();
+        return SchemaHelpers::getSchemaNamespacedName(
+            $this->getNamespace(),
+            $this->getInterfaceName()
+        );
     }
 
     final public function getMaybeNamespacedInterfaceName(): string
