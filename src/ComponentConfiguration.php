@@ -22,6 +22,7 @@ class ComponentConfiguration
     private static $useComponentModelCache;
     private static $enableSchemaEntityRegistries;
     private static $namespaceTypesAndInterfaces;
+    private static $useSingleTypeInsteadOfUnionType;
 
     /**
      * Initialize component configuration
@@ -158,6 +159,24 @@ class ComponentConfiguration
         // Define properties
         $envVariable = Environment::NAMESPACE_TYPES_AND_INTERFACES;
         $selfProperty = &self::$namespaceTypesAndInterfaces;
+        $defaultValue = false;
+        $callback = [EnvironmentValueHelpers::class, 'toBool'];
+
+        // Initialize property from the environment/hook
+        self::maybeInitializeConfigurationValue(
+            $envVariable,
+            $selfProperty,
+            $defaultValue,
+            $callback
+        );
+        return $selfProperty;
+    }
+
+    public static function useSingleTypeInsteadOfUnionType(): bool
+    {
+        // Define properties
+        $envVariable = Environment::USE_SINGLE_TYPE_INSTEAD_OF_UNION_TYPE;
+        $selfProperty = &self::$useSingleTypeInsteadOfUnionType;
         $defaultValue = false;
         $callback = [EnvironmentValueHelpers::class, 'toBool'];
 

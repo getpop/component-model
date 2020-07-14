@@ -6,6 +6,8 @@ namespace PoP\ComponentModel\TypeResolvers;
 
 use function substr;
 use function explode;
+
+use PoP\ComponentModel\ComponentConfiguration;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 
@@ -72,18 +74,31 @@ class UnionTypeHelpers
             $id;
     }
 
+    /**
+     * Return a class or another depending on these possibilities:
+     *
+     * - If there is more than 1 target type resolver for the Union, return the Union
+     * - (By configuration) If there is only one target, return that one directly
+     *   and not the Union (since it's more efficient)
+     * - If there are none types, return `null`. As a consequence,
+     *   the ID is returned as a field, not as a connection
+     *
+     * @param string $unionTypeResolverClass
+     * @return string|null
+     */
     public static function getUnionOrTargetTypeResolverClass(string $unionTypeResolverClass): ?string
     {
         $instanceManager = InstanceManagerFacade::getInstance();
-        // If there is more than 1 target type resolver for the Union, return the Union
-        // If there is only one target, return that one directly and not the Union (since it's more efficient)
-        // If there are none, return null
         $unionTypeResolver = $instanceManager->getInstance($unionTypeResolverClass);
         $targetTypeResolverClasses = $unionTypeResolver->getTargetTypeResolverClasses();
         if ($targetTypeResolverClasses) {
-            return count($targetTypeResolverClasses) == 1 ?
-                $targetTypeResolverClasses[0] :
-                $unionTypeResolverClass;
+            // By configuration: If there is only 1 item, return only that one
+            if (ComponentConfiguration::useSingleTypeInsteadOfUnionType()) {
+                return count($targetTypeResolverClasses) == 1 ?
+                    $targetTypeResolverClasses[0] :
+                    $unionTypeResolverClass;
+            }
+            return $unionTypeResolverClass;
         }
         return null;
     }
