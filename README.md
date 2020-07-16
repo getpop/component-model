@@ -1590,7 +1590,7 @@ class FieldResolver_Posts extends \PoP\Engine\AbstractFieldResolver {
     switch ($field) 
     {
       case 'tags' :
-        $value = $cmsapi->getPostTags($this->getId($post), [], array('fields' => 'ids'));
+        $value = $cmsapi->getCustomPostTags($this->getId($post), [], array('fields' => 'ids'));
         break;
 
       case 'title' :
