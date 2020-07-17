@@ -19,7 +19,7 @@ use PoP\ComponentModel\Versioning\VersioningHelpers;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\Resolvers\FieldOrDirectiveResolverTrait;
-use PoP\ComponentModel\FieldResolvers\SchemaDefinitionResolverTrait;
+use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverTrait;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverInterface;
 use PoP\ComponentModel\Resolvers\InterfaceSchemaDefinitionResolverAdapter;
@@ -30,7 +30,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
      * This class is attached to a TypeResolver
      */
     use AttachableExtensionTrait;
-    use SchemaDefinitionResolverTrait;
+    use FieldSchemaDefinitionResolverTrait;
     use FieldOrDirectiveResolverTrait;
 
     protected $enumValueArgumentValidationCache = [];
