@@ -1471,7 +1471,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             // as to make it more specific for the field
             // So override the description with the interface's own
             foreach ($interfaceFieldNames as $interfaceFieldName) {
-                if ($description = $interfaceInstance->getSchemaFieldDescription($this, $interfaceFieldName)) {
+                if ($description = $interfaceInstance->getSchemaFieldDescription($interfaceFieldName)) {
                     $interfaceFields[$interfaceFieldName][SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
                 } else {
                     // Do not keep the description from the fieldResolver
