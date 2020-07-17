@@ -26,4 +26,16 @@ interface FieldInterfaceResolverInterface extends FieldSchemaDefinitionResolverI
     public function getMaybeNamespacedInterfaceName(): string;
     public function getSchemaInterfaceDescription(): ?string;
     // public function getSchemaInterfaceVersion(string $fieldName): ?string;
+    /**
+     * This function is not called by the engine, to generate the schema.
+     * Instead, the resolver is obtained from the fieldResolver.
+     * To make sure that all fieldResolvers implementing the same interface
+     * return the expected type for the field, they can obtain it from the
+     * interface through this function.
+     *
+     * @param string $fieldName
+     * @param array $fieldArgs
+     * @return string|null
+     */
+    public function getFieldTypeResolverClass(string $fieldName, array $fieldArgs = []): ?string;
 }

@@ -6,7 +6,6 @@ namespace PoP\ComponentModel\FieldInterfaceResolvers;
 
 use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\Schema\SchemaHelpers;
-use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\FieldResolvers\SchemaDefinitionResolverTrait;
 
@@ -71,4 +70,20 @@ abstract class AbstractFieldInterfaceResolver implements FieldInterfaceResolverI
     // {
     //     return null;
     // }
+
+    /**
+     * This function is not called by the engine, to generate the schema.
+     * Instead, the resolver is obtained from the fieldResolver.
+     * To make sure that all fieldResolvers implementing the same interface
+     * return the expected type for the field, they can obtain it from the
+     * interface through this function.
+     *
+     * @param string $fieldName
+     * @param array $fieldArgs
+     * @return string|null
+     */
+    public function getFieldTypeResolverClass(string $fieldName, array $fieldArgs = []): ?string
+    {
+        return null;
+    }
 }
