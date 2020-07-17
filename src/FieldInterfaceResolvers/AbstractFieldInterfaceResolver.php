@@ -6,12 +6,11 @@ namespace PoP\ComponentModel\FieldInterfaceResolvers;
 
 use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\Schema\SchemaHelpers;
-use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
-use PoP\ComponentModel\FieldResolvers\SchemaDefinitionResolverTrait;
+use PoP\ComponentModel\FieldInterfaceResolvers\FieldInterfaceSchemaDefinitionResolverTrait;
 
 abstract class AbstractFieldInterfaceResolver implements FieldInterfaceResolverInterface
 {
-    use SchemaDefinitionResolverTrait;
+    use FieldInterfaceSchemaDefinitionResolverTrait;
 
     public static function getFieldNamesToResolve(): array
     {
@@ -57,11 +56,10 @@ abstract class AbstractFieldInterfaceResolver implements FieldInterfaceResolverI
      * even if they do not have a version. However, the other way around, to say `false`,
      * would not allow any field implementing an interface to be versioned. So this way is better.
      *
-     * @param TypeResolverInterface $typeResolver
      * @param string $fieldName
      * @return boolean
      */
-    protected function hasSchemaFieldVersion(TypeResolverInterface $typeResolver, string $fieldName): bool
+    protected function hasSchemaFieldVersion(string $fieldName): bool
     {
         return true;
     }

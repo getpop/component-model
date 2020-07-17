@@ -6,7 +6,6 @@ namespace PoP\ComponentModel\FieldInterfaceResolvers;
 
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
-use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\FieldInterfaceResolvers\AbstractSchemaFieldInterfaceResolver;
 
 class ElementalFieldInterfaceResolver extends AbstractSchemaFieldInterfaceResolver
@@ -30,29 +29,29 @@ class ElementalFieldInterfaceResolver extends AbstractSchemaFieldInterfaceResolv
         ];
     }
 
-    public function getSchemaFieldType(TypeResolverInterface $typeResolver, string $fieldName): ?string
+    public function getSchemaFieldType(string $fieldName): ?string
     {
         $types = [
             'id' => SchemaDefinition::TYPE_ID,
         ];
-        return $types[$fieldName] ?? parent::getSchemaFieldType($typeResolver, $fieldName);
+        return $types[$fieldName] ?? parent::getSchemaFieldType($fieldName);
     }
 
-    public function isSchemaFieldResponseNonNullable(TypeResolverInterface $typeResolver, string $fieldName): bool
+    public function isSchemaFieldResponseNonNullable(string $fieldName): bool
     {
         switch ($fieldName) {
             case 'id':
                 return true;
         }
-        return parent::isSchemaFieldResponseNonNullable($typeResolver, $fieldName);
+        return parent::isSchemaFieldResponseNonNullable($fieldName);
     }
 
-    public function getSchemaFieldDescription(TypeResolverInterface $typeResolver, string $fieldName): ?string
+    public function getSchemaFieldDescription(string $fieldName): ?string
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         $descriptions = [
             'id' => $translationAPI->__('The object\'s unique identifier for its type', 'component-model'),
         ];
-        return $descriptions[$fieldName] ?? parent::getSchemaFieldDescription($typeResolver, $fieldName);
+        return $descriptions[$fieldName] ?? parent::getSchemaFieldDescription($fieldName);
     }
 }
