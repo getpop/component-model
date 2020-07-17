@@ -1466,6 +1466,18 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 $interfaceFields,
                 $interfaceConnections
             );
+            // Interfaces and FieldResolvers must match on all attributes of the signature:
+            // fieldName, arguments, and return type. But not on the description of the field,
+            // as to make it more specific for the field
+            // So override the description with the interface's own
+            foreach ($interfaceFieldNames as $interfaceFieldName) {
+                if ($description = $interfaceInstance->getSchemaFieldDescription($this, $interfaceFieldName)) {
+                    $interfaceFields[$interfaceFieldName][SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
+                } else {
+                    // Do not keep the description from the fieldResolver
+                    unset($interfaceFields[$interfaceFieldName][SchemaDefinition::ARGNAME_DESCRIPTION]);
+                }
+            }
             // An interface can itself implement interfaces!
             $interfaceImplementedInterfaceNames = [];
             if ($interfaceImplementedInterfaceClasses = $interfaceInstance::getImplementedInterfaceClasses()) {
