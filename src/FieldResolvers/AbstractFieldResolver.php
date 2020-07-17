@@ -22,6 +22,7 @@ use PoP\ComponentModel\Resolvers\FieldOrDirectiveResolverTrait;
 use PoP\ComponentModel\FieldResolvers\SchemaDefinitionResolverTrait;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverInterface;
+use PoP\ComponentModel\Resolvers\InterfaceSchemaDefinitionResolverAdapter;
 
 abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSchemaDefinitionResolverInterface
 {
@@ -244,7 +245,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 $instanceManager = InstanceManagerFacade::getInstance();
                 foreach (self::getInterfaceClasses() as $interfaceClass) {
                     if (in_array($fieldName, $interfaceClass::getFieldNamesToImplement())) {
-                        $schemaDefinitionResolver = $instanceManager->getInstance($interfaceClass);
+                        // Interfaces do not receive the typeResolver, so we must bridge it
+                        $schemaDefinitionResolver = new InterfaceSchemaDefinitionResolverAdapter(
+                            $instanceManager->getInstance($interfaceClass)
+                        );
                         break;
                     }
                 }
