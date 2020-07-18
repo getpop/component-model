@@ -43,7 +43,7 @@ class SchemaDefinition
     const ARGNAME_GLOBAL_DIRECTIVES = 'globalDirectives';
     const ARGNAME_DIRECTIVE_TYPE = 'directiveType';
     const ARGNAME_DIRECTIVE_PIPELINE_POSITION = 'pipelinePosition';
-    const ARGNAME_DIRECTIVE_CAN_EXECUTE_MULTIPLE_TIMES = 'canExecuteMultipleTimes';
+    const ARGNAME_DIRECTIVE_IS_REPEATABLE = 'isRepeatable';
     const ARGNAME_DIRECTIVE_NEEDS_DATA_TO_EXECUTE = 'needsDataToExecute';
     const ARGNAME_DIRECTIVE_LIMITED_TO_FIELDS = 'limitedToFields';
     const ARGNAME_DIRECTIVE_EXPRESSIONS = 'expressions';
