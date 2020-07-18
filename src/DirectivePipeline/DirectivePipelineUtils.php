@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace PoP\ComponentModel\DirectivePipeline;
+
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
 class DirectivePipelineUtils
