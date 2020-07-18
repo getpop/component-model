@@ -82,7 +82,7 @@ interface DirectiveResolverInterface
      *
      * @return boolean
      */
-    public function canExecuteMultipleTimesInField(): bool;
+    public function isRepeatable(): bool;
     /**
      * Indicate if the directive needs to be passed $idsDataFields filled with data to be able to execute
      *

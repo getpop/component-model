@@ -27,7 +27,7 @@ abstract class AbstractValidateDirectiveResolver extends AbstractGlobalDirective
      *
      * @return boolean
      */
-    public function canExecuteMultipleTimesInField(): bool
+    public function isRepeatable(): bool
     {
         return true;
     }

@@ -33,7 +33,7 @@ class ValidateDirectiveResolver extends AbstractValidateDirectiveResolver
      *
      * @return boolean
      */
-    public function canExecuteMultipleTimesInField(): bool
+    public function isRepeatable(): bool
     {
         return false;
     }

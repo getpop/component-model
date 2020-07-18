@@ -423,12 +423,13 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     }
 
     /**
-     * By default, a directive can be executed only one time for "Schema" and "System" type directives
-     * (eg: <translate(en,es),translate(es,en)>), and many times for "Query" and "Scripting" type ones
+     * By default, a directive can be executed only one time for "Schema" and "System"
+     * type directives (eg: <translate(en,es),translate(es,en)>),
+     * and many times for the other types, "Query" and "Scripting"
      *
      * @return boolean
      */
-    public function canExecuteMultipleTimesInField(): bool
+    public function isRepeatable(): bool
     {
         return !($this->getDirectiveType() == DirectiveTypes::SYSTEM || $this->getDirectiveType() == DirectiveTypes::SCHEMA);
     }
@@ -860,7 +861,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             SchemaDefinition::ARGNAME_NAME => $directiveName,
             SchemaDefinition::ARGNAME_DIRECTIVE_TYPE => $this->getDirectiveType(),
             SchemaDefinition::ARGNAME_DIRECTIVE_PIPELINE_POSITION => $this->getPipelinePosition(),
-            SchemaDefinition::ARGNAME_DIRECTIVE_CAN_EXECUTE_MULTIPLE_TIMES => $this->canExecuteMultipleTimesInField(),
+            SchemaDefinition::ARGNAME_DIRECTIVE_CAN_EXECUTE_MULTIPLE_TIMES => $this->isRepeatable(),
             SchemaDefinition::ARGNAME_DIRECTIVE_NEEDS_DATA_TO_EXECUTE => $this->needsIDsDataFieldsToExecute(),
         ];
         if ($limitedToFields = $this::getFieldNamesToApplyTo()) {
