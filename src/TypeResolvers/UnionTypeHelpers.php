@@ -30,6 +30,17 @@ class UnionTypeHelpers
     }
 
     /**
+     * Extract the original Union type name (i.e. without "*")
+     *
+     * @param string $unionTypeCollectionName
+     * @return string
+     */
+    public static function removePrefixFromUnionTypeName(string $unionTypeCollectionName): string
+    {
+        return substr($unionTypeCollectionName, strlen(UnionTypeSymbols::UNION_TYPE_NAME_PREFIX));
+    }
+
+    /**
      * Extracts the DB key and ID from the resultItem ID
      *
      * @param array $composedDBKeyResultItemID
