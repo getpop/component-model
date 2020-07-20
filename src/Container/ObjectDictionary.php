@@ -6,10 +6,9 @@ namespace PoP\ComponentModel\Container;
 
 class ObjectDictionary implements ObjectDictionaryInterface
 {
-
     protected $dictionary;
 
-    public function get(string $class, $id): ?object
+    public function get(string $class, $id)
     {
         return $this->dictionary[$class][$id];
     }
@@ -17,7 +16,7 @@ class ObjectDictionary implements ObjectDictionaryInterface
     {
         return isset($this->dictionary[$class][$id]);
     }
-    public function set(string $class, $id, object $instance): void
+    public function set(string $class, $id, $instance): void
     {
         $this->dictionary[$class][$id] = $instance;
     }
