@@ -83,6 +83,10 @@ services:
         class: \PoP\ComponentModel\Registries\DirectiveRegistry
         public: true
 
+    fieldinterface_registry:
+        class: \PoP\ComponentModel\Registries\FieldInterfaceRegistry
+        public: true
+
     feedback_message_store:
         class: \PoP\ComponentModel\Schema\FeedbackMessageStore
         public: true
