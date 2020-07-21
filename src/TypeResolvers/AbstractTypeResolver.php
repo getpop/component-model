@@ -1639,15 +1639,25 @@ abstract class AbstractTypeResolver implements TypeResolverInterface, TypeOrFiel
             $hooksAPI = HooksAPIFacade::getInstance();
             $instanceManager = InstanceManagerFacade::getInstance();
             $fieldResolver = $instanceManager->getInstance($fieldResolverClass);
+            // Also pass the implemented interfaces defining the field
+            $fieldInterfaceResolverClasses = $fieldResolver::getImplementedInterfaceClasses();
             $fieldNames = array_filter(
                 $fieldNames,
-                function ($fieldName) use ($hooksAPI, $fieldResolver) {
+                function ($fieldName) use ($hooksAPI, $fieldResolver, $fieldInterfaceResolverClasses) {
+                    // Calculate all the interfaces that define this fieldName
+                    $fieldInterfaceResolverClassesForField = array_values(array_filter(
+                        $fieldInterfaceResolverClasses,
+                        function ($fieldInterfaceResolverClass) use ($fieldName): bool {
+                            return in_array($fieldName, $fieldInterfaceResolverClass::getFieldNamesToImplement());
+                        }
+                    ));
                     // Execute 2 filters: a generic one, and a specific one
                     if ($hooksAPI->applyFilters(
                         HookHelpers::getHookNameToFilterField(),
                         true,
                         $this,
                         $fieldResolver,
+                        $fieldInterfaceResolverClassesForField,
                         $fieldName
                     )) {
                         return $hooksAPI->applyFilters(
@@ -1655,6 +1665,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface, TypeOrFiel
                             true,
                             $this,
                             $fieldResolver,
+                            $fieldInterfaceResolverClassesForField,
                             $fieldName
                         );
                     }
