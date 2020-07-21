@@ -1476,15 +1476,17 @@ abstract class AbstractTypeResolver implements TypeResolverInterface, TypeOrFiel
             // fieldName, arguments, and return type. But not on the description of the field,
             // as to make it more specific for the field
             // So override the description with the interface's own
-            // @todo Commented temporarily since it produces a problem
-            // foreach ($interfaceFieldNames as $interfaceFieldName) {
-            //     if ($description = $interfaceInstance->getSchemaFieldDescription($interfaceFieldName)) {
-            //         $interfaceFields[$interfaceFieldName][SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
-            //     } else {
-            //         // Do not keep the description from the fieldResolver
-            //         unset($interfaceFields[$interfaceFieldName][SchemaDefinition::ARGNAME_DESCRIPTION]);
-            //     }
-            // }
+            foreach ($interfaceFieldNames as $interfaceFieldName) {
+                // Make sure a definition for that fieldName has been added
+                if ($interfaceFields[$interfaceFieldName]) {
+                    if ($description = $interfaceInstance->getSchemaFieldDescription($interfaceFieldName)) {
+                        $interfaceFields[$interfaceFieldName][SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
+                    } else {
+                        // Do not keep the description from the fieldResolver
+                        unset($interfaceFields[$interfaceFieldName][SchemaDefinition::ARGNAME_DESCRIPTION]);
+                    }
+                }
+            }
             // An interface can itself implement interfaces!
             $interfaceImplementedInterfaceNames = [];
             if ($interfaceImplementedInterfaceClasses = $interfaceInstance::getImplementedInterfaceClasses()) {
@@ -1703,7 +1705,12 @@ abstract class AbstractTypeResolver implements TypeResolverInterface, TypeOrFiel
                     $extensionClassFieldNames = $this->getFieldNamesResolvedByFieldResolver($extensionClass);
                     foreach (array_diff($extensionClassFieldNames, array_keys($schemaFieldResolvers)) as $fieldName) {
                         // Watch out here: no fieldArgs!!!! So this deals with the base case (static), not with all cases (runtime)
-                        $schemaFieldResolvers[$fieldName] = $this->getFieldResolversForField($fieldName);
+                        // If using an ACL to remove a field from an interface,
+                        // getting the fieldResolvers for that field will be empty
+                        // Then ignore adding the field, it must not be added to the schema
+                        if ($fieldResolversForField = $this->getFieldResolversForField($fieldName)) {
+                            $schemaFieldResolvers[$fieldName] = $fieldResolversForField;
+                        }
                     }
                     // The interfaces implemented by the FieldResolver can have, themselves, fieldResolvers attached to them
                     $classStack = array_values(array_unique(array_merge(
