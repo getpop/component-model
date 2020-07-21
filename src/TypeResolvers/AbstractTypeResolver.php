@@ -19,6 +19,7 @@ use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\FieldHelpers;
+use PoP\ComponentModel\TypeResolvers\UnionTypeHelpers;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\FieldResolvers\FieldResolverInterface;
 use PoP\ComponentModel\Facades\Engine\DataloadingEngineFacade;
@@ -863,6 +864,16 @@ abstract class AbstractTypeResolver implements TypeResolverInterface, TypeOrFiel
     }
 
     /**
+     * Is this a Union Type? By default it is not
+     *
+     * @return bool
+     */
+    public function isUnionType(): bool
+    {
+        return false;
+    }
+
+    /**
      * Collect all directives for all fields, and then build a single directive pipeline for all fields,
      * including all directives, even if they don't apply to all fields
      * Eg: id|title<skip>|excerpt<translate> will produce a pipeline [Skip, Translate] where they apply
@@ -875,7 +886,36 @@ abstract class AbstractTypeResolver implements TypeResolverInterface, TypeOrFiel
     public function enqueueFillingResultItemsFromIDs(array $ids_data_fields)
     {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
-        $mandatoryDirectivesForFields = $this->getAllMandatoryDirectivesForFields();
+        $instanceManager = InstanceManagerFacade::getInstance();
+        // Watch out! The UnionType must obtain the mandatoryDirectivesForFields
+        // from each of its target types!
+        // This is mandatory, because the UnionType doesn't have fields by itself.
+        // Otherwise, TypeResolverDecorators can't have their defined ACL rules
+        // work when querying a union type (eg: "customPosts")
+        if ($this->isUnionType()) {
+            $targetTypeResolverClassMandatoryDirectivesForFields = [];
+            $targetTypeResolverClasses = $this->getTargetTypeResolverClasses();
+            foreach ($targetTypeResolverClasses as $targetTypeResolverClass) {
+                $targetTypeResolver = $instanceManager->getInstance($targetTypeResolverClass);
+                $targetTypeResolverClassMandatoryDirectivesForFields[$targetTypeResolverClass] = $targetTypeResolver->getAllMandatoryDirectivesForFields();
+            }
+            // If the type data resolver is union, the dbKey where the value is stored
+            // is contained in the ID itself, with format dbKey/ID.
+            // Remove this information, and get purely the ID
+            $resultItemIDs = array_map(
+                function ($composedID) {
+                    list(
+                        $dbKey,
+                        $id
+                    ) = UnionTypeHelpers::extractDBObjectTypeAndID($composedID);
+                    return $id;
+                },
+                array_keys($ids_data_fields)
+            );
+            $resultItemIDTargetTypeResolvers = $this->getResultItemIDTargetTypeResolvers($resultItemIDs);
+        } else {
+            $mandatoryDirectivesForFields = $this->getAllMandatoryDirectivesForFields();
+        }
         $mandatorySystemDirectives = $this->getMandatoryDirectives();
         $fieldDirectiveCounter = [];
         foreach ($ids_data_fields as $id => $data_fields) {
@@ -887,6 +927,14 @@ abstract class AbstractTypeResolver implements TypeResolverInterface, TypeOrFiel
                 $fields,
                 $conditionalFields
             ));
+            if ($this->isUnionType()) {
+                list(
+                    $dbKey,
+                    $resultItemID
+                ) = UnionTypeHelpers::extractDBObjectTypeAndID($id);
+                $resultItemIDTargetTypeResolver = $resultItemIDTargetTypeResolvers[$resultItemID];
+                $mandatoryDirectivesForFields = $targetTypeResolverClassMandatoryDirectivesForFields[get_class($resultItemIDTargetTypeResolver)];
+            }
             foreach ($fields as $field) {
                 if (is_null($this->fieldDirectivesFromFieldCache[$field])) {
                     // Get the directives from the field
@@ -1726,7 +1774,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface, TypeOrFiel
         return $schemaFieldResolvers;
     }
 
-    protected function getAllMandatoryDirectivesForFields(): array
+    public function getAllMandatoryDirectivesForFields(): array
     {
         if (is_null($this->mandatoryDirectivesForFields)) {
             $this->mandatoryDirectivesForFields = $this->calculateAllMandatoryDirectivesForFields();
