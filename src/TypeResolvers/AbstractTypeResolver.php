@@ -1477,7 +1477,8 @@ abstract class AbstractTypeResolver implements TypeResolverInterface, TypeOrFiel
             // as to make it more specific for the field
             // So override the description with the interface's own
             foreach ($interfaceFieldNames as $interfaceFieldName) {
-                // Make sure a definition for that fieldName has been added
+                // Make sure a definition for that fieldName has been added,
+                // since the field could've been removed through an ACL
                 if ($interfaceFields[$interfaceFieldName]) {
                     if ($description = $interfaceInstance->getSchemaFieldDescription($interfaceFieldName)) {
                         $interfaceFields[$interfaceFieldName][SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
