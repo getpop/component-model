@@ -109,22 +109,65 @@ class CoreGlobalFieldResolver extends AbstractGlobalFieldResolver
                 $typeName = $fieldArgs['type'];
                 // If the provided typeName contains the namespace separator, then compare by qualifiedType
                 if (strpos($typeName, SchemaDefinition::TOKEN_NAMESPACE_SEPARATOR) !== false) {
-                    return $typeName == $typeResolver->getNamespacedTypeName();
+                    /**
+                     * @todo Replace the code below with:
+                     *
+                     *     return $typeName == $typeResolver->getNamespacedTypeName();
+                     *
+                     * Currently, because the GraphQL spec doesn't support namespaces,
+                     * we are using "_" as the namespace separator, instead of "/".
+                     * But this character can also be part of the Type name!
+                     * So only temporarily, compare both the namespaced and the
+                     * normal type name, until can use "/".
+                     *
+                     * @see https://github.com/graphql/graphql-spec/issues/163
+                     */
+                    return
+                        $typeName == $typeResolver->getNamespacedTypeName()
+                        || $typeName == $typeResolver->getTypeName();
                 }
                 return $typeName == $typeResolver->getTypeName();
             case 'implements':
                 $interface = $fieldArgs['interface'];
+                $implementedInterfaceResolverInstances = $typeResolver->getAllImplementedInterfaceResolverInstances();
                 // If the provided interface contains the namespace separator, then compare by qualifiedInterface
-                $useQualified = strpos($interface, SchemaDefinition::TOKEN_NAMESPACE_SEPARATOR) !== false;
+                $useNamespaced = strpos($interface, SchemaDefinition::TOKEN_NAMESPACE_SEPARATOR) !== false;
                 $implementedInterfaceNames = array_map(
-                    function ($interfaceResolver) use ($useQualified) {
-                        if ($useQualified) {
+                    function ($interfaceResolver) use ($useNamespaced) {
+                        if ($useNamespaced) {
                             return $interfaceResolver->getNamespacedInterfaceName();
                         }
                         return $interfaceResolver->getInterfaceName();
                     },
-                    $typeResolver->getAllImplementedInterfaceResolverInstances()
+                    $implementedInterfaceResolverInstances
                 );
+                /**
+                 * @todo Remove the block of code below.
+                 *
+                 * Currently, because the GraphQL spec doesn't support namespaces,
+                 * we are using "_" as the namespace separator, instead of "/".
+                 * But this character can also be part of the Interface name!
+                 * So only temporarily, also add the interface names to the
+                 * array to compare, until can use "/".
+                 *
+                 * @see https://github.com/graphql/graphql-spec/issues/163
+                 *
+                 * -- Begin code --
+                 */
+                if ($useNamespaced) {
+                    $implementedInterfaceNames = array_merge(
+                        $implementedInterfaceNames,
+                        array_map(
+                            function ($interfaceResolver) {
+                                return $interfaceResolver->getInterfaceName();
+                            },
+                            $implementedInterfaceResolverInstances
+                        )
+                    );
+                }
+                /**
+                 * -- End code --
+                 */
                 return in_array($interface, $implementedInterfaceNames);
         }
 
