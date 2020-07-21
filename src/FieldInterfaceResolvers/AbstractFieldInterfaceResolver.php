@@ -6,10 +6,9 @@ namespace PoP\ComponentModel\FieldInterfaceResolvers;
 
 use PoP\ComponentModel\Schema\SchemaHelpers;
 use PoP\ComponentModel\State\ApplicationState;
-use PoP\ComponentModel\Resolvers\TypeOrFieldInterfaceResolverInterface;
 use PoP\ComponentModel\FieldInterfaceResolvers\FieldInterfaceSchemaDefinitionResolverTrait;
 
-abstract class AbstractFieldInterfaceResolver implements FieldInterfaceResolverInterface, TypeOrFieldInterfaceResolverInterface
+abstract class AbstractFieldInterfaceResolver implements FieldInterfaceResolverInterface
 {
     use FieldInterfaceSchemaDefinitionResolverTrait;
 
@@ -42,11 +41,6 @@ abstract class AbstractFieldInterfaceResolver implements FieldInterfaceResolverI
         return $vars['namespace-types-and-interfaces'] ?
             $this->getNamespacedInterfaceName() :
             $this->getInterfaceName();
-    }
-
-    public function getTypeOrFieldInterfaceName(): string
-    {
-        return $this->getInterfaceName();
     }
 
     public function getSchemaInterfaceDescription(): ?string

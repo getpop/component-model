@@ -30,10 +30,9 @@ use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
 use PoP\ComponentModel\Facades\Schema\SchemaDefinitionServiceFacade;
 use PoP\ComponentModel\DirectiveResolvers\DirectiveResolverInterface;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups;
-use PoP\ComponentModel\Resolvers\TypeOrFieldInterfaceResolverInterface;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
 
-abstract class AbstractTypeResolver implements TypeResolverInterface, TypeOrFieldInterfaceResolverInterface
+abstract class AbstractTypeResolver implements TypeResolverInterface
 {
     public const OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM = 'validateSchemaOnResultItem';
 
@@ -85,11 +84,6 @@ abstract class AbstractTypeResolver implements TypeResolverInterface, TypeOrFiel
     {
         // Do not make the first letter lowercase, or namespaced names look bad
         return $this->getMaybeNamespacedTypeName();
-    }
-
-    public function getTypeOrFieldInterfaceName(): string
-    {
-        return $this->getTypeName();
     }
 
     public function getSchemaTypeDescription(): ?string

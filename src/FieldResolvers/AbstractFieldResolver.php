@@ -296,9 +296,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 $schemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL] = true;
             }
             // Hook to override the values, eg: by the Field Deprecation List
+            // 1. Applied on the type
             $hooksAPI = HooksAPIFacade::getInstance();
             $hookName = HookHelpers::getSchemaDefinitionForFieldHookName(
-                $typeResolver,
+                get_class($typeResolver),
                 $fieldName
             );
             $schemaDefinition = $hooksAPI->applyFilters(
@@ -308,6 +309,22 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 $fieldName,
                 $fieldArgs
             );
+            // 2. Applied on each of the implemented interfaces
+            foreach (self::getInterfaceClasses() as $interfaceClass) {
+                if (in_array($fieldName, $interfaceClass::getFieldNamesToImplement())) {
+                    $hookName = HookHelpers::getSchemaDefinitionForFieldHookName(
+                        $interfaceClass,
+                        $fieldName
+                    );
+                    $schemaDefinition = $hooksAPI->applyFilters(
+                        $hookName,
+                        $schemaDefinition,
+                        $typeResolver,
+                        $fieldName,
+                        $fieldArgs
+                    );
+                }
+            }
             $this->schemaDefinitionForFieldCache[$key] = $schemaDefinition;
         }
         return $this->schemaDefinitionForFieldCache[$key];
