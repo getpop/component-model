@@ -9,13 +9,13 @@ use PoP\FieldQuery\QueryUtils;
 use PoP\FieldQuery\QuerySyntax;
 use PoP\FieldQuery\QueryHelpers;
 use PoP\ComponentModel\ErrorUtils;
-use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\Environment;
-use PoP\ComponentModel\Schema\FieldQueryUtils;
 use League\Pipeline\PipelineBuilder;
 use PoP\Hooks\Facades\HooksAPIFacade;
 use PoP\ComponentModel\Feedback\Tokens;
 use PoP\ComponentModel\Schema\SchemaHelpers;
+use PoP\ComponentModel\Schema\FieldQueryUtils;
+use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\FieldHelpers;
@@ -29,9 +29,10 @@ use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
 use PoP\ComponentModel\Facades\Schema\SchemaDefinitionServiceFacade;
 use PoP\ComponentModel\DirectiveResolvers\DirectiveResolverInterface;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionGroups;
+use PoP\ComponentModel\Resolvers\TypeOrFieldInterfaceResolverInterface;
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFacade;
 
-abstract class AbstractTypeResolver implements TypeResolverInterface
+abstract class AbstractTypeResolver implements TypeResolverInterface, TypeOrFieldInterfaceResolverInterface
 {
     public const OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM = 'validateSchemaOnResultItem';
 
@@ -83,6 +84,11 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     {
         // Do not make the first letter lowercase, or namespaced names look bad
         return $this->getMaybeNamespacedTypeName();
+    }
+
+    public function getTypeOrFieldInterfaceName(): string
+    {
+        return $this->getTypeName();
     }
 
     public function getSchemaTypeDescription(): ?string
@@ -1470,14 +1476,15 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             // fieldName, arguments, and return type. But not on the description of the field,
             // as to make it more specific for the field
             // So override the description with the interface's own
-            foreach ($interfaceFieldNames as $interfaceFieldName) {
-                if ($description = $interfaceInstance->getSchemaFieldDescription($interfaceFieldName)) {
-                    $interfaceFields[$interfaceFieldName][SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
-                } else {
-                    // Do not keep the description from the fieldResolver
-                    unset($interfaceFields[$interfaceFieldName][SchemaDefinition::ARGNAME_DESCRIPTION]);
-                }
-            }
+            // @todo Commented temporarily since it produces a problem
+            // foreach ($interfaceFieldNames as $interfaceFieldName) {
+            //     if ($description = $interfaceInstance->getSchemaFieldDescription($interfaceFieldName)) {
+            //         $interfaceFields[$interfaceFieldName][SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
+            //     } else {
+            //         // Do not keep the description from the fieldResolver
+            //         unset($interfaceFields[$interfaceFieldName][SchemaDefinition::ARGNAME_DESCRIPTION]);
+            //     }
+            // }
             // An interface can itself implement interfaces!
             $interfaceImplementedInterfaceNames = [];
             if ($interfaceImplementedInterfaceClasses = $interfaceInstance::getImplementedInterfaceClasses()) {
