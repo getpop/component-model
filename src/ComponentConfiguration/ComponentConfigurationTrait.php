@@ -34,7 +34,7 @@ trait ComponentConfigurationTrait
         ?callable $callback = null,
         bool $useHook = true
     ): void {
-        if (!self::$initialized[$envVariable]) {
+        if (!isset(self::$initialized[$envVariable])) {
             self::$initialized[$envVariable] = true;
 
             $selfProperty = $defaultValue;
