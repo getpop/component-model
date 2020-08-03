@@ -71,7 +71,7 @@ class Engine implements EngineInterface
 
         $fullyQualifiedModule = $siteconfiguration->getEntryModule();
         if (!$fullyQualifiedModule) {
-            throw new Exception(sprintf('No entry module for this request (%s)', fullUrl()));
+            throw new Exception(sprintf('No entry module for this request (%s)', RequestUtils::getRequestedFullURL()));
         }
 
         return $fullyQualifiedModule;

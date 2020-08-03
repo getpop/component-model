@@ -86,7 +86,7 @@ class RequestUtils
                 \GD_URLPARAM_STRATUM,
             )
         );
-        $url = GeneralUtils::removeQueryArgs($remove_params, fullUrl());
+        $url = GeneralUtils::removeQueryArgs($remove_params, self::getRequestedFullURL());
 
         // Allow plug-ins to do their own logic to the URL
         $url = HooksAPIFacade::getInstance()->applyFilters('RequestUtils:getCurrentUrl', $url);
@@ -130,5 +130,32 @@ class RequestUtils
         }
 
         return $route == $route_or_routes;
+    }
+
+    /**
+     * Return the requested full URL
+     *
+     * @param boolean $useHostRequestedByClient If true, get the host from user-provided HTTP_HOST, otherwise from the server-defined SERVER_NAME
+     * @return string
+     */
+    public static function getRequestedFullURL(bool $useHostRequestedByClient = false): string
+    {
+        $s = empty($_SERVER["HTTPS"]) ? '' : ($_SERVER["HTTPS"] == "on") ? "s" : "";
+        $sp = strtolower($_SERVER["SERVER_PROTOCOL"]);
+        $protocol = substr($sp, 0, strpos($sp, "/")) . $s;
+        /**
+         * The default ports (80 for HTTP and 443 for HTTPS) must be ignored
+         */
+        $isDefaultPort = $s ? $_SERVER["SERVER_PORT"] == "443" : $_SERVER["SERVER_PORT"] == "80";
+        $port = $isDefaultPort ? "" : (":" . $_SERVER["SERVER_PORT"]);
+        /**
+         * If accessing from Nginx, the server_name might point to localhost
+         * instead of the actual server domain. So provide the change to use
+         * the user-requested host
+         *
+         * @see https://stackoverflow.com/questions/2297403/what-is-the-difference-between-http-host-and-server-name-in-php
+         */
+        $host = $useHostRequestedByClient ? $_SERVER['HTTP_HOST'] : $_SERVER['SERVER_NAME'];
+        return $protocol . "://" . $host . $port . $_SERVER['REQUEST_URI'];
     }
 }
