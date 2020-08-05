@@ -54,7 +54,14 @@ interface DirectiveResolverInterface
      * @param array $schemaDeprecations
      * @return array
      */
-    public function validateDirectiveArgumentsForSchema(TypeResolverInterface $typeResolver, string $directiveName, array $directiveArgs, array &$schemaErrors, array &$schemaWarnings, array &$schemaDeprecations): array;
+    public function validateDirectiveArgumentsForSchema(
+        TypeResolverInterface $typeResolver,
+        string $directiveName,
+        array $directiveArgs,
+        array &$schemaErrors,
+        array &$schemaWarnings,
+        array &$schemaDeprecations
+    ): array;
     /**
      * Define where to place the directive in the directive execution pipeline
      * 2 directives are mandatory: Validate and ResolveAndMerge, which are executed in this order.
@@ -76,7 +83,13 @@ interface DirectiveResolverInterface
      * @param string $field
      * @return boolean
      */
-    public function resolveCanProcess(TypeResolverInterface $typeResolver, string $directiveName, array $directiveArgs, string $field, array &$variables): bool;
+    public function resolveCanProcess(
+        TypeResolverInterface $typeResolver,
+        string $directiveName,
+        array $directiveArgs,
+        string $field,
+        array &$variables
+    ): bool;
     /**
      * Indicates if the directive can be added several times to the pipeline, or only once
      *
