@@ -11,12 +11,12 @@ use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
  * Create an alias of a fieldName (or fieldNames), to use when:
  *
  * - the same fieldName is registered more than once (eg: by different plugins)
- * - want to rename the field (alias the field, and remove access to the original)
+ * - want to rename the field (steps: alias the field, then remove access to the original)
  *
  * This trait, to be applied on a FieldResolver class, uses the Proxy design pattern:
  * every function executed on the aliasing field executes the same function on the aliased field.
  *
- * The aliased fieldResolver is chosed to be of class `AbstractSchemaFieldResolver`,
+ * The aliased FieldResolver is chosen to be of class `AbstractSchemaFieldResolver`,
  * since this is the highest level comprising the base `AbstractFieldResolver`
  * and the interface `FieldSchemaDefinitionResolverInterface`.
  *
