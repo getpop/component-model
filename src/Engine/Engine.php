@@ -111,7 +111,7 @@ class Engine implements EngineInterface
         }
     }
 
-    public function getExtraRoutes()
+    public function getExtraRoutes(): array
     {
         // The extra URIs must be cached! That is because we will change the requested URI in $vars, upon which the hook to inject extra URIs (eg: for page INITIALFRAMES) will stop working
         if (!is_null($this->extra_routes)) {
@@ -119,12 +119,6 @@ class Engine implements EngineInterface
         }
 
         $this->extra_routes = array();
-
-        // The API cannot use getExtraRoutes()!!!!! Because the fields can't be applied to different resources! (Eg: author/leo/ and author/leo/?route=posts)
-        $vars = ApplicationState::getVars();
-        if ($vars['scheme'] == POP_SCHEME_API) {
-            return $this->extra_routes;
-        }
 
         if (ServerUtils::enableExtraRoutesByParams()) {
             $this->extra_routes = $_REQUEST[GD_URLPARAM_EXTRAROUTES] ?? array();

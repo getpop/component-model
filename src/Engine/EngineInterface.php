@@ -10,7 +10,7 @@ interface EngineInterface
     public function addBackgroundUrl($url, $targets);
     public function getEntryModule(): array;
     public function sendEtagHeader();
-    public function getExtraRoutes();
+    public function getExtraRoutes(): array;
     public function listExtraRouteVars();
     public function generateData();
     public function calculateOutuputData();
