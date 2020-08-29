@@ -57,6 +57,7 @@ services:
 
     PoP\ComponentModel\ModuleFilters\:
         resource: '../src/ModuleFilters/*'
+        exclude: '../src/ModuleFilters/*Interface.php'
 
     module_path_manager:
         class: \PoP\ComponentModel\ModulePath\ModulePathManager
