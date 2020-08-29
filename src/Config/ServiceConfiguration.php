@@ -25,6 +25,13 @@ class ServiceConfiguration
             );
         }
 
+        // Add ModuleFilters to the ModuleFilterManager
+        ContainerBuilderUtils::injectServicesIntoService(
+            'module_filter_manager',
+            'PoP\\ComponentModal\\ModuleFilters',
+            'add'
+        );
+
         // Inject the mandatory root directives
         ContainerBuilderUtils::injectValuesIntoService(
             'dataloading_engine',

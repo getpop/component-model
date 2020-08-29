@@ -26,7 +26,7 @@ use PoP\ComponentModel\Facades\ModulePath\ModulePathHelpersFacade;
 use PoP\ComponentModel\Facades\ModulePath\ModulePathManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
 use PoP\ComponentModel\TypeResolvers\UnionTypeResolverInterface;
-use PoP\ComponentModel\Facades\ModuleFilters\ModuleFilterManagerFacade;
+use PoP\ComponentModel\Facades\ModuleFiltering\ModuleFilterManagerFacade;
 use PoP\ComponentModel\Facades\DataStructure\DataStructureManagerFacade;
 use PoP\ComponentModel\Settings\SiteConfigurationProcessorManagerFactory;
 use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;

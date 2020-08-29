@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace PoP\ComponentModel\Misc;
 
 use PoP\Hooks\Facades\HooksAPIFacade;
-use PoP\ComponentModel\ModuleFilters\ModuleFilterManager;
+use PoP\ComponentModel\ModuleFiltering\ModuleFilterManager;
 use PoP\ComponentModel\ModuleFilters\ModulePaths;
 use PoP\ComponentModel\Misc\GeneralUtils;
 use PoP\ComponentModel\Configuration\Request;

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PoP\ComponentModel\Facades\ModuleFilters;
+namespace PoP\ComponentModel\Facades\ModuleFiltering;
 
-use PoP\ComponentModel\ModuleFilters\ModuleFilterManagerInterface;
+use PoP\ComponentModel\ModuleFiltering\ModuleFilterManagerInterface;
 use PoP\Root\Container\ContainerBuilderFactory;
 
 class ModuleFilterManagerFacade

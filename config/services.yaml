@@ -50,10 +50,13 @@ services:
             $version: '%version%'
 
     module_filter_manager:
-        class: '\PoP\ComponentModel\ModuleFilters\ModuleFilterManager'
+        class: '\PoP\ComponentModel\ModuleFiltering\ModuleFilterManager'
         public: true
         arguments:
             $modulePathHelpers: '@module_path_helpers'
+
+    PoP\ComponentModel\ModuleFilters\:
+        resource: '../src/ModuleFilters/*'
 
     module_path_manager:
         class: \PoP\ComponentModel\ModulePath\ModulePathManager

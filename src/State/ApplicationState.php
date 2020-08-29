@@ -10,7 +10,7 @@ use PoP\ComponentModel\Configuration\Request;
 use PoP\Routing\Facades\RoutingManagerFacade;
 use PoP\ComponentModel\Facades\Info\ApplicationInfoFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
-use PoP\ComponentModel\Facades\ModuleFilters\ModuleFilterManagerFacade;
+use PoP\ComponentModel\Facades\ModuleFiltering\ModuleFilterManagerFacade;
 use PoP\ComponentModel\ComponentConfiguration;
 use PoP\ComponentModel\StratumManagerFactory;
 use PoP\ComponentModel\Server\Utils as ServerUtils;

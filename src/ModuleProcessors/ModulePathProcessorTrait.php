@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 namespace PoP\ComponentModel\ModuleProcessors;
-use PoP\ComponentModel\Facades\ModuleFilters\ModuleFilterManagerFacade;
+use PoP\ComponentModel\Facades\ModuleFiltering\ModuleFilterManagerFacade;
 use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
 use PoP\ComponentModel\Modules\ModuleUtils;
 
