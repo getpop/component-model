@@ -21,13 +21,17 @@ trait InstanceManagerTrait
         return !is_null($this->instances[$class]);
     }
 
+    public function getImplementationClass(string $class)
+    {
+        // Allow a class to take the place of another one
+        return $this->overridingClasses[$class] ?? $class;
+    }
+
     public function getClassInstance(string $class)
     {
         if (!$this->hasClassBeenLoaded($class)) {
             // Allow a class to take the place of another one
-            if ($overridingClass = $this->overridingClasses[$class]) {
-                $class = $overridingClass;
-            }
+            $class = $this->getImplementationClass($class);
 
             // First ask the ContainerBuilder to handle the class as a Service
             $containerBuilder = ContainerBuilderFactory::getInstance();
