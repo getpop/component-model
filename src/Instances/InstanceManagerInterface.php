@@ -6,6 +6,6 @@ namespace PoP\ComponentModel\Instances;
 
 interface InstanceManagerInterface
 {
-    public function getInstance(string $class);
-    public function getImplementationClass(string $class);
+    public function getInstance(string $class): object;
+    public function getImplementationClass(string $class): string;
 }

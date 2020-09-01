@@ -16,18 +16,18 @@ trait InstanceManagerTrait
         $this->overridingClasses[$overrideClass] = $withClass;
     }
 
-    protected function hasClassBeenLoaded(string $class)
+    protected function hasClassBeenLoaded(string $class): bool
     {
         return !is_null($this->instances[$class]);
     }
 
-    public function getImplementationClass(string $class)
+    public function getImplementationClass(string $class): string
     {
         // Allow a class to take the place of another one
         return $this->overridingClasses[$class] ?? $class;
     }
 
-    public function getClassInstance(string $class)
+    public function getClassInstance(string $class): object
     {
         if (!$this->hasClassBeenLoaded($class)) {
             // Allow a class to take the place of another one
@@ -47,7 +47,7 @@ trait InstanceManagerTrait
         return $this->instances[$class];
     }
 
-    public function getInstance(string $class)
+    public function getInstance(string $class): object
     {
         return $this->getClassInstance($class);
     }
