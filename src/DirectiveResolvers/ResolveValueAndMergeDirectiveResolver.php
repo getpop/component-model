@@ -127,22 +127,53 @@ class ResolveValueAndMergeDirectiveResolver extends AbstractGlobalDirectiveResol
         }
     }
 
-    protected function resolveValuesForResultItem(TypeResolverInterface $typeResolver, $id, $resultItem, array $dataFields, array &$dbItems, array &$previousDBItems, array &$variables, array &$expressions, array &$dbErrors, array &$dbWarnings, array &$dbDeprecations)
-    {
+    protected function resolveValuesForResultItem(
+        TypeResolverInterface $typeResolver,
+        $id,
+        object $resultItem,
+        array $dataFields,
+        array &$dbItems,
+        array &$previousDBItems,
+        array &$variables,
+        array &$expressions,
+        array &$dbErrors,
+        array &$dbWarnings,
+        array &$dbDeprecations
+    ) {
         foreach ($dataFields as $field) {
             $this->resolveValueForResultItem($typeResolver, $id, $resultItem, $field, $dbItems, $previousDBItems, $variables, $expressions, $dbErrors, $dbWarnings, $dbDeprecations);
         }
     }
 
-    protected function resolveValueForResultItem(TypeResolverInterface $typeResolver, $id, $resultItem, string $field, array &$dbItems, array &$previousDBItems, array &$variables, array &$expressions, array &$dbErrors, array &$dbWarnings, array &$dbDeprecations)
-    {
+    protected function resolveValueForResultItem(
+        TypeResolverInterface $typeResolver,
+        $id,
+        object $resultItem,
+        string $field,
+        array &$dbItems,
+        array &$previousDBItems,
+        array &$variables,
+        array &$expressions,
+        array &$dbErrors,
+        array &$dbWarnings,
+        array &$dbDeprecations
+    ) {
         // Get the value, and add it to the database
         $value = $this->resolveFieldValue($typeResolver, $id, $resultItem, $field, $previousDBItems, $variables, $expressions, $dbWarnings, $dbDeprecations);
         $this->addValueForResultItem($typeResolver, $id, $field, $value, $dbItems, $dbErrors);
     }
 
-    protected function resolveFieldValue(TypeResolverInterface $typeResolver, $id, $resultItem, string $field, array &$previousDBItems, array &$variables, array &$expressions, array &$dbWarnings, array &$dbDeprecations)
-    {
+    protected function resolveFieldValue(
+        TypeResolverInterface $typeResolver,
+        $id,
+        object $resultItem,
+        string $field,
+        array &$previousDBItems,
+        array &$variables,
+        array &$expressions,
+        array &$dbWarnings,
+        array &$dbDeprecations
+    ) {
         $value = $typeResolver->resolveValue($resultItem, $field, $variables, $expressions);
         // Merge the dbWarnings and dbDeprecations, if any
         $feedbackMessageStore = FeedbackMessageStoreFacade::getInstance();

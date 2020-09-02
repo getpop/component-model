@@ -95,7 +95,15 @@ interface FieldResolverInterface
         array $fieldArgs = []
     ): bool;
     public function enableOrderedSchemaFieldArgs(TypeResolverInterface $typeResolver, string $fieldName): bool;
-    public function getValidationErrorDescription(TypeResolverInterface $typeResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?string;
+    /**
+     * @param array<string, mixed> $fieldArgs
+     */
+    public function getValidationErrorDescription(
+        TypeResolverInterface $typeResolver,
+        object $resultItem,
+        string $fieldName,
+        array $fieldArgs = []
+    ): ?string;
     /**
      * Define if to use the version to decide if to process the field or not
      *

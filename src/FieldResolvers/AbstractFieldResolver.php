@@ -386,18 +386,40 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         return true;
     }
 
-    protected function getValidationCheckpoints(TypeResolverInterface $typeResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?array
-    {
+    /**
+     * @param array<string, mixed> $fieldArgs
+     * @return array<array>|null A checkpoint set, or null
+     */
+    protected function getValidationCheckpoints(
+        TypeResolverInterface $typeResolver,
+        object $resultItem,
+        string $fieldName,
+        array $fieldArgs = []
+    ): ?array {
         return null;
     }
 
-    protected function getValidationCheckpointsErrorMessage(TypeResolverInterface $typeResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?string
-    {
+    /**
+     * @param array<string, mixed> $fieldArgs
+     */
+    protected function getValidationCheckpointsErrorMessage(
+        TypeResolverInterface $typeResolver,
+        object $resultItem,
+        string $fieldName,
+        array $fieldArgs = []
+    ): ?string {
         return null;
     }
 
-    public function getValidationErrorDescription(TypeResolverInterface $typeResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?string
-    {
+    /**
+     * @param array<string, mixed> $fieldArgs
+     */
+    public function getValidationErrorDescription(
+        TypeResolverInterface $typeResolver,
+        object $resultItem,
+        string $fieldName,
+        array $fieldArgs = []
+    ): ?string {
         // Can perform validation through checkpoints
         if ($checkpoints = $this->getValidationCheckpoints($typeResolver, $resultItem, $fieldName, $fieldArgs)) {
             $engine = EngineFacade::getInstance();

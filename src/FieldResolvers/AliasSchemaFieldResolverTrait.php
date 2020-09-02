@@ -155,9 +155,15 @@ trait AliasSchemaFieldResolverTrait
     /**
      * Proxy pattern: execute same function on the aliased FieldResolver,
      * for the aliased $fieldName
+     *
+     * @param array<string, mixed> $fieldArgs
      */
-    public function getValidationErrorDescription(TypeResolverInterface $typeResolver, $resultItem, string $fieldName, array $fieldArgs = []): ?string
-    {
+    public function getValidationErrorDescription(
+        TypeResolverInterface $typeResolver,
+        object $resultItem,
+        string $fieldName,
+        array $fieldArgs = []
+    ): ?string {
         $aliasedFieldResolver = $this->getAliasedFieldResolverInstance();
         return $aliasedFieldResolver->getValidationErrorDescription(
             $typeResolver,

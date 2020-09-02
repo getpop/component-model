@@ -21,8 +21,21 @@ interface FieldQueryInterpreterInterface extends \PoP\FieldQuery\FieldQueryInter
     public function extractDirectiveArguments(DirectiveResolverInterface $directiveResolver, TypeResolverInterface $typeResolver, string $directive, ?array $variables = null, ?array &$schemaWarnings = null): array;
     public function extractFieldArgumentsForSchema(TypeResolverInterface $typeResolver, string $field, ?array $variables = null): array;
     public function extractDirectiveArgumentsForSchema(DirectiveResolverInterface $directiveResolver, TypeResolverInterface $typeResolver, string $directive, ?array $variables = null, bool $disableDynamicFields = false): array;
-    public function extractFieldArgumentsForResultItem(TypeResolverInterface $typeResolver, $resultItem, string $field, ?array $variables, ?array $expressions): array;
-    public function extractDirectiveArgumentsForResultItem(DirectiveResolverInterface $directiveResolver, TypeResolverInterface $typeResolver, $resultItem, string $directive, array $variables, array $expressions): array;
+    public function extractFieldArgumentsForResultItem(
+        TypeResolverInterface $typeResolver,
+        object $resultItem,
+        string $field,
+        ?array $variables,
+        ?array $expressions
+    ): array;
+    public function extractDirectiveArgumentsForResultItem(
+        DirectiveResolverInterface $directiveResolver,
+        TypeResolverInterface $typeResolver,
+        object $resultItem,
+        string $directive,
+        array $variables,
+        array $expressions
+    ): array;
     public function maybeConvertFieldArgumentValue($fieldArgValue, ?array $variables = null);
     public function maybeConvertFieldArgumentArrayValue($fieldArgValue, ?array $variables = null);
 }

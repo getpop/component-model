@@ -404,8 +404,13 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         return $fieldOrDirectiveArgs;
     }
 
-    public function extractFieldArgumentsForResultItem(TypeResolverInterface $typeResolver, $resultItem, string $field, ?array $variables, ?array $expressions): array
-    {
+    public function extractFieldArgumentsForResultItem(
+        TypeResolverInterface $typeResolver,
+        object $resultItem,
+        string $field,
+        ?array $variables,
+        ?array $expressions
+    ): array {
         $dbErrors = $dbWarnings = [];
         $validAndResolvedField = $field;
         $fieldName = $this->getFieldName($field);
@@ -440,8 +445,14 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         ];
     }
 
-    public function extractDirectiveArgumentsForResultItem(DirectiveResolverInterface $directiveResolver, TypeResolverInterface $typeResolver, $resultItem, string $fieldDirective, array $variables, array $expressions): array
-    {
+    public function extractDirectiveArgumentsForResultItem(
+        DirectiveResolverInterface $directiveResolver,
+        TypeResolverInterface $typeResolver,
+        object $resultItem,
+        string $fieldDirective,
+        array $variables,
+        array $expressions
+    ): array {
         $dbErrors = $dbWarnings = [];
         $validAndResolvedDirective = $fieldDirective;
         $directiveName = $this->getFieldDirectiveName($fieldDirective);
@@ -476,8 +487,15 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         ];
     }
 
-    protected function extractFieldOrDirectiveArgumentsForResultItem(TypeResolverInterface $typeResolver, $resultItem, array $fieldOrDirectiveArgs, string $fieldOrDirectiveOutputKey, ?array $variables, ?array $expressions, array &$dbErrors): array
-    {
+    protected function extractFieldOrDirectiveArgumentsForResultItem(
+        TypeResolverInterface $typeResolver,
+        object $resultItem,
+        array $fieldOrDirectiveArgs,
+        string $fieldOrDirectiveOutputKey,
+        ?array $variables,
+        ?array $expressions,
+        array &$dbErrors
+    ): array {
         // Only need to extract arguments if they have fields or arrays
         if (FieldQueryUtils::isAnyFieldArgumentValueDynamic(
             array_values(
@@ -888,13 +906,21 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
      * @param [type] $variables
      * @return mixed
      */
-    protected function maybeResolveFieldArgumentValueForResultItem(TypeResolverInterface $typeResolver, $resultItem, $fieldArgValue, ?array $variables, ?array $expressions)
-    {
+    protected function maybeResolveFieldArgumentValueForResultItem(
+        TypeResolverInterface $typeResolver,
+        object $resultItem,
+        $fieldArgValue,
+        ?array $variables,
+        ?array $expressions
+    ) {
         // If it is an array, apply this function on all elements
         if (is_array($fieldArgValue)) {
-            return array_map(function ($fieldArgValueElem) use ($typeResolver, $resultItem, $variables, $expressions) {
-                return $this->maybeResolveFieldArgumentValueForResultItem($typeResolver, $resultItem, $fieldArgValueElem, $variables, $expressions);
-            }, (array)$fieldArgValue);
+            return array_map(
+                function ($fieldArgValueElem) use ($typeResolver, $resultItem, $variables, $expressions) {
+                    return $this->maybeResolveFieldArgumentValueForResultItem($typeResolver, $resultItem, $fieldArgValueElem, $variables, $expressions);
+                },
+                (array)$fieldArgValue
+            );
         }
 
         // Execute as expression

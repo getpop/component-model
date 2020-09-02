@@ -244,8 +244,15 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         return $directiveArgs;
     }
 
-    public function dissectAndValidateDirectiveForResultItem(TypeResolverInterface $typeResolver, $resultItem, array &$variables, array &$expressions, array &$dbErrors, array &$dbWarnings, array &$dbDeprecations): array
-    {
+    public function dissectAndValidateDirectiveForResultItem(
+        TypeResolverInterface $typeResolver,
+        object $resultItem,
+        array &$variables,
+        array &$expressions,
+        array &$dbErrors,
+        array &$dbWarnings,
+        array &$dbDeprecations
+    ): array {
         $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
         list(
             $validDirective,
