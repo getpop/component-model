@@ -36,6 +36,9 @@ class ModelInstance implements ModelInstanceInterface
         return md5(implode('-', $this->getModelInstanceComponents()));
     }
 
+    /**
+     * @return string[]
+     */
     protected function getModelInstanceComponents(): array
     {
         $components = array();
@@ -65,6 +68,9 @@ class ModelInstance implements ModelInstanceInterface
         return $components;
     }
 
+    /**
+     * @return string[]
+     */
     protected function getModelInstanceComponentsFromVars(): array
     {
         $components = array();

@@ -8,7 +8,7 @@ class DefaultDataStructureFormatter extends AbstractJSONDataStructureFormatter
 {
     public const NAME = 'default';
 
-    public static function getName()
+    public static function getName(): string
     {
         return self::NAME;
     }

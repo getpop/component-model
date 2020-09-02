@@ -295,6 +295,8 @@ trait AliasSchemaFieldResolverTrait
     /**
      * Proxy pattern: execute same function on the aliased FieldResolver,
      * for the aliased $fieldName
+     *
+     * @return mixed
      */
     public function resolveValue(
         TypeResolverInterface $typeResolver,
@@ -320,6 +322,8 @@ trait AliasSchemaFieldResolverTrait
     /**
      * Proxy pattern: execute same function on the aliased FieldResolver,
      * for the aliased $fieldName
+     *
+     * @param array<string, mixed> $fieldArgs
      */
     public function resolveFieldTypeResolverClass(
         TypeResolverInterface $typeResolver,
