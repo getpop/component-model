@@ -50,7 +50,19 @@ interface TypeResolverInterface
     public function getSchemaFieldArgs(string $field): array;
     public function enableOrderedSchemaFieldArgs(string $field): bool;
     public function resolveFieldTypeResolverClass(string $field): ?string;
-    public function resolveValue($resultItem, string $field, ?array $variables = null, ?array $expressions = null, array $options = []);
+    /**
+     * @param array<string, mixed>|null $variables
+     * @param array<string, mixed>|null $expressions
+     * @param array<string, mixed> $options
+     * @return mixed
+     */
+    public function resolveValue(
+        object $resultItem,
+        string $field,
+        ?array $variables = null,
+        ?array $expressions = null,
+        array $options = []
+    );
     public function getSchemaDefinition(array $stackMessages, array &$generalMessages, array $options = []): array;
     public function hasFieldResolversForField(string $field): bool;
     /**

@@ -332,8 +332,19 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         );
     }
 
-    public function resolveValue($resultItem, string $field, ?array $variables = null, ?array $expressions = null, array $options = [])
-    {
+    /**
+     * @param array<string, mixed>|null $variables
+     * @param array<string, mixed>|null $expressions
+     * @param array<string, mixed> $options
+     * @return mixed
+     */
+    public function resolveValue(
+        object $resultItem,
+        string $field,
+        ?array $variables = null,
+        ?array $expressions = null,
+        array $options = []
+    ) {
         // Check that a typeResolver from this Union can process this resultItem, or return an arror
         $targetTypeResolver = $this->getTargetTypeResolver($resultItem);
         if (is_null($targetTypeResolver)) {
