@@ -32,6 +32,10 @@ class DataStructureManager implements DataStructureManagerInterface
 
         // Return the default one
         $instanceManager = InstanceManagerFacade::getInstance();
-        return $instanceManager->getInstance(DefaultDataStructureFormatter::class);
+        /**
+         * @var DefaultDataStructureFormatter
+         */
+        $formatter = $instanceManager->getInstance(DefaultDataStructureFormatter::class);
+        return $formatter;
     }
 }
