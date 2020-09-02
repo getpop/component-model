@@ -224,6 +224,9 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
             $notImplementingInterfaceTypeResolverClasses = array_filter(
                 $typeResolverClasses,
                 function ($typeResolverClass) use ($typeInterfaceClass, $instanceManager) {
+                    /**
+                     * @var TypeResolverInterface
+                     */
                     $typeResolver = $instanceManager->getInstance($typeResolverClass);
                     return !in_array($typeInterfaceClass, $typeResolver->getAllImplementedInterfaceClasses());
                 }
@@ -242,6 +245,9 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
                             $translationAPI->__('\', \''),
                             array_map(
                                 function ($typeResolverClass) use ($instanceManager, $translationAPI) {
+                                    /**
+                                     * @var TypeResolverInterface
+                                     */
                                     $typeResolver = $instanceManager->getInstance($typeResolverClass);
                                     return sprintf(
                                         $translationAPI->__('%s (%s)'),
@@ -302,6 +308,9 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         if ($typeResolverPicker = $this->getTargetTypeResolverPicker($resultItem)) {
             $instanceManager = InstanceManagerFacade::getInstance();
             $typeResolverClass = $typeResolverPicker->getTypeResolverClass();
+            /**
+             * @var TypeResolverInterface
+             */
             $typeResolver = $instanceManager->getInstance($typeResolverClass);
             return $typeResolver;
         }

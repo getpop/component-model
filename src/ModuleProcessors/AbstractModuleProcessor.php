@@ -4,22 +4,23 @@ declare(strict_types=1);
 
 namespace PoP\ComponentModel\ModuleProcessors;
 
-use PoP\Hooks\Facades\HooksAPIFacade;
-use PoP\ComponentModel\Facades\ModuleFiltering\ModuleFilterManagerFacade;
-use PoP\ComponentModel\ModuleFiltering\ModuleFilterManager;
-use PoP\ComponentModel\Facades\ModulePath\ModulePathHelpersFacade;
-use PoP\ComponentModel\Modules\ModuleUtils;
-use PoP\ComponentModel\ModuleFilters\ModulePaths;
-use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
-use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
-use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
-use PoP\ComponentModel\State\ApplicationState;
 use PoP\ComponentModel\DataloadUtils;
-use PoP\ComponentModel\Misc\RequestUtils;
+use PoP\Hooks\Facades\HooksAPIFacade;
 use PoP\ComponentModel\Misc\GeneralUtils;
-use PoP\ComponentModel\ModuleProcessors\DataloadingConstants;
-use PoP\ComponentModel\Settings\SettingsManagerFactory;
+use PoP\ComponentModel\Misc\RequestUtils;
+use PoP\ComponentModel\Modules\ModuleUtils;
 use PoP\ComponentModel\Configuration\Request;
+use PoP\ComponentModel\State\ApplicationState;
+use PoP\ComponentModel\ModuleFilters\ModulePaths;
+use PoP\ComponentModel\Settings\SettingsManagerFactory;
+use PoP\ComponentModel\ModuleFiltering\ModuleFilterManager;
+use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
+use PoP\ComponentModel\ModuleProcessors\DataloadingConstants;
+use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
+use PoP\ComponentModel\Facades\ModulePath\ModulePathHelpersFacade;
+use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
+use PoP\ComponentModel\Facades\ModuleFiltering\ModuleFilterManagerFacade;
+use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
 
 abstract class AbstractModuleProcessor implements ModuleProcessorInterface
 {
@@ -172,6 +173,9 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                 $this->setProp($submodule, $props, 'succeeding-typeResolver', $typeResolver_class);
             }
             $instanceManager = InstanceManagerFacade::getInstance();
+            /**
+             * @var TypeResolverInterface
+             */
             $typeResolver = $instanceManager->getInstance($typeResolver_class);
             foreach ($this->getDomainSwitchingSubmodules($module) as $subcomponent_data_field => $subcomponent_modules) {
                 if ($subcomponent_typeResolver_class = DataloadUtils::getTypeResolverClassFromSubcomponentDataField($typeResolver, $subcomponent_data_field)) {
@@ -475,6 +479,9 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
 
         $instanceManager = InstanceManagerFacade::getInstance();
         if ($typeResolver_class = $this->getTypeResolverClass($module)) {
+            /**
+             * @var TypeResolverInterface
+             */
             $typeResolver = $instanceManager->getInstance((string)$typeResolver_class);
             if ($dbkey = $typeResolver->getTypeOutputName()) {
                 // Place it under "id" because it is for fetching the current object from the DB, which is found through dbObject.id
@@ -484,6 +491,9 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
 
         // This prop is set for both dataloading and non-dataloading modules
         if ($typeResolver_class = $this->getProp($module, $props, 'succeeding-typeResolver')) {
+            /**
+             * @var TypeResolverInterface
+             */
             $typeResolver = $instanceManager->getInstance($typeResolver_class);
             foreach (array_keys($this->getDomainSwitchingSubmodules($module)) as $subcomponent_data_field) {
                 // If passing a subcomponent fieldname that doesn't exist to the API, then $subcomponent_typeResolver_class will be empty

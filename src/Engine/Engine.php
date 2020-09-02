@@ -936,6 +936,9 @@ class Engine implements EngineInterface
                 $load_data = !$data_properties[DataloadingConstants::SKIPDATALOAD];
                 if ($load_data) {
                     $typeResolver_class = $processor->getTypeResolverClass($module);
+                    /**
+                     * @var TypeResolverInterface
+                     */
                     $typeResolver = $instanceManager->getInstance((string)$typeResolver_class);
                     $isUnionTypeResolver = $typeResolver instanceof UnionTypeResolverInterface;
                     // ------------------------------------------
@@ -1261,6 +1264,9 @@ class Engine implements EngineInterface
                 );
             }
 
+            /**
+             * @var TypeResolverInterface
+             */
             $typeResolver = $instanceManager->getInstance((string)$typeResolver_class);
             $database_key = $typeResolver->getTypeOutputName();
 

@@ -170,6 +170,9 @@ trait QueryDataModuleProcessorTrait
         }
 
         $typeResolverClass = $this->getTypeResolverClass($module);
+        /**
+         * @var TypeResolverInterface
+         */
         $typeResolver = $instanceManager->getInstance($typeResolverClass);
         $typeDataLoaderClass = $typeResolver->getTypeDataLoaderClass();
         $typeDataLoader = $instanceManager->getInstance($typeDataLoaderClass);
