@@ -320,7 +320,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         );
     }
 
-    protected function getUnresolvedResultItemError($resultItem)
+    protected function getUnresolvedResultItemError(object $resultItem)
     {
         $translationAPI = TranslationAPIFacade::getInstance();
         return new Error(
