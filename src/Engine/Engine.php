@@ -470,9 +470,9 @@ class Engine implements EngineInterface
         // Any errors? Send them back
         if (RequestUtils::$errors) {
             if (count(RequestUtils::$errors) > 1) {
-                $meta[GD_URLPARAM_ERROR] = TranslationAPIFacade::getInstance()->__('Ops, there were some errors:', 'pop-engine') . implode('<br/>', RequestUtils::$errors);
+                $meta[GD_URLPARAM_ERROR] = TranslationAPIFacade::getInstance()->__('Oops, there were some errors:', 'pop-engine') . implode('<br/>', RequestUtils::$errors);
             } else {
-                $meta[GD_URLPARAM_ERROR] = TranslationAPIFacade::getInstance()->__('Ops, there was an error: ', 'pop-engine') . RequestUtils::$errors[0];
+                $meta[GD_URLPARAM_ERROR] = TranslationAPIFacade::getInstance()->__('Oops, there was an error: ', 'pop-engine') . RequestUtils::$errors[0];
             }
         }
 
