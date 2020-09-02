@@ -151,7 +151,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
      * @param [type] $resultItem
      * @return void
      */
-    public function getID($resultItem)
+    public function getID(object $resultItem)
     {
         $targetTypeResolver = $this->getTargetTypeResolver($resultItem);
         if (is_null($targetTypeResolver)) {
