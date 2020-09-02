@@ -280,7 +280,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         return null;
     }
 
-    public function getTargetTypeResolverPicker($resultItem): ?TypeResolverPickerInterface
+    public function getTargetTypeResolverPicker(object $resultItem): ?TypeResolverPickerInterface
     {
         // Among all registered fieldresolvers, check if any is able to process the object, through function `process`
         // Important: iterate from back to front, because more general components (eg: Users) are defined first,
@@ -297,7 +297,7 @@ abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements
         return null;
     }
 
-    public function getTargetTypeResolver($resultItem): ?TypeResolverInterface
+    public function getTargetTypeResolver(object $resultItem): ?TypeResolverInterface
     {
         if ($typeResolverPicker = $this->getTargetTypeResolverPicker($resultItem)) {
             $instanceManager = InstanceManagerFacade::getInstance();

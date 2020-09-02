@@ -9,7 +9,7 @@ use PoP\ComponentModel\TypeResolverPickers\CastableTypeResolverPickerInterface;
 
 abstract class AbstractCastableTypeResolverPicker extends AbstractTypeResolverPicker implements CastableTypeResolverPickerInterface
 {
-    public function cast($resultItem)
+    public function cast(object $resultItem)
     {
         return $resultItem;
     }

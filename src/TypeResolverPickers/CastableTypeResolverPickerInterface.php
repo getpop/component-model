@@ -6,5 +6,5 @@ namespace PoP\ComponentModel\TypeResolverPickers;
 
 interface CastableTypeResolverPickerInterface
 {
-    public function cast($resultItem);
+    public function cast(object $resultItem);
 }
