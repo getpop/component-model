@@ -11,6 +11,10 @@ class ModelInstanceFacade
 {
     public static function getInstance(): ModelInstanceInterface
     {
-        return ContainerBuilderFactory::getInstance()->get('model_instance');
+        /**
+         * @var ModelInstanceInterface
+         */
+        $service = ContainerBuilderFactory::getInstance()->get('model_instance');
+        return $service;
     }
 }

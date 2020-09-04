@@ -11,6 +11,10 @@ class ModulePathManagerFacade
 {
     public static function getInstance(): ModulePathManagerInterface
     {
-        return ContainerBuilderFactory::getInstance()->get('module_path_manager');
+        /**
+         * @var ModulePathManagerInterface
+         */
+        $service = ContainerBuilderFactory::getInstance()->get('module_path_manager');
+        return $service;
     }
 }

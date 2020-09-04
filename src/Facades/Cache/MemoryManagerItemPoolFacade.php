@@ -11,6 +11,10 @@ class MemoryManagerItemPoolFacade
 {
     public static function getInstance(): CacheItemPoolInterface
     {
-        return ContainerBuilderFactory::getInstance()->get('memory_cache_item_pool');
+        /**
+         * @var CacheItemPoolInterface
+         */
+        $service = ContainerBuilderFactory::getInstance()->get('memory_cache_item_pool');
+        return $service;
     }
 }

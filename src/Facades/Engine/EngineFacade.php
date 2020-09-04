@@ -11,6 +11,10 @@ class EngineFacade
 {
     public static function getInstance(): EngineInterface
     {
-        return ContainerBuilderFactory::getInstance()->get('engine');
+        /**
+         * @var EngineInterface
+         */
+        $service = ContainerBuilderFactory::getInstance()->get('engine');
+        return $service;
     }
 }

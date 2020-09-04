@@ -11,6 +11,10 @@ class ApplicationInfoFacade
 {
     public static function getInstance(): ApplicationInfoInterface
     {
-        return ContainerBuilderFactory::getInstance()->get('application_info');
+        /**
+         * @var ApplicationInfoInterface
+         */
+        $service = ContainerBuilderFactory::getInstance()->get('application_info');
+        return $service;
     }
 }

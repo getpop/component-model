@@ -11,6 +11,10 @@ class ModuleProcessorManagerFacade
 {
     public static function getInstance(): ModuleProcessorManagerInterface
     {
-        return ContainerBuilderFactory::getInstance()->get('module_processor_manager');
+        /**
+         * @var ModuleProcessorManagerInterface
+         */
+        $service = ContainerBuilderFactory::getInstance()->get('module_processor_manager');
+        return $service;
     }
 }

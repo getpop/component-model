@@ -11,6 +11,10 @@ class TypeCastingExecuterFacade
 {
     public static function getInstance(): TypeCastingExecuterInterface
     {
-        return ContainerBuilderFactory::getInstance()->get('type_casting_executer');
+        /**
+         * @var TypeCastingExecuterInterface
+         */
+        $service = ContainerBuilderFactory::getInstance()->get('type_casting_executer');
+        return $service;
     }
 }

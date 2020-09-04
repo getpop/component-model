@@ -11,6 +11,10 @@ class InstanceManagerFacade
 {
     public static function getInstance(): InstanceManagerInterface
     {
-        return ContainerBuilderFactory::getInstance()->get('instance_manager');
+        /**
+         * @var InstanceManagerInterface
+         */
+        $service = ContainerBuilderFactory::getInstance()->get('instance_manager');
+        return $service;
     }
 }

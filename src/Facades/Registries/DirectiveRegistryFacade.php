@@ -11,6 +11,10 @@ class DirectiveRegistryFacade
 {
     public static function getInstance(): DirectiveRegistryInterface
     {
-        return ContainerBuilderFactory::getInstance()->get('directive_registry');
+        /**
+         * @var DirectiveRegistryInterface
+         */
+        $service = ContainerBuilderFactory::getInstance()->get('directive_registry');
+        return $service;
     }
 }

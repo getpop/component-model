@@ -11,6 +11,10 @@ class AttachableExtensionManagerFacade
 {
     public static function getInstance(): AttachableExtensionManagerInterface
     {
-        return ContainerBuilderFactory::getInstance()->get('attachable_extension_manager');
+        /**
+         * @var AttachableExtensionManagerInterface
+         */
+        $service = ContainerBuilderFactory::getInstance()->get('attachable_extension_manager');
+        return $service;
     }
 }

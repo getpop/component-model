@@ -11,6 +11,10 @@ class MemoryManagerFacade
 {
     public static function getInstance(): CacheInterface
     {
-        return ContainerBuilderFactory::getInstance()->get('memory_cache');
+        /**
+         * @var CacheInterface
+         */
+        $service = ContainerBuilderFactory::getInstance()->get('memory_cache');
+        return $service;
     }
 }

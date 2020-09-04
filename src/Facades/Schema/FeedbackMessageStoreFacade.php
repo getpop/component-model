@@ -11,6 +11,10 @@ class FeedbackMessageStoreFacade
 {
     public static function getInstance(): FeedbackMessageStoreInterface
     {
-        return ContainerBuilderFactory::getInstance()->get('feedback_message_store');
+        /**
+         * @var FeedbackMessageStoreInterface
+         */
+        $service = ContainerBuilderFactory::getInstance()->get('feedback_message_store');
+        return $service;
     }
 }

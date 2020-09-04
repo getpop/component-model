@@ -11,6 +11,10 @@ class ModuleFilterManagerFacade
 {
     public static function getInstance(): ModuleFilterManagerInterface
     {
-        return ContainerBuilderFactory::getInstance()->get('module_filter_manager');
+        /**
+         * @var ModuleFilterManagerInterface
+         */
+        $service = ContainerBuilderFactory::getInstance()->get('module_filter_manager');
+        return $service;
     }
 }

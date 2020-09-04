@@ -11,6 +11,10 @@ class FieldInterfaceRegistryFacade
 {
     public static function getInstance(): FieldInterfaceRegistryInterface
     {
-        return ContainerBuilderFactory::getInstance()->get('fieldinterface_registry');
+        /**
+         * @var FieldInterfaceRegistryInterface
+         */
+        $service = ContainerBuilderFactory::getInstance()->get('fieldinterface_registry');
+        return $service;
     }
 }

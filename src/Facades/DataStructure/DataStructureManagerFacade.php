@@ -11,6 +11,10 @@ class DataStructureManagerFacade
 {
     public static function getInstance(): DataStructureManagerInterface
     {
-        return ContainerBuilderFactory::getInstance()->get('data_structure_manager');
+        /**
+         * @var DataStructureManagerInterface
+         */
+        $service = ContainerBuilderFactory::getInstance()->get('data_structure_manager');
+        return $service;
     }
 }

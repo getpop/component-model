@@ -11,6 +11,10 @@ class TypeRegistryFacade
 {
     public static function getInstance(): TypeRegistryInterface
     {
-        return ContainerBuilderFactory::getInstance()->get('type_registry');
+        /**
+         * @var TypeRegistryInterface
+         */
+        $service = ContainerBuilderFactory::getInstance()->get('type_registry');
+        return $service;
     }
 }

@@ -11,6 +11,10 @@ class FieldQueryInterpreterFacade
 {
     public static function getInstance(): FieldQueryInterpreterInterface
     {
-        return ContainerBuilderFactory::getInstance()->get('field_query_interpreter');
+        /**
+         * @var FieldQueryInterpreterInterface
+         */
+        $service = ContainerBuilderFactory::getInstance()->get('field_query_interpreter');
+        return $service;
     }
 }

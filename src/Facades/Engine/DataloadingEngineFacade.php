@@ -11,6 +11,10 @@ class DataloadingEngineFacade
 {
     public static function getInstance(): DataloadingEngineInterface
     {
-        return ContainerBuilderFactory::getInstance()->get('dataloading_engine');
+        /**
+         * @var DataloadingEngineInterface
+         */
+        $service = ContainerBuilderFactory::getInstance()->get('dataloading_engine');
+        return $service;
     }
 }

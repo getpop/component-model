@@ -11,6 +11,10 @@ class ObjectDictionaryFacade
 {
     public static function getInstance(): ObjectDictionaryInterface
     {
-        return ContainerBuilderFactory::getInstance()->get('object_dictionary');
+        /**
+         * @var ObjectDictionaryInterface
+         */
+        $service = ContainerBuilderFactory::getInstance()->get('object_dictionary');
+        return $service;
     }
 }
