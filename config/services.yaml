@@ -95,6 +95,7 @@ services:
         class: \PoP\ComponentModel\Schema\FeedbackMessageStore
         public: true
 
+    # Override the service from FieldQuery
     field_query_interpreter:
         class: \PoP\ComponentModel\Schema\FieldQueryInterpreter
         public: true
