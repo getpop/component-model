@@ -8,11 +8,26 @@ use PoP\ComponentModel\Feedback\Tokens;
 
 class FeedbackMessageStore extends \PoP\FieldQuery\FeedbackMessageStore implements FeedbackMessageStoreInterface
 {
-    protected $schemaWarnings = [];
-    protected $schemaErrors = [];
-    protected $dbWarnings = [];
-    protected $dbDeprecations = [];
-    protected $logEntries = [];
+    /**
+     * @var array[]
+     */
+    protected array $schemaWarnings = [];
+    /**
+     * @var array<string, array>
+     */
+    protected array $schemaErrors = [];
+    /**
+     * @var array<string, array>
+     */
+    protected array $dbWarnings = [];
+    /**
+     * @var array<string, array>
+     */
+    protected array $dbDeprecations = [];
+    /**
+     * @var string[]
+     */
+    protected array $logEntries = [];
 
     public function addDBWarnings(array $dbWarnings)
     {
@@ -61,14 +76,14 @@ class FeedbackMessageStore extends \PoP\FieldQuery\FeedbackMessageStore implemen
     }
     public function retrieveAndClearSchemaErrors(): array
     {
-        $schemaErrors = $this->schemaErrors ?? [];
-        $this->schemaErrors = null;
+        $schemaErrors = $this->schemaErrors;
+        $this->schemaErrors = [];
         return $schemaErrors;
     }
     public function retrieveAndClearSchemaWarnings(): array
     {
-        $schemaWarnings = $this->schemaWarnings ?? [];
-        $this->schemaWarnings = null;
+        $schemaWarnings = $this->schemaWarnings;
+        $this->schemaWarnings = [];
         return $schemaWarnings;
     }
     public function getSchemaErrorsForField(string $dbKey, string $field): ?array

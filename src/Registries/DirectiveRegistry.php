@@ -6,7 +6,11 @@ namespace PoP\ComponentModel\Registries;
 
 class DirectiveRegistry implements DirectiveRegistryInterface
 {
-    protected $directiveResolverClasses = [];
+    /**
+     * @var string[]
+     */
+    protected array $directiveResolverClasses = [];
+
     public function addDirectiveResolverClass(string $directiveResolverClass): void
     {
         $this->directiveResolverClasses[] = $directiveResolverClass;

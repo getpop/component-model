@@ -32,7 +32,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     private $directiveArgumentNameTypesCache = [];
 
     // Services
-    protected $typeCastingExecuter;
+    protected TypeCastingExecuterInterface $typeCastingExecuter;
 
     public function __construct(
         TranslationAPIInterface $translationAPI,

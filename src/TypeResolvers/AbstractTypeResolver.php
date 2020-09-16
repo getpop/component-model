@@ -39,19 +39,45 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     /**
      * Cache of which fieldResolvers will process the given field
      *
-     * @var array
+     * @var FieldResolverInterface[]
      */
-    protected $fieldResolvers = [];
-    protected $schemaDefinition;
-    protected $directiveNameClasses;
-    protected $safeVars;
-    protected $schemaFieldResolvers;
-    protected $typeResolverDecoratorClasses;
-    protected $mandatoryDirectivesForFields;
-    protected $precedingMandatoryDirectivesForDirectives;
-    protected $succeedingMandatoryDirectivesForDirectives;
-    protected $interfaceClasses;
-    protected $interfaceResolverInstances;
+    protected array $fieldResolvers = [];
+    /**
+     * @var array<string, array>
+     */
+    protected ?array $schemaDefinition = null;
+    /**
+     * @var array<string, array>|null
+     */
+    protected ?array $directiveNameClasses = null;
+    /**
+     * @var array<string, FieldResolverInterface>|null
+     */
+    protected ?array $schemaFieldResolvers = null;
+    /**
+     * @var string[]|null
+     */
+    protected ?array $typeResolverDecoratorClasses = null;
+    /**
+     * @var array<string, array>|null
+     */
+    protected ?array $mandatoryDirectivesForFields = null;
+    /**
+     * @var array<string, array>|null
+     */
+    protected ?array $precedingMandatoryDirectivesForDirectives = null;
+    /**
+     * @var array<string, array>|null
+     */
+    protected ?array $succeedingMandatoryDirectivesForDirectives = null;
+    /**
+     * @var string[]|null
+     */
+    protected ?array $interfaceClasses = null;
+    /**
+     * @var array<FieldInterfaceResolverInterface>|null
+     */
+    protected ?array $interfaceResolverInstances = null;
 
     private $fieldDirectiveIDFields = [];
     private $fieldDirectivesFromFieldCache = [];
@@ -178,8 +204,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         array &$schemaDeprecations,
         array &$schemaNotices,
         array &$schemaTraces
-    ): array
-    {
+    ): array {
         $translationAPI = TranslationAPIFacade::getInstance();
         /**
         * All directives are placed somewhere in the pipeline. There are 5 positions:

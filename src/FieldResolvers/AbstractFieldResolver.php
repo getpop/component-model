@@ -33,8 +33,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
     use FieldSchemaDefinitionResolverTrait;
     use FieldOrDirectiveResolverTrait;
 
-    protected $enumValueArgumentValidationCache = [];
-    protected $schemaDefinitionForFieldCache = [];
+    /**
+     * @var array<string, array>
+     */
+    protected array $schemaDefinitionForFieldCache = [];
 
     public static function getImplementedInterfaceClasses(): array
     {

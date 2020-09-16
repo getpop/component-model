@@ -6,7 +6,11 @@ namespace PoP\ComponentModel\Registries;
 
 class TypeRegistry implements TypeRegistryInterface
 {
-    protected $typeResolverClasses = [];
+    /**
+     * @var string[]
+     */
+    protected array $typeResolverClasses = [];
+
     public function addTypeResolverClass(string $typeResolverClass): void
     {
         $this->typeResolverClasses[] = $typeResolverClass;

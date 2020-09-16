@@ -6,8 +6,14 @@ namespace PoP\ComponentModel\Engine;
 
 class DataloadingEngine implements DataloadingEngineInterface
 {
-    protected $mandatoryRootDirectiveClasses = [];
-    protected $mandatoryRootDirectives = [];
+    /**
+     * @var string[]
+     */
+    protected array $mandatoryRootDirectiveClasses = [];
+    /**
+     * @var string[]
+     */
+    protected array $mandatoryRootDirectives = [];
 
     public function getMandatoryDirectiveClasses(): array
     {

@@ -32,12 +32,21 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
 
     const MESSAGE_EXPRESSIONS = 'expressions';
 
-    protected $directive;
-    protected $directiveArgsForSchema = [];
-    protected $directiveArgsForResultItems = [];
-    protected $nestedDirectivePipelineData;
+    protected string $directive;
+    /**
+     * @var array<string, array>
+     */
+    protected array $directiveArgsForSchema = [];
+    /**
+     * @var array<string, array>
+     */
+    protected array $directiveArgsForResultItems = [];
+    /**
+     * @var array[]
+     */
+    protected array $nestedDirectivePipelineData;
 
-    public function __construct($directive = null)
+    public function __construct(?string $directive = null)
     {
         // If the directive is not provided, then it directly the directive name
         // This allows to instantiate the directive through the DependencyInjection component

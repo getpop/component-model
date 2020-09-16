@@ -39,18 +39,51 @@ class Engine implements EngineInterface
     public const CACHETYPE_STATEFULDATAPROPERTIES = 'stateful-data-properties';
     public const CACHETYPE_PROPS = 'props';
 
-    public $data;
-    public $helperCalculations;
-    public $model_props;
-    public $props;
-    protected $nocache_fields;
-    protected $moduledata;
-    protected $typeResolver_ids_data_fields;
-    protected $dbdata;
-    protected $backgroundload_urls;
-    protected $extra_routes;
-    protected $cachedsettings;
-    protected $outputData;
+    /**
+     * @var mixed[]
+     */
+    public array $data;
+    /**
+     * @var mixed[]
+     */
+    public array $helperCalculations;
+    /**
+     * @var mixed[]
+     */
+    public array $model_props;
+    /**
+     * @var mixed[]
+     */
+    public array $props;
+    /**
+     * @var string[]
+     */
+    protected array $nocache_fields;
+    /**
+     * @var array<string, mixed>
+     */
+    protected array $moduledata;
+    /**
+     * @var array<string, array>
+     */
+    protected array $typeResolver_ids_data_fields;
+    /**
+     * @var array<string, array>
+     */
+    protected array $dbdata;
+    /**
+     * @var array<string, array>
+     */
+    protected array $backgroundload_urls;
+    /**
+     * @var string[]
+     */
+    protected array $extra_routes;
+    protected ?bool $cachedsettings = null;
+    /**
+     * @var array<string, mixed>
+     */
+    protected array $outputData;
 
     public function getOutputData()
     {
@@ -59,7 +92,10 @@ class Engine implements EngineInterface
 
     public function addBackgroundUrl($url, $targets)
     {
-        $this->backgroundload_urls[$url] = $targets;
+        /**
+     * @var array<string, array>
+     */
+    $this->backgroundload_urls[$url] = $targets;
     }
 
     public function getEntryModule(): array
@@ -399,10 +435,6 @@ class Engine implements EngineInterface
         // From the state we know if to process static/staful content or both
         $vars = ApplicationState::getVars();
         $dataoutputmode = $vars['dataoutputmode'];
-
-        // Templates: What modules must be executed after call to loadMore is back with data:
-        // CB: list of modules to merge
-        $this->cachedsettings = false;
 
         // First check if there's a cache stored
         if ($useCache) {

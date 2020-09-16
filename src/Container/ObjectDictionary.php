@@ -6,7 +6,10 @@ namespace PoP\ComponentModel\Container;
 
 class ObjectDictionary implements ObjectDictionaryInterface
 {
-    protected $dictionary;
+    /**
+     * @var array<string, array>
+     */
+    protected array $dictionary = [];
 
     public function get(string $class, $id)
     {

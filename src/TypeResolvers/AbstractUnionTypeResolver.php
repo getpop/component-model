@@ -17,7 +17,10 @@ use PoP\ComponentModel\Facades\AttachableExtensions\AttachableExtensionManagerFa
 
 abstract class AbstractUnionTypeResolver extends AbstractTypeResolver implements UnionTypeResolverInterface
 {
-    protected $typeResolverPickers;
+    /**
+     * @var TypeResolverPickerInterface[]
+     */
+    protected ?array $typeResolverPickers = null;
 
     /**
      * This is a Union Type

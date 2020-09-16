@@ -6,7 +6,10 @@ namespace PoP\ComponentModel\AttachableExtensions;
 
 class AttachableExtensionManager implements AttachableExtensionManagerInterface
 {
-    protected $extensionClasses = [];
+    /**
+     * @var array<string, array>
+     */
+    protected array $extensionClasses = [];
 
     public function setExtensionClass(string $attachableClass, string $group, string $extensionClass, int $priority = 10): void
     {

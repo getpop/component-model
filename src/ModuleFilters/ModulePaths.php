@@ -12,11 +12,20 @@ class ModulePaths extends AbstractModuleFilter
     public const NAME = 'modulepaths';
     public const URLPARAM_MODULEPATHS = 'modulepaths';
 
-    protected $paths;
-    protected $propagation_unsettled_paths;
-    protected $backlog_unsettled_paths;
+    /**
+     * @var array[]
+     */
+    protected array $paths;
+    /**
+     * @var array[]
+     */
+    protected array $propagation_unsettled_paths;
+    /**
+     * @var array<string, array>
+     */
+    protected array $backlog_unsettled_paths;
 
-    protected $modulePathManager;
+    protected ModulePathManagerInterface $modulePathManager;
     public function __construct(ModulePathManagerInterface $modulePathManager)
     {
         $this->modulePathManager = $modulePathManager;
@@ -137,8 +146,12 @@ class ModulePaths extends AbstractModuleFilter
             unset($this->backlog_unsettled_paths[$backlog_entry]);
         }
     }
-    protected function getBacklogEntry()
+    protected function getBacklogEntry(): string
     {
-        return json_encode($this->modulePathManager->getPropagationCurrentPath());
+        $entry = json_encode($this->modulePathManager->getPropagationCurrentPath());
+        if ($entry === false) {
+            return '';
+        }
+        return $entry;
     }
 }

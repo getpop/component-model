@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 namespace PoP\ComponentModel\Cache;
+
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Cache\CacheItemInterface;
 use PoP\ComponentModel\ModelInstance\ModelInstanceInterface;
@@ -10,8 +11,9 @@ use PoP\ComponentModel\ModelInstance\ModelInstanceInterface;
 class Cache implements CacheInterface
 {
     use ReplaceCurrentExecutionDataWithPlaceholdersTrait;
-    protected $cacheItemPool;
-    protected $modelInstance;
+
+    protected CacheItemPoolInterface $cacheItemPool;
+    protected ModelInstanceInterface $modelInstance;
 
     public function __construct(
         CacheItemPoolInterface $cacheItemPool,

@@ -6,14 +6,17 @@ namespace PoP\ComponentModel\ModulePath;
 
 class ModulePathManager implements ModulePathManagerInterface
 {
-    protected $propagation_current_path = [];
+    /**
+     * @var array[]
+     */
+    protected array $propagation_current_path = [];
 
-    public function getPropagationCurrentPath(): ?array
+    public function getPropagationCurrentPath(): array
     {
         return $this->propagation_current_path;
     }
 
-    public function setPropagationCurrentPath(array $propagation_current_path = null): void
+    public function setPropagationCurrentPath(array $propagation_current_path): void
     {
         $this->propagation_current_path = $propagation_current_path;
     }

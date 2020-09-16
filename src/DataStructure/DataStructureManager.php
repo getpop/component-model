@@ -9,7 +9,10 @@ use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 
 class DataStructureManager implements DataStructureManagerInterface
 {
-    public $formatters = [];
+    /**
+     * @var array<string, DataStructureFormatterInterface>
+     */
+    public array $formatters = [];
 
     public function add(DataStructureFormatterInterface $formatter): void
     {

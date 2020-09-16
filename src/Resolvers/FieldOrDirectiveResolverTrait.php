@@ -12,7 +12,10 @@ use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 
 trait FieldOrDirectiveResolverTrait
 {
-    protected $enumValueArgumentValidationCache = [];
+    /**
+     * @var array<array|null>
+     */
+    protected array $enumValueArgumentValidationCache = [];
 
     protected function maybeValidateNotMissingFieldOrDirectiveArguments(TypeResolverInterface $typeResolver, string $fieldOrDirectiveName, array $fieldOrDirectiveArgs, array $schemaFieldOrDirectiveArgs, string $type): ?string
     {

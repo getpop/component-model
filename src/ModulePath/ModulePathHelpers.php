@@ -7,7 +7,8 @@ use PoP\ComponentModel\Modules\ModuleUtils;
 
 class ModulePathHelpers implements ModulePathHelpersInterface
 {
-    protected $modulePathManager;
+    protected ModulePathManagerInterface $modulePathManager;
+
     public function __construct(ModulePathManagerInterface $modulePathManager)
     {
         $this->modulePathManager = $modulePathManager;

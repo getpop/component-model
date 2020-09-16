@@ -6,8 +6,14 @@ namespace PoP\ComponentModel\ModuleDecoratorProcessors;
 
 trait ModuleDecoratorProcessorManagerTrait
 {
-    public $settings;
-    public $processordecorators;
+    /**
+     * @var array<string, string>
+     */
+    public array $settings;
+    /**
+     * @var array<string, mixed>
+     */
+    public array $processordecorators;
 
     public function __construct()
     {

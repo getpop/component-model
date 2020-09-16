@@ -6,8 +6,8 @@ namespace PoP\ComponentModel\ModulePath;
 
 interface ModulePathManagerInterface
 {
-    public function getPropagationCurrentPath(): ?array;
-    public function setPropagationCurrentPath(array $propagation_current_path = null): void;
+    public function getPropagationCurrentPath(): array;
+    public function setPropagationCurrentPath(array $propagation_current_path): void;
     /**
      * The `prepare` function advances the modulepath one level down, when interating into the submodules, and then calling `restore` the value goes one level up again
      */
