@@ -79,11 +79,26 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
      */
     protected ?array $interfaceResolverInstances = null;
 
-    private $fieldDirectiveIDFields = [];
-    private $fieldDirectivesFromFieldCache = [];
-    private $dissectedFieldForSchemaCache = [];
-    private $directiveResolverInstanceCache = [];
-    private $fieldNamesResolvedByFieldResolver = [];
+    /**
+     * @var array<string, array>
+     */
+    private array $fieldDirectiveIDFields = [];
+    /**
+     * @var array<string, array>
+     */
+    private array $fieldDirectivesFromFieldCache = [];
+    /**
+     * @var array<string, array>
+     */
+    private array $dissectedFieldForSchemaCache = [];
+    /**
+     * @var array<string, array>
+     */
+    private array $directiveResolverInstanceCache = [];
+    /**
+     * @var array<string, array>
+     */
+    private array $fieldNamesResolvedByFieldResolver = [];
 
     public function getNamespace(): string
     {

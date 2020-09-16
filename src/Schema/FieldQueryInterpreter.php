@@ -23,13 +23,34 @@ use PoP\ComponentModel\Misc\GeneralUtils;
 class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implements FieldQueryInterpreterInterface
 {
     // Cache the output from functions
-    private $extractedStaticFieldArgumentsCache = [];
-    private $extractedFieldArgumentsCache = [];
-    private $extractedDirectiveArgumentsCache = [];
-    private $extractedFieldArgumentWarningsCache = [];
-    private $extractedDirectiveArgumentWarningsCache = [];
-    private $fieldArgumentNameTypesCache = [];
-    private $directiveArgumentNameTypesCache = [];
+    /**
+     * @var array<string, array>
+     */
+    private array $extractedStaticFieldArgumentsCache = [];
+    /**
+     * @var array<string, array>
+     */
+    private array $extractedFieldArgumentsCache = [];
+    /**
+     * @var array<string, array>
+     */
+    private array $extractedDirectiveArgumentsCache = [];
+    /**
+     * @var array<string, array>
+     */
+    private array $extractedFieldArgumentWarningsCache = [];
+    /**
+     * @var array<string, array>
+     */
+    private array $extractedDirectiveArgumentWarningsCache = [];
+    /**
+     * @var array<string, array>
+     */
+    private array $fieldArgumentNameTypesCache = [];
+    /**
+     * @var array<string, array>
+     */
+    private array $directiveArgumentNameTypesCache = [];
 
     // Services
     protected TypeCastingExecuterInterface $typeCastingExecuter;

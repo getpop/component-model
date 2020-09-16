@@ -7,9 +7,18 @@ use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 
 trait ItemProcessorManagerTrait
 {
-    private $processors = [];
-    private $overridingClasses = [];
-    private $itemFullNameProcessorInstances = [];
+    /**
+     * @var array<string, array>
+     */
+    private array $processors = [];
+    /**
+     * @var array<string, array>
+     */
+    private array $overridingClasses = [];
+    /**
+     * @var array<string, object>
+     */
+    private array $itemFullNameProcessorInstances = [];
 
     public function getLoadedItemFullNameProcessorInstances()
     {
@@ -50,7 +59,7 @@ trait ItemProcessorManagerTrait
             // 1. Overriden
             // 3. Same class as requested
             if ($class = $this->overridingClasses[$itemProcessorClass][$itemName]) {
-                $class = $itemProcessorClass;
+                $itemProcessorClass = $class;
             }
 
             // Get the instance from the InstanceManager

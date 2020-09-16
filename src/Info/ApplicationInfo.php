@@ -6,7 +6,7 @@ namespace PoP\ComponentModel\Info;
 
 class ApplicationInfo implements ApplicationInfoInterface
 {
-    private $version;
+    private string $version;
 
     public function __construct(string $version)
     {

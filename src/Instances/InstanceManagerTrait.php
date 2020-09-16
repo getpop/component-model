@@ -8,8 +8,14 @@ use PoP\Root\Container\ContainerBuilderFactory;
 
 trait InstanceManagerTrait
 {
-    private $instances = [];
-    private $overridingClasses = [];
+    /**
+     * @var array<string, object>
+     */
+    private array $instances = [];
+    /**
+     * @var array<string, string>
+     */
+    private array $overridingClasses = [];
 
     public function overrideClass(string $overrideClass, string $withClass): void
     {
