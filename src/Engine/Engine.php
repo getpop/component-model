@@ -42,43 +42,39 @@ class Engine implements EngineInterface
     /**
      * @var mixed[]
      */
-    public array $data;
+    public array $data = [];
     /**
      * @var mixed[]
      */
-    public array $helperCalculations;
+    public array $helperCalculations = [];
     /**
      * @var mixed[]
      */
-    public array $model_props;
+    public array $model_props = [];
     /**
      * @var mixed[]
      */
-    public array $props;
+    public array $props = [];
     /**
      * @var string[]
      */
-    protected array $nocache_fields;
+    protected array $nocache_fields = [];
     /**
      * @var array<string, mixed>
      */
-    protected array $moduledata;
+    protected ?array $moduledata = null;
     /**
      * @var array<string, array>
      */
-    protected array $typeResolver_ids_data_fields;
+    protected array $dbdata = [];
     /**
      * @var array<string, array>
      */
-    protected array $dbdata;
-    /**
-     * @var array<string, array>
-     */
-    protected array $backgroundload_urls;
+    protected array $backgroundload_urls = [];
     /**
      * @var string[]
      */
-    protected array $extra_routes;
+    protected ?array $extra_routes = null;
     protected ?bool $cachedsettings = null;
     /**
      * @var array<string, mixed>
@@ -92,10 +88,7 @@ class Engine implements EngineInterface
 
     public function addBackgroundUrl($url, $targets)
     {
-        /**
-     * @var array<string, array>
-     */
-    $this->backgroundload_urls[$url] = $targets;
+        $this->backgroundload_urls[$url] = $targets;
     }
 
     public function getEntryModule(): array
