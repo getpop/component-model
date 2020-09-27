@@ -9,17 +9,11 @@ trait ModuleDecoratorProcessorManagerTrait
     /**
      * @var array<string, string>
      */
-    public array $settings;
+    public array $settings = [];
     /**
      * @var array<string, mixed>
      */
-    public array $processordecorators;
-
-    public function __construct()
-    {
-        $this->settings = array();
-        $this->processordecorators = array();
-    }
+    public array $processordecorators = [];
 
     public function getProcessordecorator($processor)
     {
