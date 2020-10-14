@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PoP\ComponentModel\Config;
 
 use PoP\ComponentModel\Configuration\Request;
+use PoP\Definitions\DefinitionManagerInterface;
 use PoP\Root\Component\PHPServiceConfigurationTrait;
 use PoP\ComponentModel\Container\ContainerBuilderUtils;
 use PoP\ComponentModel\Engine\DataloadingEngineInterface;
@@ -21,7 +22,7 @@ class ServiceConfiguration
         // If `isMangled`, disable the definitions
         if (!Request::isMangled()) {
             ContainerBuilderUtils::injectValuesIntoService(
-                'definition_manager',
+                DefinitionManagerInterface::class,
                 'setEnabled',
                 false
             );
