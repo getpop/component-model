@@ -36,8 +36,6 @@ services:
 
     PoP\ComponentModel\ModuleFiltering\ModuleFilterManagerInterface:
         class: '\PoP\ComponentModel\ModuleFiltering\ModuleFilterManager'
-        # arguments:
-        #     $modulePathHelpers: '@PoP\ComponentModel\ModulePath\ModulePathHelpersInterface'
 
     PoP\ComponentModel\ModuleFilters\:
         resource: '../src/ModuleFilters/*'
