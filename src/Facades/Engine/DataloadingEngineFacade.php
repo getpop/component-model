@@ -14,7 +14,7 @@ class DataloadingEngineFacade
         /**
          * @var DataloadingEngineInterface
          */
-        $service = ContainerBuilderFactory::getInstance()->get('dataloading_engine');
+        $service = ContainerBuilderFactory::getInstance()->get(DataloadingEngineInterface::class);
         return $service;
     }
 }

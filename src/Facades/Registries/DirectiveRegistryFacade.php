@@ -14,7 +14,7 @@ class DirectiveRegistryFacade
         /**
          * @var DirectiveRegistryInterface
          */
-        $service = ContainerBuilderFactory::getInstance()->get('directive_registry');
+        $service = ContainerBuilderFactory::getInstance()->get(DirectiveRegistryInterface::class);
         return $service;
     }
 }

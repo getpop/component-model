@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace PoP\ComponentModel\Config;
 
-use PoP\ComponentModel\Container\ContainerBuilderUtils;
-use PoP\Root\Component\PHPServiceConfigurationTrait;
 use PoP\ComponentModel\Configuration\Request;
+use PoP\Root\Component\PHPServiceConfigurationTrait;
+use PoP\ComponentModel\Container\ContainerBuilderUtils;
+use PoP\ComponentModel\Engine\DataloadingEngineInterface;
 use PoP\ComponentModel\DirectiveResolvers\ValidateDirectiveResolver;
+use PoP\ComponentModel\ModuleFiltering\ModuleFilterManagerInterface;
 use PoP\ComponentModel\DirectiveResolvers\ResolveValueAndMergeDirectiveResolver;
 
 class ServiceConfiguration
@@ -27,14 +29,14 @@ class ServiceConfiguration
 
         // Add ModuleFilters to the ModuleFilterManager
         ContainerBuilderUtils::injectServicesIntoService(
-            'module_filter_manager',
+            ModuleFilterManagerInterface::class,
             'PoP\\ComponentModel\\ModuleFilters',
             'add'
         );
 
         // Inject the mandatory root directives
         ContainerBuilderUtils::injectValuesIntoService(
-            'dataloading_engine',
+            DataloadingEngineInterface::class,
             'addMandatoryDirectiveClasses',
             [
                 ValidateDirectiveResolver::class,

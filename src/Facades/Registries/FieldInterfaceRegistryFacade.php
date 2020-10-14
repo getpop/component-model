@@ -14,7 +14,7 @@ class FieldInterfaceRegistryFacade
         /**
          * @var FieldInterfaceRegistryInterface
          */
-        $service = ContainerBuilderFactory::getInstance()->get('fieldinterface_registry');
+        $service = ContainerBuilderFactory::getInstance()->get(FieldInterfaceRegistryInterface::class);
         return $service;
     }
 }

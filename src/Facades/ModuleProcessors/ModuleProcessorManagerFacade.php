@@ -14,7 +14,7 @@ class ModuleProcessorManagerFacade
         /**
          * @var ModuleProcessorManagerInterface
          */
-        $service = ContainerBuilderFactory::getInstance()->get('module_processor_manager');
+        $service = ContainerBuilderFactory::getInstance()->get(ModuleProcessorManagerInterface::class);
         return $service;
     }
 }

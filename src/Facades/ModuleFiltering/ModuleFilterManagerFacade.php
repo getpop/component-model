@@ -14,7 +14,7 @@ class ModuleFilterManagerFacade
         /**
          * @var ModuleFilterManagerInterface
          */
-        $service = ContainerBuilderFactory::getInstance()->get('module_filter_manager');
+        $service = ContainerBuilderFactory::getInstance()->get(ModuleFilterManagerInterface::class);
         return $service;
     }
 }

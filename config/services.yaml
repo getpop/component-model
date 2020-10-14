@@ -3,115 +3,86 @@ parameters:
 
 services:
     _defaults:
-        bind:
-            PoP\Translation\TranslationAPIInterface: '@translation_api'
-            PoP\Hooks\HooksAPIInterface: '@hooks_api'
-            PoP\ComponentModel\Info\ApplicationInfoInterface: '@application_info'
-            PoP\ComponentModel\ModulePath\ModulePathManagerInterface: '@module_path_manager'
-            PoP\ComponentModel\ModelInstance\ModelInstanceInterface: '@model_instance'
-            PoP\ComponentModel\Schema\FeedbackMessageStoreInterface: '@feedback_message_store'
-            PoP\ComponentModel\Schema\TypeCastingExecuterInterface: '@type_casting_executer'
-            PoP\QueryParsing\QueryParserInterface: '@query_parser'
+        public: true
+        autowire: true
 
     memory_cache_item_pool:
         class: \Symfony\Component\Cache\Adapter\ArrayAdapter
-        public: true
 
     persistent_cache_item_pool:
         class: \Symfony\Component\Cache\Adapter\FilesystemAdapter
-        public: true
 
-    object_dictionary:
+    PoP\ComponentModel\Container\ObjectDictionaryInterface:
         class: \PoP\ComponentModel\Container\ObjectDictionary
-        public: true
 
-    engine:
+    PoP\ComponentModel\Engine\EngineInterface:
         class: \PoP\ComponentModel\Engine\Engine
-        public: true
 
-    dataloading_engine:
+    PoP\ComponentModel\Engine\DataloadingEngineInterface:
         class: \PoP\ComponentModel\Engine\DataloadingEngine
-        public: true
 
     memory_cache:
         class: \PoP\ComponentModel\Cache\Cache
-        public: true
         arguments:
             $cacheItemPool: '@memory_cache_item_pool'
 
-    model_instance:
+    PoP\ComponentModel\ModelInstance\ModelInstanceInterface:
         class: \PoP\ComponentModel\ModelInstance\ModelInstance
-        public: true
 
-    application_info:
+    PoP\ComponentModel\Info\ApplicationInfoInterface:
         class: \PoP\ComponentModel\Info\ApplicationInfo
-        public: true
         arguments:
             $version: '%version%'
 
-    module_filter_manager:
+    PoP\ComponentModel\ModuleFiltering\ModuleFilterManagerInterface:
         class: '\PoP\ComponentModel\ModuleFiltering\ModuleFilterManager'
-        public: true
-        arguments:
-            $modulePathHelpers: '@module_path_helpers'
+        # arguments:
+        #     $modulePathHelpers: '@PoP\ComponentModel\ModulePath\ModulePathHelpersInterface'
 
     PoP\ComponentModel\ModuleFilters\:
         resource: '../src/ModuleFilters/*'
         exclude: '../src/ModuleFilters/*Interface.php'
+        public: false
 
-    module_path_manager:
+    PoP\ComponentModel\ModulePath\ModulePathManagerInterface:
         class: \PoP\ComponentModel\ModulePath\ModulePathManager
-        public: true
 
-    data_structure_manager:
+    PoP\ComponentModel\DataStructure\DataStructureManagerInterface:
         class: \PoP\ComponentModel\DataStructure\DataStructureManager
-        public: true
 
-    module_path_helpers:
+    PoP\ComponentModel\ModulePath\ModulePathHelpersInterface:
         class: \PoP\ComponentModel\ModulePath\ModulePathHelpers
-        public: true
 
-    instance_manager:
+    PoP\ComponentModel\Instances\InstanceManagerInterface:
         class: \PoP\ComponentModel\Instances\InstanceManager
-        public: true
 
-    module_processor_manager:
+    PoP\ComponentModel\ModuleProcessors\ModuleProcessorManagerInterface:
         class: \PoP\ComponentModel\ModuleProcessors\ModuleProcessorManager
-        public: true
 
-    type_registry:
+    PoP\ComponentModel\Registries\TypeRegistryInterface:
         class: \PoP\ComponentModel\Registries\TypeRegistry
-        public: true
 
-    directive_registry:
+    PoP\ComponentModel\Registries\DirectiveRegistryInterface:
         class: \PoP\ComponentModel\Registries\DirectiveRegistry
-        public: true
 
-    fieldinterface_registry:
+    PoP\ComponentModel\Registries\FieldInterfaceRegistryInterface:
         class: \PoP\ComponentModel\Registries\FieldInterfaceRegistry
-        public: true
 
-    feedback_message_store:
+    PoP\ComponentModel\Schema\FeedbackMessageStoreInterface:
         class: \PoP\ComponentModel\Schema\FeedbackMessageStore
-        public: true
 
     # Override the service from FieldQuery
-    field_query_interpreter:
+    PoP\ComponentModel\Schema\FieldQueryInterpreterInterface:
         class: \PoP\ComponentModel\Schema\FieldQueryInterpreter
-        public: true
 
-    type_casting_executer:
+    PoP\ComponentModel\Schema\TypeCastingExecuterInterface:
         class: \PoP\ComponentModel\Schema\TypeCastingExecuter
-        public: true
 
-    schema_definition_service:
+    PoP\ComponentModel\Schema\SchemaDefinitionServiceInterface:
         class: \PoP\ComponentModel\Schema\SchemaDefinitionService
-        public: true
 
-    attachable_extension_manager:
+    PoP\ComponentModel\AttachableExtensions\AttachableExtensionManagerInterface:
         class: \PoP\ComponentModel\AttachableExtensions\AttachableExtensionManager
-        public: true
 
-    route_module_processor_manager:
+    PoP\ModuleRouting\RouteModuleProcessorManagerInterface:
         class: \PoP\ComponentModel\ModuleRouting\RouteModuleProcessorManager
-        public: true

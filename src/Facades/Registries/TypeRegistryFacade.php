@@ -14,7 +14,7 @@ class TypeRegistryFacade
         /**
          * @var TypeRegistryInterface
          */
-        $service = ContainerBuilderFactory::getInstance()->get('type_registry');
+        $service = ContainerBuilderFactory::getInstance()->get(TypeRegistryInterface::class);
         return $service;
     }
 }

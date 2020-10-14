@@ -14,7 +14,7 @@ class ModelInstanceFacade
         /**
          * @var ModelInstanceInterface
          */
-        $service = ContainerBuilderFactory::getInstance()->get('model_instance');
+        $service = ContainerBuilderFactory::getInstance()->get(ModelInstanceInterface::class);
         return $service;
     }
 }
