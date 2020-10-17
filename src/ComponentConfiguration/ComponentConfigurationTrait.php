@@ -44,8 +44,8 @@ trait ComponentConfigurationTrait
                 $selfProperty = self::getConfigurationValue($envVariable);
             } else {
                 // Get the value from the environment function
-                if (isset($_ENV[$envVariable])) {
-                    $selfProperty = $_ENV[$envVariable];
+                if (getenv($envVariable) !== false) {
+                    $selfProperty = getenv($envVariable);
                     // Modify the type of the variable, from string to bool/int/array
                     if ($callback) {
                         $selfProperty = $callback($selfProperty);

@@ -19,7 +19,7 @@ class Environment
      */
     public static function removeFieldIfDirectiveFailed(): bool
     {
-        return isset($_ENV['REMOVE_FIELD_IF_DIRECTIVE_FAILED']) ? strtolower($_ENV['REMOVE_FIELD_IF_DIRECTIVE_FAILED']) == "true" : false;
+        return getenv('REMOVE_FIELD_IF_DIRECTIVE_FAILED') !== false ? strtolower(getenv('REMOVE_FIELD_IF_DIRECTIVE_FAILED')) == "true" : false;
     }
 
     /**
@@ -29,7 +29,7 @@ class Environment
      */
     public static function stopDirectivePipelineExecutionIfDirectiveFailed(): bool
     {
-        return isset($_ENV['STOP_DIRECTIVE_PIPELINE_EXECUTION_IF_DIRECTIVE_FAILED']) ? strtolower($_ENV['STOP_DIRECTIVE_PIPELINE_EXECUTION_IF_DIRECTIVE_FAILED']) == "true" : false;
+        return getenv('STOP_DIRECTIVE_PIPELINE_EXECUTION_IF_DIRECTIVE_FAILED') !== false ? strtolower(getenv('STOP_DIRECTIVE_PIPELINE_EXECUTION_IF_DIRECTIVE_FAILED')) == "true" : false;
     }
 
     /**
@@ -41,6 +41,6 @@ class Environment
      */
     public static function enableSemanticVersionConstraints(): bool
     {
-        return isset($_ENV['ENABLE_SEMANTIC_VERSION_CONSTRAINTS']) ? strtolower($_ENV['ENABLE_SEMANTIC_VERSION_CONSTRAINTS']) == "true" : false;
+        return getenv('ENABLE_SEMANTIC_VERSION_CONSTRAINTS') !== false ? strtolower(getenv('ENABLE_SEMANTIC_VERSION_CONSTRAINTS')) == "true" : false;
     }
 }
