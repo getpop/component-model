@@ -405,12 +405,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
      * @param array<string, mixed> $fieldArgs
      */
     protected function getValidationCheckpointsErrorMessage(
+        string $errorMessage,
         TypeResolverInterface $typeResolver,
         object $resultItem,
         string $fieldName,
         array $fieldArgs = []
-    ): ?string {
-        return null;
+    ): string {
+        return $errorMessage;
     }
 
     /**
@@ -427,20 +428,17 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             $engine = EngineFacade::getInstance();
             $validation = $engine->validateCheckpoints($checkpoints);
             if (GeneralUtils::isError($validation)) {
-                // Check if there is a custom error message
-                $message = $this->getValidationCheckpointsErrorMessage($typeResolver, $resultItem, $fieldName, $fieldArgs);
-                if (is_null($message)) {
-                    // Return a generic message
-                    $error = $validation;
-                    $translationAPI = TranslationAPIFacade::getInstance();
-                    return $error->getErrorMessage() ?
-                        $error->getErrorMessage() :
-                        sprintf(
-                            $translationAPI->__('Validation with code \'%s\' failed', 'component-model'),
-                            $error->getErrorCode()
-                        );
+                $error = $validation;
+                $translationAPI = TranslationAPIFacade::getInstance();
+                $errorMessage = $error->getErrorMessage();
+                if (!$errorMessage) {
+                    $errorMessage = sprintf(
+                        $translationAPI->__('Validation with code \'%s\' failed', 'component-model'),
+                        $error->getErrorCode()
+                    );
                 }
-                return $message;
+                // Allow to customize the error message for the failing entity
+                return $this->getValidationCheckpointsErrorMessage($errorMessage, $typeResolver, $resultItem, $fieldName, $fieldArgs);
             }
         }
 
