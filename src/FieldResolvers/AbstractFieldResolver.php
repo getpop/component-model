@@ -461,10 +461,20 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         ?array $expressions = null,
         array $options = []
     ) {
+        // If a MutationResolver is declared, let it resolve the value
+        if ($mutationResolverClass = $this->resolveFieldMutationResolverClass($typeResolver, $fieldName, $fieldArgs)) {
+            $instanceManager = InstanceManagerFacade::getInstance();
+            $mutationResolver = $instanceManager->getInstance($mutationResolverClass);
+        }
         return null;
     }
 
     public function resolveFieldTypeResolverClass(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
+    {
+        return null;
+    }
+
+    public function resolveFieldMutationResolverClass(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
     {
         return null;
     }
