@@ -17,8 +17,14 @@ use PoP\ComponentModel\Server\Utils as ServerUtils;
 
 class ApplicationState
 {
-    public static $vars;
+    /**
+     * @var array<string, mixed>
+     */
+    public static array $vars = [];
 
+    /**
+     * @return array<string, mixed>
+     */
     public static function getVars(): array
     {
         if (self::$vars) {
