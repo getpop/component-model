@@ -77,7 +77,7 @@ abstract class AbstractFieldInterfaceResolver implements FieldInterfaceResolverI
      * interface through this function.
      *
      * @param string $fieldName
-     * @param array $fieldArgs
+     * @param array<string, mixed> $fieldArgs
      * @return string|null
      */
     public function getFieldTypeResolverClass(string $fieldName, array $fieldArgs = []): ?string

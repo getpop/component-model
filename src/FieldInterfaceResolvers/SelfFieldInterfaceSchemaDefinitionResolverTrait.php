@@ -18,7 +18,7 @@ trait SelfFieldInterfaceSchemaDefinitionResolverTrait
      *
      * @param TypeResolverInterface $typeResolver
      * @param string $fieldName
-     * @param array $fieldArgs
+     * @param array<string, mixed> $fieldArgs
      * @return void
      */
     public function getSchemaDefinitionResolver(): ?FieldSchemaDefinitionResolverInterface

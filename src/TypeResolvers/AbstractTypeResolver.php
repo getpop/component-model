@@ -692,7 +692,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
      * By default, do nothing
      *
      * @param string $field
-     * @param array $fieldArgs
+     * @param array<string, mixed> $fieldArgs
      * @param array $schemaErrors
      * @param array $schemaWarnings
      * @param array $schemaDeprecations

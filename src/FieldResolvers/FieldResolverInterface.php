@@ -31,7 +31,7 @@ interface FieldResolverInterface
      *
      * @param TypeResolverInterface $typeResolver
      * @param string $fieldName
-     * @param array $fieldArgs
+     * @param array<string, mixed> $fieldArgs
      * @return void
      */
     public function getSchemaDefinitionResolver(TypeResolverInterface $typeResolver): ?FieldSchemaDefinitionResolverInterface;
@@ -61,7 +61,7 @@ interface FieldResolverInterface
      * It is required to support a multiverse of fields: different fieldResolvers can resolve the field, based on the required version (passed through $fieldArgs['branch'])
      *
      * @param string $fieldName
-     * @param array $fieldArgs
+     * @param array<string, mixed> $fieldArgs
      * @return boolean
      */
     public function resolveCanProcess(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): bool;
