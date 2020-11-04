@@ -15,15 +15,15 @@ class ModulePaths extends AbstractModuleFilter
     /**
      * @var array[]
      */
-    protected array $paths;
+    protected ?array $paths = null;
     /**
      * @var array[]
      */
-    protected array $propagation_unsettled_paths;
+    protected array $propagation_unsettled_paths = [];
     /**
      * @var array<string, array>
      */
-    protected array $backlog_unsettled_paths;
+    protected array $backlog_unsettled_paths = [];
 
     protected ModulePathManagerInterface $modulePathManager;
     public function __construct(ModulePathManagerInterface $modulePathManager)
