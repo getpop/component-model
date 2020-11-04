@@ -10,6 +10,7 @@ use PoP\ComponentModel\ModuleFilters\ModulePaths;
 use PoP\ComponentModel\Misc\GeneralUtils;
 use PoP\ComponentModel\Configuration\Request;
 use PoP\ComponentModel\State\ApplicationState;
+use PoP\Routing\URLParams;
 
 class RequestUtils
 {
@@ -104,7 +105,7 @@ class RequestUtils
 
     public static function addRoute($url, $route)
     {
-        return GeneralUtils::addQueryArgs([\GD_URLPARAM_ROUTE => $route], $url);
+        return GeneralUtils::addQueryArgs([\URLParams::ROUTE => $route], $url);
     }
 
     public static function fetchingSite()
