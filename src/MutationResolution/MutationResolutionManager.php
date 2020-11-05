@@ -9,7 +9,10 @@ use PoP\Hooks\HooksAPIInterface;
 
 class MutationResolutionManager implements MutationResolutionManagerInterface
 {
-    private $results = [];
+    /**
+     * @var array<string, mixed>
+     */
+    private array $results = [];
 
     public function __construct(
         HooksAPIInterface $hooksAPI
