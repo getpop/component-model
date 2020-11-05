@@ -6,5 +6,9 @@ namespace PoP\ComponentModel\MutationResolvers;
 
 interface ComponentMutationResolverBridgeInterface
 {
-    public function execute(&$data_properties);
+    /**
+     * @param array $data_properties
+     * @return array<string, mixed>|null
+     */
+    public function execute(array &$data_properties): ?array;
 }
