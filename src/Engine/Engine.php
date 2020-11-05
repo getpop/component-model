@@ -893,7 +893,7 @@ class Engine implements EngineInterface
             // ------------------------------------------
             // Load data if the checkpoint did not fail
             if ($load_data && $checkpoints = $data_properties[GD_DATALOAD_DATAACCESSCHECKPOINTS]) {
-                // Check if the module fails checkpoint validation. If so, it must not load its data or execute the actionexecuter
+                // Check if the module fails checkpoint validation. If so, it must not load its data or execute the componentMutationResolverBridge
                 $dataaccess_checkpoint_validation = $this->validateCheckpoints($checkpoints);
                 $load_data = !GeneralUtils::isError($dataaccess_checkpoint_validation);
             }
@@ -940,16 +940,16 @@ class Engine implements EngineInterface
                     if ($processor->shouldExecuteMutation($module, $props)) {
                         // Validate that the actionexecution must be triggered through its own checkpoints
                         $execute = true;
-                        if ($actionexecution_checkpoints = $data_properties[GD_DATALOAD_ACTIONEXECUTIONCHECKPOINTS]) {
-                            // Check if the module fails checkpoint validation. If so, it must not load its data or execute the actionexecuter
-                            $actionexecution_checkpoint_validation = $this->validateCheckpoints($actionexecution_checkpoints);
-                            $execute = !GeneralUtils::isError($actionexecution_checkpoint_validation);
+                        if ($mutation_checkpoints = $data_properties[GD_DATALOAD_ACTIONEXECUTIONCHECKPOINTS]) {
+                            // Check if the module fails checkpoint validation. If so, it must not load its data or execute the componentMutationResolverBridge
+                            $mutation_checkpoint_validation = $this->validateCheckpoints($mutation_checkpoints);
+                            $execute = !GeneralUtils::isError($mutation_checkpoint_validation);
                         }
 
                         if ($execute) {
                             $instanceManager = InstanceManagerFacade::getInstance();
-                            $actionexecuter = $instanceManager->getInstance($componentMutationResolverBridgeClass);
-                            $executed = $actionexecuter->execute($data_properties);
+                            $componentMutationResolverBridge = $instanceManager->getInstance($componentMutationResolverBridgeClass);
+                            $executed = $componentMutationResolverBridge->execute($data_properties);
                         }
                     }
                 }
@@ -1055,14 +1055,14 @@ class Engine implements EngineInterface
             // Save the meta into $datasetmodulemeta
             if ($add_meta) {
                 if (!is_null($datasetmodulemeta)) {
-                    if ($dataset_meta = $processor->getDatasetmeta($module, $module_props, $data_properties, $dataaccess_checkpoint_validation, $actionexecution_checkpoint_validation, $executed, $dbObjectIDOrIDs)) {
+                    if ($dataset_meta = $processor->getDatasetmeta($module, $module_props, $data_properties, $dataaccess_checkpoint_validation, $mutation_checkpoint_validation, $executed, $dbObjectIDOrIDs)) {
                         $this->assignValueForModule($datasetmodulemeta, $module_path, $module, POP_CONSTANT_META, $dataset_meta);
                     }
                 }
             }
 
             // Integrate the feedback into $moduledata
-            $this->processAndAddModuleData($module_path, $module, $module_props, $data_properties, $dataaccess_checkpoint_validation, $actionexecution_checkpoint_validation, $executed, $dbObjectIDs);
+            $this->processAndAddModuleData($module_path, $module, $module_props, $data_properties, $dataaccess_checkpoint_validation, $mutation_checkpoint_validation, $executed, $dbObjectIDs);
 
             // Allow other modules to produce their own feedback using this module's data results
             if ($referencer_modulefullpaths = $interreferenced_modulefullpaths[ModulePathHelpersFacade::getInstance()->stringifyModulePath(array_merge($module_path, array($module)))]) {
@@ -1089,14 +1089,14 @@ class Engine implements EngineInterface
                     } elseif ($datasource == POP_DATALOAD_DATASOURCE_MUTABLEONREQUEST) {
                         $referencer_module_props = &$referencer_props;
                     }
-                    $this->processAndAddModuleData($referencer_modulepath, $referencer_module, $referencer_module_props, $data_properties, $dataaccess_checkpoint_validation, $actionexecution_checkpoint_validation, $executed, $dbObjectIDs);
+                    $this->processAndAddModuleData($referencer_modulepath, $referencer_module, $referencer_module_props, $data_properties, $dataaccess_checkpoint_validation, $mutation_checkpoint_validation, $executed, $dbObjectIDs);
                 }
             }
 
             // Incorporate the background URLs
             $this->backgroundload_urls = array_merge(
                 $this->backgroundload_urls,
-                $processor->getBackgroundurlsMergeddatasetmoduletree($module, $module_props, $data_properties, $dataaccess_checkpoint_validation, $actionexecution_checkpoint_validation, $executed, $dbObjectIDs)
+                $processor->getBackgroundurlsMergeddatasetmoduletree($module, $module_props, $data_properties, $dataaccess_checkpoint_validation, $mutation_checkpoint_validation, $executed, $dbObjectIDs)
             );
 
             // Allow PoP UserState to add the lazy-loaded userstate data triggers
@@ -1106,7 +1106,7 @@ class Engine implements EngineInterface
                 array(&$module_props),
                 array(&$data_properties),
                 $dataaccess_checkpoint_validation,
-                $actionexecution_checkpoint_validation,
+                $mutation_checkpoint_validation,
                 $executed,
                 $dbObjectIDOrIDs,
                 array(&$this->helperCalculations),
@@ -1757,7 +1757,7 @@ class Engine implements EngineInterface
         }
     }
 
-    protected function processAndAddModuleData($module_path, array $module, array &$props, array $data_properties, $dataaccess_checkpoint_validation, $actionexecution_checkpoint_validation, $executed, $dbObjectIDs)
+    protected function processAndAddModuleData($module_path, array $module, array &$props, array $data_properties, $dataaccess_checkpoint_validation, $mutation_checkpoint_validation, $executed, $dbObjectIDs)
     {
         $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
         $processor = $moduleprocessor_manager->getProcessor($module);
@@ -1767,7 +1767,7 @@ class Engine implements EngineInterface
             $moduledata = &$this->moduledata;
 
             // Add the feedback into the object
-            if ($feedback = $processor->getDataFeedbackDatasetmoduletree($module, $props, $data_properties, $dataaccess_checkpoint_validation, $actionexecution_checkpoint_validation, $executed, $dbObjectIDs)) {
+            if ($feedback = $processor->getDataFeedbackDatasetmoduletree($module, $props, $data_properties, $dataaccess_checkpoint_validation, $mutation_checkpoint_validation, $executed, $dbObjectIDs)) {
                 // Advance the position of the array into the current module
                 foreach ($module_path as $submodule) {
                     $submoduleOutputName = ModuleUtils::getModuleOutputName($submodule);
