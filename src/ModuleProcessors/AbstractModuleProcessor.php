@@ -629,7 +629,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         return $this->moduleLoadsData($module);
     }
 
-    public function getActionexecuterClass(array $module): ?string
+    public function getComponentMutationResolverBridgeClass(array $module): ?string
     {
         return null;
     }
@@ -1053,7 +1053,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         }
 
         // Add the actionpath too
-        if ($this->getActionexecuterClass($module)) {
+        if ($this->getComponentMutationResolverBridgeClass($module)) {
             $ret = GeneralUtils::addQueryArgs([
                 GD_URLPARAM_ACTIONPATH => $stringified_module_propagation_current_path,
             ], $ret);

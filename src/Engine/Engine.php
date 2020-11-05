@@ -936,7 +936,7 @@ class Engine implements EngineInterface
                 // Execute at the very beginning, so the result of the execution can also be fetched later below
                 // (Eg: creation of a new location => retrieving its data / Adding a new comment)
                 // Pass data_properties so these can also be modified (eg: set id of newly created Location)
-                if ($actionExecuterClass = $processor->getActionexecuterClass($module)) {
+                if ($actionExecuterClass = $processor->getComponentMutationResolverBridgeClass($module)) {
                     if ($processor->executeAction($module, $props)) {
                         // Validate that the actionexecution must be triggered through its own checkpoints
                         $execute = true;
