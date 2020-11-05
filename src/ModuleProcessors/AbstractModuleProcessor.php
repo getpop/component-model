@@ -1018,7 +1018,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         return array();
     }
 
-    public function executeAction(array $module, array &$props)
+    public function shouldExecuteMutation(array $module, array &$props): bool
     {
         // By default, execute only if the module is targeted for execution and doing POST
         $vars = ApplicationState::getVars();

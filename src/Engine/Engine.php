@@ -937,7 +937,7 @@ class Engine implements EngineInterface
                 // (Eg: creation of a new location => retrieving its data / Adding a new comment)
                 // Pass data_properties so these can also be modified (eg: set id of newly created Location)
                 if ($componentMutationResolverBridgeClass = $processor->getComponentMutationResolverBridgeClass($module)) {
-                    if ($processor->executeAction($module, $props)) {
+                    if ($processor->shouldExecuteMutation($module, $props)) {
                         // Validate that the actionexecution must be triggered through its own checkpoints
                         $execute = true;
                         if ($actionexecution_checkpoints = $data_properties[GD_DATALOAD_ACTIONEXECUTIONCHECKPOINTS]) {

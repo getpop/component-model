@@ -63,7 +63,7 @@ interface ModuleProcessorInterface
     public function getRelevantRouteCheckpointTarget(array $module, array &$props): string;
     public function getDataaccessCheckpoints(array $module, array &$props): array;
     public function getActionexecutionCheckpoints(array $module, array &$props): array;
-    public function executeAction(array $module, array &$props);
+    public function shouldExecuteMutation(array $module, array &$props): bool;
     public function getDataloadSource(array $module, array &$props): string;
     public function getModulesToPropagateDataProperties(array $module): array;
     public function getModelSupplementaryDbobjectdataModuletree(array $module, array &$props): array;
