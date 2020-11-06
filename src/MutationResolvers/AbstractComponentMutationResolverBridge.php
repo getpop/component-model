@@ -13,7 +13,23 @@ use PoP\ComponentModel\MutationResolvers\ComponentMutationResolverBridgeInterfac
 
 abstract class AbstractComponentMutationResolverBridge implements ComponentMutationResolverBridgeInterface
 {
-    abstract public function getSuccessString($result_id): string;
+    /**
+     * @param mixed $result_id
+     */
+    public function getSuccessString($result_id): ?string
+    {
+        return null;
+    }
+
+    /**
+     * @param mixed $result_id
+     * @return string[]
+     */
+    public function getSuccessStrings($result_id): array
+    {
+        $success_string = $this->getSuccessString($result_id);
+        return $success_string !== null ? [$success_string] : [];
+    }
 
     /**
      * @param array $data_properties
@@ -44,11 +60,13 @@ abstract class AbstractComponentMutationResolverBridge implements ComponentMutat
             $gd_dataload_actionexecution_manager->setResult(get_called_class(), $result_id);
 
             // No errors => success
-            $success_string = $this->getSuccessString($result_id);
-            return array(
+            $return = [
                 ResponseConstants::SUCCESS => true,
-                ResponseConstants::SUCCESSSTRINGS => array($success_string)
-            );
+            ];
+            if ($success_strings = $this->getSuccessStrings($result_id)) {
+                $return[ResponseConstants::SUCCESSSTRINGS] = $success_strings;
+            }
+            return $return;
         }
 
         return null;
