@@ -14,7 +14,7 @@ use PoP\ComponentModel\MutationResolvers\ComponentMutationResolverBridgeInterfac
 abstract class AbstractComponentMutationResolverBridge implements ComponentMutationResolverBridgeInterface
 {
     /**
-     * @param mixed $result_id
+     * @param mixed $result_id Maybe an int, maybe a string
      */
     public function getSuccessString($result_id): ?string
     {
@@ -22,7 +22,7 @@ abstract class AbstractComponentMutationResolverBridge implements ComponentMutat
     }
 
     /**
-     * @param mixed $result_id
+     * @param mixed $result_id Maybe an int, maybe a string
      * @return string[]
      */
     public function getSuccessStrings($result_id): array
@@ -75,7 +75,7 @@ abstract class AbstractComponentMutationResolverBridge implements ComponentMutat
     /**
      * @param mixed $result_id Maybe an int, maybe a string
      */
-    public function modifyDataProperties(array &$data_properties, $result_id): void
+    protected function modifyDataProperties(array &$data_properties, $result_id): void
     {
         // Modify the block-data-settings, saying to select the id of the newly created post
         $data_properties[DataloadingConstants::QUERYARGS]['include'] = array($result_id);
