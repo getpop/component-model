@@ -31,45 +31,49 @@ abstract class AbstractComponentMutationResolverBridge implements ComponentMutat
         return $success_string !== null ? [$success_string] : [];
     }
 
+    protected function onlyExecuteWhenDoingPost(): bool
+    {
+        return true;
+    }
+
     /**
      * @param array $data_properties
      * @return array<string, mixed>|null
      */
     public function execute(array &$data_properties): ?array
     {
-        if ('POST' == $_SERVER['REQUEST_METHOD']) {
-            $mutationResolverClass = $this->getMutationResolverClass();
-            $instanceManager = InstanceManagerFacade::getInstance();
-            /** @var MutationResolverInterface */
-            $mutationResolver = $instanceManager->getInstance($mutationResolverClass);
-            $errors = array();
-            $result_id = $mutationResolver->execute($errors);
+        if ($this->onlyExecuteWhenDoingPost() && 'POST' !== $_SERVER['REQUEST_METHOD']) {
+            return null;
+        }
+        $mutationResolverClass = $this->getMutationResolverClass();
+        $instanceManager = InstanceManagerFacade::getInstance();
+        /** @var MutationResolverInterface */
+        $mutationResolver = $instanceManager->getInstance($mutationResolverClass);
+        $errors = array();
+        $result_id = $mutationResolver->execute($errors);
 
-            if ($errors) {
-                // Bring no results
-                $data_properties[DataloadingConstants::SKIPDATALOAD] = true;
-                return array(
-                    ResponseConstants::ERRORSTRINGS => $errors
-                );
-            }
-
-            $this->modifyDataProperties($data_properties, $result_id);
-
-            // Save the result for some module to incorporate it into the query args
-            $gd_dataload_actionexecution_manager = MutationResolutionManagerFacade::getInstance();
-            $gd_dataload_actionexecution_manager->setResult(get_called_class(), $result_id);
-
-            // No errors => success
-            $return = [
-                ResponseConstants::SUCCESS => true,
-            ];
-            if ($success_strings = $this->getSuccessStrings($result_id)) {
-                $return[ResponseConstants::SUCCESSSTRINGS] = $success_strings;
-            }
-            return $return;
+        if ($errors) {
+            // Bring no results
+            $data_properties[DataloadingConstants::SKIPDATALOAD] = true;
+            return array(
+                ResponseConstants::ERRORSTRINGS => $errors
+            );
         }
 
-        return null;
+        $this->modifyDataProperties($data_properties, $result_id);
+
+        // Save the result for some module to incorporate it into the query args
+        $gd_dataload_actionexecution_manager = MutationResolutionManagerFacade::getInstance();
+        $gd_dataload_actionexecution_manager->setResult(get_called_class(), $result_id);
+
+        // No errors => success
+        $return = [
+            ResponseConstants::SUCCESS => true,
+        ];
+        if ($success_strings = $this->getSuccessStrings($result_id)) {
+            $return[ResponseConstants::SUCCESSSTRINGS] = $success_strings;
+        }
+        return $return;
     }
 
     /**
