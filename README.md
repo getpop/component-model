@@ -1796,7 +1796,7 @@ function execute(&$data_properties)
   if ('POST' == $_SERVER['REQUEST_METHOD']) 
   {
     // Function getFormData obtains the filled-in values in the form
-    $form_data = $this->getFormData($data_properties);
+    $form_data = $this->getFormData();
 
     $errors = array();
     if (empty($form_data['post_id'])) {

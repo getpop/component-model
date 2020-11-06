@@ -11,4 +11,5 @@ interface ComponentMutationResolverBridgeInterface
      * @return array<string, mixed>|null
      */
     public function execute(array &$data_properties): ?array;
+    public function getMutationResolverClass(): string;
 }

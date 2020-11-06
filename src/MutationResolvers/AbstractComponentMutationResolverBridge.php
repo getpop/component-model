@@ -36,6 +36,16 @@ abstract class AbstractComponentMutationResolverBridge implements ComponentMutat
         return true;
     }
 
+    protected function returnIfError(): bool
+    {
+        return true;
+    }
+
+    protected function skipDataloadIfError(): bool
+    {
+        return false;
+    }
+
     /**
      * @param array $data_properties
      * @return array<string, mixed>|null
@@ -49,15 +59,24 @@ abstract class AbstractComponentMutationResolverBridge implements ComponentMutat
         $instanceManager = InstanceManagerFacade::getInstance();
         /** @var MutationResolverInterface */
         $mutationResolver = $instanceManager->getInstance($mutationResolverClass);
-        $errors = array();
-        $result_id = $mutationResolver->execute($errors);
+        $errors = $errorcodes = array();
+        $result_id = $mutationResolver->execute($errors, $errorcodes);
 
-        if ($errors) {
-            // Bring no results
-            $data_properties[DataloadingConstants::SKIPDATALOAD] = true;
-            return array(
-                ResponseConstants::ERRORSTRINGS => $errors
-            );
+        $return = [];
+        if ($errors || $errorcodes) {
+            if ($errors) {
+                $return[ResponseConstants::ERRORSTRINGS] = $errors;
+            }
+            if ($errorcodes) {
+                $return[ResponseConstants::ERRORCODES] = $errorcodes;
+            }
+            if ($this->skipDataloadIfError()) {
+                // Bring no results
+                $data_properties[DataloadingConstants::SKIPDATALOAD] = true;
+            }
+            if ($this->returnIfError()) {
+                return $return;
+            }
         }
 
         $this->modifyDataProperties($data_properties, $result_id);
@@ -66,10 +85,7 @@ abstract class AbstractComponentMutationResolverBridge implements ComponentMutat
         $gd_dataload_actionexecution_manager = MutationResolutionManagerFacade::getInstance();
         $gd_dataload_actionexecution_manager->setResult(get_called_class(), $result_id);
 
-        // No errors => success
-        $return = [
-            ResponseConstants::SUCCESS => true,
-        ];
+        $return[ResponseConstants::SUCCESS] = true;
         if ($success_strings = $this->getSuccessStrings($result_id)) {
             $return[ResponseConstants::SUCCESSSTRINGS] = $success_strings;
         }
@@ -81,10 +97,6 @@ abstract class AbstractComponentMutationResolverBridge implements ComponentMutat
      */
     protected function modifyDataProperties(array &$data_properties, $result_id): void
     {
-        // Modify the block-data-settings, saying to select the id of the newly created post
-        $data_properties[DataloadingConstants::QUERYARGS]['include'] = array($result_id);
     }
-
-    abstract public function getMutationResolverClass(): string;
 }
 
