@@ -46,6 +46,11 @@ abstract class AbstractComponentMutationResolverBridge implements ComponentMutat
         return false;
     }
 
+    public function getFormData(): array
+    {
+        return [];
+    }
+
     /**
      * @param array $data_properties
      * @return array<string, mixed>|null
@@ -60,7 +65,8 @@ abstract class AbstractComponentMutationResolverBridge implements ComponentMutat
         /** @var MutationResolverInterface */
         $mutationResolver = $instanceManager->getInstance($mutationResolverClass);
         $errors = $errorcodes = array();
-        $result_id = $mutationResolver->execute($errors, $errorcodes);
+        $form_data = $this->getFormData();
+        $result_id = $mutationResolver->execute($errors, $errorcodes, $form_data);
 
         $return = [];
         if ($errors || $errorcodes) {

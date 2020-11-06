@@ -10,5 +10,5 @@ interface MutationResolverInterface
      * @param string[] $errors
      * @return mixed|null
      */
-    public function execute(array &$errors, array &$errorcodes);
+    public function execute(array &$errors, array &$errorcodes, array $form_data);
 }

@@ -12,4 +12,5 @@ interface ComponentMutationResolverBridgeInterface
      */
     public function execute(array &$data_properties): ?array;
     public function getMutationResolverClass(): string;
+    public function getFormData(): array;
 }
