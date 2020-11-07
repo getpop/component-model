@@ -46,11 +46,6 @@ abstract class AbstractComponentMutationResolverBridge implements ComponentMutat
         return false;
     }
 
-    public function getFormData(): array
-    {
-        return [];
-    }
-
     /**
      * @param array $data_properties
      * @return array<string, mixed>|null
