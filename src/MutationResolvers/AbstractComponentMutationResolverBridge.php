@@ -59,18 +59,15 @@ abstract class AbstractComponentMutationResolverBridge implements ComponentMutat
         $instanceManager = InstanceManagerFacade::getInstance();
         /** @var MutationResolverInterface */
         $mutationResolver = $instanceManager->getInstance($mutationResolverClass);
-        $errors = $errorcodes = array();
         $form_data = $this->getFormData();
-        $result_id = $mutationResolver->execute($errors, $errorcodes, $form_data);
-
         $return = [];
-        if ($errors || $errorcodes) {
-            if ($errors) {
-                $return[ResponseConstants::ERRORSTRINGS] = $errors;
-            }
-            if ($errorcodes) {
-                $return[ResponseConstants::ERRORCODES] = $errorcodes;
-            }
+        if ($errors = $mutationResolver->validate($form_data)) {
+            $errorType = $mutationResolver->getErrorType();
+            $errorTypeKeys = [
+                ErrorTypes::STRINGS => ResponseConstants::ERRORSTRINGS,
+                ErrorTypes::CODES => ResponseConstants::ERRORCODES,
+            ];
+            $return[$errorTypeKeys[$errorType]] = $errors;
             if ($this->skipDataloadIfError()) {
                 // Bring no results
                 $data_properties[DataloadingConstants::SKIPDATALOAD] = true;
@@ -79,7 +76,8 @@ abstract class AbstractComponentMutationResolverBridge implements ComponentMutat
                 return $return;
             }
         }
-
+        $errors = $errorcodes = [];
+        $result_id = $mutationResolver->execute($errors, $errorcodes, $form_data);
         $this->modifyDataProperties($data_properties, $result_id);
 
         // Save the result for some module to incorporate it into the query args
