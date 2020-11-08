@@ -10,6 +10,8 @@ use PoP\ComponentModel\QueryInputOutputHandlers\ResponseConstants;
 use PoP\ComponentModel\MutationResolvers\MutationResolverInterface;
 use PoP\ComponentModel\Facades\MutationResolution\MutationResolutionManagerFacade;
 use PoP\ComponentModel\MutationResolvers\ComponentMutationResolverBridgeInterface;
+use PoP\ComponentModel\Misc\GeneralUtils;
+use PoP\ComponentModel\Error;
 
 abstract class AbstractComponentMutationResolverBridge implements ComponentMutationResolverBridgeInterface
 {
@@ -61,13 +63,14 @@ abstract class AbstractComponentMutationResolverBridge implements ComponentMutat
         $mutationResolver = $instanceManager->getInstance($mutationResolverClass);
         $form_data = $this->getFormData();
         $return = [];
+        $errorType = $mutationResolver->getErrorType();
+        $errorTypeKeys = [
+            ErrorTypes::STRINGS => ResponseConstants::ERRORSTRINGS,
+            ErrorTypes::CODES => ResponseConstants::ERRORCODES,
+        ];
+        $errorTypeKey = $errorTypeKeys[$errorType];
         if ($errors = $mutationResolver->validate($form_data)) {
-            $errorType = $mutationResolver->getErrorType();
-            $errorTypeKeys = [
-                ErrorTypes::STRINGS => ResponseConstants::ERRORSTRINGS,
-                ErrorTypes::CODES => ResponseConstants::ERRORCODES,
-            ];
-            $return[$errorTypeKeys[$errorType]] = $errors;
+            $return[$errorTypeKey] = $errors;
             if ($this->skipDataloadIfError()) {
                 // Bring no results
                 $data_properties[DataloadingConstants::SKIPDATALOAD] = true;
@@ -78,6 +81,24 @@ abstract class AbstractComponentMutationResolverBridge implements ComponentMutat
         }
         $errors = $errorcodes = [];
         $result_id = $mutationResolver->execute($errors, $errorcodes, $form_data);
+        if (GeneralUtils::isError($result_id)) {
+            /** @var Error */
+            $error = $result_id;
+            $errors = [];
+            if ($errorTypeKey == ErrorTypes::STRINGS) {
+                $errors = $error->getErrorMessages();
+            } elseif ($errorTypeKey == ErrorTypes::CODES) {
+                $errors = $error->getErrorCodes();
+            }
+            $return[$errorTypeKey] = $errors;
+            if ($this->skipDataloadIfError()) {
+                // Bring no results
+                $data_properties[DataloadingConstants::SKIPDATALOAD] = true;
+            }
+            if ($this->returnIfError()) {
+                return $return;
+            }
+        }
         $this->modifyDataProperties($data_properties, $result_id);
 
         // Save the result for some module to incorporate it into the query args
