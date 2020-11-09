@@ -19,10 +19,11 @@ use PoP\ComponentModel\Versioning\VersioningHelpers;
 use PoP\ComponentModel\TypeResolvers\TypeResolverInterface;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\Resolvers\FieldOrDirectiveResolverTrait;
-use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverTrait;
+use PoP\ComponentModel\MutationResolvers\MutationResolverInterface;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
-use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverInterface;
+use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverTrait;
 use PoP\ComponentModel\Resolvers\InterfaceSchemaDefinitionResolverAdapter;
+use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverInterface;
 
 abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSchemaDefinitionResolverInterface
 {
@@ -190,6 +191,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             )) {
                 return [$maybeError];
             }
+        }
+        // If a MutationResolver is declared, let it resolve the value
+        if ($mutationResolverClass = $this->resolveFieldMutationResolverClass($typeResolver, $fieldName, $fieldArgs)) {
+            $instanceManager = InstanceManagerFacade::getInstance();
+            /** @var MutationResolverInterface */
+            $mutationResolver = $instanceManager->getInstance($mutationResolverClass);
+            return $mutationResolver->validateErrors($fieldArgs);
         }
         return null;
     }
@@ -371,6 +379,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 }
             }
         }
+        // If a MutationResolver is declared, let it resolve the value
+        if ($mutationResolverClass = $this->resolveFieldMutationResolverClass($typeResolver, $fieldName, $fieldArgs)) {
+            $instanceManager = InstanceManagerFacade::getInstance();
+            /** @var MutationResolverInterface */
+            $mutationResolver = $instanceManager->getInstance($mutationResolverClass);
+            return $mutationResolver->validateWarnings($fieldArgs);
+        }
         return $warnings;
     }
 
@@ -469,7 +484,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         // If a MutationResolver is declared, let it resolve the value
         if ($mutationResolverClass = $this->resolveFieldMutationResolverClass($typeResolver, $fieldName, $fieldArgs)) {
             $instanceManager = InstanceManagerFacade::getInstance();
+            /** @var MutationResolverInterface */
             $mutationResolver = $instanceManager->getInstance($mutationResolverClass);
+            return $mutationResolver->execute($fieldArgs);
         }
         return null;
     }

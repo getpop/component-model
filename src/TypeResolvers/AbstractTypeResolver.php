@@ -1439,7 +1439,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                             return ErrorUtils::getNonNullableFieldError($fieldName);
                         }
                     }
-                    // Everything is good, return the value
+                    // Everything is good, return the value (which could also be an Error!)
                     return $value;
                 }
             }
