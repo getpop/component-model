@@ -6,7 +6,12 @@ namespace PoP\ComponentModel\MutationResolvers;
 
 abstract class AbstractMutationResolver implements MutationResolverInterface
 {
-    public function validate(array $form_data): ?array
+    public function validateErrors(array $form_data): ?array
+    {
+        return null;
+    }
+
+    public function validateWarnings(array $form_data): ?array
     {
         return null;
     }

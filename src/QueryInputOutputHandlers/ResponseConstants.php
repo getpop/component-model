@@ -8,6 +8,8 @@ class ResponseConstants
 {
     const ERRORCODES = 'errorcodes';
     const ERRORSTRINGS = 'errorstrings';
+    const WARNINGCODES = 'warningcodes';
+    const WARNINGSTRINGS = 'warningstrings';
     const SUCCESS = 'success';
     const SUCCESSSTRINGS = 'successstrings';
 }

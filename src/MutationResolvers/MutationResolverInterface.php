@@ -10,6 +10,7 @@ interface MutationResolverInterface
      * @return mixed|null
      */
     public function execute(array $form_data);
-    public function validate(array $form_data): ?array;
+    public function validateErrors(array $form_data): ?array;
+    public function validateWarnings(array $form_data): ?array;
     public function getErrorType(): int;
 }

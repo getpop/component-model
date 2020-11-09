@@ -63,13 +63,14 @@ abstract class AbstractComponentMutationResolverBridge implements ComponentMutat
         $mutationResolver = $instanceManager->getInstance($mutationResolverClass);
         $form_data = $this->getFormData();
         $return = [];
+        // Validate errors
         $errorType = $mutationResolver->getErrorType();
         $errorTypeKeys = [
             ErrorTypes::DESCRIPTIONS => ResponseConstants::ERRORSTRINGS,
             ErrorTypes::CODES => ResponseConstants::ERRORCODES,
         ];
         $errorTypeKey = $errorTypeKeys[$errorType];
-        if ($errors = $mutationResolver->validate($form_data)) {
+        if ($errors = $mutationResolver->validateErrors($form_data)) {
             $return[$errorTypeKey] = $errors;
             if ($this->skipDataloadIfError()) {
                 // Bring no results
@@ -78,6 +79,14 @@ abstract class AbstractComponentMutationResolverBridge implements ComponentMutat
             if ($this->returnIfError()) {
                 return $return;
             }
+        }
+        if ($warnings = $mutationResolver->validateWarnings($form_data)) {
+            $warningTypeKeys = [
+                ErrorTypes::DESCRIPTIONS => ResponseConstants::WARNINGSTRINGS,
+                ErrorTypes::CODES => ResponseConstants::WARNINGCODES,
+            ];
+            $warningTypeKey = $warningTypeKeys[$errorType];
+            $return[$warningTypeKey] = $warnings;
         }
         $result_id = $mutationResolver->execute($form_data);
         if (GeneralUtils::isError($result_id)) {
