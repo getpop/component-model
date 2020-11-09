@@ -38,11 +38,6 @@ abstract class AbstractComponentMutationResolverBridge implements ComponentMutat
         return true;
     }
 
-    protected function returnIfError(): bool
-    {
-        return true;
-    }
-
     protected function skipDataloadIfError(): bool
     {
         return false;
@@ -76,9 +71,7 @@ abstract class AbstractComponentMutationResolverBridge implements ComponentMutat
                 // Bring no results
                 $data_properties[DataloadingConstants::SKIPDATALOAD] = true;
             }
-            if ($this->returnIfError()) {
-                return $return;
-            }
+            return $return;
         }
         if ($warnings = $mutationResolver->validateWarnings($form_data)) {
             $warningTypeKeys = [
@@ -103,9 +96,7 @@ abstract class AbstractComponentMutationResolverBridge implements ComponentMutat
                 // Bring no results
                 $data_properties[DataloadingConstants::SKIPDATALOAD] = true;
             }
-            if ($this->returnIfError()) {
-                return $return;
-            }
+            return $return;
         }
         $this->modifyDataProperties($data_properties, $result_id);
 
