@@ -372,7 +372,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         return true;
     }
 
-    public function resolveSchemaValidationErrorDescription(TypeResolverInterface $typeResolver, string $directiveName, array $directiveArgs = []): ?string
+    public function resolveSchemaValidationErrorDescriptions(TypeResolverInterface $typeResolver, string $directiveName, array $directiveArgs = []): ?array
     {
         $directiveSchemaDefinition = $this->getSchemaDefinitionForDirective($typeResolver);
         if ($schemaDirectiveArgs = $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) {
@@ -386,7 +386,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 $schemaDirectiveArgs,
                 ResolverTypes::DIRECTIVE
             )) {
-                return $maybeError;
+                return [$maybeError];
             }
 
             /**
@@ -400,7 +400,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                     $schemaDirectiveArgs,
                     ResolverTypes::DIRECTIVE
                 )) {
-                    return $maybeError;
+                    return [$maybeError];
                 }
             }
         }

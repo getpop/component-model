@@ -92,10 +92,10 @@ trait AliasSchemaFieldResolverTrait
      * Proxy pattern: execute same function on the aliased FieldResolver,
      * for the aliased $fieldName
      */
-    public function resolveSchemaValidationErrorDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
+    public function resolveSchemaValidationErrorDescriptions(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?array
     {
         $aliasedFieldResolver = $this->getAliasedFieldResolverInstance();
-        return $aliasedFieldResolver->resolveSchemaValidationErrorDescription(
+        return $aliasedFieldResolver->resolveSchemaValidationErrorDescriptions(
             $typeResolver,
             $this->getAliasedFieldName($fieldName),
             $fieldArgs
@@ -106,10 +106,10 @@ trait AliasSchemaFieldResolverTrait
      * Proxy pattern: execute same function on the aliased FieldResolver,
      * for the aliased $fieldName
      */
-    public function resolveSchemaValidationDeprecationDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
+    public function resolveSchemaValidationDeprecationDescriptions(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?array
     {
         $aliasedFieldResolver = $this->getAliasedFieldResolverInstance();
-        return $aliasedFieldResolver->resolveSchemaValidationDeprecationDescription(
+        return $aliasedFieldResolver->resolveSchemaValidationDeprecationDescriptions(
             $typeResolver,
             $this->getAliasedFieldName($fieldName),
             $fieldArgs
@@ -120,10 +120,10 @@ trait AliasSchemaFieldResolverTrait
      * Proxy pattern: execute same function on the aliased FieldResolver,
      * for the aliased $fieldName
      */
-    public function resolveSchemaValidationWarningDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
+    public function resolveSchemaValidationWarningDescriptions(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?array
     {
         $aliasedFieldResolver = $this->getAliasedFieldResolverInstance();
-        return $aliasedFieldResolver->resolveSchemaValidationWarningDescription(
+        return $aliasedFieldResolver->resolveSchemaValidationWarningDescriptions(
             $typeResolver,
             $this->getAliasedFieldName($fieldName),
             $fieldArgs
@@ -158,14 +158,14 @@ trait AliasSchemaFieldResolverTrait
      *
      * @param array<string, mixed> $fieldArgs
      */
-    public function getValidationErrorDescription(
+    public function getValidationErrorDescriptions(
         TypeResolverInterface $typeResolver,
         object $resultItem,
         string $fieldName,
         array $fieldArgs = []
-    ): ?string {
+    ): ?array {
         $aliasedFieldResolver = $this->getAliasedFieldResolverInstance();
-        return $aliasedFieldResolver->getValidationErrorDescription(
+        return $aliasedFieldResolver->getValidationErrorDescriptions(
             $typeResolver,
             $resultItem,
             $this->getAliasedFieldName($fieldName),

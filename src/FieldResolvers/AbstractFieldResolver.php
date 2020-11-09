@@ -161,7 +161,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         }
         return true;
     }
-    public function resolveSchemaValidationErrorDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
+    public function resolveSchemaValidationErrorDescriptions(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?array
     {
         $fieldSchemaDefinition = $this->getSchemaDefinitionForField($typeResolver, $fieldName, $fieldArgs);
         if ($schemaFieldArgs = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) {
@@ -175,7 +175,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 $schemaFieldArgs,
                 ResolverTypes::FIELD
             )) {
-                return $maybeError;
+                return [$maybeError];
             }
 
             /**
@@ -188,12 +188,12 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 $schemaFieldArgs,
                 ResolverTypes::FIELD
             )) {
-                return $maybeError;
+                return [$maybeError];
             }
         }
         return null;
     }
-    public function resolveSchemaValidationDeprecationDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
+    public function resolveSchemaValidationDeprecationDescriptions(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?array
     {
         $fieldSchemaDefinition = $this->getSchemaDefinitionForField($typeResolver, $fieldName, $fieldArgs);
         if ($schemaFieldArgs = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) {
@@ -204,7 +204,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 $schemaFieldArgs,
                 ResolverTypes::FIELD
             )) {
-                return $maybeDeprecation;
+                return [
+                    $maybeDeprecation
+                ];
             }
         }
         return null;
@@ -347,8 +349,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         return !empty($this->getSchemaFieldVersion($typeResolver, $fieldName));
     }
 
-    public function resolveSchemaValidationWarningDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
+    public function resolveSchemaValidationWarningDescriptions(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?array
     {
+        $warnings = [];
+        $translationAPI = TranslationAPIFacade::getInstance();
         if (Environment::enableSemanticVersionConstraints()) {
             /**
              * If restricting the version, and this fieldResolver doesn't have any version, then show a warning
@@ -358,8 +362,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                  * If this fieldResolver doesn't have versioning, then it accepts everything
                  */
                 if (!$this->decideCanProcessBasedOnVersionConstraint($typeResolver)) {
-                    $translationAPI = TranslationAPIFacade::getInstance();
-                    return sprintf(
+                    $warnings[] = sprintf(
                         $translationAPI->__('The FieldResolver used to process field with name \'%s\' (which has version \'%s\') does not pay attention to the version constraint; hence, argument \'versionConstraint\', with value \'%s\', was ignored', 'component-model'),
                         $fieldName,
                         $this->getSchemaFieldVersion($typeResolver, $fieldName) ?? '',
@@ -368,7 +371,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 }
             }
         }
-        return null;
+        return $warnings;
     }
 
     protected function getFieldArgumentsSchemaDefinitions(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): array
@@ -417,12 +420,12 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
     /**
      * @param array<string, mixed> $fieldArgs
      */
-    public function getValidationErrorDescription(
+    public function getValidationErrorDescriptions(
         TypeResolverInterface $typeResolver,
         object $resultItem,
         string $fieldName,
         array $fieldArgs = []
-    ): ?string {
+    ): ?array {
         // Can perform validation through checkpoints
         if ($checkpoints = $this->getValidationCheckpoints($typeResolver, $resultItem, $fieldName, $fieldArgs)) {
             $engine = EngineFacade::getInstance();
@@ -438,7 +441,9 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                     );
                 }
                 // Allow to customize the error message for the failing entity
-                return $this->getValidationCheckpointsErrorMessage($errorMessage, $typeResolver, $resultItem, $fieldName, $fieldArgs);
+                return [
+                    $this->getValidationCheckpointsErrorMessage($errorMessage, $typeResolver, $resultItem, $fieldName, $fieldArgs)
+                ];
             }
         }
 

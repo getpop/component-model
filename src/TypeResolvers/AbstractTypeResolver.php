@@ -563,11 +563,13 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 }
 
                 // Validate against the directiveResolver
-                if ($maybeError = $directiveResolverInstance->resolveSchemaValidationErrorDescription($this, $directiveName, $directiveArgs)) {
-                    $schemaErrors[] = [
-                        Tokens::PATH => [$fieldDirective],
-                        Tokens::MESSAGE => $maybeError,
-                    ];
+                if ($maybeErrors = $directiveResolverInstance->resolveSchemaValidationErrorDescriptions($this, $directiveName, $directiveArgs)) {
+                    foreach ($maybeErrors as $error) {
+                        $schemaErrors[] = [
+                            Tokens::PATH => [$fieldDirective],
+                            Tokens::MESSAGE => $error,
+                        ];
+                    }
                     if ($stopDirectivePipelineExecutionIfDirectiveFailed) {
                         $schemaErrors[] = [
                             Tokens::PATH => [$fieldDirective],
@@ -1186,11 +1188,13 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             $schemaErrors,
         ) = $this->dissectFieldForSchema($field);
         if ($fieldResolvers = $this->getFieldResolversForField($field)) {
-            if ($maybeError = $fieldResolvers[0]->resolveSchemaValidationErrorDescription($this, $fieldName, $fieldArgs)) {
-                $schemaErrors[] = [
-                    Tokens::PATH => [$field],
-                    Tokens::MESSAGE => $maybeError,
-                ];
+            if ($maybeErrors = $fieldResolvers[0]->resolveSchemaValidationErrorDescriptions($this, $fieldName, $fieldArgs)) {
+                foreach ($maybeErrors as $error) {
+                    $schemaErrors[] = [
+                        Tokens::PATH => [$field],
+                        Tokens::MESSAGE => $error,
+                    ];
+                }
             }
             return $schemaErrors;
         }
@@ -1242,13 +1246,15 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 $schemaErrors,
                 $schemaWarnings,
             ) = $this->dissectFieldForSchema($field);
-            if ($maybeWarning = $fieldResolvers[0]->resolveSchemaValidationWarningDescription($this, $fieldName, $fieldArgs)) {
+            if ($maybeWarnings = $fieldResolvers[0]->resolveSchemaValidationWarningDescriptions($this, $fieldName, $fieldArgs)) {
                 // $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
                 // $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
-                $schemaWarnings[] = [
-                    Tokens::PATH => [$field],
-                    Tokens::MESSAGE => $maybeWarning,
-                ];
+                foreach ($maybeWarnings as $warning) {
+                    $schemaWarnings[] = [
+                        Tokens::PATH => [$field],
+                        Tokens::MESSAGE => $warning,
+                    ];
+                }
             }
             return $schemaWarnings;
         }
@@ -1278,11 +1284,13 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 ];
             }
             // Check for deprecations in the enums
-            if ($maybeDeprecation = $fieldResolvers[0]->resolveSchemaValidationDeprecationDescription($this, $fieldName, $fieldArgs)) {
-                $schemaDeprecations[] = [
-                    Tokens::PATH => [$field],
-                    Tokens::MESSAGE => $maybeDeprecation,
-                ];
+            if ($maybeDeprecations = $fieldResolvers[0]->resolveSchemaValidationDeprecationDescriptions($this, $fieldName, $fieldArgs)) {
+                foreach ($maybeDeprecations as $deprecation) {
+                    $schemaDeprecations[] = [
+                        Tokens::PATH => [$field],
+                        Tokens::MESSAGE => $deprecation,
+                    ];
+                }
             }
             return $schemaDeprecations;
         }
@@ -1405,20 +1413,22 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 // Also send the typeResolver along, as to get the id of the $resultItem being passed
                 if ($fieldResolver->resolveCanProcessResultItem($this, $resultItem, $fieldName, $fieldArgs)) {
                     if ($validateSchemaOnResultItem) {
-                        if ($maybeError = $fieldResolver->resolveSchemaValidationErrorDescription($this, $fieldName, $fieldArgs)) {
-                            return ErrorUtils::getValidationFailedError($fieldName, $fieldArgs, $maybeError);
+                        if ($maybeErrors = $fieldResolver->resolveSchemaValidationErrorDescriptions($this, $fieldName, $fieldArgs)) {
+                            return ErrorUtils::getValidationFailedError($fieldName, $fieldArgs, $maybeErrors);
                         }
-                        if ($maybeDeprecation = $fieldResolver->resolveSchemaValidationDeprecationDescription($this, $fieldName, $fieldArgs)) {
+                        if ($maybeDeprecations = $fieldResolver->resolveSchemaValidationDeprecationDescriptions($this, $fieldName, $fieldArgs)) {
                             $id = $this->getID($resultItem);
-                            $dbDeprecations[(string)$id][] = [
-                                Tokens::PATH => [$field],
-                                Tokens::MESSAGE => $maybeDeprecation,
-                            ];
+                            foreach ($maybeDeprecations as $deprecation) {
+                                $dbDeprecations[(string)$id][] = [
+                                    Tokens::PATH => [$field],
+                                    Tokens::MESSAGE => $deprecation,
+                                ];
+                            }
                             $feedbackMessageStore->addDBDeprecations($dbDeprecations);
                         }
                     }
-                    if ($validationErrorDescription = $fieldResolver->getValidationErrorDescription($this, $resultItem, $fieldName, $fieldArgs)) {
-                        return ErrorUtils::getValidationFailedError($fieldName, $fieldArgs, $validationErrorDescription);
+                    if ($validationErrorDescriptions = $fieldResolver->getValidationErrorDescriptions($this, $resultItem, $fieldName, $fieldArgs)) {
+                        return ErrorUtils::getValidationFailedError($fieldName, $fieldArgs, $validationErrorDescriptions);
                     }
                     // Resolve the value
                     $value = $fieldResolver->resolveValue($this, $resultItem, $fieldName, $fieldArgs, $variables, $expressions, $options);

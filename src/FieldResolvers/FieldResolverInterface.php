@@ -65,8 +65,8 @@ interface FieldResolverInterface
      * @return boolean
      */
     public function resolveCanProcess(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): bool;
-    public function resolveSchemaValidationErrorDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string;
-    public function resolveSchemaValidationDeprecationDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string;
+    public function resolveSchemaValidationErrorDescriptions(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?array;
+    public function resolveSchemaValidationDeprecationDescriptions(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?array;
     /**
      * @param array<string, mixed> $fieldArgs
      * @param array<string, mixed>|null $variables
@@ -85,7 +85,7 @@ interface FieldResolverInterface
     );
     public function resolveFieldTypeResolverClass(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string;
     public function resolveFieldMutationResolverClass(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string;
-    public function resolveSchemaValidationWarningDescription(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string;
+    public function resolveSchemaValidationWarningDescriptions(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?array;
     /**
      * @param array<string, mixed> $fieldArgs
      */
@@ -99,12 +99,12 @@ interface FieldResolverInterface
     /**
      * @param array<string, mixed> $fieldArgs
      */
-    public function getValidationErrorDescription(
+    public function getValidationErrorDescriptions(
         TypeResolverInterface $typeResolver,
         object $resultItem,
         string $fieldName,
         array $fieldArgs = []
-    ): ?string;
+    ): ?array;
     /**
      * Define if to use the version to decide if to process the field or not
      *
