@@ -276,11 +276,10 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         }
 
         // Add the entries for all missing fieldArgs with default value
-        foreach ($fieldArgumentNameDefaultValues as $fieldOrDirectiveArgName => $fieldOrDirectiveArgDefaultValue) {
-            if (!\array_key_exists($fieldOrDirectiveArgName, $fieldOrDirectiveArgs)) {
-                $fieldOrDirectiveArgs[$fieldOrDirectiveArgName] = $fieldOrDirectiveArgDefaultValue;
-            }
-        }
+        $fieldOrDirectiveArgs = array_merge(
+            $fieldArgumentNameDefaultValues,
+            $fieldOrDirectiveArgs
+        );
 
         return $fieldOrDirectiveArgs;
     }
