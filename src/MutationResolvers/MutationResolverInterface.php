@@ -7,7 +7,7 @@ namespace PoP\ComponentModel\MutationResolvers;
 interface MutationResolverInterface
 {
     /**
-     * @return mixed|null
+     * @return mixed
      */
     public function execute(array $form_data);
     public function validateErrors(array $form_data): ?array;
