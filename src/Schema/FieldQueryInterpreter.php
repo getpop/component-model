@@ -51,6 +51,15 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
      * @var array<string, array>
      */
     private array $directiveArgumentNameTypesCache = [];
+    /**
+     * @var array<string, array>
+     */
+    private array $fieldArgumentNameDefaultValuesCache = [];
+    /**
+     * @var array<string, array>
+     */
+    private array $directiveArgumentNameDefaultValuesCache = [];
+
 
     // Services
     protected TypeCastingExecuterInterface $typeCastingExecuter;
@@ -159,12 +168,14 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         // Iterate all the elements, and extract them into the array
         if ($directiveArgElems = QueryHelpers::getFieldArgElements($this->getFieldDirectiveArgs($fieldDirective))) {
             $directiveArgumentNameTypes = $this->getDirectiveArgumentNameTypes($directiveResolver, $typeResolver, $fieldDirective);
+            $directiveArgumentNameDefaultValues = $this->getDirectiveArgumentNameDefaultValues($directiveResolver, $typeResolver, $fieldDirective);
             $orderedDirectiveArgNamesEnabled = $directiveResolver->enableOrderedSchemaDirectiveArgs($typeResolver);
             return $this->extractAndValidateFielOrDirectiveArguments(
                 $fieldDirective,
                 $directiveArgElems,
                 $orderedDirectiveArgNamesEnabled,
                 $directiveArgumentNameTypes,
+                $directiveArgumentNameDefaultValues,
                 $variables,
                 $schemaWarnings
             );
@@ -180,6 +191,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
      * @param array $fieldOrDirectiveArgElems
      * @param boolean $orderedFieldOrDirectiveArgNamesEnabled
      * @param array $fieldOrDirectiveArgumentNameTypes
+     * @param array $fieldArgumentNameDefaultValues
      * @param array|null $variables
      * @param array $schemaWarnings
      * @return array
@@ -189,6 +201,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         array $fieldOrDirectiveArgElems,
         bool $orderedFieldOrDirectiveArgNamesEnabled,
         array $fieldOrDirectiveArgumentNameTypes,
+        array $fieldArgumentNameDefaultValues,
         ?array $variables,
         array &$schemaWarnings
     ): array {
@@ -254,6 +267,13 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             $fieldOrDirectiveArgs[$fieldOrDirectiveArgName] = $fieldOrDirectiveArgValue;
         }
 
+        // Add the entries for all missing fieldArgs with default value
+        foreach ($fieldArgumentNameDefaultValues as $fieldOrDirectiveArgName => $fieldOrDirectiveArgDefaultValue) {
+            if (!\array_key_exists($fieldOrDirectiveArgName, $fieldOrDirectiveArgs)) {
+                $fieldOrDirectiveArgs[$fieldOrDirectiveArgName] = $fieldOrDirectiveArgDefaultValue;
+            }
+        }
+
         return $fieldOrDirectiveArgs;
     }
 
@@ -286,12 +306,14 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         // Iterate all the elements, and extract them into the array
         if ($fieldArgElems = QueryHelpers::getFieldArgElements($this->getFieldArgs($field))) {
             $fieldArgumentNameTypes = $this->getFieldArgumentNameTypes($typeResolver, $field);
+            $fieldArgumentNameDefaultValues = $this->getFieldArgumentNameDefaultValues($typeResolver, $field);
             $orderedFieldArgNamesEnabled = $typeResolver->enableOrderedSchemaFieldArgs($field);
             return $this->extractAndValidateFielOrDirectiveArguments(
                 $field,
                 $fieldArgElems,
                 $orderedFieldArgNamesEnabled,
                 $fieldArgumentNameTypes,
+                $fieldArgumentNameDefaultValues,
                 $variables,
                 $schemaWarnings
             );
@@ -657,6 +679,30 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         return $directiveArgNameTypes;
     }
 
+    protected function getDirectiveArgumentNameDefaultValues(DirectiveResolverInterface $directiveResolver, TypeResolverInterface $typeResolver): array
+    {
+        if (!isset($this->directiveArgumentNameDefaultValuesCache[get_class($directiveResolver)][get_class($typeResolver)])) {
+            $this->directiveArgumentNameDefaultValuesCache[get_class($directiveResolver)][get_class($typeResolver)] = $this->doGetDirectiveArgumentNameDefaultValues($directiveResolver, $typeResolver);
+        }
+        return $this->directiveArgumentNameDefaultValuesCache[get_class($directiveResolver)][get_class($typeResolver)];
+    }
+
+    protected function doGetDirectiveArgumentNameDefaultValues(DirectiveResolverInterface $directiveResolver, TypeResolverInterface $typeResolver): array
+    {
+        // Get the fieldDirective argument types, to know to what type it will cast the value
+        $directiveArgNameDefaultValues = [];
+        if ($directiveSchemaDefinitionResolver = $directiveResolver->getSchemaDefinitionResolver($typeResolver)) {
+            if ($directiveSchemaDefinitionArgs = $directiveSchemaDefinitionResolver->getFilteredSchemaDirectiveArgs($typeResolver)) {
+                foreach ($directiveSchemaDefinitionArgs as $directiveSchemaDefinitionArg) {
+                    if (\array_key_exists(SchemaDefinition::ARGNAME_DEFAULT_VALUE, $directiveSchemaDefinitionArg)) {
+                        $directiveArgNameDefaultValues[$directiveSchemaDefinitionArg[SchemaDefinition::ARGNAME_NAME]] = $directiveSchemaDefinitionArg[SchemaDefinition::ARGNAME_DEFAULT_VALUE];
+                    }
+                }
+            }
+        }
+        return $directiveArgNameDefaultValues;
+    }
+
     protected function getFieldArgumentNameTypes(TypeResolverInterface $typeResolver, string $field): array
     {
         if (!isset($this->fieldArgumentNameTypesCache[get_class($typeResolver)][$field])) {
@@ -675,6 +721,28 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             }
         }
         return $fieldArgNameTypes;
+    }
+
+    protected function getFieldArgumentNameDefaultValues(TypeResolverInterface $typeResolver, string $field): array
+    {
+        if (!isset($this->fieldArgumentNameDefaultValuesCache[get_class($typeResolver)][$field])) {
+            $this->fieldArgumentNameDefaultValuesCache[get_class($typeResolver)][$field] = $this->doGetFieldArgumentNameDefaultValues($typeResolver, $field);
+        }
+        return $this->fieldArgumentNameDefaultValuesCache[get_class($typeResolver)][$field];
+    }
+
+    protected function doGetFieldArgumentNameDefaultValues(TypeResolverInterface $typeResolver, string $field): array
+    {
+        // Get the field argument types, to know to what type it will cast the value
+        $fieldArgNameDefaultValues = [];
+        if ($fieldSchemaDefinitionArgs = $typeResolver->getSchemaFieldArgs($field)) {
+            foreach ($fieldSchemaDefinitionArgs as $fieldSchemaDefinitionArg) {
+                if (\array_key_exists(SchemaDefinition::ARGNAME_DEFAULT_VALUE, $fieldSchemaDefinitionArg)) {
+                    $fieldArgNameDefaultValues[$fieldSchemaDefinitionArg[SchemaDefinition::ARGNAME_NAME]] = $fieldSchemaDefinitionArg[SchemaDefinition::ARGNAME_DEFAULT_VALUE];
+                }
+            }
+        }
+        return $fieldArgNameDefaultValues;
     }
 
     protected function castAndValidateDirectiveArgumentsForSchema(DirectiveResolverInterface $directiveResolver, TypeResolverInterface $typeResolver, string $fieldDirective, array $directiveArgs, array &$schemaWarnings, bool $disableDynamicFields = false): array
