@@ -173,10 +173,10 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
 
     protected function doExtractDirectiveArguments(DirectiveResolverInterface $directiveResolver, TypeResolverInterface $typeResolver, string $fieldDirective, ?array $variables, array &$schemaWarnings): array
     {
+        $directiveArgumentNameDefaultValues = $this->getDirectiveArgumentNameDefaultValues($directiveResolver, $typeResolver, $fieldDirective);
         // Iterate all the elements, and extract them into the array
         if ($directiveArgElems = QueryHelpers::getFieldArgElements($this->getFieldDirectiveArgs($fieldDirective))) {
             $directiveArgumentNameTypes = $this->getDirectiveArgumentNameTypes($directiveResolver, $typeResolver, $fieldDirective);
-            $directiveArgumentNameDefaultValues = $this->getDirectiveArgumentNameDefaultValues($directiveResolver, $typeResolver, $fieldDirective);
             $orderedDirectiveArgNamesEnabled = $directiveResolver->enableOrderedSchemaDirectiveArgs($typeResolver);
             return $this->extractAndValidateFielOrDirectiveArguments(
                 $fieldDirective,
@@ -189,7 +189,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             );
         }
 
-        return [];
+        return $directiveArgumentNameDefaultValues;
     }
 
     /**
@@ -312,9 +312,9 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     protected function doExtractFieldArguments(TypeResolverInterface $typeResolver, string $field, ?array $variables, array &$schemaWarnings): array
     {
         // Iterate all the elements, and extract them into the array
+        $fieldArgumentNameDefaultValues = $this->getFieldArgumentNameDefaultValues($typeResolver, $field);
         if ($fieldArgElems = QueryHelpers::getFieldArgElements($this->getFieldArgs($field))) {
             $fieldArgumentNameTypes = $this->getFieldArgumentNameTypes($typeResolver, $field);
-            $fieldArgumentNameDefaultValues = $this->getFieldArgumentNameDefaultValues($typeResolver, $field);
             $orderedFieldArgNamesEnabled = $typeResolver->enableOrderedSchemaFieldArgs($field);
             return $this->extractAndValidateFielOrDirectiveArguments(
                 $field,
@@ -327,7 +327,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             );
         }
 
-        return [];
+        return $fieldArgumentNameDefaultValues;
     }
 
     protected function filterFieldArgs($fieldArgs): array
