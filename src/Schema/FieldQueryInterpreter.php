@@ -59,6 +59,14 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
      * @var array<string, array>
      */
     private array $directiveArgumentNameDefaultValuesCache = [];
+    /**
+     * @var array<string, array>
+     */
+    private array $fieldSchemaDefinitionArgsCache = [];
+    /**
+     * @var array<string, array>
+     */
+    private array $directiveSchemaDefinitionArgsCache = [];
 
 
     // Services
@@ -669,11 +677,9 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     {
         // Get the fieldDirective argument types, to know to what type it will cast the value
         $directiveArgNameTypes = [];
-        if ($directiveSchemaDefinitionResolver = $directiveResolver->getSchemaDefinitionResolver($typeResolver)) {
-            if ($directiveSchemaDefinitionArgs = $directiveSchemaDefinitionResolver->getFilteredSchemaDirectiveArgs($typeResolver)) {
-                foreach ($directiveSchemaDefinitionArgs as $directiveSchemaDefinitionArg) {
-                    $directiveArgNameTypes[$directiveSchemaDefinitionArg[SchemaDefinition::ARGNAME_NAME]] = $directiveSchemaDefinitionArg[SchemaDefinition::ARGNAME_TYPE];
-                }
+        if ($directiveSchemaDefinitionArgs = $this->getDirectiveSchemaDefinitionArgs($directiveResolver, $typeResolver)) {
+            foreach ($directiveSchemaDefinitionArgs as $directiveSchemaDefinitionArg) {
+                $directiveArgNameTypes[$directiveSchemaDefinitionArg[SchemaDefinition::ARGNAME_NAME]] = $directiveSchemaDefinitionArg[SchemaDefinition::ARGNAME_TYPE];
             }
         }
         return $directiveArgNameTypes;
@@ -691,16 +697,34 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     {
         // Get the fieldDirective argument types, to know to what type it will cast the value
         $directiveArgNameDefaultValues = [];
-        if ($directiveSchemaDefinitionResolver = $directiveResolver->getSchemaDefinitionResolver($typeResolver)) {
-            if ($directiveSchemaDefinitionArgs = $directiveSchemaDefinitionResolver->getFilteredSchemaDirectiveArgs($typeResolver)) {
-                foreach ($directiveSchemaDefinitionArgs as $directiveSchemaDefinitionArg) {
-                    if (\array_key_exists(SchemaDefinition::ARGNAME_DEFAULT_VALUE, $directiveSchemaDefinitionArg)) {
-                        $directiveArgNameDefaultValues[$directiveSchemaDefinitionArg[SchemaDefinition::ARGNAME_NAME]] = $directiveSchemaDefinitionArg[SchemaDefinition::ARGNAME_DEFAULT_VALUE];
-                    }
+        if ($directiveSchemaDefinitionArgs = $this->getDirectiveSchemaDefinitionArgs($directiveResolver, $typeResolver)) {
+            foreach ($directiveSchemaDefinitionArgs as $directiveSchemaDefinitionArg) {
+                if (\array_key_exists(SchemaDefinition::ARGNAME_DEFAULT_VALUE, $directiveSchemaDefinitionArg)) {
+                    $directiveArgNameDefaultValues[$directiveSchemaDefinitionArg[SchemaDefinition::ARGNAME_NAME]] = $directiveSchemaDefinitionArg[SchemaDefinition::ARGNAME_DEFAULT_VALUE];
                 }
             }
         }
         return $directiveArgNameDefaultValues;
+    }
+
+    protected function getFieldSchemaDefinitionArgs(TypeResolverInterface $typeResolver, string $field): array
+    {
+        if (!isset($this->fieldSchemaDefinitionArgsCache[get_class($typeResolver)][$field])) {
+            $this->fieldSchemaDefinitionArgsCache[get_class($typeResolver)][$field] = $typeResolver->getSchemaFieldArgs($field);
+        }
+        return $this->fieldSchemaDefinitionArgsCache[get_class($typeResolver)][$field];
+    }
+
+    protected function getDirectiveSchemaDefinitionArgs(DirectiveResolverInterface $directiveResolver, TypeResolverInterface $typeResolver): array
+    {
+        if (!isset($this->directiveSchemaDefinitionArgsCache[get_class($directiveResolver)][get_class($typeResolver)])) {
+            $directiveSchemaDefinitionArgs = [];
+            if ($directiveSchemaDefinitionResolver = $directiveResolver->getSchemaDefinitionResolver($typeResolver)) {
+                $directiveSchemaDefinitionArgs = $directiveSchemaDefinitionResolver->getFilteredSchemaDirectiveArgs($typeResolver);
+            }
+            $this->directiveSchemaDefinitionArgsCache[get_class($directiveResolver)][get_class($typeResolver)] = $directiveSchemaDefinitionArgs;
+        }
+        return $this->directiveSchemaDefinitionArgsCache[get_class($directiveResolver)][get_class($typeResolver)];
     }
 
     protected function getFieldArgumentNameTypes(TypeResolverInterface $typeResolver, string $field): array
@@ -715,7 +739,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     {
         // Get the field argument types, to know to what type it will cast the value
         $fieldArgNameTypes = [];
-        if ($fieldSchemaDefinitionArgs = $typeResolver->getSchemaFieldArgs($field)) {
+        if ($fieldSchemaDefinitionArgs = $this->getFieldSchemaDefinitionArgs($typeResolver, $field)) {
             foreach ($fieldSchemaDefinitionArgs as $fieldSchemaDefinitionArg) {
                 $fieldArgNameTypes[$fieldSchemaDefinitionArg[SchemaDefinition::ARGNAME_NAME]] = $fieldSchemaDefinitionArg[SchemaDefinition::ARGNAME_TYPE];
             }
@@ -735,7 +759,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
     {
         // Get the field argument types, to know to what type it will cast the value
         $fieldArgNameDefaultValues = [];
-        if ($fieldSchemaDefinitionArgs = $typeResolver->getSchemaFieldArgs($field)) {
+        if ($fieldSchemaDefinitionArgs = $this->getFieldSchemaDefinitionArgs($typeResolver, $field)) {
             foreach ($fieldSchemaDefinitionArgs as $fieldSchemaDefinitionArg) {
                 if (\array_key_exists(SchemaDefinition::ARGNAME_DEFAULT_VALUE, $fieldSchemaDefinitionArg)) {
                     $fieldArgNameDefaultValues[$fieldSchemaDefinitionArg[SchemaDefinition::ARGNAME_NAME]] = $fieldSchemaDefinitionArg[SchemaDefinition::ARGNAME_DEFAULT_VALUE];
