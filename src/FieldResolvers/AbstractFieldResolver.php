@@ -21,9 +21,11 @@ use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\Resolvers\FieldOrDirectiveResolverTrait;
 use PoP\ComponentModel\MutationResolvers\MutationResolverInterface;
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
+use PoP\ComponentModel\CheckpointSets\CheckpointSets;
 use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverTrait;
 use PoP\ComponentModel\Resolvers\InterfaceSchemaDefinitionResolverAdapter;
 use PoP\ComponentModel\FieldResolvers\FieldSchemaDefinitionResolverInterface;
+use PoP\ComponentModel\Error;
 
 abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSchemaDefinitionResolverInterface
 {
@@ -416,6 +418,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         string $fieldName,
         array $fieldArgs = []
     ): ?array {
+        // Check that mutations can be executed
+        if ($this->resolveFieldMutationResolverClass($typeResolver, $fieldName, $fieldArgs)) {
+            return CheckpointSets::CAN_EXECUTE_MUTATIONS;
+        }
         return null;
     }
 
@@ -427,7 +433,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         TypeResolverInterface $typeResolver,
         object $resultItem,
         string $fieldName,
-        array $fieldArgs = []
+        array $fieldArgs = [],
+        Error $error
     ): string {
         return $errorMessage;
     }
@@ -457,7 +464,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 }
                 // Allow to customize the error message for the failing entity
                 return [
-                    $this->getValidationCheckpointsErrorMessage($errorMessage, $typeResolver, $resultItem, $fieldName, $fieldArgs)
+                    $this->getValidationCheckpointsErrorMessage($errorMessage, $typeResolver, $resultItem, $fieldName, $fieldArgs, $error)
                 ];
             }
         }
