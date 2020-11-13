@@ -1732,6 +1732,37 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $this->schemaDefinition[$typeSchemaKey][$entry][$fieldName] = $fieldSchemaDefinition;
     }
 
+    protected function isFieldNameResolvedByFieldResolver(FieldResolverInterface $fieldResolver, string $fieldName, array $fieldInterfaceResolverClasses): bool
+    {
+        // Calculate all the interfaces that define this fieldName
+        $fieldInterfaceResolverClassesForField = array_values(array_filter(
+            $fieldInterfaceResolverClasses,
+            function ($fieldInterfaceResolverClass) use ($fieldName): bool {
+                return in_array($fieldName, $fieldInterfaceResolverClass::getFieldNamesToImplement());
+            }
+        ));
+        // Execute 2 filters: a generic one, and a specific one
+        $hooksAPI = HooksAPIFacade::getInstance();
+        if ($hooksAPI->applyFilters(
+            HookHelpers::getHookNameToFilterField(),
+            true,
+            $this,
+            $fieldResolver,
+            $fieldInterfaceResolverClassesForField,
+            $fieldName
+        )) {
+            return $hooksAPI->applyFilters(
+                HookHelpers::getHookNameToFilterField($fieldName),
+                true,
+                $this,
+                $fieldResolver,
+                $fieldInterfaceResolverClassesForField,
+                $fieldName
+            );
+        }
+        return false;
+    }
+
     /**
      * Return the fieldNames resolved by the fieldResolverClass, adding a hook to disable each of them (eg: to implement a private schema)
      *
@@ -1748,41 +1779,14 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             );
 
             // Execute a hook, allowing to filter them out (eg: removing fieldNames from a private schema)
-            $hooksAPI = HooksAPIFacade::getInstance();
             $instanceManager = InstanceManagerFacade::getInstance();
+            /** @var FieldResolverInterface */
             $fieldResolver = $instanceManager->getInstance($fieldResolverClass);
             // Also pass the implemented interfaces defining the field
             $fieldInterfaceResolverClasses = $fieldResolver::getImplementedInterfaceClasses();
             $fieldNames = array_filter(
                 $fieldNames,
-                function ($fieldName) use ($hooksAPI, $fieldResolver, $fieldInterfaceResolverClasses) {
-                    // Calculate all the interfaces that define this fieldName
-                    $fieldInterfaceResolverClassesForField = array_values(array_filter(
-                        $fieldInterfaceResolverClasses,
-                        function ($fieldInterfaceResolverClass) use ($fieldName): bool {
-                            return in_array($fieldName, $fieldInterfaceResolverClass::getFieldNamesToImplement());
-                        }
-                    ));
-                    // Execute 2 filters: a generic one, and a specific one
-                    if ($hooksAPI->applyFilters(
-                        HookHelpers::getHookNameToFilterField(),
-                        true,
-                        $this,
-                        $fieldResolver,
-                        $fieldInterfaceResolverClassesForField,
-                        $fieldName
-                    )) {
-                        return $hooksAPI->applyFilters(
-                            HookHelpers::getHookNameToFilterField($fieldName),
-                            true,
-                            $this,
-                            $fieldResolver,
-                            $fieldInterfaceResolverClassesForField,
-                            $fieldName
-                        );
-                    }
-                    return false;
-                }
+                fn ($fieldName) => $this->isFieldNameResolvedByFieldResolver($fieldResolver, $fieldName, $fieldInterfaceResolverClasses)
             );
             $this->fieldNamesResolvedByFieldResolver[$fieldResolverClass] = $fieldNames;
         }
