@@ -41,7 +41,7 @@ class SchemaDefinition
     const ARGNAME_IS_UNION = 'isUnion';
     const ARGNAME_DIRECTIVES = 'directives';
     const ARGNAME_GLOBAL_DIRECTIVES = 'globalDirectives';
-    const ARGNAME_FIELD_IS_MUTATION = 'fieldIsMutation';
+    const ARGNAME_FIELD_IS_MUTATION = 'isMutation';
     const ARGNAME_DIRECTIVE_TYPE = 'directiveType';
     const ARGNAME_DIRECTIVE_PIPELINE_POSITION = 'pipelinePosition';
     const ARGNAME_DIRECTIVE_IS_REPEATABLE = 'isRepeatable';
