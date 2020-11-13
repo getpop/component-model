@@ -246,10 +246,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         // First check if the value was cached
         $key = $typeResolver->getNamespacedTypeName() . '|' . $fieldName . '|' . json_encode($fieldArgs);
         if (is_null($this->schemaDefinitionForFieldCache[$key])) {
-            $mutationResolverClass = $this->resolveFieldMutationResolverClass($typeResolver, $fieldName, $fieldArgs);
             $schemaDefinition = [
                 SchemaDefinition::ARGNAME_NAME => $fieldName,
-                SchemaDefinition::ARGNAME_FIELD_IS_MUTATION => $mutationResolverClass !== null,
             ];
             // Find which is the $schemaDefinitionResolver that will satisfy this schema definition
             // First try the one declared by the fieldResolver
@@ -311,6 +309,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             if (!is_null($this->resolveFieldTypeResolverClass($typeResolver, $fieldName, $fieldArgs))) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL] = true;
             }
+            if (!is_null($this->resolveFieldMutationResolverClass($typeResolver, $fieldName, $fieldArgs))) {
+                $schemaDefinition[SchemaDefinition::ARGNAME_FIELD_IS_MUTATION] = true;
+            }
+
             // Hook to override the values, eg: by the Field Deprecation List
             // 1. Applied on the type
             $hooksAPI = HooksAPIFacade::getInstance();
