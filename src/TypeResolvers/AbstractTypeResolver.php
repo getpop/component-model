@@ -1797,6 +1797,11 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         return $this->schemaFieldResolvers;
     }
 
+    protected function getTypeResolverClassToCalculateSchema(): string
+    {
+        return get_called_class();
+    }
+
     protected function calculateAllFieldResolvers(): array
     {
         $attachableExtensionManager = AttachableExtensionManagerFacade::getInstance();
@@ -1804,7 +1809,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
         // Get the fieldResolvers attached to this typeResolver and to all the interfaces it implements
         $classStack = [
-            get_called_class(),
+            $this->getTypeResolverClassToCalculateSchema(),
         ];
         while (!empty($classStack)) {
             $class = array_shift($classStack);
@@ -1929,7 +1934,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $attachableExtensionManager = AttachableExtensionManagerFacade::getInstance();
         $decoratorClasses = [];
 
-        $class = get_called_class();
+        $class = $this->getTypeResolverClassToCalculateSchema();
         // Iterate classes from the current class towards the parent classes until finding typeResolver that satisfies processing this field
         do {
             // Important: do array_reverse to enable more specific hooks, which are initialized later on in the project, to be the chosen ones (if their priority is the same)
@@ -2033,7 +2038,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $fieldResolvers = [];
         // Get the fieldResolvers attached to this typeResolver and to all the interfaces it implements
         $classStack = [
-            get_called_class(),
+            $this->getTypeResolverClassToCalculateSchema(),
         ];
         while (!empty($classStack)) {
             $class = array_shift($classStack);
@@ -2084,7 +2089,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         // Directives can also be attached to the interface implemented by this typeResolver
         $classes = array_merge(
             [
-                get_called_class(),
+                $this->getTypeResolverClassToCalculateSchema(),
             ],
             $this->getAllImplementedInterfaceClasses()
         );
@@ -2119,7 +2124,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $ret = [];
 
         // Iterate classes from the current class towards the parent classes until finding typeResolver that satisfies processing this field
-        $class = get_called_class();
+        $class = $this->getTypeResolverClassToCalculateSchema();
         do {
             foreach ($attachableExtensionManager->getExtensionClasses($class, AttachableExtensionGroups::FIELDRESOLVERS) as $extensionClass => $extensionPriority) {
                 $extensionClassFieldNames = $this->getFieldNamesResolvedByFieldResolver($extensionClass);
