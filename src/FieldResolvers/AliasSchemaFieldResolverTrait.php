@@ -340,14 +340,12 @@ trait AliasSchemaFieldResolverTrait
      */
     public function resolveFieldTypeResolverClass(
         TypeResolverInterface $typeResolver,
-        string $fieldName,
-        array $fieldArgs = []
+        string $fieldName
     ): ?string {
         $aliasedFieldResolver = $this->getAliasedFieldResolverInstance();
         return $aliasedFieldResolver->resolveFieldTypeResolverClass(
             $typeResolver,
-            $this->getAliasedFieldName($fieldName),
-            $fieldArgs
+            $this->getAliasedFieldName($fieldName)
         );
     }
 }

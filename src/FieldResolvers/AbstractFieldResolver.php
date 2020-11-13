@@ -195,7 +195,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             }
         }
         // If a MutationResolver is declared, let it resolve the value
-        if ($mutationResolverClass = $this->resolveFieldMutationResolverClass($typeResolver, $fieldName, $fieldArgs)) {
+        if ($mutationResolverClass = $this->resolveFieldMutationResolverClass($typeResolver, $fieldName)) {
             $instanceManager = InstanceManagerFacade::getInstance();
             /** @var MutationResolverInterface */
             $mutationResolver = $instanceManager->getInstance($mutationResolverClass);
@@ -306,10 +306,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                     $schemaDefinition[SchemaDefinition::ARGNAME_VERSION] = $version;
                 }
             }
-            if (!is_null($this->resolveFieldTypeResolverClass($typeResolver, $fieldName, $fieldArgs))) {
+            if (!is_null($this->resolveFieldTypeResolverClass($typeResolver, $fieldName))) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_RELATIONAL] = true;
             }
-            if (!is_null($this->resolveFieldMutationResolverClass($typeResolver, $fieldName, $fieldArgs))) {
+            if (!is_null($this->resolveFieldMutationResolverClass($typeResolver, $fieldName))) {
                 $schemaDefinition[SchemaDefinition::ARGNAME_FIELD_IS_MUTATION] = true;
             }
 
@@ -386,7 +386,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             }
         }
         // If a MutationResolver is declared, let it resolve the value
-        if ($mutationResolverClass = $this->resolveFieldMutationResolverClass($typeResolver, $fieldName, $fieldArgs)) {
+        if ($mutationResolverClass = $this->resolveFieldMutationResolverClass($typeResolver, $fieldName)) {
             $instanceManager = InstanceManagerFacade::getInstance();
             /** @var MutationResolverInterface */
             $mutationResolver = $instanceManager->getInstance($mutationResolverClass);
@@ -423,7 +423,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         array $fieldArgs = []
     ): ?array {
         // Check that mutations can be executed
-        if ($this->resolveFieldMutationResolverClass($typeResolver, $fieldName, $fieldArgs)) {
+        if ($this->resolveFieldMutationResolverClass($typeResolver, $fieldName)) {
             return CheckpointSets::CAN_EXECUTE_MUTATIONS;
         }
         return null;
@@ -493,7 +493,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         array $options = []
     ) {
         // If a MutationResolver is declared, let it resolve the value
-        if ($mutationResolverClass = $this->resolveFieldMutationResolverClass($typeResolver, $fieldName, $fieldArgs)) {
+        if ($mutationResolverClass = $this->resolveFieldMutationResolverClass($typeResolver, $fieldName)) {
             $instanceManager = InstanceManagerFacade::getInstance();
             /** @var MutationResolverInterface */
             $mutationResolver = $instanceManager->getInstance($mutationResolverClass);
@@ -520,12 +520,12 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         return $fieldArgs;
     }
 
-    public function resolveFieldTypeResolverClass(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
+    public function resolveFieldTypeResolverClass(TypeResolverInterface $typeResolver, string $fieldName): ?string
     {
         return null;
     }
 
-    public function resolveFieldMutationResolverClass(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?string
+    public function resolveFieldMutationResolverClass(TypeResolverInterface $typeResolver, string $fieldName): ?string
     {
         return null;
     }

@@ -1331,9 +1331,8 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             list(
                 $validField,
                 $fieldName,
-                $fieldArgs,
             ) = $this->dissectFieldForSchema($field);
-            return $fieldResolvers[0]->resolveFieldTypeResolverClass($this, $fieldName, $fieldArgs);
+            return $fieldResolvers[0]->resolveFieldTypeResolverClass($this, $fieldName);
         }
 
         return null;

@@ -32,10 +32,6 @@ interface FieldInterfaceResolverInterface extends FieldInterfaceSchemaDefinition
      * To make sure that all fieldResolvers implementing the same interface
      * return the expected type for the field, they can obtain it from the
      * interface through this function.
-     *
-     * @param string $fieldName
-     * @param array<string, mixed> $fieldArgs
-     * @return string|null
      */
-    public function getFieldTypeResolverClass(string $fieldName, array $fieldArgs = []): ?string;
+    public function getFieldTypeResolverClass(string $fieldName): ?string;
 }

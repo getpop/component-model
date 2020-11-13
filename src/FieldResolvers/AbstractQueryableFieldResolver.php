@@ -30,7 +30,7 @@ abstract class AbstractQueryableFieldResolver extends AbstractDBDataFieldResolve
     protected function getFieldDefaultFilterDataloadingModule(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?array
     {
         $instanceManager = InstanceManagerFacade::getInstance();
-        if ($fieldTypeResolverClass = $this->resolveFieldTypeResolverClass($typeResolver, $fieldName, $fieldArgs)) {
+        if ($fieldTypeResolverClass = $this->resolveFieldTypeResolverClass($typeResolver, $fieldName)) {
             $fieldTypeResolver = $instanceManager->getInstance((string)$fieldTypeResolverClass);
             $fieldTypeDataLoaderClass = $fieldTypeResolver->getTypeDataLoaderClass();
             $fieldTypeDataLoader = $instanceManager->getInstance((string)$fieldTypeDataLoaderClass);
