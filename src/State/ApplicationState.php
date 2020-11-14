@@ -179,8 +179,8 @@ class ApplicationState
             'version-constraint' => Request::getVersionConstraint(),
             'field-version-constraints' => Request::getVersionConstraintsForFields(),
             'directive-version-constraints' => Request::getVersionConstraintsForDirectives(),
-            // By default, mutations are always enabled
-            'are-mutations-executable' => true,
+            // By default, mutations are always enabled. Can be changed for the API
+            'are-mutations-enabled' => true,
         );
 
         if (ComponentConfiguration::enableConfigByParams()) {

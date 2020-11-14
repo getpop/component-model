@@ -27,7 +27,7 @@ class MutationCheckpointProcessor extends AbstractCheckpointProcessor
         switch ($checkpoint[1]) {
             case self::EXECUTABLE_MUTATIONS:
                 $vars = ApplicationState::getVars();
-                if (!$vars['are-mutations-executable']) {
+                if (!$vars['are-mutations-enabled']) {
                     $translationAPI = TranslationAPIFacade::getInstance();
                     $errorMessage = HooksAPIFacade::getInstance()->applyFilters(
                         self::HOOK_MUTATIONS_NOT_SUPPORTED_ERROR_MSG,
