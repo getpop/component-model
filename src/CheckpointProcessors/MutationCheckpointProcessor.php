@@ -13,19 +13,19 @@ use PoP\ComponentModel\CheckpointProcessors\AbstractCheckpointProcessor;
 class MutationCheckpointProcessor extends AbstractCheckpointProcessor
 {
     public const HOOK_MUTATIONS_NOT_SUPPORTED_ERROR_MSG = __CLASS__ . ':MutationsNotSupportedErrorMsg';
-    public const EXECUTABLE_MUTATIONS = 'executable-mutations';
+    public const ENABLED_MUTATIONS = 'enabled-mutations';
 
     public function getCheckpointsToProcess()
     {
         return array(
-            [self::class, self::EXECUTABLE_MUTATIONS],
+            [self::class, self::ENABLED_MUTATIONS],
         );
     }
 
     public function process(array $checkpoint)
     {
         switch ($checkpoint[1]) {
-            case self::EXECUTABLE_MUTATIONS:
+            case self::ENABLED_MUTATIONS:
                 $vars = ApplicationState::getVars();
                 if (!$vars['are-mutations-enabled']) {
                     $translationAPI = TranslationAPIFacade::getInstance();

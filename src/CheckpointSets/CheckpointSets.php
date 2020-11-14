@@ -9,6 +9,6 @@ use PoP\ComponentModel\CheckpointProcessors\MutationCheckpointProcessor;
 class CheckpointSets
 {
     const CAN_EXECUTE_MUTATIONS = array(
-        [MutationCheckpointProcessor::class, MutationCheckpointProcessor::EXECUTABLE_MUTATIONS],
+        [MutationCheckpointProcessor::class, MutationCheckpointProcessor::ENABLED_MUTATIONS],
     );
 }
