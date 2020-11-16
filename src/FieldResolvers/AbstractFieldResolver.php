@@ -196,10 +196,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         }
         // If a MutationResolver is declared, let it resolve the value
         if ($mutationResolverClass = $this->resolveFieldMutationResolverClass($typeResolver, $fieldName)) {
-            $instanceManager = InstanceManagerFacade::getInstance();
-            /** @var MutationResolverInterface */
-            $mutationResolver = $instanceManager->getInstance($mutationResolverClass);
-            return $mutationResolver->validateErrors($fieldArgs);
+            // Validate on the schema?
+            if (!$this->validateMutationOnResultItem()) {
+                $instanceManager = InstanceManagerFacade::getInstance();
+                /** @var MutationResolverInterface */
+                $mutationResolver = $instanceManager->getInstance($mutationResolverClass);
+                return $mutationResolver->validateErrors($fieldArgs);
+            }
         }
         return null;
     }
@@ -473,7 +476,33 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             }
         }
 
+        // If a MutationResolver is declared, let it resolve the value
+        if ($mutationResolverClass = $this->resolveFieldMutationResolverClass($typeResolver, $fieldName)) {
+            // Validate on the resultItem?
+            if ($this->validateMutationOnResultItem()) {
+                $instanceManager = InstanceManagerFacade::getInstance();
+                /** @var MutationResolverInterface */
+                $mutationResolver = $instanceManager->getInstance($mutationResolverClass);
+                $mutationFieldArgs = $this->getFieldArgsToExecuteMutation(
+                    $fieldArgs,
+                    $typeResolver,
+                    $resultItem,
+                    $fieldName
+                );
+                return $mutationResolver->validateErrors($mutationFieldArgs);
+            }
+        }
+
         return null;
+    }
+
+    /**
+     * The mutation can be validated either on the schema (`false`)
+     * on on the resultItem (`true`)
+     */
+    protected function validateMutationOnResultItem(): bool
+    {
+        return false;
     }
 
     /**
@@ -497,15 +526,13 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
             $instanceManager = InstanceManagerFacade::getInstance();
             /** @var MutationResolverInterface */
             $mutationResolver = $instanceManager->getInstance($mutationResolverClass);
-            return $mutationResolver->execute(
-                $this->getFieldArgsToExecuteMutation(
-                    $fieldArgs,
-                    $typeResolver,
-                    $resultItem,
-                    $fieldName,
-                    $options
-                )
+            $mutationFieldArgs = $this->getFieldArgsToExecuteMutation(
+                $fieldArgs,
+                $typeResolver,
+                $resultItem,
+                $fieldName
             );
+            return $mutationResolver->execute($mutationFieldArgs);
         }
         return null;
     }
@@ -514,8 +541,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         array $fieldArgs,
         TypeResolverInterface $typeResolver,
         object $resultItem,
-        string $fieldName,
-        array $options = []
+        string $fieldName
     ): array {
         return $fieldArgs;
     }
