@@ -83,6 +83,14 @@ interface FieldResolverInterface
         ?array $expressions = null,
         array $options = []
     );
+    /**
+     * The mutation can be validated either on the schema (`false`)
+     * on on the resultItem (`true`)
+     */
+    public function validateMutationOnResultItem(
+        TypeResolverInterface $typeResolver,
+        string $fieldName
+    ): bool;
     public function resolveFieldTypeResolverClass(TypeResolverInterface $typeResolver, string $fieldName): ?string;
     public function resolveFieldMutationResolverClass(TypeResolverInterface $typeResolver, string $fieldName): ?string;
     public function resolveSchemaValidationWarningDescriptions(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?array;

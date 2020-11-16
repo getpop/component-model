@@ -197,7 +197,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         // If a MutationResolver is declared, let it resolve the value
         if ($mutationResolverClass = $this->resolveFieldMutationResolverClass($typeResolver, $fieldName)) {
             // Validate on the schema?
-            if (!$this->validateMutationOnResultItem()) {
+            if (!$this->validateMutationOnResultItem($typeResolver, $fieldName)) {
                 $instanceManager = InstanceManagerFacade::getInstance();
                 /** @var MutationResolverInterface */
                 $mutationResolver = $instanceManager->getInstance($mutationResolverClass);
@@ -479,7 +479,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         // If a MutationResolver is declared, let it resolve the value
         if ($mutationResolverClass = $this->resolveFieldMutationResolverClass($typeResolver, $fieldName)) {
             // Validate on the resultItem?
-            if ($this->validateMutationOnResultItem()) {
+            if ($this->validateMutationOnResultItem($typeResolver, $fieldName)) {
                 $instanceManager = InstanceManagerFacade::getInstance();
                 /** @var MutationResolverInterface */
                 $mutationResolver = $instanceManager->getInstance($mutationResolverClass);
@@ -500,8 +500,10 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
      * The mutation can be validated either on the schema (`false`)
      * on on the resultItem (`true`)
      */
-    protected function validateMutationOnResultItem(): bool
-    {
+    public function validateMutationOnResultItem(
+        TypeResolverInterface $typeResolver,
+        string $fieldName
+    ): bool {
         return false;
     }
 
