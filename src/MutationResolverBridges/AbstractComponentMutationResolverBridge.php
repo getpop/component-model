@@ -2,16 +2,17 @@
 
 declare(strict_types=1);
 
-namespace PoP\ComponentModel\MutationResolvers;
+namespace PoP\ComponentModel\MutationResolverBridges;
 
+use PoP\ComponentModel\Error;
+use PoP\ComponentModel\Misc\GeneralUtils;
+use PoP\ComponentModel\MutationResolvers\ErrorTypes;
 use PoP\ComponentModel\ModuleProcessors\DataloadingConstants;
 use PoP\ComponentModel\Facades\Instances\InstanceManagerFacade;
 use PoP\ComponentModel\QueryInputOutputHandlers\ResponseConstants;
 use PoP\ComponentModel\MutationResolvers\MutationResolverInterface;
 use PoP\ComponentModel\Facades\MutationResolution\MutationResolutionManagerFacade;
-use PoP\ComponentModel\MutationResolvers\ComponentMutationResolverBridgeInterface;
-use PoP\ComponentModel\Misc\GeneralUtils;
-use PoP\ComponentModel\Error;
+use PoP\ComponentModel\MutationResolverBridges\ComponentMutationResolverBridgeInterface;
 
 abstract class AbstractComponentMutationResolverBridge implements ComponentMutationResolverBridgeInterface
 {

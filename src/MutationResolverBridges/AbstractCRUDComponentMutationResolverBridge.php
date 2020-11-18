@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PoP\ComponentModel\MutationResolvers;
+namespace PoP\ComponentModel\MutationResolverBridges;
 
 use PoP\ComponentModel\ModuleProcessors\DataloadingConstants;
 
