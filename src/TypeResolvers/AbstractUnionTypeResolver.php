@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace PoP\ComponentModel\TypeResolvers;
 
 use Exception;
-use PoP\ComponentModel\Error;
+use PoP\ComponentModel\ErrorHandling\Error;
 use PoP\ComponentModel\Schema\SchemaDefinition;
 use PoP\Translation\Facades\TranslationAPIFacade;
 use PoP\ComponentModel\TypeResolvers\UnionTypeHelpers;

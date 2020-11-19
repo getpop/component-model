@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace PoP\ComponentModel\CheckpointProcessors;
 
-use PoP\ComponentModel\Error;
+use PoP\ComponentModel\ErrorHandling\Error;
 use PoP\Hooks\Facades\HooksAPIFacade;
 use PoP\ComponentModel\State\ApplicationState;
 use PoP\Translation\Facades\TranslationAPIFacade;

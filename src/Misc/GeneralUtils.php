@@ -27,7 +27,7 @@ class GeneralUtils
      */
     public static function isError($thing): bool
     {
-        return $thing !== null && $thing instanceof \PoP\ComponentModel\Error;
+        return $thing !== null && $thing instanceof \PoP\ComponentModel\ErrorHandling\Error;
     }
 
     // Taken from https://gist.github.com/SeanCannon/6585889
