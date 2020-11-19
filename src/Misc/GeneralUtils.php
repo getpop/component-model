@@ -20,9 +20,14 @@ class GeneralUtils
         return $randomString;
     }
 
-    public static function isError($thing)
+    /**
+     * Check if the thing is of type Error
+     *
+     * @param mixed $thing
+     */
+    public static function isError($thing): bool
     {
-        return $thing && $thing instanceof \PoP\ComponentModel\Error;
+        return $thing !== null && $thing instanceof \PoP\ComponentModel\Error;
     }
 
     // Taken from https://gist.github.com/SeanCannon/6585889
