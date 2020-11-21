@@ -105,7 +105,7 @@ class RequestUtils
 
     public static function addRoute($url, $route)
     {
-        return GeneralUtils::addQueryArgs([\URLParams::ROUTE => $route], $url);
+        return GeneralUtils::addQueryArgs([URLParams::ROUTE => $route], $url);
     }
 
     public static function fetchingSite()
