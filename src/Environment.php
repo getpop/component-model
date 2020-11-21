@@ -43,4 +43,12 @@ class Environment
     {
         return getenv('ENABLE_SEMANTIC_VERSION_CONSTRAINTS') !== false ? strtolower(getenv('ENABLE_SEMANTIC_VERSION_CONSTRAINTS')) == "true" : false;
     }
+
+    /**
+     * Provide the application version, definable by env var
+     */
+    public static function getApplicationVersion(): ?string
+    {
+        return getenv('APPLICATION_VERSION') !== false ? getenv('APPLICATION_VERSION') : null;
+    }
 }
