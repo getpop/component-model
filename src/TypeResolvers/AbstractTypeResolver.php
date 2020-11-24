@@ -102,7 +102,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
 
     public function getNamespace(): string
     {
-        return SchemaHelpers::getSchemaNamespace(__NAMESPACE__);
+        return SchemaHelpers::getSchemaNamespace(get_called_class());
     }
 
     final public function getNamespacedTypeName(): string
