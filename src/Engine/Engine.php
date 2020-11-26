@@ -1528,6 +1528,9 @@ class Engine implements EngineInterface
         if ($queryErrors = $feedbackMessageStore->getQueryErrors()) {
             $ret['queryErrors'] = $queryErrors;
         }
+        if ($queryWarnings = $feedbackMessageStore->getQueryWarnings()) {
+            $ret['queryWarnings'] = $queryWarnings;
+        }
         $this->maybeCombineAndAddDatabaseEntries($ret, 'dbErrors', $dbErrors);
         $this->maybeCombineAndAddDatabaseEntries($ret, 'dbWarnings', $dbWarnings);
         $this->maybeCombineAndAddDatabaseEntries($ret, 'dbDeprecations', $dbDeprecations);
