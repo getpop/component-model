@@ -32,7 +32,7 @@ class Request
      */
     public static function getVersionConstraint(): ?string
     {
-        return $_REQUEST[self::URLPARAM_VERSION_CONSTRAINT];
+        return $_REQUEST[self::URLPARAM_VERSION_CONSTRAINT] ?? null;
     }
 
     /**
@@ -42,7 +42,7 @@ class Request
      */
     public static function getVersionConstraintsForFields(): ?array
     {
-        return $_REQUEST[self::URLPARAM_VERSION_CONSTRAINT_FOR_FIELDS];
+        return $_REQUEST[self::URLPARAM_VERSION_CONSTRAINT_FOR_FIELDS] ?? null;
     }
 
     /**
@@ -52,6 +52,6 @@ class Request
      */
     public static function getVersionConstraintsForDirectives(): ?array
     {
-        return $_REQUEST[self::URLPARAM_VERSION_CONSTRAINT_FOR_DIRECTIVES];
+        return $_REQUEST[self::URLPARAM_VERSION_CONSTRAINT_FOR_DIRECTIVES] ?? null;
     }
 }

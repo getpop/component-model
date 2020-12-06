@@ -38,7 +38,7 @@ class ApplicationState
 
         // Convert them to lower to make it insensitive to upper/lower case values
         $output = strtolower($_REQUEST[\GD_URLPARAM_OUTPUT] ?? '');
-        $dataoutputitems = $_REQUEST[\GD_URLPARAM_DATAOUTPUTITEMS];
+        $dataoutputitems = $_REQUEST[\GD_URLPARAM_DATAOUTPUTITEMS] ?? [];
         $datasources = strtolower($_REQUEST[\GD_URLPARAM_DATASOURCES] ?? '');
         $datastructure = strtolower($_REQUEST[\GD_URLPARAM_DATASTRUCTURE] ?? '');
         $dataoutputmode = strtolower($_REQUEST[\GD_URLPARAM_DATAOUTPUTMODE] ?? '');
@@ -50,8 +50,8 @@ class ApplicationState
         $scheme = strtolower($_REQUEST[\GD_URLPARAM_SCHEME] ?? '');
         // The version could possibly be set from outside
         $version = ServerUtils::enableVersionByParams() ?
-            $_REQUEST[\GD_URLPARAM_VERSION] ?? ApplicationInfoFacade::getInstance()->getVersion() :
-            ApplicationInfoFacade::getInstance()->getVersion();
+            $_REQUEST[\GD_URLPARAM_VERSION] ?? ApplicationInfoFacade::getInstance()->getVersion()
+            : ApplicationInfoFacade::getInstance()->getVersion();
 
         $outputs = (array) HooksAPIFacade::getInstance()->applyFilters(
             'ApplicationState:outputs',
@@ -158,7 +158,7 @@ class ApplicationState
             'route' => $route,
             'output' => $output,
             'modulefilter' => $modulefilter,
-            'actionpath' => $_REQUEST[\GD_URLPARAM_ACTIONPATH],
+            'actionpath' => $_REQUEST[\GD_URLPARAM_ACTIONPATH] ?? '',
             'target' => $target,
             'dataoutputitems' => $dataoutputitems,
             'datasources' => $datasources,
@@ -184,7 +184,7 @@ class ApplicationState
         );
 
         if (ComponentConfiguration::enableConfigByParams()) {
-            self::$vars['config'] = $_REQUEST[\POP_URLPARAM_CONFIG];
+            self::$vars['config'] = $_REQUEST[\POP_URLPARAM_CONFIG] ?? null;
         }
 
         // Set the routing state (eg: PoP Queried Object can add its information)

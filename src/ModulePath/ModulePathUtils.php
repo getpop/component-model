@@ -13,7 +13,7 @@ class ModulePathUtils
     public static function getModulePaths()
     {
         $ret = array();
-        if ($paths = $_REQUEST[ModulePaths::URLPARAM_MODULEPATHS]) {
+        if ($paths = $_REQUEST[ModulePaths::URLPARAM_MODULEPATHS] ?? null) {
             if (!is_array($paths)) {
                 $paths = array($paths);
             }

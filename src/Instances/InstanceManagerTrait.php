@@ -24,7 +24,7 @@ trait InstanceManagerTrait
 
     protected function hasClassBeenLoaded(string $class): bool
     {
-        return !is_null($this->instances[$class]);
+        return !is_null($this->instances[$class] ?? null);
     }
 
     public function getImplementationClass(string $class): string
