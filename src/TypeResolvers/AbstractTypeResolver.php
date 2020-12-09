@@ -1217,7 +1217,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 );
             }
         }
-        if (!$errorMessage) {
+        if (!isset($errorMessage)) {
             $errorMessage = sprintf(
                 $translationAPI->__(
                     'No FieldResolver resolves field \'%s\' for type \'%s\'',
