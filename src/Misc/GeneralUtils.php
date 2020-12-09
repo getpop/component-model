@@ -106,11 +106,13 @@ class GeneralUtils
             ARRAY_FILTER_USE_KEY
         );
 
+        $scheme = $url_parts['scheme'];
         // Note that this will url_encode all values
         $url_parts['query'] = http_build_query($params);
         $port = $url_parts['port'] ?? '';
-        $port = (!$port || $port == "80") ? '' : (':' . $port);
-        return $url_parts['scheme'] . '://' . $url_parts['host'] . $port . $url_parts['path'] . ($url_parts['query'] ? '?' . $url_parts['query'] : '');
+        $port = (!$port || $port == '80' || ($scheme == 'https' && $port == '443')) ? '' : (':' . $port);
+        $query = $url_parts['query'] ?? '';
+        return $scheme . '://' . $url_parts['host'] . $port . $url_parts['path'] . ($query ? '?' . $query : '');
     }
 
     public static function maybeAddTrailingSlash(string $text): string
