@@ -1384,7 +1384,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             // We can also force it through an option. This is needed when the field is created on runtime.
             // Eg: through the <transform> directive, in which case no parameter is dynamic anymore by the time it reaches here, yet it was not validated statically either
             $validateSchemaOnResultItem =
-                $options[self::OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM] ?? null ||
+                ($options[self::OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM] ?? null) ||
                 FieldQueryUtils::isAnyFieldArgumentValueDynamic(
                     array_values(
                         $fieldQueryInterpreter->extractFieldArguments($this, $field)
@@ -1487,7 +1487,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         $isFlatShape = isset($options['shape']) && $options['shape'] == SchemaDefinition::ARGVALUE_SCHEMA_SHAPE_FLAT;
 
         // If "compressed" or printing a flat shape, and the resolver has already been added to the schema, then skip it
-        if (($isFlatShape || $options['compressed'] ?? null) && in_array($class, $generalMessages['processed'])) {
+        if (($isFlatShape || ($options['compressed'] ?? null)) && in_array($class, $generalMessages['processed'])) {
             return [
                 $typeSchemaKey => [
                     SchemaDefinition::ARGNAME_REPEATED => true,

@@ -897,7 +897,7 @@ class Engine implements EngineInterface
             // ------------------------------------------
             // Load data if the checkpoint did not fail
             $dataaccess_checkpoint_validation = null;
-            if ($load_data && $checkpoints = $data_properties[GD_DATALOAD_DATAACCESSCHECKPOINTS] ?? null) {
+            if ($load_data && $checkpoints = ($data_properties[GD_DATALOAD_DATAACCESSCHECKPOINTS] ?? null)) {
                 // Check if the module fails checkpoint validation. If so, it must not load its data or execute the componentMutationResolverBridge
                 $dataaccess_checkpoint_validation = $this->validateCheckpoints($checkpoints);
                 $load_data = !GeneralUtils::isError($dataaccess_checkpoint_validation);
