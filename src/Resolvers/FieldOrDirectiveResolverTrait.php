@@ -98,7 +98,7 @@ trait FieldOrDirectiveResolverTrait
         $schemaFieldArgumentEnumValueDefinitions = SchemaHelpers::getSchemaFieldArgEnumValueDefinitions($enumArgs);
         for ($i = 0; $i < count($fieldOrDirectiveArgumentNames); $i++) {
             $fieldOrDirectiveArgumentName = $fieldOrDirectiveArgumentNames[$i];
-            $fieldOrDirectiveArgumentValue = $fieldOrDirectiveArgs[$fieldOrDirectiveArgumentName];
+            $fieldOrDirectiveArgumentValue = $fieldOrDirectiveArgs[$fieldOrDirectiveArgumentName] ?? null;
             if (!is_null($fieldOrDirectiveArgumentValue)) {
                 // Each fieldArgumentEnumValue is an array with item "name" for sure, and maybe also "description", "deprecated" and "deprecationDescription"
                 $schemaFieldOrDirectiveArgumentEnumValues = $schemaFieldArgumentEnumValueDefinitions[$fieldOrDirectiveArgumentName];

@@ -1596,7 +1596,7 @@ class Engine implements EngineInterface
                     $subcomponentIsUnionTypeResolver = $subcomponentTypeResolver instanceof UnionTypeResolverInterface;
 
                     $subcomponent_already_loaded_ids_data_fields = array();
-                    if ($already_loaded_ids_data_fields && $already_loaded_ids_data_fields[$subcomponent_typeResolver_class]) {
+                    if ($already_loaded_ids_data_fields && ($already_loaded_ids_data_fields[$subcomponent_typeResolver_class] ?? null)) {
                         $subcomponent_already_loaded_ids_data_fields = $already_loaded_ids_data_fields[$subcomponent_typeResolver_class];
                     }
                     $subcomponentIDs = [];

@@ -88,7 +88,7 @@ class FeedbackMessageStore extends \PoP\FieldQuery\FeedbackMessageStore implemen
     }
     public function getSchemaErrorsForField(string $dbKey, string $field): ?array
     {
-        return $this->schemaErrors[$dbKey][$field];
+        return $this->schemaErrors[$dbKey][$field] ?? null;
     }
 
     public function addLogEntry(string $entry): void
