@@ -10,7 +10,7 @@ trait APITypeDataResolverTrait
 {
     public function maybeFilterDataloadQueryArgs(array &$query, array $options = [])
     {
-        if ($filterDataloadQueryArgsParams = $options['filter-dataload-query-args']) {
+        if ($filterDataloadQueryArgsParams = $options['filter-dataload-query-args'] ?? null) {
             $filterDataloadQueryArgsSource = $filterDataloadQueryArgsParams['source'];
             $filterDataloadingModule = $filterDataloadQueryArgsParams['module'];
             if ($filterDataloadQueryArgsSource && $filterDataloadingModule) {

@@ -375,7 +375,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     public function resolveSchemaValidationErrorDescriptions(TypeResolverInterface $typeResolver, string $directiveName, array $directiveArgs = []): ?array
     {
         $directiveSchemaDefinition = $this->getSchemaDefinitionForDirective($typeResolver);
-        if ($schemaDirectiveArgs = $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) {
+        if ($schemaDirectiveArgs = $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS] ?? null) {
             /**
              * Validate mandatory values
              */
@@ -392,19 +392,17 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             /**
              * Validate enums
              */
-            if ($schemaDirectiveArgs = $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) {
-                list(
-                    $maybeError
-                ) = $this->maybeValidateEnumFieldOrDirectiveArguments(
-                    $typeResolver,
-                    $directiveName,
-                    $directiveArgs,
-                    $schemaDirectiveArgs,
-                    ResolverTypes::DIRECTIVE
-                );
-                if ($maybeError) {
-                    return [$maybeError];
-                }
+            list(
+                $maybeError
+            ) = $this->maybeValidateEnumFieldOrDirectiveArguments(
+                $typeResolver,
+                $directiveName,
+                $directiveArgs,
+                $schemaDirectiveArgs,
+                ResolverTypes::DIRECTIVE
+            );
+            if ($maybeError) {
+                return [$maybeError];
             }
         }
         return null;
@@ -473,7 +471,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     protected function hasIDsDataFields(array &$idsDataFields): bool
     {
         foreach ($idsDataFields as $id => &$data_fields) {
-            if ($data_fields['direct']) {
+            if ($data_fields['direct'] ?? null) {
                 // If there's data-fields to fetch for any ID, that's it, there's data
                 return true;
             }
@@ -528,7 +526,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     public function resolveSchemaDirectiveDeprecationDescription(TypeResolverInterface $typeResolver, string $directiveName, array $directiveArgs = []): ?string
     {
         $directiveSchemaDefinition = $this->getSchemaDefinitionForDirective($typeResolver);
-        if ($schemaDirectiveArgs = $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS]) {
+        if ($schemaDirectiveArgs = $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS] ?? null) {
             list(
                 $maybeError,
                 $maybeDeprecation
@@ -560,7 +558,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
             /**
              * If restricting the version, and this fieldResolver doesn't have any version, then show a warning
              */
-            if ($versionConstraint = $this->directiveArgsForSchema[SchemaDefinition::ARGNAME_VERSION_CONSTRAINT]) {
+            if ($versionConstraint = $this->directiveArgsForSchema[SchemaDefinition::ARGNAME_VERSION_CONSTRAINT] ?? null) {
                 /**
                  * If this fieldResolver doesn't have versioning, then it accepts everything
                  */

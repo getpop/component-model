@@ -56,13 +56,13 @@ class FeedbackMessageStore extends \PoP\FieldQuery\FeedbackMessageStore implemen
     }
     public function retrieveAndClearResultItemDBWarnings($resultItemID): ?array
     {
-        $resultItemDBWarnings = $this->dbWarnings[$resultItemID];
+        $resultItemDBWarnings = $this->dbWarnings[$resultItemID] ?? null;
         unset($this->dbWarnings[$resultItemID]);
         return $resultItemDBWarnings;
     }
     public function retrieveAndClearResultItemDBDeprecations($resultItemID): ?array
     {
-        $resultItemDBDeprecations = $this->dbDeprecations[$resultItemID];
+        $resultItemDBDeprecations = $this->dbDeprecations[$resultItemID] ?? null;
         unset($this->dbDeprecations[$resultItemID]);
         return $resultItemDBDeprecations;
     }

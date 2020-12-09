@@ -95,7 +95,7 @@ trait ModulePathProcessorTrait
         $modulefilter_manager = ModuleFilterManagerFacade::getInstance();
         if (!$modulefilter_manager->excludeModule($module, $props)) {
             // Maybe only execute function on the dataloading modules
-            if (!$options['only-execute-on-dataloading-modules'] || $this->getModuleProcessor($module)->startDataloadingSection($module)) {
+            if (!isset($options['only-execute-on-dataloading-modules']) || !$options['only-execute-on-dataloading-modules'] || $this->getModuleProcessor($module)->startDataloadingSection($module)) {
                 if ($module_ret = $this->$eval_self_fn($module, $props)) {
                     $ret[$key] = $module_ret;
                 }

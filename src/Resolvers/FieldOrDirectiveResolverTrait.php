@@ -115,7 +115,7 @@ trait FieldOrDirectiveResolverTrait
                         $fieldOrDirectiveName,
                         implode($translationAPI->__('\', \''), $fieldOrDirectiveArgumentEnumValues)
                     );
-                } elseif ($fieldOrDirectiveArgumentValueDefinition[SchemaDefinition::ARGNAME_DEPRECATED]) {
+                } elseif ($fieldOrDirectiveArgumentValueDefinition[SchemaDefinition::ARGNAME_DEPRECATED] ?? null) {
                     // Check if this enumValue is deprecated
                     $deprecations[] = sprintf(
                         $translationAPI->__('Value \'%1$s\' for argument \'%2$s\' in %3$s \'%4$s\' is deprecated: \'%5$s\'', 'component-model'),

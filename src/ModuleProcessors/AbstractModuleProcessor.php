@@ -366,17 +366,17 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         // Now can proceed to add the att
         $module_props[$attModuleFullName][$group] = $module_props[$attModuleFullName][$group] ?? array();
 
-        if ($options['append']) {
+        if ($options['append'] ?? null) {
             $module_props[$attModuleFullName][$group][$field] = $module_props[$attModuleFullName][$group][$field] ?? '';
             $module_props[$attModuleFullName][$group][$field] .= ' ' . $value;
-        } elseif ($options['array']) {
+        } elseif ($options['array'] ?? null) {
             $module_props[$attModuleFullName][$group][$field] = $module_props[$attModuleFullName][$group][$field] ?? array();
-            if ($options['merge']) {
+            if ($options['merge'] ?? null) {
                 $module_props[$attModuleFullName][$group][$field] = array_merge(
                     $module_props[$attModuleFullName][$group][$field],
                     $value
                 );
-            } elseif ($options['merge-iterate-key']) {
+            } elseif ($options['merge-iterate-key'] ?? null) {
                 foreach ($value as $value_key => $value_value) {
                     if (!$module_props[$attModuleFullName][$group][$field][$value_key]) {
                         $module_props[$attModuleFullName][$group][$field][$value_key] = array();
@@ -389,7 +389,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                         )
                     );
                 }
-            } elseif ($options['push']) {
+            } elseif ($options['push'] ?? null) {
                 array_push($module_props[$attModuleFullName][$group][$field], $value);
             }
         } else {
@@ -407,7 +407,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
     protected function getPropGroupField(string $group, array $module, array &$props, string $field, array $starting_from_modulepath = array())
     {
         $group = $this->getPropGroup($group, $module, $props, $starting_from_modulepath);
-        return $group[$field];
+        return $group[$field] ?? null;
     }
     protected function getPropGroup(string $group, array $module, array &$props, array $starting_from_modulepath = array()): array
     {
@@ -961,7 +961,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
     {
         $ret = array();
 
-        if ($dataload_source = $data_properties[DataloadingConstants::SOURCE]) {
+        if ($dataload_source = $data_properties[DataloadingConstants::SOURCE] ?? null) {
             $ret['dataloadsource'] = $dataload_source;
         }
 
@@ -1120,14 +1120,14 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                             if ($submodule_ret = $submodule_processor->$propagate_fn($submodule, $props[$moduleFullName][POP_PROPS_SUBMODULES])) {
                                 // Chain the "data-fields" from the sublevels under the current "conditional-data-fields"
                                 // Move from "data-fields" to "conditional-data-fields"
-                                if ($submodule_ret['data-fields']) {
+                                if ($submodule_ret['data-fields'] ?? null) {
                                     foreach ($submodule_ret['data-fields'] as $submodule_data_field) {
                                         $ret['conditional-data-fields'][$conditionDataField][$submodule_data_field] = [];
                                     }
                                     unset($submodule_ret['data-fields']);
                                 }
                                 // Chain the conditional-data-fields at the end of the one from this module
-                                if ($submodule_ret['conditional-data-fields']) {
+                                if ($submodule_ret['conditional-data-fields'] ?? null) {
                                     foreach ($submodule_ret['conditional-data-fields'] as $submodule_condition_data_field => $submodule_conditional_data_fields) {
                                         $ret['conditional-data-fields'][$conditionDataField][$submodule_condition_data_field] = array_merge(
                                             $ret['conditional-data-fields'][$conditionDataField][$submodule_condition_data_field] ?? [],
@@ -1173,7 +1173,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
             }
 
             // Array Merge appends values when under numeric keys, so we gotta filter duplicates out
-            if ($ret['data-fields']) {
+            if ($ret['data-fields'] ?? null) {
                 $ret['data-fields'] = array_values(array_unique($ret['data-fields']));
             }
         }
@@ -1216,14 +1216,14 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
             }
 
             $ret['subcomponents'][$subcomponent_data_field] = $ret['subcomponents'][$subcomponent_data_field] ?? array();
-            if ($subcomponent_modules_data_properties['data-fields']) {
+            if ($subcomponent_modules_data_properties['data-fields'] ?? null) {
                 $subcomponent_modules_data_properties['data-fields'] = array_unique($subcomponent_modules_data_properties['data-fields']);
                 $ret['subcomponents'][$subcomponent_data_field]['data-fields'] = array_values(array_unique(array_merge(
                     $ret['subcomponents'][$subcomponent_data_field]['data-fields'] ?? [],
                     $subcomponent_modules_data_properties['data-fields']
                 )));
             }
-            if ($subcomponent_modules_data_properties['conditional-data-fields']) {
+            if ($subcomponent_modules_data_properties['conditional-data-fields'] ?? null) {
                 $ret['subcomponents'][$subcomponent_data_field]['conditional-data-fields'] = $ret['subcomponents'][$subcomponent_data_field]['conditional-data-fields'] ?? [];
                 foreach ($subcomponent_modules_data_properties['conditional-data-fields'] as $conditionDataField => $conditionalDataFields) {
                     $ret['subcomponents'][$subcomponent_data_field]['conditional-data-fields'][$conditionDataField] = array_merge_recursive(
@@ -1233,7 +1233,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
                 }
             }
 
-            if ($subcomponent_modules_data_properties['subcomponents']) {
+            if ($subcomponent_modules_data_properties['subcomponents'] ?? null) {
                 $ret['subcomponents'][$subcomponent_data_field]['subcomponents'] = $ret['subcomponents'][$subcomponent_data_field]['subcomponents'] ?? array();
                 $ret['subcomponents'][$subcomponent_data_field]['subcomponents'] = array_merge_recursive(
                     $ret['subcomponents'][$subcomponent_data_field]['subcomponents'],

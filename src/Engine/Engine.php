@@ -165,6 +165,7 @@ class Engine implements EngineInterface
 
     public function listExtraRouteVars()
     {
+        $model_instance_id = $current_uri = null;
         if ($has_extra_routes = !empty($this->getExtraRoutes())) {
             $model_instance_id = ModelInstanceFacade::getInstance()->getModelInstanceId();
             $current_uri = removeDomain(RequestUtils::getCurrentUrl());
@@ -355,7 +356,7 @@ class Engine implements EngineInterface
 
         // Comment Leo 14/09/2018: Re-enable here:
         // // Combine the statelessdata and mutableonrequestdata objects
-        // if ($data['modulesettings']) {
+        // if ($data['modulesettings'] ?? null) {
 
         //     $data['modulesettings']['combinedstate'] = array_merge_recursive(
         //         $data['modulesettings']['immutable'] ?? array()
@@ -363,7 +364,7 @@ class Engine implements EngineInterface
         //         $data['modulesettings']['mutableonrequest'] ?? array(),
         //     );
         // }
-        // if ($data['moduledata']) {
+        // if ($data['moduledata'] ?? null) {
 
         //     $data['moduledata']['combinedstate'] = array_merge_recursive(
         //         $data['moduledata']['immutable'] ?? array()
@@ -371,7 +372,7 @@ class Engine implements EngineInterface
         //         $data['moduledata']['mutableonrequest'] ?? array(),
         //     );
         // }
-        // if ($data['datasetmoduledata']) {
+        // if ($data['datasetmoduledata'] ?? null) {
 
         //     $data['datasetmoduledata']['combinedstate'] = array_merge_recursive(
         //         $data['datasetmoduledata']['immutable'] ?? array()
@@ -526,16 +527,16 @@ class Engine implements EngineInterface
             $meta[GD_URLPARAM_DATAOUTPUTMODE] = $vars['dataoutputmode'];
             $meta[GD_URLPARAM_DATABASESOUTPUTMODE] = $vars['dboutputmode'];
 
-            if ($vars['format']) {
+            if ($vars['format'] ?? null) {
                 $meta[GD_URLPARAM_SETTINGSFORMAT] = $vars['format'];
             }
-            if ($vars['mangled']) {
+            if ($vars['mangled'] ?? null) {
                 $meta[Request::URLPARAM_MANGLED] = $vars['mangled'];
             }
             if (ComponentConfiguration::enableConfigByParams() && $vars['config']) {
                 $meta[POP_URLPARAM_CONFIG] = $vars['config'];
             }
-            if ($vars['stratum']) {
+            if ($vars['stratum'] ?? null) {
                 $meta[GD_URLPARAM_STRATUM] = $vars['stratum'];
             }
 
@@ -575,7 +576,7 @@ class Engine implements EngineInterface
     {
         // Save in the database under the corresponding database-key (this way, different dataloaders, like 'list-users' and 'author',
         // can both save their results under database key 'users'
-        if (!$database[$database_key]) {
+        if (!isset($database[$database_key])) {
             $database[$database_key] = $dataitems;
         } else {
             $dbKey = $database_key;
@@ -881,7 +882,7 @@ class Engine implements EngineInterface
                 $data_properties = &$data_properties[$submoduleFullName][GD_JS_SUBMODULES];
             }
             $data_properties = &$data_properties[$moduleFullName][POP_CONSTANT_DATAPROPERTIES];
-            $datasource = $data_properties[DataloadingConstants::DATASOURCE];
+            $datasource = $data_properties[DataloadingConstants::DATASOURCE] ?? null;
 
             // If we are only requesting data from the model alone, and this dataloading module depends on mutableonrequest, then skip it
             if ($datasources == GD_URLPARAM_DATASOURCES_ONLYMODEL && $datasource == POP_DATALOAD_DATASOURCE_MUTABLEONREQUEST) {
@@ -889,13 +890,14 @@ class Engine implements EngineInterface
             }
 
             // Load data if the property Skip Data Load is not true
-            $load_data = !$data_properties[DataloadingConstants::SKIPDATALOAD];
+            $load_data = !isset($data_properties[DataloadingConstants::SKIPDATALOAD]) || !$data_properties[DataloadingConstants::SKIPDATALOAD];
 
             // ------------------------------------------
             // Checkpoint validation
             // ------------------------------------------
             // Load data if the checkpoint did not fail
-            if ($load_data && $checkpoints = $data_properties[GD_DATALOAD_DATAACCESSCHECKPOINTS]) {
+            $dataaccess_checkpoint_validation = null;
+            if ($load_data && $checkpoints = $data_properties[GD_DATALOAD_DATAACCESSCHECKPOINTS] ?? null) {
                 // Check if the module fails checkpoint validation. If so, it must not load its data or execute the componentMutationResolverBridge
                 $dataaccess_checkpoint_validation = $this->validateCheckpoints($checkpoints);
                 $load_data = !GeneralUtils::isError($dataaccess_checkpoint_validation);
@@ -930,7 +932,7 @@ class Engine implements EngineInterface
 
             // If data is not loaded, then an empty array will be saved for the dbobject ids
             $dataset_meta = $dbObjectIDs = $typeDBObjectIDs = array();
-            $executed = $dbObjectIDOrIDs = $typeDBObjectIDOrIDs = $typeResolver_class = null;
+            $mutation_checkpoint_validation = $executed = $dbObjectIDOrIDs = $typeDBObjectIDOrIDs = $typeResolver_class = null;
             if ($load_data) {
                 // ------------------------------------------
                 // Action Executers
@@ -943,7 +945,8 @@ class Engine implements EngineInterface
                     if ($processor->shouldExecuteMutation($module, $props)) {
                         // Validate that the actionexecution must be triggered through its own checkpoints
                         $execute = true;
-                        if ($mutation_checkpoints = $data_properties[GD_DATALOAD_ACTIONEXECUTIONCHECKPOINTS]) {
+                        $mutation_checkpoint_validation = null;
+                        if ($mutation_checkpoints = $data_properties[GD_DATALOAD_ACTIONEXECUTIONCHECKPOINTS] ?? null) {
                             // Check if the module fails checkpoint validation. If so, it must not load its data or execute the componentMutationResolverBridge
                             $mutation_checkpoint_validation = $this->validateCheckpoints($mutation_checkpoints);
                             $execute = !GeneralUtils::isError($mutation_checkpoint_validation);
@@ -961,7 +964,7 @@ class Engine implements EngineInterface
                 $processor->prepareDataPropertiesAfterActionexecution($module, $module_props, $data_properties);
 
                 // Re-calculate $data_load, it may have been changed by `prepareDataPropertiesAfterActionexecution`
-                $load_data = !$data_properties[DataloadingConstants::SKIPDATALOAD];
+                $load_data = !isset($data_properties[DataloadingConstants::SKIPDATALOAD]) || !$data_properties[DataloadingConstants::SKIPDATALOAD];
                 if ($load_data) {
                     $typeResolver_class = $processor->getTypeResolverClass($module);
                     /**
@@ -1068,7 +1071,7 @@ class Engine implements EngineInterface
             $this->processAndAddModuleData($module_path, $module, $module_props, $data_properties, $dataaccess_checkpoint_validation, $mutation_checkpoint_validation, $executed, $dbObjectIDs);
 
             // Allow other modules to produce their own feedback using this module's data results
-            if ($referencer_modulefullpaths = $interreferenced_modulefullpaths[ModulePathHelpersFacade::getInstance()->stringifyModulePath(array_merge($module_path, array($module)))]) {
+            if ($referencer_modulefullpaths = $interreferenced_modulefullpaths[ModulePathHelpersFacade::getInstance()->stringifyModulePath(array_merge($module_path, array($module)))] ?? null) {
                 foreach ($referencer_modulefullpaths as $referencer_modulepath) {
                     $referencer_module = array_pop($referencer_modulepath);
 
@@ -1791,7 +1794,7 @@ class Engine implements EngineInterface
 
     private function initializeTypeResolverEntry(&$dbdata, $typeResolver_class, $module_path_key)
     {
-        if (is_null($dbdata[$typeResolver_class][$module_path_key])) {
+        if (!isset($dbdata[$typeResolver_class][$module_path_key])) {
             $dbdata[$typeResolver_class][$module_path_key] = array(
                 'ids' => array(),
                 'data-fields' => array(),
@@ -1804,7 +1807,7 @@ class Engine implements EngineInterface
     {
         // Process the subcomponents
         // If it has subcomponents, bring its data to, after executing getData on the primary typeResolver, execute getData also on the subcomponent typeResolver
-        if ($subcomponents_data_properties = $data_properties['subcomponents']) {
+        if ($subcomponents_data_properties = $data_properties['subcomponents'] ?? null) {
             // Merge them into the data
             $dbdata[$typeResolver_class][$module_path_key]['subcomponents'] = array_merge_recursive(
                 $dbdata[$typeResolver_class][$module_path_key]['subcomponents'] ?? array(),

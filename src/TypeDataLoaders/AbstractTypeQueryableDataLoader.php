@@ -54,7 +54,7 @@ abstract class AbstractTypeQueryableDataLoader extends AbstractTypeDataLoader im
         $query = HooksAPIFacade::getInstance()->applyFilters(self::class . ':gd_dataload_query', $query, $data_properties);
 
         // Apply filtering of the data
-        if ($filtering_modules = $data_properties[DataloadingConstants::QUERYARGSFILTERINGMODULES]) {
+        if ($filtering_modules = $data_properties[DataloadingConstants::QUERYARGSFILTERINGMODULES] ?? null) {
             $moduleprocessor_manager = ModuleProcessorManagerFacade::getInstance();
             foreach ($filtering_modules as $module) {
                 $moduleprocessor_manager->getProcessor($module)->filterHeadmoduleDataloadQueryArgs($module, $query);

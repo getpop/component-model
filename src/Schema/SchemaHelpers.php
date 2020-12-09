@@ -79,7 +79,7 @@ class SchemaHelpers
         return array_filter(
             $enumValueDefinitions,
             function ($enumValueDefinition) {
-                if ($enumValueDefinition[SchemaDefinition::ARGNAME_DEPRECATED]) {
+                if ($enumValueDefinition[SchemaDefinition::ARGNAME_DEPRECATED] ?? null) {
                     return false;
                 }
                 return true;

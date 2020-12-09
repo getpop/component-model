@@ -15,7 +15,7 @@ class FieldHelpers
     public static function extractConditionalFields(array $dataFields): array
     {
         $conditionalFields = [];
-        $heap = $dataFields['conditional'];
+        $heap = $dataFields['conditional'] ?? [];
         while (!empty($heap)) {
             // Obtain and remove first element (the conditionField) from the heap
             reset($heap);

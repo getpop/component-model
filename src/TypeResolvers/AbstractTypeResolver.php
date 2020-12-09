@@ -1205,7 +1205,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
          * If the error happened from requesting a version that doesn't exist, show an appropriate error message
          */
         if (Environment::enableSemanticVersionConstraints()) {
-            if ($versionConstraint = $fieldArgs[SchemaDefinition::ARGNAME_VERSION_CONSTRAINT]) {
+            if ($versionConstraint = $fieldArgs[SchemaDefinition::ARGNAME_VERSION_CONSTRAINT] ?? null) {
                 $errorMessage = sprintf(
                     $translationAPI->__(
                         'No FieldResolver resolves field \'%s\' and version constraint \'%s\' for type \'%s\'',
@@ -1275,7 +1275,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 $schemaDeprecations,
             ) = $this->dissectFieldForSchema($field);
             $fieldSchemaDefinition = $fieldResolvers[0]->getSchemaDefinitionForField($this, $fieldName, $fieldArgs);
-            if ($fieldSchemaDefinition[SchemaDefinition::ARGNAME_DEPRECATED]) {
+            if ($fieldSchemaDefinition[SchemaDefinition::ARGNAME_DEPRECATED] ?? null) {
                 // $fieldQueryInterpreter = FieldQueryInterpreterFacade::getInstance();
                 // $fieldOutputKey = $fieldQueryInterpreter->getFieldOutputKey($field);
                 $schemaDeprecations[] = [
@@ -1384,7 +1384,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             // We can also force it through an option. This is needed when the field is created on runtime.
             // Eg: through the <transform> directive, in which case no parameter is dynamic anymore by the time it reaches here, yet it was not validated statically either
             $validateSchemaOnResultItem =
-                $options[self::OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM] ||
+                $options[self::OPTION_VALIDATE_SCHEMA_ON_RESULT_ITEM] ?? null ||
                 FieldQueryUtils::isAnyFieldArgumentValueDynamic(
                     array_values(
                         $fieldQueryInterpreter->extractFieldArguments($this, $field)
@@ -1434,7 +1434,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     // If it is null and the field is nonNullable, return an error
                     if (is_null($value)) {
                         $fieldSchemaDefinition = $fieldResolver->getSchemaDefinitionForField($this, $fieldName, $fieldArgs);
-                        if ($fieldSchemaDefinition[SchemaDefinition::ARGNAME_NON_NULLABLE]) {
+                        if ($fieldSchemaDefinition[SchemaDefinition::ARGNAME_NON_NULLABLE] ?? null) {
                             return ErrorUtils::getNonNullableFieldError($fieldName);
                         }
                     }
@@ -1484,10 +1484,10 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             ];
         }
 
-        $isFlatShape = $options['shape'] == SchemaDefinition::ARGVALUE_SCHEMA_SHAPE_FLAT;
+        $isFlatShape = isset($options['shape']) && $options['shape'] == SchemaDefinition::ARGVALUE_SCHEMA_SHAPE_FLAT;
 
         // If "compressed" or printing a flat shape, and the resolver has already been added to the schema, then skip it
-        if (($isFlatShape || $options['compressed']) && in_array($class, $generalMessages['processed'])) {
+        if (($isFlatShape || $options['compressed'] ?? null) && in_array($class, $generalMessages['processed'])) {
             return [
                 $typeSchemaKey => [
                     SchemaDefinition::ARGNAME_REPEATED => true,
@@ -1684,7 +1684,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
         // Watch out! We are passing empty $fieldArgs to generate the schema!
         $fieldSchemaDefinition = $fieldResolver->getSchemaDefinitionForField($this, $fieldName, []);
         // Add subfield schema if it is deep, and this typeResolver has not been processed yet
-        if ($options['deep']) {
+        if ($options['deep'] ?? null) {
             // If this field is relational, then add its own schema
             if ($fieldTypeResolverClass = $this->resolveFieldTypeResolverClass($fieldName)) {
                 $fieldTypeResolver = $instanceManager->getInstance($fieldTypeResolverClass);
@@ -1692,13 +1692,13 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             }
         }
         // Convert the field type from its internal representation (eg: "array:id") to the type (eg: "array:Post")
-        if ($options['useTypeName']) {
-            if ($type = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE]) {
+        if ($options['useTypeName'] ?? null) {
+            if ($type = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE] ?? null) {
                 $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE] = SchemaHelpers::convertTypeIDToTypeName($type, $this, $fieldName);
             }
         } else {
             // Display the type under entry "referencedType"
-            if ($types = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE_SCHEMA]) {
+            if ($types = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE_SCHEMA] ?? null) {
                 $typeNames = array_keys($types);
                 $fieldSchemaDefinition[SchemaDefinition::ARGNAME_REFERENCED_TYPE] = $typeNames[0];
             }
@@ -1710,7 +1710,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             if ($isConnection) {
                 $entry = SchemaDefinition::ARGNAME_GLOBAL_CONNECTIONS;
                 // Remove the "types"
-                if ($options['useTypeName']) {
+                if ($options['useTypeName'] ?? null) {
                     unset($fieldSchemaDefinition[SchemaDefinition::ARGNAME_TYPE_SCHEMA]);
                 }
             } else {

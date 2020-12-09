@@ -87,22 +87,22 @@ class ModelInstance implements ModelInstanceInterface
         $components[] = $this->translationAPI->__('version:', 'component-model') . $vars['version'];
 
         // Other properties
-        if ($format = $vars['format']) {
+        if ($format = $vars['format'] ?? null) {
             $components[] = $this->translationAPI->__('format:', 'component-model') . $format;
         }
-        if ($target = $vars['target']) {
+        if ($target = $vars['target'] ?? null) {
             $components[] = $this->translationAPI->__('target:', 'component-model') . $target;
         }
-        if ($actions = $vars['actions']) {
+        if ($actions = $vars['actions'] ?? null) {
             $components[] = $this->translationAPI->__('actions:', 'component-model') . implode(';', $actions);
         }
-        if ($config = $vars['config']) {
+        if ($config = $vars['config'] ?? null) {
             $components[] = $this->translationAPI->__('config:', 'component-model') . $config;
         }
-        if ($modulefilter = $vars['modulefilter']) {
+        if ($modulefilter = $vars['modulefilter'] ?? null) {
             $components[] = $this->translationAPI->__('module filter:', 'component-model') . $modulefilter;
         }
-        if ($stratum = $vars['stratum']) {
+        if ($stratum = $vars['stratum'] ?? null) {
             $components[] = $this->translationAPI->__('stratum:', 'component-model') . $stratum;
         }
 
@@ -113,21 +113,21 @@ class ModelInstance implements ModelInstanceInterface
         )) {
             $components[] = $this->translationAPI->__('operation:', 'component-model') . (doingPost() ? 'post' : 'get');
         }
-        if ($mangled = $vars['mangled']) {
+        if ($mangled = $vars['mangled'] ?? null) {
             // By default it is mangled. To make it non-mangled, url must have param "mangled=none",
             // so only in these exceptional cases the identifier will add this parameter
             $components[] = $this->translationAPI->__('mangled:', 'component-model') . $mangled;
         }
-        if ($vars['only-fieldname-as-outputkey']) {
+        if ($vars['only-fieldname-as-outputkey'] ?? null) {
             $components[] = $this->translationAPI->__('only-fieldname-as-outputkey', 'component-model');
         }
-        if ($versionConstraint = $vars['version-constraint']) {
+        if ($versionConstraint = $vars['version-constraint'] ?? null) {
             $components[] = $this->translationAPI->__('version-constraint:', 'component-model') . $versionConstraint;
         }
-        if ($fieldVersionConstraints = $vars['field-version-constraints']) {
+        if ($fieldVersionConstraints = $vars['field-version-constraints'] ?? null) {
             $components[] = $this->translationAPI->__('field-version-constraints:', 'component-model') . json_encode($fieldVersionConstraints);
         }
-        if ($directiveVersionConstraints = $vars['directive-version-constraints']) {
+        if ($directiveVersionConstraints = $vars['directive-version-constraints'] ?? null) {
             $components[] = $this->translationAPI->__('directive-version-constraints:', 'component-model') . json_encode($directiveVersionConstraints);
         }
 
