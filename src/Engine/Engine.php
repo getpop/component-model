@@ -251,6 +251,7 @@ class Engine implements EngineInterface
         // Important: cannot use it if doing POST, because the request may have to be handled by a different block than the one whose data was cached
         // Eg: doing GET on /add-post/ will show the form BLOCK_ADDPOST_CREATE, but doing POST on /add-post/ will bring the action ACTION_ADDPOST_CREATE
         // First check if there's a cache stored
+        $model_props = null;
         if ($useCache) {
             $model_props = $cachemanager->getCacheByModelInstance(self::CACHETYPE_PROPS);
         }
@@ -430,6 +431,7 @@ class Engine implements EngineInterface
         $dataoutputmode = $vars['dataoutputmode'];
 
         // First check if there's a cache stored
+        $immutable_datasetsettings = null;
         if ($useCache) {
             $immutable_datasetsettings = $cachemanager->getCacheByModelInstance(self::CACHETYPE_IMMUTABLEDATASETSETTINGS);
         }
@@ -821,6 +823,7 @@ class Engine implements EngineInterface
         );
 
         // First check if there's a cache stored
+        $immutable_data_properties = $mutableonmodel_data_properties = null;
         if ($useCache) {
             $immutable_data_properties = $cachemanager->getCacheByModelInstance(self::CACHETYPE_STATICDATAPROPERTIES);
             $mutableonmodel_data_properties = $cachemanager->getCacheByModelInstance(self::CACHETYPE_STATEFULDATAPROPERTIES);
@@ -1692,7 +1695,7 @@ class Engine implements EngineInterface
                         $this->integrateSubcomponentDataProperties($this->dbdata, $subcomponent_data_properties, $subcomponent_typeResolver_class, $module_path_key);
                     }
 
-                    if ($this->dbdata[$subcomponent_typeResolver_class][$module_path_key]) {
+                    if ($this->dbdata[$subcomponent_typeResolver_class][$module_path_key] ?? null) {
                         $this->dbdata[$subcomponent_typeResolver_class][$module_path_key]['ids'] = array_unique($this->dbdata[$subcomponent_typeResolver_class][$module_path_key]['ids']);
                         $this->dbdata[$subcomponent_typeResolver_class][$module_path_key]['data-fields'] = array_unique($this->dbdata[$subcomponent_typeResolver_class][$module_path_key]['data-fields']);
                     }

@@ -676,7 +676,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     continue;
                 }
                 // Get the instance from the cache if it exists, or create it if not
-                if (is_null($this->directiveResolverInstanceCache[$directiveClass][$fieldDirective])) {
+                if (!isset($this->directiveResolverInstanceCache[$directiveClass][$fieldDirective])) {
                     $this->directiveResolverInstanceCache[$directiveClass][$fieldDirective] = new $directiveClass($fieldDirective);
                 }
                 $maybeDirectiveResolverInstance = $this->directiveResolverInstanceCache[$directiveClass][$fieldDirective];
@@ -975,7 +975,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                 $mandatoryDirectivesForFields = $targetTypeResolverClassMandatoryDirectivesForFields[get_class($resultItemIDTargetTypeResolver)];
             }
             foreach ($fields as $field) {
-                if (is_null($this->fieldDirectivesFromFieldCache[$field])) {
+                if (!isset($this->fieldDirectivesFromFieldCache[$field])) {
                     // Get the directives from the field
                     $directives = $fieldQueryInterpreter->getDirectives($field);
 
@@ -1770,7 +1770,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
      */
     protected function getFieldNamesResolvedByFieldResolver(string $fieldResolverClass): array
     {
-        if (is_null($this->fieldNamesResolvedByFieldResolver[$fieldResolverClass])) {
+        if (!isset($this->fieldNamesResolvedByFieldResolver[$fieldResolverClass])) {
             // Merge the fieldNames resolved by this field resolver class, and the interfaces it implements
             $fieldNames = array_merge(
                 $fieldResolverClass::getFieldNamesToResolve(),

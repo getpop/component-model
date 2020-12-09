@@ -255,7 +255,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
     {
         // First check if the value was cached
         $key = $typeResolver->getNamespacedTypeName() . '|' . $fieldName . '|' . json_encode($fieldArgs);
-        if (is_null($this->schemaDefinitionForFieldCache[$key])) {
+        if (!isset($this->schemaDefinitionForFieldCache[$key])) {
             $schemaDefinition = [
                 SchemaDefinition::ARGNAME_NAME => $fieldName,
             ];

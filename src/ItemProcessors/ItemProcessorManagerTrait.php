@@ -45,7 +45,7 @@ trait ItemProcessorManagerTrait
     {
         $itemProcessorClass = $item[0];
         $itemName = $item[1];
-        return !is_null($this->processors[$itemProcessorClass][$itemName]);
+        return isset($this->processors[$itemProcessorClass][$itemName]);
     }
 
     public function getItemProcessor(array $item)
