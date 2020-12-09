@@ -255,7 +255,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             // Eg: when the directive name doesn't exist: /?query=id<skipanga>
             foreach ($directiveSchemaErrors as $directiveSchemaError) {
                 $directive = $directiveSchemaError[Tokens::PATH][0];
-                if ($directiveFields = $fieldDirectiveFields[$directive]) {
+                if ($directiveFields = $fieldDirectiveFields[$directive] ?? null) {
                     $fields = implode($translationAPI->__(', '), $directiveFields);
                     $schemaErrors[] = [
                         Tokens::PATH => array_merge([$fields], $directiveSchemaError[Tokens::PATH]),
@@ -267,7 +267,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             }
             foreach ($directiveSchemaWarnings as $directiveSchemaWarning) {
                 $directive = $directiveSchemaWarning[Tokens::PATH][0];
-                if ($directiveFields = $fieldDirectiveFields[$directive]) {
+                if ($directiveFields = $fieldDirectiveFields[$directive] ?? null) {
                     $fields = implode($translationAPI->__(', '), $directiveFields);
                     $schemaWarnings[] = [
                         Tokens::PATH => array_merge([$fields], $directiveSchemaWarning[Tokens::PATH]),
@@ -279,7 +279,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             }
             foreach ($directiveSchemaDeprecations as $directiveSchemaDeprecation) {
                 $directive = $directiveSchemaDeprecation[Tokens::PATH][0];
-                if ($directiveFields = $fieldDirectiveFields[$directive]) {
+                if ($directiveFields = $fieldDirectiveFields[$directive] ?? null) {
                     $fields = implode($translationAPI->__(', '), $directiveFields);
                     $schemaDeprecations[] = [
                         Tokens::PATH => array_merge([$fields], $directiveSchemaDeprecation[Tokens::PATH]),
@@ -291,7 +291,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             }
             foreach ($directiveSchemaNotices as $directiveSchemaNotice) {
                 $directive = $directiveSchemaNotice[Tokens::PATH][0];
-                if ($directiveFields = $fieldDirectiveFields[$directive]) {
+                if ($directiveFields = $fieldDirectiveFields[$directive] ?? null) {
                     $fields = implode($translationAPI->__(', '), $directiveFields);
                     $schemaNotices[] = [
                         Tokens::PATH => array_merge([$fields], $directiveSchemaNotice[Tokens::PATH]),
@@ -303,7 +303,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
             }
             foreach ($directiveSchemaTraces as $directiveSchemaTrace) {
                 $directive = $directiveSchemaTrace[Tokens::PATH][0];
-                if ($directiveFields = $fieldDirectiveFields[$directive]) {
+                if ($directiveFields = $fieldDirectiveFields[$directive] ?? null) {
                     $fields = implode($translationAPI->__(', '), $directiveFields);
                     $schemaTraces[] = [
                         Tokens::PATH => array_merge([$fields], $directiveSchemaTrace[Tokens::PATH]),
@@ -1029,7 +1029,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     if (in_array($field, $data_fields['direct'])) {
                         $this->fieldDirectiveIDFields[$fieldDirective][(string)$id]['direct'][] = $field;
                     }
-                    if ($conditionalFields = $data_fields['conditional'][$field]) {
+                    if ($conditionalFields = $data_fields['conditional'][$field] ?? null) {
                         $this->fieldDirectiveIDFields[$fieldDirective][(string)$id]['conditional'][$field] = array_merge_recursive(
                             $this->fieldDirectiveIDFields[$fieldDirective][(string)$id]['conditional'][$field] ?? [],
                             $conditionalFields
@@ -1127,7 +1127,7 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
                     $ids = $fieldDirectiveFieldIDs[$fieldDirective][$field];
                     foreach ($ids as $id) {
                         $directiveIDFields[$id]['direct'][] = $field;
-                        if ($fieldConditionalFields = $fieldDirectiveIDFields[$fieldDirective][$id]['conditional'][$field]) {
+                        if ($fieldConditionalFields = $fieldDirectiveIDFields[$fieldDirective][$id]['conditional'][$field] ?? null) {
                             $directiveIDFields[$id]['conditional'][$field] = $fieldConditionalFields;
                         } else {
                             $directiveIDFields[$id]['conditional'] = $directiveIDFields[$id]['conditional'] ?? [];

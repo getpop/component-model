@@ -29,10 +29,10 @@ trait EnumTypeSchemaDefinitionResolverTrait
             $enum = [
                 SchemaDefinition::ARGNAME_NAME => $enumValue,
             ];
-            if ($description = $enumValueDescriptions[$enumValue]) {
+            if ($description = $enumValueDescriptions[$enumValue] ?? null) {
                 $enum[SchemaDefinition::ARGNAME_DESCRIPTION] = $description;
             }
-            if ($deprecationDescription = $enumValueDeprecationDescriptions[$enumValue]) {
+            if ($deprecationDescription = $enumValueDeprecationDescriptions[$enumValue] ?? null) {
                 $enum[SchemaDefinition::ARGNAME_DEPRECATED] = true;
                 $enum[SchemaDefinition::ARGNAME_DEPRECATIONDESCRIPTION] = $deprecationDescription;
             }

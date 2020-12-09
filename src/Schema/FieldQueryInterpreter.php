@@ -599,7 +599,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         // Cast all argument values
         foreach ($fieldOrDirectiveArgs as $argName => $argValue) {
             // Maybe cast the value to the appropriate type. Eg: from string to boolean
-            if ($fieldArgType = $fieldOrDirectiveArgNameTypes[$argName]) {
+            if ($fieldArgType = $fieldOrDirectiveArgNameTypes[$argName] ?? null) {
                 // There are 2 possibilities for casting:
                 // 1. $forSchema = true: Cast all items except fields (eg: hasComments()) or arrays with fields (eg: [hasComments()])
                 // 2. $forSchema = false: Should be cast only fields, however by now we can't tell which are fields and which are not, since fields have already been resolved to their value. Hence, cast everything (fieldArgValues that failed at the schema level will not be provided in the input array, so won't be validated twice)
@@ -820,7 +820,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             $directiveArgNameTypes = $this->getDirectiveArgumentNameTypes($directiveResolver, $typeResolver);
             foreach (array_keys($failedCastingDirectiveArgs) as $failedCastingDirectiveArgName) {
                 // If it is Error, also show the error message
-                if ($directiveArgErrorMessage = $failedCastingDirectiveArgErrorMessages[$failedCastingDirectiveArgName]) {
+                if ($directiveArgErrorMessage = $failedCastingDirectiveArgErrorMessages[$failedCastingDirectiveArgName] ?? null) {
                     $errorMessage = sprintf(
                         $this->translationAPI->__('For directive \'%s\', casting value \'%s\' for argument \'%s\' to type \'%s\' failed: %s. It has been ignored', 'pop-component-model'),
                         $directiveName,
@@ -859,7 +859,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
             $fieldArgNameTypes = $this->getFieldArgumentNameTypes($typeResolver, $field);
             foreach (array_keys($failedCastingFieldArgs) as $failedCastingFieldArgName) {
                 // If it is Error, also show the error message
-                if ($fieldArgErrorMessage = $failedCastingFieldArgErrorMessages[$failedCastingFieldArgName]) {
+                if ($fieldArgErrorMessage = $failedCastingFieldArgErrorMessages[$failedCastingFieldArgName] ?? null) {
                     $errorMessage = sprintf(
                         $this->translationAPI->__('For field \'%s\', casting value \'%s\' for argument \'%s\' to type \'%s\' failed: %s. It has been ignored', 'pop-component-model'),
                         $fieldName,

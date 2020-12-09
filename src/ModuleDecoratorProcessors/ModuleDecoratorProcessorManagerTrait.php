@@ -26,7 +26,7 @@ trait ModuleDecoratorProcessorManagerTrait
         // If not, build a new one from the settings, and assign it under the current processor
         if (!$processordecorator) {
             do {
-                if ($processordecorator_classname = $this->settings[$processor_classname]) {
+                if ($processordecorator_classname = $this->settings[$processor_classname] ?? null) {
                     $processordecorator = new $processordecorator_classname($processor);
                     $this->processordecorators[$processor_classname] = $processordecorator;
                     break;

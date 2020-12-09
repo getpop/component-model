@@ -607,7 +607,7 @@ class Engine implements EngineInterface
             foreach ($dataitems as $resultItemID => $dataItem) {
                 // Obtain the type of the object
                 $exists = false;
-                if ($resultItem = $resultIDItems[$resultItemID]) {
+                if ($resultItem = $resultIDItems[$resultItemID] ?? null) {
                     $targetTypeResolver = $typeResolver->getTargetTypeResolver($resultItem);
                     if (!is_null($targetTypeResolver)) {
                         $exists = true;
@@ -1598,7 +1598,7 @@ class Engine implements EngineInterface
                         // $databases may contain more the 1 DB shipped by pop-engine/ ("primary"). Eg: PoP User Login adds db "userstate"
                         // Fetch the field_ids from all these DBs
                         foreach ($databases as $dbname => $database) {
-                            if ($database_field_ids = $database[$database_key][(string)$id][$subcomponent_data_field_outputkey]) {
+                            if ($database_field_ids = $database[$database_key][(string)$id][$subcomponent_data_field_outputkey] ?? null) {
                                 $subcomponentIDs[$dbname][$database_key][(string)$id] = array_merge(
                                     $subcomponentIDs[$dbname][$database_key][(string)$id] ?? [],
                                     is_array($database_field_ids) ? $database_field_ids : array($database_field_ids)
@@ -1656,7 +1656,7 @@ class Engine implements EngineInterface
                     if ($field_ids) {
                         foreach ($field_ids as $field_id) {
                             // Do not add again the IDs/Fields already loaded
-                            if ($subcomponent_already_loaded_data_fields = $subcomponent_already_loaded_ids_data_fields[$field_id]) {
+                            if ($subcomponent_already_loaded_data_fields = $subcomponent_already_loaded_ids_data_fields[$field_id] ?? null) {
                                 $id_subcomponent_data_fields = array_values(
                                     array_diff(
                                         $subcomponent_data_fields,

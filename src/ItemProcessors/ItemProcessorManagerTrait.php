@@ -58,7 +58,7 @@ trait ItemProcessorManagerTrait
             // If this class was overriden, use that one instead. Priority goes like this:
             // 1. Overriden
             // 3. Same class as requested
-            if ($class = $this->overridingClasses[$itemProcessorClass][$itemName]) {
+            if ($class = $this->overridingClasses[$itemProcessorClass][$itemName] ?? null) {
                 $itemProcessorClass = $class;
             }
 
