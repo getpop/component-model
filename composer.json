@@ -18,7 +18,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": "~7.4",
+        "php": "^7.4|^8.0",
         "composer/semver": "^1.5",
         "getpop/definitions": "dev-master",
         "getpop/field-query": "dev-master",
