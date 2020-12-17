@@ -258,7 +258,7 @@ class Engine implements EngineInterface
         }
 
         // If there is no cached one, or not using the cache, generate the props and cache it
-        if (!$model_props) {
+        if ($model_props === null) {
             $model_props = array();
             $processor->initModelPropsModuletree($module, $model_props, array(), array());
 
@@ -439,7 +439,7 @@ class Engine implements EngineInterface
 
         // If there is no cached one, generate the configuration and cache it
         $this->cachedsettings = false;
-        if ($immutable_datasetsettings) {
+        if ($immutable_datasetsettings !== null) {
             $this->cachedsettings = true;
         } else {
             $immutable_datasetsettings = $processor->getImmutableSettingsDatasetmoduletree($module, $model_props);
