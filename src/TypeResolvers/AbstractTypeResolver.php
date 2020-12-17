@@ -1927,17 +1927,38 @@ abstract class AbstractTypeResolver implements TypeResolverInterface
     protected function getAllTypeResolverDecoratorClassess(): array
     {
         if (is_null($this->typeResolverDecoratorClasses)) {
-            $this->typeResolverDecoratorClasses = $this->calculateAllTypeResolverDecoratorClassess();
+            $this->typeResolverDecoratorClasses = $this->calculateAllTypeResolverDecoratorClasses();
         }
         return $this->typeResolverDecoratorClasses;
     }
 
-    protected function calculateAllTypeResolverDecoratorClassess(): array
+    protected function calculateAllTypeResolverDecoratorClasses(): array
+    {
+        $decoratorClasses = [];
+        /**
+         * Also get the decorators for the implemented interfaces
+         */
+        $classes = array_merge(
+            [
+                $this->getTypeResolverClassToCalculateSchema(),
+            ],
+            $this->getAllImplementedInterfaceClasses()
+        );
+        foreach ($classes as $class) {
+            $decoratorClasses = array_merge(
+                $decoratorClasses,
+                $this->calculateAllTypeResolverDecoratorClassesForTypeOrInterfaceClass($class)
+            );
+        }
+
+        return $decoratorClasses;
+    }
+
+    protected function calculateAllTypeResolverDecoratorClassesForTypeOrInterfaceClass(string $class): array
     {
         $attachableExtensionManager = AttachableExtensionManagerFacade::getInstance();
         $decoratorClasses = [];
 
-        $class = $this->getTypeResolverClassToCalculateSchema();
         // Iterate classes from the current class towards the parent classes until finding typeResolver that satisfies processing this field
         do {
             // Important: do array_reverse to enable more specific hooks, which are initialized later on in the project, to be the chosen ones (if their priority is the same)
