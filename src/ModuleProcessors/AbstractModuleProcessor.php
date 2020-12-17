@@ -64,11 +64,6 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         // 1st element to merge: the general props for this module passed down the line
         // 2nd element to merge: the props set exactly to the path. They have more priority, that's why they are 2nd
         // It may contain more than one group (POP_PROPS_ATTRIBUTES). Eg: maybe also POP_PROPS_JSMETHODS
-        if (is_string($props[$moduleFullName] ?? [])) {
-            var_dump('---', $module, $moduleFullName, $props[$moduleFullName]);
-            debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-            die;
-        }
         $props[$moduleFullName] = array_merge_recursive(
             $targetted_props_to_propagate[$moduleFullName] ?? array(),
             $props[$moduleFullName] ?? array()
