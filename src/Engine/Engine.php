@@ -831,11 +831,15 @@ class Engine implements EngineInterface
         }
 
         // If there is no cached one, generate the props and cache it
-        if (!$immutable_data_properties) {
+        if ($immutable_data_properties === null) {
             $immutable_data_properties = $root_processor->getImmutableDataPropertiesDatasetmoduletree($root_module, $root_model_props);
-            $mutableonmodel_data_properties = $root_processor->getMutableonmodelDataPropertiesDatasetmoduletree($root_module, $root_model_props);
             if ($useCache) {
                 $cachemanager->storeCacheByModelInstance(self::CACHETYPE_STATICDATAPROPERTIES, $immutable_data_properties);
+            }
+        }
+        if ($mutableonmodel_data_properties === null) {
+            $mutableonmodel_data_properties = $root_processor->getMutableonmodelDataPropertiesDatasetmoduletree($root_module, $root_model_props);
+            if ($useCache) {
                 $cachemanager->storeCacheByModelInstance(self::CACHETYPE_STATEFULDATAPROPERTIES, $mutableonmodel_data_properties);
             }
         }
