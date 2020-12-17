@@ -582,7 +582,7 @@ class Engine implements EngineInterface
             $dbKey = $database_key;
             // array_merge_recursive doesn't work as expected (it merges 2 hashmap arrays into an array, so then I manually do a foreach instead)
             foreach ($dataitems as $id => $dbobject_values) {
-                if (!$database[$dbKey][(string)$id]) {
+                if (!isset($database[$dbKey][(string)$id])) {
                     $database[$dbKey][(string)$id] = array();
                 }
 
