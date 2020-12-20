@@ -44,7 +44,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     /**
      * @var array[]
      */
-    protected array $nestedDirectivePipelineData;
+    protected array $nestedDirectivePipelineData = [];
 
     public function __construct(?string $directive = null)
     {
