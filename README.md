@@ -1,10 +1,9 @@
 # Component Model
 
-<!-- [![Build Status][ico-travis]][link-travis] -->
+<!--
+[![Build Status][ico-travis]][link-travis]
 [![Quality Score][ico-code-quality]][link-code-quality]
 [![Software License][ico-license]](LICENSE.md)
-
-<!--
 [![Latest Version on Packagist][ico-version]][link-packagist]
 [![Coverage Status][ico-scrutinizer]][link-scrutinizer]
 [![Total Downloads][ico-downloads]][link-downloads]
@@ -2021,7 +2020,7 @@ Requirements:
 
 Check the list of [Supported PHP features in `leoloso/PoP`](https://github.com/leoloso/PoP/#supported-php-features)
 
-### Downgrading code to PHP 7.1
+### Preview downgrade to PHP 7.1
 
 Via [Rector](https://github.com/rectorphp/rector) (dry-run mode):
 
