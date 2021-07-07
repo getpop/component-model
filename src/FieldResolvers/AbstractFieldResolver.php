@@ -46,7 +46,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
      */
     protected array $schemaDefinitionForFieldCache = [];
 
-    function __construct(
+    public function __construct(
         protected TranslationAPIInterface $translationAPI,
         protected HooksAPIInterface $hooksAPI,
         protected InstanceManagerInterface $instanceManager,
@@ -173,7 +173,7 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
         }
         return true;
     }
-    public function resolveSchemaValidationErrorDescriptions(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?array
+    final public function resolveSchemaValidationErrorDescriptions(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?array
     {
         $fieldSchemaDefinition = $this->getSchemaDefinitionForField($typeResolver, $fieldName, $fieldArgs);
         if ($fieldArgsSchemaDefinition = $fieldSchemaDefinition[SchemaDefinition::ARGNAME_ARGS] ?? null) {
@@ -234,8 +234,26 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 return $mutationResolver->validateErrors($fieldArgs);
             }
         }
+
+        // Custom validations
+        return $this->doResolveSchemaValidationErrorDescriptions(
+            $typeResolver,
+            $fieldName,
+            $fieldArgs,
+        );
+    }
+    
+    /**
+     * Custom validations. Function to override
+     */
+    protected function doResolveSchemaValidationErrorDescriptions(
+        TypeResolverInterface $typeResolver,
+        string $fieldName,
+        array $fieldArgs = []
+    ): ?array {
         return null;
     }
+
     public function resolveSchemaValidationDeprecationDescriptions(TypeResolverInterface $typeResolver, string $fieldName, array $fieldArgs = []): ?array
     {
         $fieldSchemaDefinition = $this->getSchemaDefinitionForField($typeResolver, $fieldName, $fieldArgs);
@@ -313,7 +331,8 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
                 }
                 // If setting the "array of arrays" flag, there's no need to set the "array" flag
                 $isArrayOfArrays = $schemaTypeModifiers & SchemaTypeModifiers::IS_ARRAY_OF_ARRAYS;
-                if ($schemaTypeModifiers & SchemaTypeModifiers::IS_ARRAY
+                if (
+                    $schemaTypeModifiers & SchemaTypeModifiers::IS_ARRAY
                     || $isArrayOfArrays
                 ) {
                     $schemaDefinition[SchemaDefinition::ARGNAME_IS_ARRAY] = true;
@@ -399,11 +418,11 @@ abstract class AbstractFieldResolver implements FieldResolverInterface, FieldSch
 
     /**
      * Processes the field args:
-     * 
+     *
      * 1. Adds the version constraint (if enabled)
      * 2. Places all entries under their own name
      * 3. If any entry has no name, it is skipped
-     * 
+     *
      * @return array<string, array>
      */
     protected function getFilteredSchemaFieldArgs(

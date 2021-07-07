@@ -68,7 +68,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
      * @var array<string, array>
      */
     protected array $schemaDefinitionForDirectiveCache = [];
-    
+
     /**
      * The directiveResolvers are NOT instantiated through the service container!
      * Instead, the directive will be instantiated in AbstractTypeResolver:
@@ -244,8 +244,9 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
     /**
      * Add the directive to the head of the error path, for all nested errors
      */
-    protected function prependPathOnNestedErrors(array &$nestedDirectiveSchemaError): void {
-        
+    protected function prependPathOnNestedErrors(array &$nestedDirectiveSchemaError): void
+    {
+
         if (isset($nestedDirectiveSchemaError[Tokens::EXTENSIONS][Tokens::NESTED])) {
             foreach ($nestedDirectiveSchemaError[Tokens::EXTENSIONS][Tokens::NESTED] as &$deeplyNestedDirectiveSchemaError) {
                 array_unshift($deeplyNestedDirectiveSchemaError[Tokens::PATH], $this->directive);
@@ -383,8 +384,11 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         return true;
     }
 
-    public function resolveSchemaValidationErrorDescriptions(TypeResolverInterface $typeResolver, string $directiveName, array $directiveArgs = []): ?array
-    {
+    final public function resolveSchemaValidationErrorDescriptions(
+        TypeResolverInterface $typeResolver,
+        string $directiveName,
+        array $directiveArgs = []
+    ): ?array {
         $directiveSchemaDefinition = $this->getSchemaDefinitionForDirective($typeResolver);
         if ($directiveArgsSchemaDefinition = $directiveSchemaDefinition[SchemaDefinition::ARGNAME_ARGS] ?? null) {
             /**
@@ -435,6 +439,23 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
                 }
             }
         }
+
+        // Custom validations
+        return $this->doResolveSchemaValidationErrorDescriptions(
+            $typeResolver,
+            $directiveName,
+            $directiveArgs,
+        );
+    }
+
+    /**
+     * Custom validations. Function to override
+     */
+    protected function doResolveSchemaValidationErrorDescriptions(
+        TypeResolverInterface $typeResolver,
+        string $directiveName,
+        array $directiveArgs = []
+    ): ?array {
         return null;
     }
 
@@ -527,11 +548,11 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
 
     /**
      * Processes the directive args:
-     * 
+     *
      * 1. Adds the version constraint (if enabled)
      * 2. Places all entries under their own name
      * 3. If any entry has no name, it is skipped
-     * 
+     *
      * @return array<string, array>
      */
     protected function getFilteredSchemaDirectiveArgs(
@@ -698,7 +719,7 @@ abstract class AbstractDirectiveResolver implements DirectiveResolverInterface, 
         // First check that if the validation took away the elements, and so the directive can't execute anymore
         // For instance, executing ?query=posts.id|title<default,translate(from:en,to:es)> will fail
         // after directive "default", so directive "translate" must not even execute
-        if (!$this->needsIDsDataFieldsToExecute() || $this->hasIDsDataFields($idsDataFields)) {   
+        if (!$this->needsIDsDataFieldsToExecute() || $this->hasIDsDataFields($idsDataFields)) {
             // If the directive resolver throws an Exception,
             // catch it and add dbErrors
             try {
