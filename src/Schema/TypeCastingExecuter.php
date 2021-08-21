@@ -140,16 +140,46 @@ class TypeCastingExecuter implements TypeCastingExecuterInterface
                 }
                 return $value;
             case SchemaDefinition::TYPE_INT:
-                return (int) CastToType::_int($value);
+                $converted = CastToType::_int($value);
+                if ($converted === null) {
+                    return new Error(
+                        'int-cast',
+                        sprintf(
+                            $this->translationAPI->__('Cannot cast int from \'%s\'', 'component-model'),
+                            $value
+                        )
+                    );
+                }
+                return (int) $converted;
             case SchemaDefinition::TYPE_FLOAT:
-                return (float) CastToType::_float($value);
+                $converted = CastToType::_float($value);
+                if ($converted === null) {
+                    return new Error(
+                        'float-cast',
+                        sprintf(
+                            $this->translationAPI->__('Cannot cast float from \'%s\'', 'component-model'),
+                            $value
+                        )
+                    );
+                }
+                return (float) $converted;
             case SchemaDefinition::TYPE_BOOL:
                 // Watch out! In Library CastToType, an empty string is not false, but it's NULL
                 // But for us it must be false, since calling query ?query=and([true,false]) gets transformed to the $field string "[1,]"
                 if ($value == '') {
                     return false;
                 }
-                return (bool) CastToType::_bool($value);
+                $converted = CastToType::_bool($value);
+                if ($converted === null) {
+                    return new Error(
+                        'bool-cast',
+                        sprintf(
+                            $this->translationAPI->__('Cannot cast bool from \'%s\'', 'component-model'),
+                            $value
+                        )
+                    );
+                }
+                return (bool) $converted;
             case SchemaDefinition::TYPE_TIME:
                 $converted = strtotime($value);
                 if ($converted === false) {

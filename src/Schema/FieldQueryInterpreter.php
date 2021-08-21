@@ -480,11 +480,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         if ($fieldOrDirectiveArgumentNameDefaultValues === null) {
             $schemaErrors[] = [
                 Tokens::PATH => [$field],
-                Tokens::MESSAGE => sprintf(
-                    $this->translationAPI->__('There is no field \'%s\' on type \'%s\'', 'component-model'),
-                    $this->getFieldName($field),
-                    $typeResolver->getMaybeNamespacedTypeName()
-                )
+                Tokens::MESSAGE => $this->getNoFieldErrorMessage($typeResolver, $field),
             ];
             return null;
         }
@@ -505,6 +501,15 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         }
 
         return $fieldOrDirectiveArgumentNameDefaultValues;
+    }
+
+    protected function getNoFieldErrorMessage(TypeResolverInterface $typeResolver, string $field): string
+    {
+        return sprintf(
+            $this->translationAPI->__('There is no field \'%s\' on type \'%s\'', 'component-model'),
+            $this->getFieldName($field),
+            $typeResolver->getMaybeNamespacedTypeName()
+        );
     }
 
     protected function filterFieldOrDirectiveArgs(array $fieldOrDirectiveArgs): array
@@ -851,11 +856,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
         if ($fieldArgSchemaDefinition === null) {
             $schemaOrDBErrors[] = [
                 Tokens::PATH => [$field],
-                Tokens::MESSAGE => sprintf(
-                    $this->translationAPI->__('There is no field \'%s\' on type \'%s\'', 'component-model'),
-                    $this->getFieldName($field),
-                    $typeResolver->getMaybeNamespacedTypeName()
-                )
+                Tokens::MESSAGE => $this->getNoFieldErrorMessage($typeResolver, $field),
             ];
             return null;
         }
@@ -1181,7 +1182,7 @@ class FieldQueryInterpreter extends \PoP\FieldQuery\FieldQueryInterpreter implem
 
     protected function getFieldArgumentNameTypes(TypeResolverInterface $typeResolver, string $field): ?array
     {
-        if (!array_key_exists($field, $this->fieldArgumentNameTypesCache[get_class($typeResolver)])) {
+        if (!array_key_exists($field, $this->fieldArgumentNameTypesCache[get_class($typeResolver)] ?? [])) {
             $this->fieldArgumentNameTypesCache[get_class($typeResolver)][$field] = $this->doGetFieldArgumentNameTypes($typeResolver, $field);
         }
         return $this->fieldArgumentNameTypesCache[get_class($typeResolver)][$field];
