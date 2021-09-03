@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PoP\ComponentModel\TypeDataLoaders;
+namespace PoP\ComponentModel\RelationalTypeDataLoaders\Object;
 
 use PoP\ComponentModel\Facades\Container\ObjectDictionaryFacade;
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PoP\ComponentModel\TypeDataLoaders;
+namespace PoP\ComponentModel\RelationalTypeDataLoaders\Object;
 
 use PoP\ComponentModel\Constants\Params;
 use PoP\ComponentModel\Facades\ModuleProcessors\ModuleProcessorManagerFacade;
@@ -10,7 +10,7 @@ use PoP\ComponentModel\ModuleProcessors\DataloadingConstants;
 use PoP\ComponentModel\ModuleProcessors\FilterDataModuleProcessorInterface;
 use PoP\Hooks\Facades\HooksAPIFacade;
 
-abstract class AbstractTypeQueryableDataLoader extends AbstractTypeDataLoader implements TypeQueryableDataLoaderInterface
+abstract class AbstractObjectTypeQueryableDataLoader extends AbstractObjectTypeDataLoader implements ObjectTypeQueryableDataLoaderInterface
 {
     /**
      * @return mixed[]
