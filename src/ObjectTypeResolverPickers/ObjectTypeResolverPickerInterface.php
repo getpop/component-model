@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PoP\ComponentModel\TypeResolverPickers;
+namespace PoP\ComponentModel\ObjectTypeResolverPickers;
 
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionInterface;
 
