@@ -420,7 +420,7 @@ abstract class AbstractRelationalTypeResolver extends AbstractTypeResolver imple
             }
 
             foreach ($fieldDirectiveFields[$enqueuedFieldDirective] as $field) {
-                $directiveResolverInstance = $fieldDirectiveResolverInstances[$field];
+                $directiveResolverInstance = $fieldDirectiveResolverInstances[$field] ?? null;
                 if (is_null($directiveResolverInstance)) {
                     $schemaErrors[] = [
                         Tokens::PATH => [$fieldDirective],
@@ -450,6 +450,7 @@ abstract class AbstractRelationalTypeResolver extends AbstractTypeResolver imple
         foreach ($directiveResolverInstanceFields as $instanceID => $instanceData) {
             $fieldDirective = $instanceData['fieldDirective'];
             $enqueuedFieldDirective = $instanceData['enqueuedFieldDirective'];
+            /** @var DirectiveResolverInterface */
             $directiveResolverInstance = $instanceData['instance'];
             $directiveResolverFields = $instanceData['fields'];
             // If the enqueued and the fieldDirective are different, it's because it is a repeated one
@@ -563,6 +564,9 @@ abstract class AbstractRelationalTypeResolver extends AbstractTypeResolver imple
         return $instances;
     }
 
+    /**
+     * @return array<string,DirectiveResolverInterface>|null
+     */
     public function getDirectiveResolverInstancesForDirective(string $fieldDirective, array $fieldDirectiveFields, array &$variables): ?array
     {
         $directiveName = $this->fieldQueryInterpreter->getFieldDirectiveName($fieldDirective);

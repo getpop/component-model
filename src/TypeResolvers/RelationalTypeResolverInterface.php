@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace PoP\ComponentModel\TypeResolvers;
 
-use PoP\ComponentModel\DirectivePipeline\DirectivePipelineDecorator;
 use PoP\ComponentModel\DirectiveResolvers\DirectiveResolverInterface;
 use PoP\ComponentModel\FieldInterfaceResolvers\FieldInterfaceResolverInterface;
 
@@ -93,5 +92,8 @@ interface RelationalTypeResolverInterface extends TypeResolverInterface
         array &$schemaNotices,
         array &$schemaTraces
     ): array;
+    /**
+     * @return array<string,DirectiveResolverInterface>|null
+     */
     public function getDirectiveResolverInstancesForDirective(string $fieldDirective, array $fieldDirectiveFields, array &$variables): ?array;
 }
