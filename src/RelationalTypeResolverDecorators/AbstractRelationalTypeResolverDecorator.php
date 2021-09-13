@@ -2,20 +2,17 @@
 
 declare(strict_types=1);
 
-namespace PoP\ComponentModel\TypeResolverDecorators;
+namespace PoP\ComponentModel\RelationalTypeResolverDecorators;
 
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionTrait;
 use PoP\ComponentModel\Instances\InstanceManagerInterface;
 use PoP\ComponentModel\Schema\FieldQueryInterpreterInterface;
-use PoP\ComponentModel\TypeResolverDecorators\TypeResolverDecoratorInterface;
+use PoP\ComponentModel\RelationalTypeResolverDecorators\RelationalTypeResolverDecoratorInterface;
 use PoP\ComponentModel\TypeResolvers\ObjectType\ObjectTypeResolverInterface;
 use PoP\ComponentModel\TypeResolvers\RelationalTypeResolverInterface;
 
-abstract class AbstractTypeResolverDecorator implements TypeResolverDecoratorInterface
+abstract class AbstractRelationalTypeResolverDecorator implements RelationalTypeResolverDecoratorInterface
 {
-    /**
-     * This class is attached to a TypeResolver
-     */
     use AttachableExtensionTrait;
 
     public function __construct(

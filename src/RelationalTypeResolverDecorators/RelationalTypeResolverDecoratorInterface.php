@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace PoP\ComponentModel\TypeResolverDecorators;
+namespace PoP\ComponentModel\RelationalTypeResolverDecorators;
 
 use PoP\ComponentModel\AttachableExtensions\AttachableExtensionInterface;
 use PoP\ComponentModel\TypeResolvers\ObjectType\ObjectTypeResolverInterface;
 use PoP\ComponentModel\TypeResolvers\RelationalTypeResolverInterface;
 
-interface TypeResolverDecoratorInterface extends AttachableExtensionInterface
+interface RelationalTypeResolverDecoratorInterface extends AttachableExtensionInterface
 {
     /**
-     * The classes of the RelationalTypeResolvers this TypeResolverDecorator decorates.
+     * The classes of the RelationalTypeResolvers this RelationalTypeResolverDecorator decorates.
      *
      * It is RelationalType and not ObjectType because directives can be applied on
-     * the UnionTypeResolver too, and the TypeResolverDecorator will deal with
+     * the UnionTypeResolver too, and the RelationalTypeResolverDecorator will deal with
      * the IFTTT rules for those directives.
      *
      * The list can contain both concrete and abstract classes (in which case all classes
