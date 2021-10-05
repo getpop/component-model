@@ -186,16 +186,16 @@ trait FieldOrDirectiveResolverTrait
             // Check if it's an array or not from the schema definition
             $enumTypeFieldOrDirectiveArgSchemaDefinition = $enumTypeFieldOrDirectiveArgsSchemaDefinition[$fieldOrDirectiveArgumentName];
             $enumTypeFieldOrDirectiveArgIsArrayOfArrays = $enumTypeFieldOrDirectiveArgSchemaDefinition[SchemaDefinition::ARGNAME_IS_ARRAY_OF_ARRAYS] ?? false;
-            $enumTypeFieldOrDirectiveArgIsArray = ($enumTypeFieldOrDirectiveArgSchemaDefinition[SchemaDefinition::ARGNAME_IS_ARRAY] ?? false)
-                || $enumTypeFieldOrDirectiveArgIsArrayOfArrays;
-            // Each fieldArgumentEnumValue is an array with item "name" for sure, and maybe also "description", "deprecated" and "deprecationDescription"
+            $enumTypeFieldOrDirectiveArgIsArray = $enumTypeFieldOrDirectiveArgSchemaDefinition[SchemaDefinition::ARGNAME_IS_ARRAY] ?? false;
             $schemaFieldOrDirectiveArgumentEnumValues = $schemaFieldArgumentEnumValueDefinitions[$fieldOrDirectiveArgumentName] ?? [];
 
-            // Pass all the enum values to be validated, as a list.
-            // Possibilities:
-            //   1. Single item => [item]
-            //   2. Array => Array
-            //   3. Array of arrays => flatten into array
+            /**
+             * Pass all the enum values to be validated, as a list.
+             * Possibilities:
+             *   1. Single item => [item]
+             *   2. Array => Array
+             *   3. Array of arrays => flatten into array
+             */
             if ($enumTypeFieldOrDirectiveArgIsArrayOfArrays) {
                 $fieldOrDirectiveArgumentValueEnums = array_unique(GeneralUtils::arrayFlatten($fieldOrDirectiveArgumentValue));
             } elseif ($enumTypeFieldOrDirectiveArgIsArray) {
