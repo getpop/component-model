@@ -43,11 +43,10 @@ abstract class AbstractObjectTypeFieldResolver extends AbstractFieldResolver imp
     use AttachableExtensionTrait;
     use WithVersionConstraintFieldOrDirectiveResolverTrait;
     use FieldOrDirectiveResolverTrait, FieldOrDirectiveSchemaDefinitionResolverTrait {
-        FieldOrDirectiveSchemaDefinitionResolverTrait::getFieldSchemaDefinition as upstreamGetFieldSchemaDefinition;
         // Avoid trait collisions for PHP 7.1
-        FieldOrDirectiveSchemaDefinitionResolverTrait::getFieldOrDirectiveArgSchemaDefinition insteadof FieldOrDirectiveResolverTrait;
-        FieldOrDirectiveSchemaDefinitionResolverTrait::getSchemaDefinition insteadof FieldOrDirectiveResolverTrait;
-        FieldOrDirectiveSchemaDefinitionResolverTrait::processSchemaDefinitionModifiers insteadof FieldOrDirectiveResolverTrait;
+        FieldOrDirectiveSchemaDefinitionResolverTrait::getFieldOrDirectiveArgTypeSchemaDefinition insteadof FieldOrDirectiveResolverTrait;
+        FieldOrDirectiveSchemaDefinitionResolverTrait::getTypeSchemaDefinition insteadof FieldOrDirectiveResolverTrait;
+        FieldOrDirectiveSchemaDefinitionResolverTrait::processSchemaDefinitionTypeModifiers insteadof FieldOrDirectiveResolverTrait;
     }
 
     /**
@@ -435,7 +434,7 @@ abstract class AbstractObjectTypeFieldResolver extends AbstractFieldResolver imp
                 continue;
             }
 
-            $schemaFieldArgs[$fieldArgName] = $this->getFieldOrDirectiveArgSchemaDefinition(
+            $schemaFieldArgs[$fieldArgName] = $this->getFieldOrDirectiveArgTypeSchemaDefinition(
                 $fieldArgName,
                 $fieldArgInputTypeResolver,
                 $this->getConsolidatedFieldArgDescription($objectTypeResolver, $fieldName, $fieldArgName),
@@ -754,7 +753,7 @@ abstract class AbstractObjectTypeFieldResolver extends AbstractFieldResolver imp
      */
     final protected function doGetFieldSchemaDefinition(ObjectTypeResolverInterface $objectTypeResolver, string $fieldName, array $fieldArgs = []): array
     {
-        $schemaDefinition = $this->upstreamGetFieldSchemaDefinition(
+        $schemaDefinition = $this->getFieldTypeSchemaDefinition(
             $fieldName,
             $this->getFieldTypeResolver($objectTypeResolver, $fieldName),
             $this->getFieldDescription($objectTypeResolver, $fieldName),

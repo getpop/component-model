@@ -24,7 +24,7 @@ trait FieldOrDirectiveSchemaDefinitionResolverTrait
         $this->dangerouslyDynamicScalarTypeResolver = $dangerouslyDynamicScalarTypeResolver;
     }
 
-    final public function getFieldOrDirectiveArgSchemaDefinition(
+    final public function getFieldOrDirectiveArgTypeSchemaDefinition(
         string $argName,
         InputTypeResolverInterface $argInputTypeResolver,
         ?string $argDescription,
@@ -32,7 +32,7 @@ trait FieldOrDirectiveSchemaDefinitionResolverTrait
         int $argTypeModifiers,
         ?string $argDeprecationMessage,
     ): array {
-        return $this->getSchemaDefinition(
+        return $this->getTypeSchemaDefinition(
             $argName,
             $argInputTypeResolver,
             $argDescription,
@@ -42,14 +42,14 @@ trait FieldOrDirectiveSchemaDefinitionResolverTrait
         );
     }
 
-    final public function getFieldSchemaDefinition(
+    final public function getFieldTypeSchemaDefinition(
         string $fieldName,
         ConcreteTypeResolverInterface $fieldTypeResolver,
         ?string $fieldDescription,
         int $fieldTypeModifiers,
         ?string $fieldDeprecationMessage,
     ): array {
-        return $this->getSchemaDefinition(
+        return $this->getTypeSchemaDefinition(
             $fieldName,
             $fieldTypeResolver,
             $fieldDescription,
@@ -59,7 +59,7 @@ trait FieldOrDirectiveSchemaDefinitionResolverTrait
         );
     }
 
-    final public function getSchemaDefinition(
+    final public function getTypeSchemaDefinition(
         string $name,
         TypeResolverInterface $typeResolver,
         ?string $description,
@@ -81,7 +81,7 @@ trait FieldOrDirectiveSchemaDefinitionResolverTrait
             $schemaDefinition[SchemaDefinition::DEPRECATED] = true;
             $schemaDefinition[SchemaDefinition::DEPRECATION_MESSAGE] = $deprecationMessage;
         }
-        $this->processSchemaDefinitionModifiers(
+        $this->processSchemaDefinitionTypeModifiers(
             $schemaDefinition,
             $typeModifiers
         );
@@ -93,7 +93,7 @@ trait FieldOrDirectiveSchemaDefinitionResolverTrait
      *
      * @see https://www.php.net/manual/en/language.operators.bitwise.php#91291
      */
-    private function processSchemaDefinitionModifiers(
+    private function processSchemaDefinitionTypeModifiers(
         array &$schemaDefinition,
         int $typeModifiers,
     ): void {
