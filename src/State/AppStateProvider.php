@@ -6,6 +6,7 @@ namespace PoP\ComponentModel\State;
 
 use PoP\ComponentModel\Component;
 use PoP\ComponentModel\ComponentConfiguration;
+use PoP\ComponentModel\Configuration\EngineRequest;
 use PoP\ComponentModel\Configuration\Request;
 use PoP\ComponentModel\Facades\ModuleFiltering\ModuleFilterManagerFacade;
 use PoP\ComponentModel\Facades\Schema\FieldQueryInterpreterFacade;
@@ -26,30 +27,29 @@ class AppStateProvider extends AbstractAppStateProvider
 
         $state['nature'] = $routingManager->getCurrentNature();
         $state['route'] = $routingManager->getCurrentRoute();
-        $state['output'] = Request::getOutput();
         $state['modulefilter'] = $modulefilter_manager->getSelectedModuleFilterName();
-        $state['actionpath'] = Request::getActionPath();
-        $state['dataoutputitems'] = Request::getDataOutputItems();
-        $state['datasources'] = Request::getDataSourceSelector();
-        $state['datastructure'] = Request::getDataStructure();
-        $state['dataoutputmode'] = Request::getDataOutputMode();
-        $state['dboutputmode'] = Request::getDBOutputMode();
-        $state['mangled'] = Request::getMangledValue();
-        $state['actions'] = Request::getActions();
-        $state['scheme'] = Request::getScheme();
-
-        // By default, get the variables from the request
         $state['variables'] = $fieldQueryInterpreter->getVariablesFromRequest();
-        $state['only-fieldname-as-outputkey'] = false;
         $state['namespace-types-and-interfaces'] = $componentConfiguration->mustNamespaceTypes();
+        $state['only-fieldname-as-outputkey'] = false;
+        $state['are-mutations-enabled'] = true;
+
+        $state['mangled'] = Request::getMangledValue();
+        $state['actionpath'] = Request::getActionPath();
+        $state['actions'] = Request::getActions();
         $state['version-constraint'] = Request::getVersionConstraint();
         $state['field-version-constraints'] = Request::getVersionConstraintsForFields();
         $state['directive-version-constraints'] = Request::getVersionConstraintsForDirectives();
 
-        // By default, mutations are always enabled. Can be changed for the API
-        $state['are-mutations-enabled'] = true;
+        $enableModifyingEngineBehaviorViaRequestParams = $componentConfiguration->enableModifyingEngineBehaviorViaRequestParams();
+        $state['output'] = EngineRequest::getOutput($enableModifyingEngineBehaviorViaRequestParams);
+        $state['dataoutputitems'] = EngineRequest::getDataOutputItems($enableModifyingEngineBehaviorViaRequestParams);
+        $state['datasources'] = EngineRequest::getDataSourceSelector($enableModifyingEngineBehaviorViaRequestParams);
+        $state['datastructure'] = EngineRequest::getDataStructure($enableModifyingEngineBehaviorViaRequestParams);
+        $state['dataoutputmode'] = EngineRequest::getDataOutputMode($enableModifyingEngineBehaviorViaRequestParams);
+        $state['dboutputmode'] = EngineRequest::getDBOutputMode($enableModifyingEngineBehaviorViaRequestParams);
+        $state['scheme'] = EngineRequest::getScheme($enableModifyingEngineBehaviorViaRequestParams);
 
-        // Set the routing state (eg: PoP Queried Object can add its information)
+        // Set the routing state under a unified entry
         $state['routing'] = [];
     }
 
