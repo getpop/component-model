@@ -18,7 +18,7 @@ use PoP\ComponentModel\ModulePath\ModulePathHelpersInterface;
 use PoP\ComponentModel\Modules\ModuleUtils;
 use PoP\ComponentModel\MutationResolverBridges\ComponentMutationResolverBridgeInterface;
 use PoP\ComponentModel\Schema\FieldQueryInterpreterInterface;
-use PoP\BasicService\BasicServiceTrait;
+use PoP\Root\Services\BasicServiceTrait;
 use PoP\ComponentModel\TypeResolvers\RelationalTypeResolverInterface;
 use PoP\Definitions\Constants\Params as DefinitionsParams;
 use PoP\LooseContracts\NameResolverInterface;
@@ -271,7 +271,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         /**
          * Allow to add more stuff
          */
-        $this->getHooksAPI()->doAction(
+        App::doAction(
             self::HOOK_INIT_MODEL_PROPS,
             array(&$props),
             $module,
@@ -299,7 +299,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         /**
          * Allow to add more stuff
          */
-        $this->getHooksAPI()->doAction(
+        App::doAction(
             self::HOOK_INIT_REQUEST_PROPS,
             array(&$props),
             $module,
@@ -861,7 +861,7 @@ abstract class AbstractModuleProcessor implements ModuleProcessorInterface
         /**
          * Allow to add more stuff
          */
-        $this->getHooksAPI()->doAction(
+        App::doAction(
             self::HOOK_ADD_HEADDATASETMODULE_DATAPROPERTIES,
             array(&$ret),
             $module,

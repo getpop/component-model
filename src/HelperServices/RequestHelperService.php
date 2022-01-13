@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace PoP\ComponentModel\HelperServices;
 
+use PoP\Root\App;
 use PoP\ComponentModel\Constants\Params;
 use PoP\ComponentModel\Misc\GeneralUtils;
 use PoP\ComponentModel\ModuleFiltering\ModuleFilterManager;
 use PoP\ComponentModel\ModuleFilters\ModulePaths;
-use PoP\BasicService\BasicServiceTrait;
+use PoP\Root\Services\BasicServiceTrait;
 use PoP\Definitions\Constants\Params as DefinitionsParams;
 
 class RequestHelperService implements RequestHelperServiceInterface
@@ -18,7 +19,7 @@ class RequestHelperService implements RequestHelperServiceInterface
     public function getCurrentURL(): string
     {
         // Strip the Target and Output off it, users don't need to see those
-        $remove_params = (array) $this->getHooksAPI()->applyFilters(
+        $remove_params = (array) App::applyFilters(
             'RequestUtils:current_url:remove_params',
             [
                 Params::VERSION,
@@ -42,7 +43,7 @@ class RequestHelperService implements RequestHelperServiceInterface
         );
 
         // Allow plug-ins to do their own logic to the URL
-        $url = $this->getHooksAPI()->applyFilters(
+        $url = App::applyFilters(
             'RequestUtils:getCurrentURL',
             $url
         );
