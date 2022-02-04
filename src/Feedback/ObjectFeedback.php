@@ -7,26 +7,28 @@ namespace PoP\ComponentModel\Feedback;
 use PoP\ComponentModel\TypeResolvers\RelationalTypeResolverInterface;
 use PoP\GraphQLParser\Spec\Parser\Location;
 
-class AbstractSchemaFeedback extends AbstractQueryFeedback implements SchemaFeedbackInterface
+class ObjectFeedback extends AbstractQueryFeedback implements ObjectFeedbackInterface
 {
     public function __construct(
         string $message,
-        string $code,
+        ?string $code,
         Location $location,
         protected RelationalTypeResolverInterface $relationalTypeResolver,
         /** @var string[] */
         protected array $fields,
-        /** @var array<string, mixed> */
-        array $data = [],
+        /** @var array<string|int> */
+        protected array $objectIDs,
         /** @var array<string, mixed> */
         array $extensions = [],
+        /** @var array<string, mixed> */
+        array $data = [],
     ) {
         parent::__construct(
             $message,
             $code,
             $location,
-            $data,
             $extensions,
+            $data,
         );
     }
 
@@ -41,5 +43,13 @@ class AbstractSchemaFeedback extends AbstractQueryFeedback implements SchemaFeed
     public function getFields(): array
     {
         return $this->fields;
+    }
+
+    /**
+     * @return array<string|int>
+     */
+    public function getObjectIDs(): array
+    {
+        return $this->objectIDs;
     }
 }
