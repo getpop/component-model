@@ -252,4 +252,46 @@ class ComponentConfiguration extends AbstractComponentConfiguration
             $callback,
         );
     }
+
+    /**
+     * @return string[]
+     */
+    public function getEnabledFeedbackCategoryExtensions(): array
+    {
+        $envVariable = Environment::ENABLE_FEEDBACK_CATEGORY_EXTENSIONS;
+        $defaultValue = [];
+        $callback = [EnvironmentValueHelpers::class, 'commaSeparatedStringToArray'];
+
+        return $this->retrieveConfigurationValueOrUseDefault(
+            $envVariable,
+            $defaultValue,
+            $callback,
+        );
+    }
+
+    public function sendExceptionErrorMessages(): bool
+    {
+        $envVariable = Environment::SEND_EXCEPTION_ERROR_MESSAGES;
+        $defaultValue = RootEnvironment::isApplicationEnvironmentDev();
+        $callback = [EnvironmentValueHelpers::class, 'toBool'];
+
+        return $this->retrieveConfigurationValueOrUseDefault(
+            $envVariable,
+            $defaultValue,
+            $callback,
+        );
+    }
+
+    public function logExceptionErrorMessages(): bool
+    {
+        $envVariable = Environment::LOG_EXCEPTION_ERROR_MESSAGES;
+        $defaultValue = false;
+        $callback = [EnvironmentValueHelpers::class, 'toBool'];
+
+        return $this->retrieveConfigurationValueOrUseDefault(
+            $envVariable,
+            $defaultValue,
+            $callback,
+        );
+    }
 }
