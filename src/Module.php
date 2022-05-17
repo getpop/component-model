@@ -5,38 +5,33 @@ declare(strict_types=1);
 namespace PoP\ComponentModel;
 
 use PoP\ComponentModel\Facades\AttachableExtensions\AttachExtensionServiceFacade;
-use PoP\Root\Component\AbstractComponent;
-use PoP\Root\Component\ApplicationEvents;
+use PoP\Root\Module\AbstractModule;
+use PoP\Root\Module\ApplicationEvents;
 
-/**
- * Initialize component
- */
-class Component extends AbstractComponent
+class Module extends AbstractModule
 {
     /**
-     * Classes from PoP components that must be initialized before this component
-     *
      * @return string[]
      */
-    public function getDependedComponentClasses(): array
+    public function getDependedModuleClasses(): array
     {
         return [
-            \PoP\Definitions\Component::class,
-            \PoP\FieldQuery\Component::class,
-            \PoP\GraphQLParser\Component::class,
-            \PoP\LooseContracts\Component::class,
-            \PoP\ModuleRouting\Component::class,
+            \PoP\Definitions\Module::class,
+            \PoP\FieldQuery\Module::class,
+            \PoP\GraphQLParser\Module::class,
+            \PoP\LooseContracts\Module::class,
+            \PoP\ModuleRouting\Module::class,
         ];
     }
 
     /**
      * Initialize services
      *
-     * @param string[] $skipSchemaComponentClasses
+     * @param string[] $skipSchemaModuleClasses
      */
     protected function initializeContainerServices(
         bool $skipSchema,
-        array $skipSchemaComponentClasses,
+        array $skipSchemaModuleClasses,
     ): void {
         $this->initServices(dirname(__DIR__));
         $this->initServices(dirname(__DIR__), '/Overrides');
@@ -51,12 +46,12 @@ class Component extends AbstractComponent
         $this->initSystemServices(dirname(__DIR__));
     }
 
-    public function componentLoaded(): void
+    public function moduleLoaded(): void
     {
-        parent::componentLoaded();
+        parent::moduleLoaded();
 
         $attachExtensionService = AttachExtensionServiceFacade::getInstance();
-        $attachExtensionService->attachExtensions(ApplicationEvents::COMPONENT_LOADED);
+        $attachExtensionService->attachExtensions(ApplicationEvents::MODULE_LOADED);
     }
 
     public function boot(): void

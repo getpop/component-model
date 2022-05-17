@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace PoP\ComponentModel;
 
 use PoP\Root\App;
-use PoP\Root\Component\AbstractComponentConfiguration;
-use PoP\Root\Component\EnvironmentValueHelpers;
+use PoP\Root\Module\AbstractModuleConfiguration;
+use PoP\Root\Module\EnvironmentValueHelpers;
 use PoP\Root\Environment as RootEnvironment;
-use PoP\Root\Component as RootComponent;
-use PoP\Root\ComponentConfiguration as RootComponentConfiguration;
+use PoP\Root\Module as RootModule;
+use PoP\Root\ModuleConfiguration as RootModuleConfiguration;
 
-class ComponentConfiguration extends AbstractComponentConfiguration
+class ModuleConfiguration extends AbstractModuleConfiguration
 {
     /**
      * Access layer to the environment variable, enabling to override its value
@@ -249,9 +249,9 @@ class ComponentConfiguration extends AbstractComponentConfiguration
      */
     public function enableModifyingEngineBehaviorViaRequest(): bool
     {
-        /** @var RootComponentConfiguration */
-        $rootComponentConfiguration = App::getComponent(RootComponent::class)->getConfiguration();
-        if (!$rootComponentConfiguration->enablePassingStateViaRequest()) {
+        /** @var RootModuleConfiguration */
+        $rootModuleConfiguration = App::getModule(RootModule::class)->getConfiguration();
+        if (!$rootModuleConfiguration->enablePassingStateViaRequest()) {
             return false;
         }
 
