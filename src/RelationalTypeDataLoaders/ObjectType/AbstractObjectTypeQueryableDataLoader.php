@@ -29,26 +29,41 @@ abstract class AbstractObjectTypeQueryableDataLoader extends AbstractObjectTypeD
      */
     abstract public function executeQuery($query, array $options = []): array;
 
-    public function executeQueryIDs($query): array
+    /**
+     * @param array<string,mixed> $query
+     * @return array<string|int>
+     */
+    public function executeQueryIDs(array $query): array
     {
         return $this->executeQuery($query);
     }
 
-    protected function getPagenumberParam($query_args)
+    /**
+     * @param array<string,mixed> $query_args
+     */
+    protected function getPagenumberParam(array $query_args): int
     {
         return App::applyFilters(
             'GD_Dataloader_List:query:pagenumber',
-            $query_args[PaginationParams::PAGE_NUMBER]
+            (int)$query_args[PaginationParams::PAGE_NUMBER]
         );
     }
-    protected function getLimitParam($query_args)
+    
+    /**
+     * @param array<string,mixed> $query_args
+     */
+    protected function getLimitParam(array $query_args): int
     {
         return App::applyFilters(
             'GD_Dataloader_List:query:limit',
-            $query_args[PaginationParams::LIMIT]
+            (int)$query_args[PaginationParams::LIMIT]
         );
     }
 
+    /**
+     * @param array<string,mixed> $data_properties
+     * @return array<string|int>
+     */
     public function findIDs(array $data_properties): array
     {
         $query_args = $data_properties[DataloadingConstants::QUERYARGS];
@@ -81,35 +96,44 @@ abstract class AbstractObjectTypeQueryableDataLoader extends AbstractObjectTypeD
     }
 
     /**
-     * Function to override
+     * @param array<string|int> $ids
+     * @return array<string,mixed>
      */
     public function getQueryToRetrieveObjectsForIDs(array $ids): array
     {
         return array();
     }
 
+    /**
+     * @param array<string|int> $ids
+     * @return array<object|null>
+     */
     public function getObjects(array $ids): array
     {
         $query = $this->getQueryToRetrieveObjectsForIDs($ids);
         return $this->executeQuery($query);
     }
 
-    protected function getOrderbyDefault()
+    protected function getOrderbyDefault(): string
     {
         return '';
     }
 
-    protected function getOrderDefault()
+    protected function getOrderDefault(): string
     {
         return '';
     }
 
-    protected function getQueryHookName()
+    protected function getQueryHookName(): string
     {
         return 'Dataloader_ListTrait:query';
     }
 
-    public function getQuery($query_args): array
+    /**
+     * @param array<string,mixed> $query_args
+     * @return array<string,mixed>
+     */
+    public function getQuery(array $query_args): array
     {
         // Use all the query params already provided in the query args
         $query = $query_args;
