@@ -1780,8 +1780,6 @@ class Engine implements EngineInterface
                      * Populate the $previouslyResolvedIDFieldValues, pointing to the newly
                      * fetched resolvedIDFieldValues (but without the dbName!)
                      *
-                     * Save the reference to the values, instead of the values, to save memory
-                     *
                      * Passing $previouslyResolvedIDFieldValues instead of $databases
                      * makes it read-only: Directives can only read the values...
                      * if they want to modify them, the modification is done on
@@ -1789,13 +1787,7 @@ class Engine implements EngineInterface
                      */
                     foreach ($entries as $id => $fieldValues) {
                         $previouslyResolvedIDFieldValues[$typeOutputKey][$id] ??= new SplObjectStorage();
-                        foreach ($fieldValues as $field) {
-                            /** @var FieldInterface $field */
-                            $value = $fieldValues[$field];
-                            // @todo Check why by reference doesn't work
-                            // $previouslyResolvedIDFieldValues[$typeOutputKey][$id][$field] = &$value;
-                            $previouslyResolvedIDFieldValues[$typeOutputKey][$id][$field] = $value;
-                        }
+                        $previouslyResolvedIDFieldValues[$typeOutputKey][$id]->addAll($fieldValues);
                     }
                 }
             }
