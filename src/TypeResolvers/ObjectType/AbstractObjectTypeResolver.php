@@ -1445,35 +1445,25 @@ abstract class AbstractObjectTypeResolver extends AbstractRelationalTypeResolver
          * - no mandatory arg is missing
          * - no non-existing arg has been provided
          */
-        $errorFeedbackItemResolutions = [];
-        $maybeErrorFeedbackItemResolution = $this->validateNonMissingMandatoryFieldArguments(
+        $separateObjectTypeFieldResolutionFeedbackStore = new ObjectTypeFieldResolutionFeedbackStore();
+        $this->validateNonMissingMandatoryFieldArguments(
             $fieldData,
             $fieldArgsSchemaDefinition,
-            $field
+            $field,
+            $separateObjectTypeFieldResolutionFeedbackStore
         );
-        if ($maybeErrorFeedbackItemResolution !== null) {
-            $errorFeedbackItemResolutions[] = $maybeErrorFeedbackItemResolution;
-        }
-        $maybeErrorFeedbackItemResolution = $this->validateOnlyExistingFieldArguments(
+        $this->validateOnlyExistingFieldArguments(
             $fieldData,
             $fieldArgsSchemaDefinition,
-            $field
+            $field,
+            $separateObjectTypeFieldResolutionFeedbackStore
         );
-        if ($maybeErrorFeedbackItemResolution !== null) {
-            $errorFeedbackItemResolutions[] = $maybeErrorFeedbackItemResolution;
-        }
-
-        if ($errorFeedbackItemResolutions !== []) {
-            foreach ($errorFeedbackItemResolutions as $errorFeedbackItemResolution) {
-                $objectTypeFieldResolutionFeedbackStore->addError(
-                    new ObjectTypeFieldResolutionFeedback(
-                        $errorFeedbackItemResolution,
-                        $field,
-                    )
-                );
-            }
+        $objectTypeFieldResolutionFeedbackStore->incorporate($separateObjectTypeFieldResolutionFeedbackStore);
+        if ($separateObjectTypeFieldResolutionFeedbackStore->getErrors() !== []) {
             return;
         }
+
+        $errorFeedbackItemResolutions = [];
 
         /**
          * Validations:
@@ -1486,14 +1476,16 @@ abstract class AbstractObjectTypeResolver extends AbstractRelationalTypeResolver
             $field,
             $fieldData,
         );
-        $errorFeedbackItemResolutions = array_merge(
-            $errorFeedbackItemResolutions,
-            $this->validateFieldArgumentConstraints(
-                $fieldData,
-                $objectTypeFieldResolver,
-                $field,
-            ),
-            $objectTypeFieldResolver->validateFieldKeyValues($this, $fieldDataAccessor)
+        $this->validateFieldArgumentConstraints(
+            $fieldData,
+            $objectTypeFieldResolver,
+            $field,
+            $objectTypeFieldResolutionFeedbackStore,
+        );
+        $objectTypeFieldResolver->validateFieldKeyValues(
+            $this,
+            $fieldDataAccessor,
+            $objectTypeFieldResolutionFeedbackStore,
         );
 
         /**
@@ -1567,26 +1559,31 @@ abstract class AbstractObjectTypeResolver extends AbstractRelationalTypeResolver
         array $fieldData,
         array $fieldArgsSchemaDefinition,
         FieldInterface $field,
-    ): ?FeedbackItemResolution {
+        ObjectTypeFieldResolutionFeedbackStore $objectTypeFieldResolutionFeedbackStore,
+    ): void {
         $mandatoryFieldArgNames = $this->getFieldOrDirectiveMandatoryArgumentNames($fieldArgsSchemaDefinition);
         $missingMandatoryFieldArgNames = array_values(array_filter(
             $mandatoryFieldArgNames,
             fn (string $fieldArgName) => ($fieldData[$fieldArgName] ?? null) === null
         ));
-        if ($missingMandatoryFieldArgNames === []) {
-            return null;
+        if ($missingMandatoryFieldArgNames !== []) {
+            $objectTypeFieldResolutionFeedbackStore->addError(
+                new ObjectTypeFieldResolutionFeedback(
+                    new FeedbackItemResolution(
+                        ErrorFeedbackItemProvider::class,
+                        ErrorFeedbackItemProvider::E29,
+                        [
+                            count($missingMandatoryFieldArgNames) === 1
+                                ? $missingMandatoryFieldArgNames[0]
+                                : implode($this->getTranslationAPI()->__('\', \''), $missingMandatoryFieldArgNames),
+                            $field->getName(),
+                            $this->getMaybeNamespacedTypeName(),
+                        ]
+                    ),
+                    $field,
+                )
+            );
         }
-        return new FeedbackItemResolution(
-            ErrorFeedbackItemProvider::class,
-            ErrorFeedbackItemProvider::E29,
-            [
-                count($missingMandatoryFieldArgNames) === 1
-                    ? $missingMandatoryFieldArgNames[0]
-                    : implode($this->getTranslationAPI()->__('\', \''), $missingMandatoryFieldArgNames),
-                $field->getName(),
-                $this->getMaybeNamespacedTypeName(),
-            ]
-        );
     }
 
     /**
@@ -1599,25 +1596,28 @@ abstract class AbstractObjectTypeResolver extends AbstractRelationalTypeResolver
         array $fieldData,
         array $fieldArgsSchemaDefinition,
         FieldInterface $field,
-    ): ?FeedbackItemResolution {
+        ObjectTypeFieldResolutionFeedbackStore $objectTypeFieldResolutionFeedbackStore,
+    ): void {
         $nonExistingArgNames = array_values(array_diff(
             array_keys($fieldData),
             array_keys($fieldArgsSchemaDefinition)
         ));
-        if ($nonExistingArgNames !== []) {
-            return new FeedbackItemResolution(
-                ErrorFeedbackItemProvider::class,
-                ErrorFeedbackItemProvider::E27,
-                [
-                    $field->getName(),
-                    $this->getMaybeNamespacedTypeName(),
-                    count($nonExistingArgNames) === 1
-                        ? $nonExistingArgNames[0]
-                        : implode($this->getTranslationAPI()->__('\', \''), $nonExistingArgNames),
-                ]
+        foreach ($nonExistingArgNames as $nonExistingArgName) {
+            $objectTypeFieldResolutionFeedbackStore->addError(
+                new ObjectTypeFieldResolutionFeedback(
+                    new FeedbackItemResolution(
+                        ErrorFeedbackItemProvider::class,
+                        ErrorFeedbackItemProvider::E27,
+                        [
+                            $field->getName(),
+                            $this->getMaybeNamespacedTypeName(),
+                            $nonExistingArgName,
+                        ]
+                    ),
+                    $field->getArgument($nonExistingArgName) ?? $field,
+                )
             );
         }
-        return null;
     }
 
     /**
@@ -1629,31 +1629,31 @@ abstract class AbstractObjectTypeResolver extends AbstractRelationalTypeResolver
         array $fieldData,
         ObjectTypeFieldResolverInterface $objectTypeFieldResolver,
         FieldInterface $field,
-    ): array {
-        $errorFeedbackItemResolutions = [];
+        ObjectTypeFieldResolutionFeedbackStore $objectTypeFieldResolutionFeedbackStore,
+    ): void {
         $fieldArgNameTypeResolvers = $objectTypeFieldResolver->getConsolidatedFieldArgNameTypeResolvers($this, $field->getName());
         foreach ($fieldData as $argName => $argValue) {
             $fieldArgTypeResolver = $fieldArgNameTypeResolvers[$argName];
+            $astNode = $field->getArgument($argName) ?? $field;
             /**
              * If the field is an InputObject, let it perform validations on its input fields.
              */
             if ($fieldArgTypeResolver instanceof InputObjectTypeResolverInterface) {
-                $errorFeedbackItemResolutions = array_merge(
-                    $errorFeedbackItemResolutions,
-                    $fieldArgTypeResolver->validateInputValue($argValue)
+                $fieldArgTypeResolver->validateInputValue(
+                    $argValue,
+                    $astNode,
+                    $objectTypeFieldResolutionFeedbackStore,
                 );
             }
-            $errorFeedbackItemResolutions = array_merge(
-                $errorFeedbackItemResolutions,
-                $objectTypeFieldResolver->validateFieldArgValue(
-                    $this,
-                    $field->getName(),
-                    $argName,
-                    $argValue
-                )
+            $objectTypeFieldResolver->validateFieldArgValue(
+                $this,
+                $field->getName(),
+                $argName,
+                $argValue,
+                $astNode,
+                $objectTypeFieldResolutionFeedbackStore,
             );
         }
-        return $errorFeedbackItemResolutions;
     }
 
     /**
