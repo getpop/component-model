@@ -77,7 +77,7 @@ class GeneralUtils
     }
 
     /**
-     * Add paramters "key" => "value" to the URL
+     * Remove parameters from the URL
      *
      * @param string[] $keys
      * @see https://stackoverflow.com/a/5809881
@@ -99,10 +99,10 @@ class GeneralUtils
             parse_str($url_parts['query'], $params);
         }
 
-        // Remove the indicated keys
+        // Only keep the keys which must not be removed
         $params = array_filter(
             $params,
-            fn (string $param): bool => in_array($param, $keys),
+            fn (string $param): bool => !in_array($param, $keys),
             ARRAY_FILTER_USE_KEY
         );
 
