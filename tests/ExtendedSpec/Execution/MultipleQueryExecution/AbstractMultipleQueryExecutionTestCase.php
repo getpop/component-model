@@ -22,7 +22,7 @@ use PoP\ComponentModel\AbstractTestCase;
 use PoP\Root\Feedback\FeedbackItemResolution;
 use PoP\Root\Module\ModuleInterface;
 
-abstract class AbstractMultipleQueryExecutionTest extends AbstractTestCase
+abstract class AbstractMultipleQueryExecutionTestCase extends AbstractTestCase
 {
     private ?ParserInterface $parser = null;
 

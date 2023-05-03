@@ -39,7 +39,7 @@ use PoP\Root\Module\ModuleInterface;
  *
  *   AST entity `DocumentDynamicVariableReference` remains as is
  */
-abstract class AbstractObjectResolvedFieldValueReferencesTest extends AbstractTestCase
+abstract class AbstractObjectResolvedFieldValueReferencesTestCase extends AbstractTestCase
 {
     private ?ParserInterface $parser = null;
 
