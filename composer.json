@@ -22,7 +22,6 @@
         "pop-cms-schema/tags-wp": "<4.1.1",
         "pop-cms-schema/posts": "<4.1.1",
         "pop-cms-schema/custompost-tags-wp": "<4.1.1",
-        "pop-cms-schema/taxonomymeta-wp": "<4.1.1",
         "pop-cms-schema/custompost-category-mutations": "<4.1.1",
         "pop-cms-schema/taxonomymeta": "<4.1.1",
         "pop-cms-schema/media-wp": "<4.1.1",
@@ -126,9 +125,7 @@
         "pop-wp-schema/custompostmeta": "<4.1.1",
         "pop-wp-schema/media": "<4.1.1",
         "pop-cms-schema/media-mutations-wp": "<4.1.1",
-        "pop-cms-schema/comment-mutations": "<4.1.1",
         "pop-cms-schema/media-mutations": "<4.1.1",
-        "pop-cms-schema/comment-mutations-wp": "<4.1.1",
         "pop-cms-schema/page-mutations": "<4.1.1",
         "pop-cms-schema/page-mutations-wp": "<4.1.1",
         "pop-wp-schema/pages": "<4.1.1",
@@ -150,10 +147,10 @@
     "require": {
         "php": "^8.1",
         "composer/semver": "^3.2",
-        "getpop/componentrouting": "^4.1.1",
-        "getpop/definitions": "^4.1.1",
-        "getpop/graphql-parser": "^4.1.1",
-        "getpop/loosecontracts": "^4.1.1",
+        "getpop/componentrouting": "^4.2",
+        "getpop/definitions": "^4.2",
+        "getpop/graphql-parser": "^4.2",
+        "getpop/loosecontracts": "^4.2",
         "jrfnl/php-cast-to-type": "^2.0",
         "league/pipeline": "^1.0",
         "psr/simple-cache": "^3.0",
@@ -184,7 +181,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "4.1-dev"
+            "dev-master": "4.2-dev"
         }
     },
     "config": {
