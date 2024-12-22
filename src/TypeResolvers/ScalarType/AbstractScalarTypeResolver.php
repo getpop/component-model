@@ -18,7 +18,7 @@ abstract class AbstractScalarTypeResolver extends AbstractTypeResolver implement
 {
     private ?ObjectSerializationManagerInterface $objectSerializationManager = null;
     private ?OutputServiceInterface $outputService = null;
-    
+
     final protected function getObjectSerializationManager(): ObjectSerializationManagerInterface
     {
         if ($this->objectSerializationManager === null) {
@@ -167,7 +167,7 @@ abstract class AbstractScalarTypeResolver extends AbstractTypeResolver implement
                     InputValueCoercionGraphQLSpecErrorFeedbackItemProvider::class,
                     InputValueCoercionGraphQLSpecErrorFeedbackItemProvider::E_5_6_1_16,
                     [
-                        is_array($inputValue) || is_object($inputValue) ? $this->getOutputService()->jsonEncodeArrayOrStdClassValue($inputValue) : $inputValue,
+                        is_array($inputValue) || $inputValue instanceof stdClass ? $this->getOutputService()->jsonEncodeArrayOrStdClassValue($inputValue) : $inputValue,
                         $this->getMaybeNamespacedTypeName(),
                     ]
                 ),
