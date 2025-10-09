@@ -13,10 +13,8 @@ class QueryableInterfaceSchemaDefinitionResolverAdapter extends InterfaceSchemaD
 {
     public function getFieldFilterInputContainerComponent(ObjectTypeResolverInterface $objectTypeResolver, string $fieldName): ?Component
     {
-        if (!($this->interfaceTypeFieldSchemaDefinitionResolver instanceof QueryableInterfaceTypeFieldSchemaDefinitionResolverInterface)) {
-            return null;
-        }
-
-        return $this->interfaceTypeFieldSchemaDefinitionResolver->getFieldFilterInputContainerComponent($fieldName);
+        /** @var QueryableInterfaceTypeFieldSchemaDefinitionResolverInterface */
+        $interfaceTypeFieldSchemaDefinitionResolver = $this->interfaceTypeFieldSchemaDefinitionResolver;
+        return $interfaceTypeFieldSchemaDefinitionResolver->getFieldFilterInputContainerComponent($fieldName);
     }
 }
