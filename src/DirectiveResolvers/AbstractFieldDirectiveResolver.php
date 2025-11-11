@@ -1411,16 +1411,6 @@ abstract class AbstractFieldDirectiveResolver extends AbstractDirectiveResolver 
         ObjectResolutionFeedbackStore|SchemaFeedbackStore $schemaOrObjectResolutionFeedbackStore,
     ): void {
         /**
-         * After setting fields as null below, the references to the fields inside $idFieldSetToRemove
-         * will also be removed.
-         *
-         * Hence, make a duplicate first, to pass to the feedback store.
-         */
-        $idFieldSetForFeedback = [];
-        foreach ($idFieldSetToRemove as $id => $fieldSet) {
-            $idFieldSetForFeedback[$id] = new EngineIterationFieldSet($fieldSet->fields);
-        }
-        /**
          * Remove the fields from the directive pipeline
          */
         /** @var ModuleConfiguration */
@@ -1444,7 +1434,7 @@ abstract class AbstractFieldDirectiveResolver extends AbstractDirectiveResolver 
                     $feedbackItemResolution,
                     $astNode,
                     $relationalTypeResolver,
-                    MethodHelpers::getFieldsFromIDFieldSet($idFieldSetForFeedback)
+                    MethodHelpers::getFieldsFromIDFieldSet($idFieldSetToRemove)
                 )
             );
             return;
@@ -1458,7 +1448,7 @@ abstract class AbstractFieldDirectiveResolver extends AbstractDirectiveResolver 
                 $astNode,
                 $relationalTypeResolver,
                 $this->directive,
-                $idFieldSetForFeedback
+                $idFieldSetToRemove
             )
         );
     }
